@@ -43,6 +43,10 @@
 	<PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.9" />
 	<PackageVersion Include="Microsoft.Identity.Client.Broker" Version="4.85.2" />
 	<PackageVersion Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.85.2" />
+	<!-- Pinned to match the version referenced by the packages.config Excel add-in so the
+	     shared bin\Debug output folder has a single, consistent Microsoft.IdentityModel.Abstractions
+	     DLL (transitive pinning brings the SDK projects up from the transitively-resolved 8.14.0). -->
+	<PackageVersion Include="Microsoft.IdentityModel.Abstractions" Version="8.19.1" />
 	<PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.7.0" />
 	<PackageVersion Include="Microsoft.PowerBI.Api" Version="5.1.0" />
 	<PackageVersion Include="ModernWpfUI" Version="0.9.6" />
@@ -64,7 +68,7 @@
 	<PackageVersion Include="System.Collections.Immutable" Version="9.0.10" />
 	<PackageVersion Include="System.ComponentModel.Composition" Version="10.0.9" />
 	<PackageVersion Include="System.Data.OleDb" Version="10.0.9" />
-	<PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="10.0.9" />
+	<PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="10.0.5" />
 	<PackageVersion Include="System.Drawing.Common" Version="10.0.9" />
 	<PackageVersion Include="System.Management" Version="10.0.9" />
 	<PackageVersion Include="System.Memory" Version="4.6.3" />
@@ -76,9 +80,9 @@
 	<PackageVersion Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" />
 	<!-- Central version used by most projects; DaxStudio.CommandLine overrides to 10.0.9
 		 via VersionOverride because its Microsoft.Extensions.* 10.0.9 graph requires it. -->
-	<PackageVersion Include="System.Text.Encodings.Web" Version="10.0.9" />
-	<PackageVersion Include="System.Text.Json" Version="10.0.9" />
-	<PackageVersion Include="System.Threading.Channels" Version="10.0.9" />
+	<PackageVersion Include="System.Text.Encodings.Web" Version="10.0.5" />
+	<PackageVersion Include="System.Text.Json" Version="10.0.5" />
+	<PackageVersion Include="System.Threading.Channels" Version="10.0.5" />
 	<PackageVersion Include="System.Threading.Tasks.Extensions" Version="4.6.3" />
 	<PackageVersion Include="System.ValueTuple" Version="4.6.2" />
 	<PackageVersion Include="Unofficial.Excel.Amo" Version="11.0.2832.12" />

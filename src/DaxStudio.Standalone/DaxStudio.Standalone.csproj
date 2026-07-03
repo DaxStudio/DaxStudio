@@ -60,7 +60,7 @@
     <WriteLinesToFile File="$(ProjectDir)Resources\BuildDate.txt" Lines="$([System.DateTime]::UtcNow.ToString('s'))" Overwrite="true" />
   </Target>
   <ItemGroup>
-    <PackageReference Include="System.Text.Json" VersionOverride="10.0.9" Condition="'$(TargetFramework)' == 'net472'" />
-    <PackageReference Include="System.Text.Encodings.Web" VersionOverride="10.0.9" Condition="'$(TargetFramework)' == 'net472'" />
+    <PackageReference Include="System.Text.Json" Condition="'$(TargetFramework)' == 'net472'" />
+    <PackageReference Include="System.Text.Encodings.Web" Condition="'$(TargetFramework)' == 'net472'" />
   </ItemGroup>
 </Project>

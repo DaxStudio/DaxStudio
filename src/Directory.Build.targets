@@ -19,22 +19,14 @@
      </ItemGroup> 
    </Target> 
 
-  <!-- Required for dotnet build/test with .resx files containing non-string resources.
-       In targets file so ProjectTypeGuids is available to exclude VSTO projects. -->
-  <PropertyGroup Condition="'$(ProjectTypeGuids)' == ''">
-    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
-  </PropertyGroup>
-  <ItemGroup Condition="'$(ProjectTypeGuids)' == ''">
-    <!-- Version is managed centrally in src\Directory.Packages.props -->
-    <PackageReference Include="System.Resources.Extensions" PrivateAssets="all" />
-  </ItemGroup>
-
-  <!-- Fix incorrect SuggestedBindingRedirects from System.Resources.Extensions package
-       which hardcodes MaxVersion="9.0.0.0" but the net462 DLL is actually 9.0.0.3 -->
-  <Target Name="_FixResourceExtensionsBindingRedirect" BeforeTargets="GenerateBindingRedirects" Condition="'$(ProjectTypeGuids)' == ''">
-    <ItemGroup>
-      <SuggestedBindingRedirects Remove="System.Resources.Extensions, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
-      <SuggestedBindingRedirects Include="System.Resources.Extensions, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" MaxVersion="9.0.0.3" />
-    </ItemGroup>
-  </Target>
+  <!-- Inject the global System.Resources.Extensions PackageReference (needed to build
+       non-string .resx under the .NET SDK) via a CONDITIONAL IMPORT rather than a
+       conditioned ItemGroup. Legacy packages.config projects (the VSTO Excel add-in, which
+       has ManagePackageVersionsCentrally disabled) are excluded here: when the import
+       condition is false the file is never loaded, so Visual Studio's NuGet nomination
+       cannot observe the PackageReference. A conditioned ItemGroup was not sufficient - VS
+       still collected the versionless item, causing NU1015 and mis-detecting the project as
+       PackageReference-style (hiding its packages.config packages). -->
+  <Import Project="SystemResourcesExtensions.targets"
+          Condition="'$(ProjectTypeGuids)' == '' and !Exists('$(MSBuildProjectDirectory)\packages.config')" />
 </Project>

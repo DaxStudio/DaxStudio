@@ -1,0 +1,30 @@
+<Project>
+  <!--
+    Injects the System.Resources.Extensions PackageReference required for building .resx
+    files that contain non-string resources under the .NET SDK / 'dotnet build'.
+
+    This file is imported CONDITIONALLY from src\Directory.Build.targets. Legacy
+    packages.config projects (e.g. the VSTO Excel add-in, which has
+    ManagePackageVersionsCentrally disabled) are excluded by making the *import* itself
+    conditional. A conditional import that evaluates to false is never loaded, so Visual
+    Studio's NuGet project-nomination cannot observe this PackageReference - unlike a
+    conditioned ItemGroup, whose item VS may still collect. This prevents NU1015 and stops
+    NuGet from mis-detecting the packages.config project as PackageReference-style.
+  -->
+  <PropertyGroup>
+    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Version is managed centrally in src\Directory.Packages.props -->
+    <PackageReference Include="System.Resources.Extensions" PrivateAssets="all" />
+  </ItemGroup>
+
+  <!-- Fix incorrect SuggestedBindingRedirects from System.Resources.Extensions package
+       which hardcodes MaxVersion="9.0.0.0" but the net462 DLL is actually 9.0.0.3 -->
+  <Target Name="_FixResourceExtensionsBindingRedirect" BeforeTargets="GenerateBindingRedirects">
+    <ItemGroup>
+      <SuggestedBindingRedirects Remove="System.Resources.Extensions, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
+      <SuggestedBindingRedirects Include="System.Resources.Extensions, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" MaxVersion="9.0.0.3" />
+    </ItemGroup>
+  </Target>
+</Project>

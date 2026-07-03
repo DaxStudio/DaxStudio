@@ -27,7 +27,7 @@
     <ProjectReference Include="..\DaxStudio.Interfaces\DaxStudio.Interfaces.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="System.Text.Json" VersionOverride="10.0.9" Condition="'$(TargetFramework)' == 'net472'" />
-    <PackageReference Include="System.Text.Encodings.Web" VersionOverride="10.0.9" Condition="'$(TargetFramework)' == 'net472'" />
+    <PackageReference Include="System.Text.Json" Condition="'$(TargetFramework)' == 'net472'" />
+    <PackageReference Include="System.Text.Encodings.Web" Condition="'$(TargetFramework)' == 'net472'" />
   </ItemGroup>
 </Project>
