@@ -695,13 +695,13 @@ namespace DaxStudio.Common
         {
             return (IEnumerable<string>)new string[1]
             {
-                string.Format("{0}/.default", ResourceId)
+                string.Format(CultureInfo.InvariantCulture,"{0}/.default", ResourceId)
             };
         }
     
         internal string GetTokenCacheKey()
         {
-            return string.Format((IFormatProvider)CultureInfo.InvariantCulture, "{0}|{1}|{2}", (object)this.Authority, (object)this.ApplicationId, (object)this.ResourceId);
+            return string.Format(CultureInfo.InvariantCulture, "{0}|{1}|{2}", (object)this.Authority, (object)this.ApplicationId, (object)this.ResourceId);
         }
     }
 
