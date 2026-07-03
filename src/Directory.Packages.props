@@ -1,10 +1,12 @@
 <Project>
   <PropertyGroup>
 	<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-	<!-- Transitive pinning is intentionally left OFF so this is a pure "move versions to a
-		 central file" refactor that preserves existing transitive resolution. Enable it later
-		 (as a separate, validated step) if you want central versions to also pin transitives. -->
-	<CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
+	<!-- Transitive pinning is ENABLED: a central PackageVersion also pins that package when it appears
+	     as a transitive dependency. This keeps shared framework assemblies (System.Text.Json,
+	     System.Diagnostics.DiagnosticSource, System.Threading.Channels) on one version across every
+	     project, so generated binding redirects match the deployed DLLs (fixes fusion load errors
+	     caused by the shared output folder). -->
+	<CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
 
   <ItemGroup>
@@ -59,8 +61,10 @@
 	<PackageVersion Include="Spectre.Console" Version="0.57.2" />
 	<PackageVersion Include="Spectre.Console.Cli" Version="0.55.0" />
 	<PackageVersion Include="System.Buffers" Version="4.6.1" />
+	<PackageVersion Include="System.Collections.Immutable" Version="9.0.10" />
 	<PackageVersion Include="System.ComponentModel.Composition" Version="10.0.9" />
 	<PackageVersion Include="System.Data.OleDb" Version="10.0.9" />
+	<PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="10.0.9" />
 	<PackageVersion Include="System.Drawing.Common" Version="10.0.9" />
 	<PackageVersion Include="System.Management" Version="10.0.9" />
 	<PackageVersion Include="System.Memory" Version="4.6.3" />
@@ -72,8 +76,9 @@
 	<PackageVersion Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" />
 	<!-- Central version used by most projects; DaxStudio.CommandLine overrides to 10.0.9
 		 via VersionOverride because its Microsoft.Extensions.* 10.0.9 graph requires it. -->
-	<PackageVersion Include="System.Text.Encodings.Web" Version="8.0.0" />
-	<PackageVersion Include="System.Text.Json" Version="8.0.6" />
+	<PackageVersion Include="System.Text.Encodings.Web" Version="10.0.9" />
+	<PackageVersion Include="System.Text.Json" Version="10.0.9" />
+	<PackageVersion Include="System.Threading.Channels" Version="10.0.9" />
 	<PackageVersion Include="System.Threading.Tasks.Extensions" Version="4.6.3" />
 	<PackageVersion Include="System.ValueTuple" Version="4.6.2" />
 	<PackageVersion Include="Unofficial.Excel.Amo" Version="11.0.2832.12" />
