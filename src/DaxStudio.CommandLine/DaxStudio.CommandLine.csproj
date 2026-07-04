@@ -3,6 +3,7 @@
     <TargetFrameworks>net472;net8.0-windows</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <AssemblyName>dscmd</AssemblyName>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <OutputPath>..\bin\$(Configuration)\</OutputPath>

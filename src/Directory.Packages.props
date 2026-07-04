@@ -41,6 +41,13 @@
 	<PackageVersion Include="Microsoft.Data.SqlClient" Version="7.0.2" />
 	<PackageVersion Include="Microsoft.Expression.Drawing" Version="3.0.0" />
 	<PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.9" />
+	<!-- Pinned so the shared bin output folder has a single, consistent
+	     Microsoft.Extensions.DependencyInjection.Abstractions DLL. dscmd (DaxStudio.CommandLine)
+	     uses DependencyInjection 10.0.9 (=> Abstractions 10.0.0.9), while the main app resolves
+	     Abstractions 8.0.2 transitively. Because dscmd probes the shared bin folder, the app's
+	     8.0.2 DLL would otherwise win and dscmd fails to load 10.0.0.9. Transitive pinning brings
+	     every project up to 10.0.9. -->
+	<PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.9" />
 	<PackageVersion Include="Microsoft.Identity.Client.Broker" Version="4.85.2" />
 	<PackageVersion Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.85.2" />
 	<!-- Pinned to match the version referenced by the packages.config Excel add-in so the
