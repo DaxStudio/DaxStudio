@@ -51,6 +51,47 @@ namespace DaxStudio.Tests
         }
 
         [TestMethod]
+        public void TestInternalRefreshQueryIsSkipped()
+        {
+            var details = new ServerTimingDetailsViewModel();
+            var vm = new ServerTimesViewModel(mockEventAggregator, details, mockOptions, mockWindowManager);
+
+            var internalText = DaxStudio.Common.Constants.InternalQueryHeader + "\nEVALUATE ROW(\"DAX Studio Session Refresh\",0)";
+
+            // a lone internal (session refresh) query should not produce any timings
+            vm.AddTestEvent(TraceEventClass.QueryEnd, TraceEventSubclass.DAXQuery, new DateTime(2022, 7, 10, 1, 1, 1, 0), 100, internalText, "INTERNAL");
+
+            vm.ProcessAllEvents();
+
+            Assert.HasCount(0, vm.StorageEngineEvents, "Internal query should not add any storage engine events");
+            Assert.IsFalse(vm.CanExport, "Internal query should not leave any exportable data");
+        }
+
+        [TestMethod]
+        public void TestOutOfOrderInternalRefreshDoesNotDropUserQuery()
+        {
+            var details = new ServerTimingDetailsViewModel();
+            var vm = new ServerTimesViewModel(mockEventAggregator, details, mockOptions, mockWindowManager);
+
+            var internalText = DaxStudio.Common.Constants.InternalQueryHeader + "\nEVALUATE ROW(\"DAX Studio Session Refresh\",0)";
+
+            // The internal refresh QueryEnd arrives *before* the user's query events (out of order).
+            // Its SE scan and QueryEnd must be filtered out by ActivityId/marker, and the user's
+            // real query must still be processed rather than the whole buffer being discarded.
+            vm.AddTestEvent(TraceEventClass.VertiPaqSEQueryEnd, TraceEventSubclass.VertiPaqScan, new DateTime(2022, 7, 10, 1, 1, 1, 5), 50, "internal scan", "INTERNAL");
+            vm.AddTestEvent(TraceEventClass.QueryEnd, TraceEventSubclass.DAXQuery, new DateTime(2022, 7, 10, 1, 1, 1, 0), 100, internalText, "INTERNAL");
+            vm.AddTestEvent(TraceEventClass.VertiPaqSEQueryEnd, TraceEventSubclass.VertiPaqScan, new DateTime(2022, 7, 10, 1, 1, 1, 5), 20, "user scan", "USER");
+            vm.AddTestEvent(TraceEventClass.QueryEnd, TraceEventSubclass.DAXQuery, new DateTime(2022, 7, 10, 1, 1, 1, 0), 75, "EVALUATE Sales", "USER");
+
+            vm.ProcessAllEvents();
+
+            Assert.HasCount(1, vm.StorageEngineEvents, "Only the user's storage engine event should be captured");
+            Assert.AreEqual(75, vm.TotalDuration, "Total duration should reflect the user's query, not the internal refresh");
+            Assert.AreEqual(20, vm.StorageEngineDuration, "Only the user's SE scan should be counted");
+            Assert.AreEqual(55, vm.FormulaEngineDuration);
+        }
+
+        [TestMethod]
         public void TestOverlappingSEQueries()
         {
 

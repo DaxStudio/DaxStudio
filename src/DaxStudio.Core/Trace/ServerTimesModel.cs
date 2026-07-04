@@ -29,6 +29,7 @@ namespace DaxStudio.Core.Trace
     public abstract class ServerTimesModel : TraceWatcherBaseModel, IServerTimes
     {
         private string _queryEndActivityId = string.Empty;
+        private readonly HashSet<string> _internalQueryActivityIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private DaxStudioTraceEventArgs maxStorageEngineVertipaqEvent;
         private DaxStudioTraceEventArgs maxStorageEngineDirectQueryEvent;
 
@@ -140,7 +141,18 @@ namespace DaxStudio.Core.Trace
                     TotalDuration = 0;
                     break;
                 case DaxStudioTraceEventClass.QueryEnd:
-                    _queryEndActivityId = singleEvent.ActivityId;
+                    // Don't capture ExecutionMetrics for DAX Studio internal queries (e.g. the
+                    // session refresh query run after clearing the cache). Track their ActivityId
+                    // so any related events can be excluded even if they arrive out of order.
+                    if (!string.IsNullOrEmpty(singleEvent.TextData) && singleEvent.TextData.Contains(Constants.InternalQueryHeader))
+                    {
+                        if (!string.IsNullOrEmpty(singleEvent.ActivityId))
+                            _internalQueryActivityIds.Add(singleEvent.ActivityId);
+                    }
+                    else
+                    {
+                        _queryEndActivityId = singleEvent.ActivityId;
+                    }
                     TotalDuration = (long)(singleEvent.CurrentTime - QueryStartDateTime).TotalMilliseconds;
                     break;
                 case DaxStudioTraceEventClass.ExecutionMetrics:
@@ -270,13 +282,20 @@ namespace DaxStudio.Core.Trace
 
             if (Events != null)
             {
-                if (IsDaxStudioInternalQuery())
+                // Trace events for the DAX Studio internal session-refresh query (run after
+                // clearing the cache) can be interleaved with the user's query events and may
+                // arrive out of order. Rather than inspecting only the first QueryEnd we remove
+                // every QueryEnd tagged with the internal marker along with any related events
+                // (matched by ActivityId, e.g. ExecutionMetrics or storage engine scans).
+                bool removedInternalEvents = RemoveInternalQueryEvents();
+
+                // If we removed internal query events and there is no user QueryEnd left then
+                // there is nothing complete to process yet, so wait for the next final event.
+                if (removedInternalEvents && !Events.Any(e => e.EventClass == DaxStudioTraceEventClass.QueryEnd))
                 {
-                    Log.Debug(Constants.LogMessageTemplate, nameof(ServerTimesModel), nameof(ProcessResults), "DAX Studio internal event detected, clearing any trace data");
-                    Events.Clear();
+                    Log.Debug(Constants.LogMessageTemplate, nameof(ServerTimesModel), nameof(ProcessResults), "No user QueryEnd event present after removing internal query events, skipping processing");
                     return;
                 }
-                ;
 
                 bool IsEnd(DaxStudioTraceEventClass eventClass)
                 {
@@ -585,10 +604,50 @@ namespace DaxStudio.Core.Trace
             }
         }
 
-        private bool IsDaxStudioInternalQuery()
+        private static bool IsInternalQueryEnd(DaxStudioTraceEventArgs traceEvent)
         {
-            var endEvent = Events.FirstOrDefault(e => e.EventClass == DaxStudioTraceEventClass.QueryEnd);
-            return endEvent != null && endEvent.TextData.Contains(Constants.InternalQueryHeader);
+            return traceEvent.EventClass == DaxStudioTraceEventClass.QueryEnd
+                && !string.IsNullOrEmpty(traceEvent.TextData)
+                && traceEvent.TextData.Contains(Constants.InternalQueryHeader);
+        }
+
+        // Removes trace events belonging to DAX Studio internal queries (such as the session
+        // refresh query executed after clearing the cache) from the Events buffer. Because
+        // events can arrive out of order we cannot rely on the first QueryEnd - we collect the
+        // ActivityIds of every QueryEnd carrying the internal marker (including any recorded
+        // during real-time processing) and then drop those QueryEnd events plus any related
+        // events sharing the same ActivityId (e.g. ExecutionMetrics and storage engine scans).
+        // Returns true if any internal query events were removed.
+        private bool RemoveInternalQueryEvents()
+        {
+            var internalActivityIds = new HashSet<string>(_internalQueryActivityIds, StringComparer.OrdinalIgnoreCase);
+            foreach (var traceEvent in Events)
+            {
+                if (IsInternalQueryEnd(traceEvent) && !string.IsNullOrEmpty(traceEvent.ActivityId))
+                {
+                    internalActivityIds.Add(traceEvent.ActivityId);
+                }
+            }
+
+            bool IsInternalQueryEvent(DaxStudioTraceEventArgs traceEvent)
+            {
+                if (IsInternalQueryEnd(traceEvent)) return true;
+                return !string.IsNullOrEmpty(traceEvent.ActivityId)
+                    && internalActivityIds.Contains(traceEvent.ActivityId);
+            }
+
+            // the tracked ActivityIds have now been folded into the local set, so reset them
+            _internalQueryActivityIds.Clear();
+
+            if (!Events.Any(IsInternalQueryEvent)) return false;
+
+            Log.Debug(Constants.LogMessageTemplate, nameof(ServerTimesModel), nameof(RemoveInternalQueryEvents), "Removing DAX Studio internal query events from the trace buffer");
+
+            var retainedEvents = Events.Where(traceEvent => !IsInternalQueryEvent(traceEvent)).ToList();
+            while (Events.TryDequeue(out _)) { }
+            foreach (var traceEvent in retainedEvents) Events.Enqueue(traceEvent);
+
+            return true;
         }
 
         // This function assumes that the events arrive in StartTime order, then we check if
@@ -1030,6 +1089,7 @@ namespace DaxStudio.Core.Trace
         {
             Log.Debug(Constants.LogMessageTemplate, nameof(ServerTimesModel), nameof(ClearAll), "Clearing all event data");
             _queryEndActivityId = string.Empty;
+            _internalQueryActivityIds.Clear();
             AllStorageEngineEvents.Clear();
             FormulaEngineDuration = 0;
             StorageEngineDuration = 0;

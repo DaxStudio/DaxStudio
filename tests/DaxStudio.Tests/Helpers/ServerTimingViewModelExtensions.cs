@@ -39,5 +39,31 @@ namespace DaxStudio.Tests.Helpers
 
             vm.Events.Enqueue(evt);
         }
+
+        public static void AddTestEvent(this ServerTimesViewModel vm, TraceEventClass traceClass, TraceEventSubclass traceSubclass, DateTime startTime, long durationMs, string textData, string activityId)
+        {
+            var endTime = startTime.AddMilliseconds(durationMs);
+            var sequence = vm.Events.Count;
+            var evt = new DaxStudioTraceEventArgs(traceClass.ToString()
+                , traceSubclass.ToString()
+                , durationMs
+                , cpuTime
+                , textData ?? $"Test Event {sequence}"
+                , ""
+                , startTime)
+            {
+                EndTime = endTime,
+                Duration = durationMs,
+                ActivityId = activityId
+            };
+
+            if (traceClass == TraceEventClass.QueryEnd)
+            {
+                vm.QueryStartDateTime = startTime;
+                vm.QueryEndDateTime = endTime;
+            }
+
+            vm.Events.Enqueue(evt);
+        }
     }
 }
