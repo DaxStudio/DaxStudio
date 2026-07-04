@@ -87,7 +87,7 @@ Source: "..\release\DaxStudio.exe"; DestDir: "{app}"; Flags: ignoreversion; Comp
 Source: "..\release\bin\DaxStudio.vsto"; DestDir: "{app}\bin"; Flags: ignoreversion; Components: Core
 Source: "..\release\bin\DaxStudio.dll"; DestDir: "{app}\bin"; Flags: ignoreversion; Components: Core
 Source: "..\release\bin\DaxStudio.dll.manifest"; DestDir: "{app}\bin"; Flags: ignoreversion; Components: Core
-Source: "..\release\*"; DestDir: "{app}"; Flags: replacesameversion recursesubdirs createallsubdirs; Components: Core; Excludes: "*.pdb,*.xml,DaxStudio.vshost.*,*.config,DaxStudio.dll,DaxStudio.exe,DaxStudio.vsto,daxstudio.pbitool.json,*.portable,Microsoft.Excel.*.dll,*.Tests.dll"
+Source: "..\release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: Core; Excludes: "*.pdb,*.xml,DaxStudio.vshost.*,*.config,DaxStudio.dll,DaxStudio.exe,DaxStudio.vsto,daxstudio.pbitool.json,*.portable,Microsoft.Excel.*.dll,*.Tests.dll"
 
 ; PBI Desktop integration (If installing in ALL USERS mode)
 Source: "..\release\bin\daxstudio.pbitool.json"; DestDir: "{commoncf32}\Microsoft Shared\Power BI Desktop\External Tools"; Components: Core; Check: IsAdminInstallMode;                                                                                    
@@ -377,45 +377,11 @@ begin
   end;
   
 end;
-
-// var ExcelMode: TInputOptionWizardPage;
-// procedure GetExcelMode;
-// begin
-//    ExcelMode := CreateInputOptionPage(wpSelectComponents,
-//     'Excel Addin', 'How would you like the Excel Addin registered',
-//     'Please specify how you would like the Excel Addin registered.',
-//     True, False);
-//   ExcelMode.Add('All Users (requires Admin rights to change)');
-//   ExcelMode.Add('Current User Only (enable from the Options menu in DAX Studio)');
-//   // default to All Users
-//   ExcelMode.SelectedValueIndex := 0
-// end;
-
-// function IsExcelAllUsers: Boolean;
-// begin
-//   Result := ExcelMode.SelectedValueIndex = 0;
-// end;
-
-// function IsExcelCurrentUser: Boolean;
-// begin
-//   Result := ExcelMode.SelectedValueIndex = 1;
-// end;
         
 function GetMaxCommonSsasAssemblyVersion(): String;
 begin
     Result := maxCommonSsasAssemblyVersion;
 end;
-
-// function ShouldSkipPage(PageID: Integer): Boolean;
-// begin
-
-//   { Skip pages that shouldn't be shown }
-//   if (PageID = ExcelMode.ID) and Not IsComponentSelected('Excel') then
-//     Result := True
-//   else
-//     Result := False;
-// end;
-
 
 procedure InitializeWizard;
 var
@@ -427,10 +393,6 @@ begin
 			if (Lowercase(Copy(ParamStr(i), 1, 2)) = '/?') OR ((Length(ParamStr(i)) = 2) AND (Lowercase(Copy(ParamStr(i), 1, 2)) = '/h')) OR (Lowercase(Copy(ParamStr(i), 1, 5)) = '/help') then
 				DisplayHelp();
 
-
-  { Create the pages }
-
-  // GetExcelMode();
 end;
 
 
@@ -457,28 +419,6 @@ begin
     ShowExceptionMessage;
   end;
 
-
-  
-  //  Log('Checking the maximum SSAS assembly versions');
-//  maxCommonSsasAssemblyVersion := GetMaxCommonSsasAssemblyVersionInternal();
-//  Log('Max SSAS assembly versions ' + maxCommonSsasAssemblyVersion);
-//  msgbox(GetMaxCommonSsasAssemblyVersion(), mbInformation,MB_OK);
-
-//  if IsExcel2010Installed() then begin
-//      msgbox('hello', mbInformation,MB_OK);
-//  end;
-
-//  if IsAssemblyInstalled('Microsoft.AnalysisServices', '11.0.0.0' ) then begin
-//      msgbox('amo ok',mbInformation, MB_OK);
-//  end  else begin
-//      msgbox('amo NOT ok',mbInformation, MB_OK);
-//  end;
-
-//  if IsAssemblyInstalled('Microsoft.AnalysisServices.AdomdClient', '11.0.0.0' ) then begin
-//      msgbox('adomd ok',mbInformation, MB_OK);
-//  end  else begin
-//      msgbox('adomd NOT ok',mbInformation, MB_OK);
-//  end;
   
 #ifdef use_msi20
 	msi20('2.0');
@@ -489,8 +429,6 @@ begin
 #ifdef use_msi45
 	msi45('4.5');
 #endif
-
- 
 
 if ShouldInstallDependencies() then
   Log('Checking for Dependencies')
@@ -525,16 +463,6 @@ else
 
 	Result := true;
 end;
-
-
-// procedure CurPageChanged(CurPageID: Integer);
-// begin
-// Log('Processing custom page actions for ' + IntToStr(CurPageID));
-//   if CurPageID = wpReady then begin
-//      if IsExcelCurrentUser then Log('Installing Excel add-in for CurrentUser');
-//      If IsExcelAllUsers then Log('Installing Excel add-in for AllUsers');
-//   end;
-// end;
 
 
 // Check if Excel is x86 or x64
