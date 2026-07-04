@@ -889,6 +889,18 @@ namespace DaxStudio.UI.ViewModels
         {
             get => !HasLogicalFilterActive;
         }
+
+        public void CopyingRowClipboardContent(object sender, DataGridRowClipboardEventArgs e)
+        {
+
+            System.Diagnostics.Debug.WriteLine("Clipboard Copy Content");
+            // only keep the last column
+            for (int i = e.ClipboardRowContent.Count - 2; i >= 0; i--)
+            {
+                e.ClipboardRowContent.RemoveAt(i);
+            }
+
+        }
     }
 
 }

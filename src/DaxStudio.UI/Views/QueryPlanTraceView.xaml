@@ -487,6 +487,7 @@
                 ColumnHeaderStyle="{StaticResource {ComponentResourceKey 
                 TypeInTargetAssembly={x:Type filter:DataGridHeaderFilterControl}, 
                 ResourceId=DataGridHeaderFilterControlStyle}}"
+                cal:Message.Attach="[Event CopyingRowClipboardContent] = [Action CopyingRowClipboardContent($this,$eventArgs)]"
                 >
                 <uictrl:LogicalQueryPlanTreeGrid.Columns>
                     <DataGridTextColumn Header="Line" Width="60" IsReadOnly="True" Binding="{Binding Data.RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}" 
