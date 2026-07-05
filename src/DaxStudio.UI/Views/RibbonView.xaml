@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="DaxStudio.UI.Views.RibbonView"
+<UserControl x:Class="DaxStudio.UI.Views.RibbonView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -657,6 +657,7 @@
                             <!-- File New -->
                         <Fluent:Button Header="New" 
                                    Name="btnNewQuery" 
+                                   Style="{DynamicResource DaxStudioBackstageMenuButtonStyle}"
                                    HorizontalContentAlignment="Left" 
                                    Foreground="{DynamicResource Fluent.Ribbon.Brushes.Backstage.BackButton.Foreground}"
                                    Height="30"
@@ -669,6 +670,7 @@
                         <Fluent:Button
                             Name="btnNewQueryConnected"
                             Header="New (Copy Connection)"
+                            Style="{DynamicResource DaxStudioBackstageMenuButtonStyle}"
                             KeyTip="W"
                             ToolTip="Open a New Query with the current connection"
                             Foreground="{DynamicResource Fluent.Ribbon.Brushes.Backstage.BackButton.Foreground}"
@@ -888,6 +890,7 @@
 
                         <Fluent:Button Name="btnSave" 
                                    Header="Save" 
+                                   Style="{DynamicResource DaxStudioBackstageMenuButtonStyle}"
                                    KeyTip="S"
                                    Foreground="{DynamicResource Fluent.Ribbon.Brushes.Backstage.BackButton.Foreground}" 
                                    HorizontalContentAlignment="Left"
@@ -897,6 +900,7 @@
 
                         <Fluent:Button Name="btnSaveAs" 
                                    Header="Save As" 
+                                   Style="{DynamicResource DaxStudioBackstageMenuButtonStyle}"
                                    KeyTip="A"
                                    Height="30"
                                    Foreground="{DynamicResource Fluent.Ribbon.Brushes.Backstage.BackButton.Foreground}"
@@ -910,6 +914,7 @@
                                                
                         <Fluent:Button Name="btnExit" 
                                    Header="Close DAX Studio" 
+                                   Style="{DynamicResource DaxStudioBackstageMenuButtonStyle}"
                                        KeyTip="C"
                                    Foreground="{DynamicResource Fluent.Ribbon.Brushes.Backstage.BackButton.Foreground}"  
                                    VerticalAlignment="Bottom"
@@ -1927,3 +1932,4 @@
     </Fluent:Ribbon>
 
 </UserControl>
+

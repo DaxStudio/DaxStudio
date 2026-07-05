@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using ADOTabular;
 using ADOTabular.Interfaces;
 using Caliburn.Micro;
-using ControlzEx.Standard;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Enums;
 using DaxStudio.UI.Model;
