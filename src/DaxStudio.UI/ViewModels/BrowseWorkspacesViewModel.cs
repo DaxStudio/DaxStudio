@@ -11,7 +11,6 @@ using System.Windows.Media.Imaging;
 using System.IO;
 using Microsoft.Identity.Client;
 using System.Windows.Controls;
-using System.Windows.Interop;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows.Data;
@@ -139,7 +138,7 @@ namespace DaxStudio.UI.ViewModels
         protected override void OnViewReady(object view)
         {
             base.OnViewReady(view);
-            _viewHwnd = GetHwnd((ContentControl)view);
+            _viewHwnd = WindowHandleHelper.GetHwnd((ContentControl)view);
             GetWorkspacesAsync(_viewHwnd,false).FireAndForget();
         }
 
@@ -342,12 +341,6 @@ namespace DaxStudio.UI.ViewModels
             // prompt the user to sign in again and refresh the workspaces list 
 
             await GetWorkspacesAsync(_viewHwnd, true);
-        }
-
-        private IntPtr? GetHwnd(ContentControl view)
-        {
-            HwndSource hwnd = PresentationSource.FromVisual(view) as HwndSource;
-            return hwnd?.Handle;
         }
 
         public void SetFocusToWorkspaces()

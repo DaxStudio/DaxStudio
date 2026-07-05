@@ -12,6 +12,7 @@ namespace DaxStudio.Common
     {
         PowerBI = 0,
         AsAzure = 1,
+        Storage = 2,
     }
 
     public class AccessTokenContext

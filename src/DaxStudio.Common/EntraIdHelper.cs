@@ -57,6 +57,7 @@ namespace DaxStudio.Common
         //private static string Instance = "https://login.microsoftonline.com/common/oauth2/nativeclient";
         private static readonly string[] powerbiScope = new [] { "https://analysis.windows.net/powerbi/api/.default" };
         private static readonly string[] asazureScope = new [] { "https://*.asazure.windows.net/.default" };
+        private static readonly string[] storageScope = new [] { "https://storage.azure.com/.default" };
         private static readonly string[] graphScope = new [] { "https://graph.microsoft.com/User.Read" };
 
         // Microsoft Graph Command Line Tools - a Microsoft first-party PUBLIC client that registers a
@@ -66,6 +67,28 @@ namespace DaxStudio.Common
         // The ADOMD/Power BI client id is not authorized for Microsoft Graph, so reusing it fails the same way.
         private const string GraphClientId = "14d82eec-204b-4c2f-b7e8-296a70dab67e";
         private static IPublicClientApplication _graphClientApp;
+
+        /// <summary>
+        /// Returns a non-zero, <b>visible</b> top-level window handle to own the interactive
+        /// MSAL/WAM sign-in dialog. The WAM broker parents its native dialog to this handle;
+        /// when it receives IntPtr.Zero (or the handle of a hidden window - e.g. a dialog that
+        /// has hidden itself before prompting) the sign-in dialog is not kept in front of the
+        /// DAX Studio main window and can be pushed behind it. We therefore reject a hidden or
+        /// zero handle and fall back to the current foreground window and then the process main
+        /// window so a usable owner handle is always supplied.
+        /// </summary>
+        private static IntPtr GetOwnerWindowHandle(IntPtr? preferredHwnd)
+        {
+            if (preferredHwnd.HasValue && preferredHwnd.Value != IntPtr.Zero
+                && NativeMethods.IsWindowVisible(preferredHwnd.Value))
+                return preferredHwnd.Value;
+
+            var foreground = NativeMethods.GetForegroundWindow();
+            if (foreground != IntPtr.Zero)
+                return foreground;
+
+            return Process.GetCurrentProcess().MainWindowHandle;
+        }
 
         public static async Task<AuthenticationResult> AcquireTokenAsync(IntPtr? hwnd, IHaveLastUsedUPN options, AccessTokenScope tokenScope,AccessTokenContext context)
         {
@@ -108,8 +131,7 @@ namespace DaxStudio.Common
                 {
                     authResult = await app.AcquireTokenInteractive(scope)
                         .WithAccount(firstAccount)
-                        .WithParentActivityOrWindow(hwnd) // optional, used to center the browser on the window
-                                                          //.WithParentActivityOrWindow(Process.GetCurrentProcess().MainWindowHandle)
+                        .WithParentActivityOrWindow(GetOwnerWindowHandle(hwnd)) // owner for the WAM sign-in dialog so it stays in front of the DAX Studio window
                         .WithExtraQueryParameters(MicrosoftAccountOnlyQueryParameters)
                         .WithPrompt(Prompt.SelectAccount)
                         .ExecuteAsync();
@@ -304,8 +326,7 @@ namespace DaxStudio.Common
             try
             {
                 var authResult = await app.AcquireTokenInteractive(scope)
-                            .WithParentActivityOrWindow(hwnd) // optional, used to center the browser on the window
-                                                              //.WithParentActivityOrWindow(Process.GetCurrentProcess().MainWindowHandle)
+                            .WithParentActivityOrWindow(GetOwnerWindowHandle(hwnd)) // owner for the WAM sign-in dialog so it stays in front of the DAX Studio window
                             .WithExtraQueryParameters(MicrosoftAccountOnlyQueryParameters)
                             .WithPrompt(Prompt.SelectAccount)
                             .ExecuteAsync();
@@ -610,8 +631,7 @@ namespace DaxStudio.Common
                 {
                     authResult = await app.AcquireTokenInteractive(scope)
                         .WithAccount(firstAccount)
-                        //.WithParentActivityOrWindow(hwnd) // optional, used to center the browser on the window
-                        .WithParentActivityOrWindow(Process.GetCurrentProcess().MainWindowHandle)
+                        .WithParentActivityOrWindow(GetOwnerWindowHandle(null)) // owner for the WAM sign-in dialog so it stays in front of the DAX Studio window
                         .WithExtraQueryParameters(MicrosoftAccountOnlyQueryParameters)
                         .WithPrompt(Prompt.SelectAccount)
                         .ExecuteAsync().ConfigureAwait(false);
@@ -640,6 +660,8 @@ namespace DaxStudio.Common
         {
             if (scope == AccessTokenScope.AsAzure)
                 return asazureScope;
+            else if (scope == AccessTokenScope.Storage)
+                return storageScope;
             else
                 return powerbiScope;
         }
