@@ -13,7 +13,7 @@ namespace DaxStudio.Core.Trace
         const string searchXmSqlFormatStep4 = @"(\] MANYTOMANY FROM ).*( TO )";
         const string searchXmSqlFormatStep5 = @"(?<=,) *?(?=MIN|MAX|SUM|COUNT|DCOUNT)";
         const string searchXmSqlFormatStep6 = @"'(LogAbsValueCallback|RoundValueCallback|MinMaxColumnPositionCallback|Cond)'";
-        const string searchXmSqlCallbackStart = @"\[\'?((CallbackDataID)|(EncodeCallback)|(LogAbsValueCallback)|(RoundValueCallback)|(MinMaxColumnPositionCallback)|(Cond))\'?\(";
+        const string searchXmSqlCallbackStart = @"\[\'?((CallbackDataID)|(EncodeCallback)|(LogAbsValueCallback)|(RoundValueCallback)|(MinMaxColumnPositionCallback)|(Cond))\'?\(?";
         const string searchXmSqlCallbackEnd = @"[\S\s]*?(?<!\]\])\)\]";
         const string searchXmSqlCallbackDax = @"(?<=\[CallbackDataID|EncodeCallback)(?<DAX>[\w\W]*?\))(?=\s?\]\s?\()";
         const string searchXmSqlSquareBracketsWithSpace = searchXmSqlCallbackStart + searchXmSqlCallbackEnd + @"|(?<![\.0-9a-zA-Z'])\[([^\[])*\]";
