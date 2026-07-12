@@ -11,5 +11,6 @@
         public const string CustomTrace = "CustomTrace.json";
         public const string DebugLog = "DebugLog.json";
         public const string VpaxFile = "Model.vpax";
+        public const string DeltaAnalyzer = "DeltaAnalyzer.json";
     }
 }

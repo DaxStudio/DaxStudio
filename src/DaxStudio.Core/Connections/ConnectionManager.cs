@@ -1278,6 +1278,14 @@ namespace DaxStudio.Core.Connections
         private Microsoft.AnalysisServices.AdomdClient.AccessToken OnAccessTokenExpired(Microsoft.AnalysisServices.AdomdClient.AccessToken token)
 #endif
         {
+            if (_isDisposing)
+            {
+                // The connection is being disposed - skip the (blocking) token refresh. The refreshed
+                // token would only be used to keep the connection alive, but it is going away.
+                Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OnAccessTokenExpired), "Skipping AccessToken refresh - connection is being disposed");
+                return token;
+            }
+
             Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OnAccessTokenExpired), "AccessToken Expired - refreshing token");
             var newToken = EntraIdHelper.RefreshToken(token).GetAwaiter().GetResult();
             Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OnAccessTokenExpired), $"AccessToken Refreshed - ExpirationTime: {newToken.ExpirationTime}");
@@ -1348,7 +1356,7 @@ namespace DaxStudio.Core.Connections
                     {
                         GetTables();
                         IsConnecting = false;
-                        _eventAggregator.PublishAsync(new TablesRefreshedEvent());
+                        _eventAggregator.PublishAsync(new TablesRefreshedEvent(this));
                     });
                 });
             }
@@ -1375,6 +1383,13 @@ namespace DaxStudio.Core.Connections
         private object _supportedTraceEventClassesLock = new object();
         private Dictionary<DaxStudioTraceEventClass,HashSet<TOM.TraceColumn>> _supportedTraceEventClasses;
         private bool disposedValue;
+
+        // Set at the start of the dispose path (before the underlying connections are torn down)
+        // so the OnAccessTokenExpired callback can short-circuit. Disposing an ADOMD/AMO connection
+        // can re-enter OnAccessTokenExpired, which otherwise blocks on an async token refresh (and
+        // can escalate to an interactive sign-in prompt) while the connection is going away.
+        // Marked volatile because the callback may be invoked on a different thread than Dispose().
+        private volatile bool _isDisposing;
 
         public Dictionary<DaxStudioTraceEventClass, HashSet<TOM.TraceColumn>> SupportedTraceEventClasses
         {
@@ -1557,6 +1572,12 @@ namespace DaxStudio.Core.Connections
             {
                 if (disposing)
                 {
+                    // Signal the token-refresh callback to short-circuit, then detach the callbacks
+                    // so disposing the connections cannot re-enter OnAccessTokenExpired.
+                    _isDisposing = true;
+                    if (_connection != null) _connection.OnAccessTokenExpired = null;
+                    if (_dmvConnection != null) _dmvConnection.OnAccessTokenExpired = null;
+
                     _connection?.Dispose();
                     _dmvConnection?.Dispose();
                 }

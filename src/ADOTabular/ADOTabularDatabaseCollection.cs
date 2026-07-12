@@ -64,7 +64,7 @@ namespace ADOTabular
                     dt.Columns.Add("CATALOG_NAME", typeof(string));
                     dt.Columns.Add("DATE_MODIFIED", typeof(string));
                     dt.Rows.Add((_adoTabConn.Database.Name));
-                    _dsDatabases = _dsDatabases ??new DataSet();
+                    _dsDatabases = new DataSet();
                     _dsDatabases.Tables.Add(dt);
                 }
                 else
@@ -134,8 +134,8 @@ namespace ADOTabular
             // Update the lastUpdated datetime
             foreach (var dbName in tmpDatabaseDict.Keys)
             {
-                if (_databaseDictionary.ContainsKey(dbName)) {
-                    _databaseDictionary[dbName].LastUpdate = tmpDatabaseDict[dbName].LastUpdate;
+                if (_databaseDictionary.TryGetValue(dbName, out DatabaseDetails value)) {
+                    value.LastUpdate = tmpDatabaseDict[dbName].LastUpdate;
                 } else
                 {
                     _databaseDictionary.Add(dbName, tmpDatabaseDict[dbName]);

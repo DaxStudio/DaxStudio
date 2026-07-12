@@ -189,10 +189,20 @@ namespace DaxStudio.UI.ViewModels
 
                     _metadataProvider.SetSelectedModelAsync(SelectedModel).ContinueWith((prev) => {
                         Log.Verbose(Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), "SelectedModel.Set", "Clearing IsBusy in continuation");
-                        NotifyOfPropertyChange(nameof(Tables));
-                        SetBusy(false); 
+                        try
+                        {
+                            NotifyOfPropertyChange(nameof(Tables));
+                        }
+                        finally
+                        {
+                            // Always clear the busy state even if the notification
+                            // above throws, otherwise the loading overlay would be
+                            // orphaned over already-loaded metadata.
+                            SetBusy(false);
+                        }
                     }
-                    ).SafeFireAndForget();
+                    ).SafeFireAndForget(onException: ex =>
+                        Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), "SelectedModel.Set", "Error in SetSelectedModelAsync continuation"));
                     
                 }
                 Log.Debug(Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), nameof(SelectedModel), "Set End");
@@ -249,9 +259,18 @@ namespace DaxStudio.UI.ViewModels
                         Log.Debug(Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), nameof(RefreshTablesAsync), "Setting IsBusy = false");
 
                         IsNotifying = true;
-                        Refresh(); // force all data bindings to update
-                        NotifyOfPropertyChange(nameof(Tables));
-                        SetBusy(false);
+                        try
+                        {
+                            Refresh(); // force all data bindings to update
+                            NotifyOfPropertyChange(nameof(Tables));
+                        }
+                        finally
+                        {
+                            // Always clear the busy state even if Refresh() or the
+                            // notification above throws, otherwise the loading
+                            // overlay would be orphaned over already-loaded metadata.
+                            SetBusy(false);
+                        }
                         await EventAggregator.PublishAsync(new MetadataLoadedEvent(ActiveDocument, SelectedModel));
                     }
 
@@ -1244,6 +1263,16 @@ namespace DaxStudio.UI.ViewModels
 
         public async Task HandleAsync(TablesRefreshedEvent message, CancellationToken cancellationToken)
         {
+            // TablesRefreshedEvent is broadcast through the global event
+            // aggregator and is therefore received by every MetadataPaneViewModel.
+            // Each pane should only react to events raised by its own document's
+            // ConnectionManager, otherwise refreshing the tables on a different
+            // document would drive this pane's busy overlay and table reload.
+            if (message.Source != null && !ReferenceEquals(message.Source, _metadataProvider))
+            {
+                return;
+            }
+
             await RefreshTablesAsync();
         }
 

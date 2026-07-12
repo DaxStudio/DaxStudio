@@ -1565,6 +1565,25 @@ namespace DaxStudio.Core.Options
             }
         }
 
+        private bool _showDeltaAnalyzer;
+        [DataMember, DefaultValue(false)]
+        [Category("Preview")]
+        [Subcategory("Delta Analyzer")]
+        [DisplayName("Show Delta Analyzer")]
+        [SortOrder(2)]
+        [Description("Enable the Delta Analyzer tool window which reads Delta table metadata from OneLake for Direct Lake models.\nWARNING: the UI may change before the final release")]
+        public bool ShowDeltaAnalyzer
+        {
+            get => _showDeltaAnalyzer;
+            set
+            {
+                _showDeltaAnalyzer = value;
+                _eventAggregator.PublishAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(ShowDeltaAnalyzer), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => ShowDeltaAnalyzer);
+            }
+        }
+
         private bool _showQueryGroupColumn;
         [DataMember, DefaultValue(false)]
         [Category("Preview")]

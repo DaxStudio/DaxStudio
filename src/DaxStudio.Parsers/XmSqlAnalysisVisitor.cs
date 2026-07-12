@@ -28,6 +28,20 @@ namespace DaxStudio.Parsers
             _metrics = metrics;
         }
 
+        // Canonical set of callback function names recognized by the parser.
+        // Must be kept in sync with the callback name lists in xmSQL.xshd and
+        // TraceStorageEngineExtensions so the definition of a "callback" is consistent.
+        private static readonly HashSet<string> CallbackFunctionNames =
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "CallbackDataID",
+                "EncodeCallback",
+                "LogAbsValueCallback",
+                "RoundValueCallback",
+                "MinMaxColumnPositionCallback",
+                "Cond",
+            };
+
         // ==================== HELPERS ====================
 
         /// <summary>Extracts table name from a QUOTED_TABLE_NAME token ('TableName' -> TableName)</summary>
@@ -346,6 +360,7 @@ namespace DaxStudio.Parsers
             foreach (var expr in context.exprDefinition())
             {
                 VisitExpressionForTableColumns(expr.expression(), XmSqlColumnUsage.Expression);
+                MarkCallbacksInExpression(expr.expression());
             }
             return null;
         }
@@ -406,6 +421,7 @@ namespace DaxStudio.Parsers
             if (aggExpr != null)
             {
                 VisitAggregationExpr(aggExpr);
+                MarkCallbacksInExpression(aggExpr.expression());
                 return null;
             }
 
@@ -432,6 +448,14 @@ namespace DaxStudio.Parsers
                         MarkCallback(tc.Value.Table, tc.Value.Column, "CallbackDataID");
                     }
                 }
+            }
+
+            // Handle catch-all expressions (e.g. callback functions emitted as function
+            // calls such as 'LogAbsValueCallback'('Sales'[Amount]))
+            var exprCtx = context.expression();
+            if (exprCtx != null)
+            {
+                MarkCallbacksInExpression(exprCtx);
             }
 
             return null;
@@ -686,6 +710,13 @@ namespace DaxStudio.Parsers
                 VisitCoalesceFilter(coalesceCtx);
             }
 
+            // Catch-all expression predicate may contain callback functions
+            var filterExpr = context.expression();
+            if (filterExpr != null)
+            {
+                MarkCallbacksInExpression(filterExpr);
+            }
+
             return null;
         }
 
@@ -822,9 +853,81 @@ namespace DaxStudio.Parsers
             }
         }
 
-        private void MarkCallback(string tableName, string columnName, string callbackType)
+        /// <summary>Gets the unwrapped function name from a functionCall context
+        /// (strips surrounding quotes/brackets). Returns null for PFCAST calls.</summary>
+        private static string GetFunctionName(xmSQLParser.FunctionCallContext ctx)
         {
-            var resolved = ResolveToPhysical(tableName, columnName);
+            if (ctx == null || ctx.PFCAST() != null) return null;
+            if (ctx.IDENTIFIER() != null) return ctx.IDENTIFIER().GetText();
+            if (ctx.QUOTED_TABLE_NAME() != null) return GetTableName(ctx.QUOTED_TABLE_NAME());
+            if (ctx.BRACKETED_NAME() != null) return GetBracketedContent(ctx.BRACKETED_NAME());
+            return null;
+        }
+
+        /// <summary>Finds the first tableColumnRef within a function call's arguments.</summary>
+        private xmSQLParser.TableColumnRefContext FindTableColumnRefInFunctionCall(xmSQLParser.FunctionCallContext funcCall)
+        {
+            if (funcCall == null) return null;
+            var exprList = funcCall.expressionList();
+            if (exprList != null)
+            {
+                foreach (var e in exprList.expression())
+                {
+                    var found = FindTableColumnRef(e);
+                    if (found != null) return found;
+                }
+            }
+            var single = funcCall.expression();
+            return single != null ? FindTableColumnRef(single) : null;
+        }
+
+        /// <summary>
+        /// Recursively scans an expression for callback functions (e.g. LogAbsValueCallback,
+        /// MinMaxColumnPositionCallback) that are emitted as ordinary function calls, and flags
+        /// the referenced column as having a callback. This keeps the parser's definition of a
+        /// callback consistent with the callback name lists in xmSQL.xshd and
+        /// TraceStorageEngineExtensions.
+        /// </summary>
+        private void MarkCallbacksInExpression(xmSQLParser.ExpressionContext expr)
+        {
+            if (expr == null) return;
+            foreach (var atom in expr.expressionAtom())
+            {
+                var funcCall = atom.functionCall();
+                if (funcCall != null)
+                {
+                    var name = GetFunctionName(funcCall);
+                    if (name != null && CallbackFunctionNames.Contains(name))
+                    {
+                        var tcRef = FindTableColumnRefInFunctionCall(funcCall);
+                        if (tcRef != null)
+                        {
+                            var tc = GetTableColumn(tcRef);
+                            if (tc != null)
+                                MarkCallback(tc.Value.Table, tc.Value.Column, name);
+                        }
+                    }
+
+                    // Recurse into the function's arguments
+                    var exprList = funcCall.expressionList();
+                    if (exprList != null)
+                    {
+                        foreach (var inner in exprList.expression())
+                            MarkCallbacksInExpression(inner);
+                    }
+                    var pfcastExpr = funcCall.expression();
+                    if (pfcastExpr != null)
+                        MarkCallbacksInExpression(pfcastExpr);
+                }
+
+                var parenExpr = atom.expression();
+                if (parenExpr != null)
+                    MarkCallbacksInExpression(parenExpr);
+            }
+        }
+
+        private void MarkCallback(string tableName, string columnName, string callbackType)
+        {            var resolved = ResolveToPhysical(tableName, columnName);
             if (resolved == null || IsTempTable(resolved.Value.Table)) return;
 
             var table = _analysis.GetOrAddTable(resolved.Value.Table);

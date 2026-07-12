@@ -406,7 +406,8 @@ namespace DaxStudio.Parsers
         }
 
         /// <summary>
-        /// Whether this column has a DAX callback (CallbackDataID or EncodeCallback).
+        /// Whether this column has a DAX callback (e.g. CallbackDataID, EncodeCallback,
+        /// LogAbsValueCallback, RoundValueCallback, MinMaxColumnPositionCallback, Cond).
         /// </summary>
         public bool HasCallback { get; set; }
 

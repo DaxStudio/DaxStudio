@@ -1,0 +1,532 @@
+<UserControl x:Class="DaxStudio.UI.Views.DeltaAnalyzerView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:cal="http://caliburnmicro.com"
+             xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
+             xmlns:controls="clr-namespace:DaxStudio.UI.Controls"
+             xmlns:ctrls="clr-namespace:DaxStudio.Controls;assembly=DaxStudio.Controls"
+             xmlns:ui="http://schemas.modernwpf.com/2019"
+             xmlns:local="clr-namespace:DaxStudio.UI.Resources"
+             mc:Ignorable="d"
+             d:DesignHeight="450" d:DesignWidth="900"
+             Background="{DynamicResource Theme.Brush.Content.Back}">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/BusyPanel.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.Spinner.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/TraceWatcherStyles.xaml" />
+                <local:DesignTimeResourceDictionary DesignTimeSource="pack://application:,,,/DaxStudio.UI;component/Theme/Light.DaxStudio.Theme.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <conv:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter" />
+            <conv:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
+
+            <!-- Style for the tree grid, based on the shared DataGrid style like the Query Plan view -->
+            <Style x:Key="DeltaTreeGridStyle" BasedOn="{StaticResource DefaultDataGridStyle}" TargetType="ctrls:TreeGrid">
+                <Setter Property="HorizontalScrollBarVisibility" Value="Auto"/>
+            </Style>
+
+            <!-- Base "pill" style: rounded outline with a transparent background (colour set per pill) -->
+            <Style x:Key="PillBorderStyle" TargetType="Border">
+                <Setter Property="CornerRadius" Value="8" />
+                <Setter Property="Padding" Value="8,1" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="HorizontalAlignment" Value="Center" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="SnapsToDevicePixels" Value="True" />
+            </Style>
+            <Style x:Key="PillTextStyle" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="11" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
+
+            <!-- Right-align numeric columns, vertically centred, with padding from the right edge -->
+            <Style x:Key="RightAlignText" TargetType="TextBlock">
+                <Setter Property="HorizontalAlignment" Value="Right" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="Margin" Value="0,0,10,0" />
+            </Style>
+
+            <!-- Results / Considerations tab headers, styled to match the AvalonDock tabs and the ribbon:
+                 bold text with an accent underline for the selected tab and a light rounded box on hover. -->
+            <Style x:Key="DeltaTabItemStyle" TargetType="{x:Type TabItem}">
+                <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Default.Fore}" />
+                <Setter Property="FontSize" Value="13" />
+                <Setter Property="Padding" Value="7,3" />
+                <Setter Property="Margin" Value="0,0,2,0" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type TabItem}">
+                            <Border x:Name="Bd"
+                                    Background="Transparent"
+                                    CornerRadius="4"
+                                    SnapsToDevicePixels="True">
+                                <Grid>
+                                    <ContentPresenter x:Name="Content"
+                                                      ContentSource="Header"
+                                                      Margin="{TemplateBinding Padding}"
+                                                      HorizontalAlignment="Center"
+                                                      VerticalAlignment="Center"
+                                                      RecognizesAccessKey="True"
+                                                      TextElement.Foreground="{TemplateBinding Foreground}" />
+                                    <Border x:Name="Underline"
+                                            Height="2"
+                                            Margin="6,0,6,0"
+                                            VerticalAlignment="Bottom"
+                                            Background="Transparent" />
+                                </Grid>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter TargetName="Content" Property="TextElement.FontWeight" Value="Bold" />
+                                    <Setter TargetName="Underline" Property="Background" Value="{DynamicResource Theme.Brush.Accent}" />
+                                </Trigger>
+                                <MultiTrigger>
+                                    <MultiTrigger.Conditions>
+                                        <Condition Property="IsMouseOver" Value="True" />
+                                        <Condition Property="IsSelected" Value="False" />
+                                    </MultiTrigger.Conditions>
+                                    <Setter TargetName="Bd" Property="Background" Value="#FFC2E0FF" />
+                                </MultiTrigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Muted.Fore}" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Toolbar - styled to match the Model Diagram / trace command bars -->
+        <controls:ClipBorder Grid.Row="0"
+                             CornerRadius="4"
+                             Background="{DynamicResource Theme.Brush.MenuBar.Back}"
+                             Margin="6,6,6,4">
+            <DockPanel LastChildFill="False">
+                <Button x:Name="AnalyzeAsync"
+                        DockPanel.Dock="Left"
+                        Style="{StaticResource TraceButton}"
+                        IsEnabled="{Binding CanAnalyze}"
+                        ToolTip="Read Delta table metadata from OneLake for the connected Direct Lake model.">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource run_smallDrawingImage}" Width="16" Height="16" Margin="0,0,4,0" />
+                        <TextBlock VerticalAlignment="Center">Analyze</TextBlock>
+                    </StackPanel>
+                </Button>
+                <Button x:Name="Cancel"
+                        DockPanel.Dock="Left"
+                        Style="{StaticResource TraceButton}"
+                        IsEnabled="{Binding CanCancel}"
+                        ToolTip="Cancel the running analysis.">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource cancelDrawingImage}" Width="16" Height="16" Margin="0,0,4,0" />
+                        <TextBlock VerticalAlignment="Center">Cancel</TextBlock>
+                    </StackPanel>
+                </Button>
+                <Button x:Name="ExportCsv"
+                        DockPanel.Dock="Left"
+                        Style="{StaticResource TraceButton}"
+                        IsEnabled="{Binding CanExportCsv}"
+                        ToolTip="Export the current analysis (tables, columns and any visible row groups) to a CSV file.">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource csvDrawingImage}" Width="16" Height="16" Margin="0,0,4,0" />
+                        <TextBlock VerticalAlignment="Center">Export CSV</TextBlock>
+                    </StackPanel>
+                </Button>
+                <Separator DockPanel.Dock="Left" Margin="4,4,8,4" />
+                <CheckBox Content="Read parquet footers"
+                          DockPanel.Dock="Left"
+                          VerticalAlignment="Center"
+                          Margin="0,0,10,0"
+                          IsChecked="{Binding ReadParquetFooters}"
+                          ToolTip="Reads parquet file footers to determine row group counts and V-Order (slower)." />
+                <CheckBox Content="Read column stats"
+                          DockPanel.Dock="Left"
+                          VerticalAlignment="Center"
+                          Margin="0,0,10,0"
+                          IsChecked="{Binding ReadColumnStats}"
+                          ToolTip="Aggregates per-column compressed/uncompressed sizes from parquet footers." />
+                <CheckBox Content="Show row group details"
+                          DockPanel.Dock="Left"
+                          VerticalAlignment="Center"
+                          Margin="0,0,10,0"
+                          IsChecked="{Binding ShowRowGroupDetails}"
+                          ToolTip="Shows an expandable 'Row Groups' node under each table with per-row-group row counts and sizes." />
+            </DockPanel>
+        </controls:ClipBorder>
+
+        <!-- Manual OneLake path override -->
+        <Grid Grid.Row="1" Margin="14,0,6,4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0"
+                       Text="OneLake path override:"
+                       VerticalAlignment="Center"
+                       Margin="0,0,6,0"
+                       Foreground="{DynamicResource Theme.Brush.Default.Fore}" />
+            <TextBox Grid.Column="1"
+                     Text="{Binding OverridePath, UpdateSourceTrigger=PropertyChanged}"
+                     VerticalAlignment="Center"
+                     ui:ControlHelper.PlaceholderText="e.g. https://onelake.dfs.fabric.microsoft.com/{workspace}/{lakehouse}/Tables  (or a full .../Tables/schema/table folder)"
+                     ToolTip="Optional. Point at a table folder, or the .../Tables root used to rebuild paths when auto-resolution fails." />
+        </Grid>
+
+        <!-- Results / Considerations tab strip -->
+        <TabControl Grid.Row="2"
+                    Margin="8,2,6,0"
+                    Padding="0"
+                    Background="Transparent"
+                    BorderThickness="0">
+            <TabItem Style="{StaticResource DeltaTabItemStyle}" Header="Metrics">
+        <!-- Results tree grid, wrapped in a rounded border to match the Query Plan view -->
+        <controls:ClipBorder Margin="0,6,0,0"
+                             CornerRadius="4"
+                             BorderThickness="1"
+                             BorderBrush="{DynamicResource Theme.Brush.Control.Border}">
+        <ctrls:TreeGrid x:Name="ResultsTree"
+                        RootItems="{Binding TreeRows}"
+                        ChildrenBindingPath="Children"
+                        ExpandOnLoad="False"
+                        FrozenColumnCount="1"
+                        AutoGenerateColumns="False"
+                        IsReadOnly="True"
+                        CanUserAddRows="False"
+                        CanUserSortColumns="True"
+                        Sorting="ResultsTree_Sorting"
+                        HeadersVisibility="Column"
+                        GridLinesVisibility="Horizontal"
+                        HorizontalScrollBarVisibility="Auto"
+                        AlternationCount="2"
+                        AlternatingRowBackground="{DynamicResource Theme.Brush.Table.Alternate}"
+                        Background="{DynamicResource Theme.Brush.Content.Back}"
+                        Style="{StaticResource DeltaTreeGridStyle}">
+            <ctrls:TreeGrid.Columns>
+                <ctrls:TreeColumn Header="Table / Column"
+                                  TextPath="Data.Name"
+                                  SortMemberPath="Data.Name"
+                                  Icon="{Binding Data.IconImage}"
+                                  Width="220"
+                                  MinWidth="160"
+                                  ShowTreeLines="True"
+                                  ShowExpander="True"
+                                  ReserveExpanderSpace="True"
+                                  TextForeground="{DynamicResource Theme.Brush.Default.Fore}"
+                                  LineStroke="{DynamicResource Theme.Brush.Default.Fore}"
+                                  LineThickness="0.2"
+                                  SelectedLineStroke="{DynamicResource Theme.Brush.Muted.Fore}">
+                    <!-- Render the tree text via a template so its Foreground resolves against the live
+                         theme dictionary (DynamicResource set directly on the out-of-visual-tree column
+                         does not update on theme switch, leaving the text black in dark mode). -->
+                    <ctrls:TreeColumn.TextTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding .}"
+                                       VerticalAlignment="Center"
+                                       Foreground="{DynamicResource Theme.Brush.Default.Fore}" />
+                        </DataTemplate>
+                    </ctrls:TreeColumn.TextTemplate>
+                </ctrls:TreeColumn>
+                <DataGridTemplateColumn Header="Considerations" Width="140" MinWidth="120" SortMemberPath="Data.ConsiderationCount">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Grid HorizontalAlignment="Left" VerticalAlignment="Center">
+                                <!-- Access denied (403) tag: a red X-in-circle with a OneLake Security note -->
+                                <StackPanel Orientation="Horizontal"
+                                            VerticalAlignment="Center"
+                                            Visibility="{Binding Data.IsAccessDenied, Converter={StaticResource BoolToCollapsedConverter}}">
+                                    <StackPanel.ToolTip>
+                                        <ToolTip MaxWidth="440">
+                                            <TextBlock Text="{Binding Data.AccessDeniedNote}" TextWrapping="Wrap" />
+                                        </ToolTip>
+                                    </StackPanel.ToolTip>
+                                    <Image Source="{DynamicResource failDrawingImage}" Width="16" Height="16" VerticalAlignment="Center" />
+                                    <TextBlock Text="Access denied"
+                                               Margin="4,0,0,0"
+                                               VerticalAlignment="Center"
+                                               Foreground="{DynamicResource Theme.Brush.Log.Error}" />
+                                </StackPanel>
+                                <!-- Metric-based considerations: icon + count, with a titles-only tooltip.
+                                     The full detail is shown on the Considerations tab. -->
+                                <StackPanel Orientation="Horizontal"
+                                           VerticalAlignment="Center"
+                                           Visibility="{Binding Data.HasConsiderations, Converter={StaticResource BoolToCollapsedConverter}}">
+                                    <StackPanel.ToolTip>
+                                       <ToolTip MaxWidth="440">
+                                           <StackPanel>
+                                               <ItemsControl ItemsSource="{Binding Data.Considerations}">
+                                                   <ItemsControl.ItemTemplate>
+                                                       <DataTemplate>
+                                                           <TextBlock Text="{Binding Title}" TextWrapping="Wrap" Margin="0,1" />
+                                                       </DataTemplate>
+                                                   </ItemsControl.ItemTemplate>
+                                               </ItemsControl>
+                                               <TextBlock Text="See the Considerations tab for details."
+                                                          FontStyle="Italic"
+                                                          Opacity="0.75"
+                                                          Margin="0,4,0,0" />
+                                           </StackPanel>
+                                       </ToolTip>
+                                    </StackPanel.ToolTip>
+                                    <Image Source="{Binding Data.ConsiderationIcon}" Width="14" Height="14" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding Data.ConsiderationCountText}"
+                                              Margin="4,0,0,0"
+                                              VerticalAlignment="Center"
+                                              Foreground="{DynamicResource Theme.Brush.Default.Fore}" />
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Files" Binding="{Binding Data.FileCountDisplay}" SortMemberPath="Data.FileCount" Width="70" MinWidth="60" ElementStyle="{StaticResource RightAlignText}" />
+                <DataGridTextColumn Header="Avg File" Binding="{Binding Data.AvgFileSizeDisplay}" SortMemberPath="Data.AvgFileSizeBytes" Width="80" MinWidth="70" ElementStyle="{StaticResource RightAlignText}" />
+                <DataGridTextColumn Header="Max File" Binding="{Binding Data.MaxFileSizeDisplay}" SortMemberPath="Data.MaxFileSizeBytes" Width="80" MinWidth="70" ElementStyle="{StaticResource RightAlignText}" />
+                <DataGridTextColumn Header="Small Files" Binding="{Binding Data.SmallFileCountDisplay}" SortMemberPath="Data.SmallFileCount" Width="80" MinWidth="70" ElementStyle="{StaticResource RightAlignText}" />
+                <DataGridTextColumn Header="Row Groups" Binding="{Binding Data.RowGroupCountDisplay}" SortMemberPath="Data.RowGroupCount" Width="90" MinWidth="80" ElementStyle="{StaticResource RightAlignText}" />
+                <DataGridTextColumn Header="Min Rows/RG" Binding="{Binding Data.MinRowsPerRowGroupDisplay}" SortMemberPath="Data.MinRowsPerRowGroup" Width="90" MinWidth="80" ElementStyle="{StaticResource RightAlignText}" />
+                <DataGridTextColumn Header="Avg Rows/RG" Binding="{Binding Data.AvgRowsPerRowGroupDisplay}" SortMemberPath="Data.AvgRowsPerRowGroup" Width="90" MinWidth="80" ElementStyle="{StaticResource RightAlignText}" />
+                <DataGridTextColumn Header="Max Rows/RG" Binding="{Binding Data.MaxRowsPerRowGroupDisplay}" SortMemberPath="Data.MaxRowsPerRowGroup" Width="90" MinWidth="80" ElementStyle="{StaticResource RightAlignText}" />
+                <DataGridTemplateColumn Header="Segments" Width="90" MinWidth="70" SortMemberPath="Data.AvgRowsPerRowGroup">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Grid HorizontalAlignment="Center">
+                                <Border Style="{StaticResource PillBorderStyle}"
+                                        BorderBrush="#2E7D32"
+                                        Visibility="{Binding Data.ShowSegmentOkPill, Converter={StaticResource BoolToCollapsedConverter}}">
+                                    <TextBlock Text="ok" Style="{StaticResource PillTextStyle}" Foreground="#2E7D32" />
+                                </Border>
+                                <Border Style="{StaticResource PillBorderStyle}"
+                                        BorderBrush="#E68A00"
+                                        ToolTip="{Binding Data.SegmentWarningTooltip}"
+                                        Visibility="{Binding Data.ShowSegmentWarningPill, Converter={StaticResource BoolToCollapsedConverter}}">
+                                    <TextBlock Text="small" Style="{StaticResource PillTextStyle}" Foreground="#E68A00" />
+                                </Border>
+                            </Grid>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Rows" Binding="{Binding Data.RowCountDisplay}" SortMemberPath="Data.RowCount" Width="100" MinWidth="80" ElementStyle="{StaticResource RightAlignText}" />
+                <DataGridTextColumn Header="Compressed" Binding="{Binding Data.CompressedBytesDisplay}" SortMemberPath="Data.CompressedBytes" Width="100" MinWidth="90" ElementStyle="{StaticResource RightAlignText}" />
+                <DataGridTextColumn Header="Uncompressed" Binding="{Binding Data.UncompressedBytesDisplay}" SortMemberPath="Data.UncompressedBytes" Width="110" MinWidth="90" ElementStyle="{StaticResource RightAlignText}" />
+                <DataGridTextColumn Header="Codec" Binding="{Binding Data.CodecDisplay}" SortMemberPath="Data.Codec" Width="90" MinWidth="70" />
+                <DataGridTemplateColumn Header="Encoding" Width="90" MinWidth="70" SortMemberPath="Data.Encoding">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Data.EncodingDisplay}"
+                                       VerticalAlignment="Center"
+                                       Foreground="{DynamicResource Theme.Brush.Default.Fore}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Data.Encoding}" Value="Plain">
+                                                <Setter Property="Foreground" Value="#C62828" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Data.Encoding}" Value="Mixed">
+                                                <Setter Property="Foreground" Value="#E68A00" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="V-Order" Width="80" MinWidth="70" SortMemberPath="Data.VOrderEnabled">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Grid HorizontalAlignment="Center">
+                                <Border Style="{StaticResource PillBorderStyle}"
+                                        BorderBrush="#2E7D32"
+                                        Visibility="{Binding Data.ShowVOrderPill, Converter={StaticResource BoolToCollapsedConverter}}">
+                                    <TextBlock Text="v-order" Style="{StaticResource PillTextStyle}" Foreground="#2E7D32" />
+                                </Border>
+                                <TextBlock Text="{Binding Data.VOrderText}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           Opacity="0.7"
+                                           Foreground="{DynamicResource Theme.Brush.Default.Fore}" />
+                            </Grid>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Deletion Vectors" Width="120" MinWidth="100" SortMemberPath="Data.DeletionVectorRowCount">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Border Style="{StaticResource PillBorderStyle}"
+                                    BorderBrush="#C62828"
+                                    HorizontalAlignment="Center"
+                                    Visibility="{Binding Data.ShowDeletionVectorPill, Converter={StaticResource BoolToCollapsedConverter}}">
+                                <TextBlock Text="{Binding Data.DeletionVectorText}" Style="{StaticResource PillTextStyle}" Foreground="#C62828" />
+                            </Border>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Liquid Clustering" Width="110" MinWidth="90" SortMemberPath="Data.LiquidClusteringEnabled">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Border Style="{StaticResource PillBorderStyle}"
+                                    BorderBrush="#1565C0"
+                                    Visibility="{Binding Data.ShowLiquidPill, Converter={StaticResource BoolToCollapsedConverter}}">
+                                <TextBlock Text="liquid" Style="{StaticResource PillTextStyle}" Foreground="#1565C0" />
+                            </Border>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Clustering Columns" Binding="{Binding Data.ClusteringColumns}" SortMemberPath="Data.ClusteringColumns" Width="150" MinWidth="120" />
+                <DataGridTextColumn Header="Partition Columns" Binding="{Binding Data.PartitionColumns}" SortMemberPath="Data.PartitionColumns" Width="150" MinWidth="120" />
+                <DataGridTextColumn Header="Last Modified" Binding="{Binding Data.LastModifiedDisplay}" SortMemberPath="Data.LastModifiedUtc" Width="120" MinWidth="100" />
+                <DataGridTextColumn Header="Error" Binding="{Binding Data.Error}" SortMemberPath="Data.Error" Width="200" MinWidth="120" />
+            </ctrls:TreeGrid.Columns>
+        </ctrls:TreeGrid>
+        </controls:ClipBorder>
+            </TabItem>
+            <TabItem Style="{StaticResource DeltaTabItemStyle}" Header="Considerations">
+                <Grid Margin="0,6,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <!-- Considerations command bar -->
+                    <controls:ClipBorder Grid.Row="0"
+                                         CornerRadius="4"
+                                         Background="{DynamicResource Theme.Brush.MenuBar.Back}"
+                                         Margin="0,0,0,4">
+                        <DockPanel LastChildFill="False">
+                            <Button x:Name="CopyConsiderations"
+                                    DockPanel.Dock="Left"
+                                    Style="{StaticResource TraceButton}"
+                                    IsEnabled="{Binding CanCopyConsiderations}"
+                                    ToolTip="Copy the considerations to the clipboard as Markdown text.">
+                                <StackPanel Orientation="Horizontal">
+                                    <Image Source="{DynamicResource copyDrawingImage}" Width="16" Height="16" Margin="0,0,4,0" />
+                                    <TextBlock VerticalAlignment="Center">Copy</TextBlock>
+                                </StackPanel>
+                            </Button>
+                            <Button x:Name="ExportConsiderations"
+                                    DockPanel.Dock="Left"
+                                    Style="{StaticResource TraceButton}"
+                                    IsEnabled="{Binding CanExportConsiderations}"
+                                    ToolTip="Export the considerations to a Markdown / text file.">
+                                <StackPanel Orientation="Horizontal">
+                                    <Image Source="{DynamicResource csvDrawingImage}" Width="16" Height="16" Margin="0,0,4,0" />
+                                    <TextBlock VerticalAlignment="Center">Export</TextBlock>
+                                </StackPanel>
+                            </Button>
+                        </DockPanel>
+                    </controls:ClipBorder>
+                    <controls:ClipBorder Grid.Row="1"
+                                         CornerRadius="4"
+                                         BorderThickness="1"
+                                         BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
+                                         Background="{DynamicResource Theme.Brush.Content.Back}">
+                        <FlowDocumentScrollViewer Document="{Binding ConsiderationsDocument}"
+                                                  IsToolBarVisible="False"
+                                                  VerticalScrollBarVisibility="Auto"
+                                                  Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                                                  Background="Transparent"
+                                                  Padding="4" />
+                    </controls:ClipBorder>
+                </Grid>
+            </TabItem>
+        </TabControl>
+
+        <!-- Summary bar -->
+        <TextBlock Grid.Row="3"
+                   Margin="6,4,6,6"
+                   Text="{Binding SummaryText}"
+                   Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                   Opacity="0.8"
+                   Visibility="{Binding SummaryText, Converter={StaticResource StringToVisibilityConverter}}" />
+
+        <!-- No Data Message -->
+        <Border Grid.Row="2"
+                Visibility="{Binding ShowNoDataMessage, Converter={StaticResource BoolToCollapsedConverter}}"
+                Background="Transparent">
+            <TextBlock Text="No delta analysis data. Connect to a Direct Lake model and click Analyze."
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       TextWrapping="Wrap"
+                       MaxWidth="400"
+                       TextAlignment="Center"
+                       Opacity="0.6"
+                       Foreground="{DynamicResource Theme.Brush.Default.Fore}" />
+        </Border>
+
+        <!-- Status / error banner - shown when analysis can't run (e.g. metadata permissions, no Direct Lake tables) -->
+        <Border Grid.Row="2"
+                Margin="24"
+                Padding="14,12"
+                MaxWidth="560"
+                CornerRadius="6"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Center"
+                BorderThickness="1"
+                Visibility="{Binding HasStatusMessage, Converter={StaticResource BoolToCollapsedConverter}}">
+            <Border.Style>
+                <Style TargetType="Border">
+                    <!-- Default: amber (warning) -->
+                    <Setter Property="Background" Value="#33E68A00" />
+                    <Setter Property="BorderBrush" Value="#E68A00" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding StatusIsError}" Value="True">
+                            <Setter Property="Background" Value="#33C62828" />
+                            <Setter Property="BorderBrush" Value="#C62828" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+            <StackPanel Orientation="Horizontal">
+                <Image Width="20" Height="20" VerticalAlignment="Top" Margin="0,1,10,0"
+                       Source="{DynamicResource warningDrawingImage}" />
+                <TextBlock Text="{Binding StatusMessage}"
+                           TextWrapping="Wrap"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource Theme.Brush.Default.Fore}" />
+            </StackPanel>
+        </Border>
+
+        <!-- Loading Overlay - covers only the results area so the Cancel button remains accessible -->
+        <Border Grid.Row="2"
+                Margin="6 0"
+                CornerRadius="4"
+                Visibility="{Binding IsLoading, Converter={StaticResource BoolToCollapsedConverter}}"
+                Style="{StaticResource BusyPanel}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="280">
+                <TextBlock Text="{Binding LoadingMessage}"
+                           Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                           FontSize="16"
+                           HorizontalAlignment="Center" />
+                <ProgressBar Minimum="0" Maximum="100"
+                             Value="{Binding ProgressValue}"
+                             Height="6"
+                             Width="240"
+                             Margin="0,10,0,0" />
+                <TextBlock Text="{Binding LoadingStats}"
+                           Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                           FontSize="10"
+                           Opacity="0.7"
+                           Margin="0,8,0,0"
+                           HorizontalAlignment="Center"
+                           Visibility="{Binding LoadingStats, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter=Hidden}" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

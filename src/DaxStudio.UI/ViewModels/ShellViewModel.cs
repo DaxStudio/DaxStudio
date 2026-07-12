@@ -214,12 +214,6 @@ namespace DaxStudio.UI.ViewModels
             return;
         }
         
-        protected override async Task OnActivatedAsync(CancellationToken cancellationToken)
-        {
-            await base.OnActivatedAsync(cancellationToken);
-            await _eventAggregator.PublishAsync(new ApplicationActivatedEvent(),cancellationToken);
-        }
-
         HwndSource hwndSource;
         protected override  void OnViewLoaded(object view)
         {

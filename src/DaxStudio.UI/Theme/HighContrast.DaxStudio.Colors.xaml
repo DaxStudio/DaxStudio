@@ -1,4 +1,4 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:local="clr-namespace:DaxStudio.UI.Theme"
                     xmlns:options="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options"
@@ -193,6 +193,11 @@
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.DropDown.BorderBrush" SolidColorBrush.Color="{StaticResource Gray5}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.DropDown.Resize.BorderBrush" SolidColorBrush.Color="{StaticResource Gray7}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.DropDown.Resize.BackgoundBrush" SolidColorBrush.Color="{StaticResource Gray8}" />
+    <!-- v11 renamed keys (Brush suffix dropped) used by stock Fluent templates -->
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.DropDown.Background" SolidColorBrush.Color="{x:Static SystemColors.WindowColor}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.DropDown.Border" SolidColorBrush.Color="{StaticResource Gray5}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.DropDown.Resize.Border" SolidColorBrush.Color="{StaticResource Gray7}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.DropDown.Resize.Background" SolidColorBrush.Color="{StaticResource Gray8}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Gallery.Header.Background" SolidColorBrush.Color="{StaticResource Gray3}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.GalleryGroupContainer.Header.Background" SolidColorBrush.Color="{StaticResource Gray8}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.GalleryItem.MouseOver" SolidColorBrush.Color="{StaticResource Fluent.Ribbon.Colors.AccentColor20}" />
@@ -285,4 +290,56 @@
 
     <!-- sets the mouse over color for the "File" menu -->
     <SolidColorBrush x:Key="HighTransparentWhiteBrush" Color="{StaticResource Fluent.Ribbon.Colors.HighTransparentWhiteColor}" options:Freeze="true"/>
+    <!-- ===== Fluent.Ribbon v11 renamed-key aliases (auto-added). v11 dropped the "Brush"/"Color" suffixes and renamed accent keys; stock v11 templates request the new names. Old keys are kept above for DaxStudio's own custom templates. ===== -->
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.AccentBase" SolidColorBrush.Color="{StaticResource Fluent.Ribbon.Colors.AccentBaseColor}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Accent20" SolidColorBrush.Color="{StaticResource Fluent.Ribbon.Colors.AccentColor20}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Accent40" SolidColorBrush.Color="{StaticResource Fluent.Ribbon.Colors.AccentColor40}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Accent60" SolidColorBrush.Color="{StaticResource Fluent.Ribbon.Colors.AccentColor60}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Accent80" SolidColorBrush.Color="{StaticResource Fluent.Ribbon.Colors.AccentColor80}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.ApplicationMenuItem.CheckBox.Border" SolidColorBrush.Color="#FFF29536" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Button.MouseOver.Border" SolidColorBrush.Color="{StaticResource Fluent.Ribbon.Colors.AccentColor40}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Button.Pressed.Border" SolidColorBrush.Color="{StaticResource Fluent.Ribbon.Colors.AccentColor60}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.CheckBox.Border" SolidColorBrush.Color="{StaticResource Gray3}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.ColorGallery.Item.Border" SolidColorBrush.Color="{StaticResource Gray8}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Control.Border" SolidColorBrush.Color="{StaticResource Gray6}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Control.Disabled.Border" SolidColorBrush.Color="{StaticResource Gray5}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.DarkExtremeHighlight" SolidColorBrush.Color="{StaticResource Fluent.Ribbon.Colors.DarkExtremeHighlightColor}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.DarkIdealForegroundDisabled" SolidColorBrush.Color="{StaticResource Fluent.Ribbon.Colors.DarkIdealForegroundDisabledColor}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.ExtremeHighlight" SolidColorBrush.Color="{StaticResource Fluent.Ribbon.Colors.ExtremeHighlightColor}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Highlight" SolidColorBrush.Color="{StaticResource Fluent.Ribbon.Colors.HighlightColor}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.IdealForeground" SolidColorBrush.Color="{StaticResource Fluent.Ribbon.Colors.IdealForegroundColor}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.IdealForegroundDisabled" SolidColorBrush.Color="{StaticResource Fluent.Ribbon.Colors.IdealForegroundColor}" Brush.Opacity="0.4" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.KeyTip.Border" SolidColorBrush.Color="{x:Static SystemColors.WindowColor}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.LabelText" SolidColorBrush.Color="{StaticResource Gray6}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabControl.Content.Border" SolidColorBrush.Color="{x:Static SystemColors.WindowColor}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabItem.Border" SolidColorBrush.Color="Transparent" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.ScreenTip.Border" SolidColorBrush.Color="{StaticResource Gray7}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.ScrollButton.Default.Border" SolidColorBrush.Color="{StaticResource Gray4}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.ScrollThumb.Default.Border" SolidColorBrush.Color="{StaticResource Gray4}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.ScrollViewer.Button.Border" SolidColorBrush.Color="{StaticResource Gray2}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Separator.Border" SolidColorBrush.Color="{StaticResource Gray8}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.TextBox.Border" SolidColorBrush.Color="{StaticResource Gray6}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.TextBox.Caret" SolidColorBrush.Color="{x:Static SystemColors.WindowTextColor}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.TextBox.Disabled.Border" SolidColorBrush.Color="{StaticResource Gray8}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.TextBox.MouseOver.Border" SolidColorBrush.Color="{StaticResource Gray5}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.TextBox.Selection" SolidColorBrush.Color="{x:Static SystemColors.HighlightColor}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.ToggleButton.Checked.Border" SolidColorBrush.Color="{StaticResource Fluent.Ribbon.Colors.HighlightColor}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.ToggleButton.CheckedMouseOver.Border" SolidColorBrush.Color="{StaticResource Fluent.Ribbon.Colors.AccentColor60}" />
+    <Color x:Key="Fluent.Ribbon.Colors.AccentBase">#FF29A9FF</Color>
+    <Color x:Key="Fluent.Ribbon.Colors.Accent20"  >#3329A9FF</Color>
+    <Color x:Key="Fluent.Ribbon.Colors.Accent40"  >#6629A9FF</Color>
+    <Color x:Key="Fluent.Ribbon.Colors.Accent60"  >#9929A9FF</Color>
+    <Color x:Key="Fluent.Ribbon.Colors.Accent80"  >#CC29A9FF</Color>
+    <Color x:Key="Fluent.Ribbon.Colors.DarkExtremeHighlight">#FFF29536</Color>
+    <Color x:Key="Fluent.Ribbon.Colors.DarkIdealForegroundDisabled">#ADADAD</Color>
+    <Color x:Key="Fluent.Ribbon.Colors.ExtremeHighlight">#FFFFD232</Color>
+    <Color x:Key="Fluent.Ribbon.Colors.Highlight" >#FF0085E5</Color>
+    <Color x:Key="Fluent.Ribbon.Colors.HighTransparentWhite">#17FFFFFF</Color>
+    <Color x:Key="Fluent.Ribbon.Colors.IdealForeground">White</Color>
+    <LinearGradientBrush x:Key="Fluent.Ribbon.Brushes.MenuItem.SubMenu.Arrow.Fill" LinearGradientBrush.EndPoint="0.945,0.872" LinearGradientBrush.StartPoint="0.055,0.128">
+    <GradientStop GradientStop.Color="{StaticResource Gray2}" GradientStop.Offset="1" />
+    <GradientStop GradientStop.Color="{StaticResource Gray3}" />
+    </LinearGradientBrush>
+    <!-- ===== end v11 renamed-key aliases ===== -->
+
 </ResourceDictionary>

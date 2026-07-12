@@ -276,6 +276,56 @@ FROM 'Product';";
             Assert.AreEqual("CallbackDataID", colorCol.CallbackType);
         }
 
+        [TestMethod]
+        public void Antlr_ParseQueryWithQuotedCallbackFunction()
+        {
+            // 'LogAbsValueCallback' is emitted as a quoted function name
+            string xmSql = @"SELECT
+    'LogAbsValueCallback' ( 'Sales'[Amount] ),
+    COUNT ( )
+FROM 'Sales';";
+
+            var analysis = new XmSqlAnalysis();
+            _parser.ParseQuery(xmSql, analysis);
+
+            var amountCol = analysis.Tables["Sales"].Columns["Amount"];
+            Assert.IsTrue(amountCol.HasCallback);
+            Assert.AreEqual("LogAbsValueCallback", amountCol.CallbackType);
+        }
+
+        [TestMethod]
+        public void Antlr_ParseQueryWithBracketedCallbackFunctionInAggregation()
+        {
+            // [MinMaxColumnPositionCallback] is emitted as a bracketed function name inside MAX()
+            string xmSql = @"SELECT
+    MAX ( [MinMaxColumnPositionCallback] ( PFDATAID ( 'Sales'[Qty] ) ) )
+FROM 'Sales';";
+
+            var analysis = new XmSqlAnalysis();
+            _parser.ParseQuery(xmSql, analysis);
+
+            var qtyCol = analysis.Tables["Sales"].Columns["Qty"];
+            Assert.IsTrue(qtyCol.HasCallback);
+            Assert.AreEqual("MinMaxColumnPositionCallback", qtyCol.CallbackType);
+            Assert.AreEqual(1, analysis.CallbackTableCount);
+        }
+
+        [TestMethod]
+        public void Antlr_ParseQueryWithRoundValueCallbackFunction()
+        {
+            string xmSql = @"SELECT
+    'RoundValueCallback' ( 'Sales'[Price] ),
+    COUNT ( )
+FROM 'Sales';";
+
+            var analysis = new XmSqlAnalysis();
+            _parser.ParseQuery(xmSql, analysis);
+
+            var priceCol = analysis.Tables["Sales"].Columns["Price"];
+            Assert.IsTrue(priceCol.HasCallback);
+            Assert.AreEqual("RoundValueCallback", priceCol.CallbackType);
+        }
+
         // ==================== TEMP TABLE LINEAGE TESTS ====================
 
         [TestMethod]

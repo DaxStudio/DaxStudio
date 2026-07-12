@@ -2357,4 +2357,68 @@
         <GeometryDrawing Brush="#FF000000" Geometry="{StaticResource userGeometry}" />
     </DrawingGroup>
     <DrawingImage x:Key="userDrawingImage" Drawing="{StaticResource userDrawingGroup}" />
+
+    <!-- Delta Analyzer: a magnifying glass examining a table -->
+    <DrawingGroup x:Key="delta_analyzerDrawingGroup" ClipGeometry="M0,0 V32 H32 V0 H0 Z">
+        <!-- Table body fill (white cells) -->
+        <GeometryDrawing Brush="#FFFFFFFF">
+            <GeometryDrawing.Geometry>
+                <RectangleGeometry RadiusX="1.8" RadiusY="1.8" Rect="3,4,17,21" />
+            </GeometryDrawing.Geometry>
+        </GeometryDrawing>
+        <!-- Table body outline -->
+        <GeometryDrawing>
+            <GeometryDrawing.Pen>
+                <Pen Brush="#FF999999" Thickness="1.3" LineJoin="Round" />
+            </GeometryDrawing.Pen>
+            <GeometryDrawing.Geometry>
+                <RectangleGeometry RadiusX="1.8" RadiusY="1.8" Rect="3,4,17,21" />
+            </GeometryDrawing.Geometry>
+        </GeometryDrawing>
+        <!-- Header row -->
+        <GeometryDrawing Brush="#FF228ED6">
+            <GeometryDrawing.Geometry>
+                <RectangleGeometry Rect="3.9,4.9,15.2,3.7" />
+            </GeometryDrawing.Geometry>
+        </GeometryDrawing>
+        <!-- Grid lines -->
+        <GeometryDrawing>
+            <GeometryDrawing.Pen>
+                <Pen Brush="#FF999999" Thickness="0.85" />
+            </GeometryDrawing.Pen>
+            <GeometryDrawing.Geometry>
+                <GeometryGroup>
+                    <LineGeometry StartPoint="3,13" EndPoint="20,13" />
+                    <LineGeometry StartPoint="3,18.5" EndPoint="20,18.5" />
+                    <LineGeometry StartPoint="9,8.6" EndPoint="9,25" />
+                    <LineGeometry StartPoint="14.5,8.6" EndPoint="14.5,25" />
+                </GeometryGroup>
+            </GeometryDrawing.Geometry>
+        </GeometryDrawing>
+        <!-- Magnifier handle -->
+        <GeometryDrawing>
+            <GeometryDrawing.Pen>
+                <Pen Brush="#FF228ED6" Thickness="2.4" StartLineCap="Round" EndLineCap="Round" />
+            </GeometryDrawing.Pen>
+            <GeometryDrawing.Geometry>
+                <LineGeometry StartPoint="25.6,25.6" EndPoint="28.6,28.6" />
+            </GeometryDrawing.Geometry>
+        </GeometryDrawing>
+        <!-- Lens glass -->
+        <GeometryDrawing Brush="#33228ED6">
+            <GeometryDrawing.Geometry>
+                <EllipseGeometry Center="21,21" RadiusX="6" RadiusY="6" />
+            </GeometryDrawing.Geometry>
+        </GeometryDrawing>
+        <!-- Lens ring -->
+        <GeometryDrawing>
+            <GeometryDrawing.Pen>
+                <Pen Brush="#FF228ED6" Thickness="1.5" />
+            </GeometryDrawing.Pen>
+            <GeometryDrawing.Geometry>
+                <EllipseGeometry Center="21,21" RadiusX="6" RadiusY="6" />
+            </GeometryDrawing.Geometry>
+        </GeometryDrawing>
+    </DrawingGroup>
+    <DrawingImage x:Key="delta_analyzerDrawingImage" Drawing="{StaticResource delta_analyzerDrawingGroup}" />
 </ResourceDictionary>
