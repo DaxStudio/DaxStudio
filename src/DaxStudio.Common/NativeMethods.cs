@@ -27,6 +27,10 @@ namespace DaxStudio.Common
 
         [DllImport("user32.dll")]
         [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+        internal static extern IntPtr GetForegroundWindow();
+
+        [DllImport("user32.dll")]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         internal static extern bool EnumThreadWindows(int dwThreadId, EnumThreadDelegate lpfn,
             IntPtr lParam);
 

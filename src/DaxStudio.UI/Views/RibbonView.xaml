@@ -1519,6 +1519,24 @@
                                    ></Fluent:ScreenTip>
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
+                <!-- Delta Analyzer (Preview Feature) -->
+                <Fluent:Button Name="ShowDeltaAnalyzer"
+                               Header="Delta Analyzer"
+                               KeyTip="DA"
+                               cal:Message.Attach="[Event Click] = [Action ShowDeltaAnalyzer()]"
+                               IsEnabled="{Binding CanShowDeltaAnalyzer }"
+                               Visibility="{Binding ShowDeltaAnalyzerEnabled, Converter={StaticResource BoolToVisibilityConverter}}"
+                               Icon="{DynamicResource delta_analyzerDrawingImage}"
+                               LargeIcon="{DynamicResource delta_analyzerDrawingImage}"
+                               Margin="4,0"
+                               SizeDefinition="Large,Large,Small">
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="Delta Analyzer (Preview)"
+                                   Text="Reads Delta table metadata from OneLake for Direct Lake models, showing file counts, row groups, rows, V-Order and liquid clustering per table."
+                                   DisableReason="You must be connected to a Direct Lake model to analyze delta tables."
+                                   ></Fluent:ScreenTip>
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
             </Fluent:RibbonGroupBox>
             
             <!-- Model Diagram (Preview Feature) -->

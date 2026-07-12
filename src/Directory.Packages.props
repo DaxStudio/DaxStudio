@@ -1,98 +1,101 @@
 <Project>
   <PropertyGroup>
-	<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-	<!-- Transitive pinning is ENABLED: a central PackageVersion also pins that package when it appears
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <!-- Transitive pinning is ENABLED: a central PackageVersion also pins that package when it appears
 	     as a transitive dependency. This keeps shared framework assemblies (System.Text.Json,
 	     System.Diagnostics.DiagnosticSource, System.Threading.Channels) on one version across every
 	     project, so generated binding redirects match the deployed DLLs (fixes fusion load errors
 	     caused by the shared output folder). -->
-	<CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
-
   <ItemGroup>
-	<PackageVersion Include="Antlr4.Runtime.Standard" Version="4.13.1" />
-	<PackageVersion Include="Antlr4BuildTasks" Version="12.14.0" />
-	<PackageVersion Include="AsyncAwaitBestPractices" Version="10.0.0" />
-	<PackageVersion Include="AvalonEdit" Version="6.3.1.120" />
-	<PackageVersion Include="Caliburn.Micro" Version="5.0.258" />
-	<PackageVersion Include="Castle.Core" Version="5.2.1" />
-	<PackageVersion Include="CrashReporter.NET.Official" Version="1.6.0" />
-	<PackageVersion Include="CsvHelper" Version="33.1.0" />
-	<PackageVersion Include="Dax.Model.Extractor" Version="1.12.1" />
-	<PackageVersion Include="Dax.ViewModel" Version="1.12.1" />
-	<PackageVersion Include="Dax.ViewVpaExport" Version="1.12.1" />
-	<PackageVersion Include="Dax.Vpax" Version="1.12.1" />
-	<PackageVersion Include="Dax.Vpax.Obfuscator" Version="1.2.1" />
-	<PackageVersion Include="DaxStudio.Controls" Version="0.1.9" />
-	<PackageVersion Include="Dirkster.AvalonDock" Version="4.74.1" />
-	<PackageVersion Include="Dirkster.NumericUpDownLib" Version="3.4.0" />
-	<PackageVersion Include="Expression.Blend.Sdk" Version="1.0.2" />
-	<PackageVersion Include="Fluent.Ribbon" Version="11.0.2" />
-	<PackageVersion Include="gong-wpf-dragdrop" Version="4.0.0" />
-	<PackageVersion Include="Hardcodet.NotifyIcon.Wpf" Version="2.0.1" />
-	<PackageVersion Include="Humanizer" Version="3.0.10" />
-	<PackageVersion Include="LargeXlsx" Version="2.0.1" />
-	<PackageVersion Include="Microsoft.AnalysisServices" Version="19.114.0" />
-	<PackageVersion Include="Microsoft.AnalysisServices.AdomdClient" Version="19.114.0" />
-	<PackageVersion Include="Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel" Version="2.23.0" />
-	<PackageVersion Include="Microsoft.AspNet.SignalR.Client" Version="2.4.3" />
-	<PackageVersion Include="Microsoft.AspNet.WebApi.Client" Version="6.0.0" />
-	<PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.301" />
-	<PackageVersion Include="Microsoft.Data.SqlClient" Version="7.0.2" />
-	<PackageVersion Include="Microsoft.Expression.Drawing" Version="3.0.0" />
-	<PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.9" />
-	<!-- Pinned so the shared bin output folder has a single, consistent
+    <PackageVersion Include="Antlr4.Runtime.Standard" Version="4.13.1" />
+    <PackageVersion Include="Antlr4BuildTasks" Version="12.14.0" />
+    <PackageVersion Include="AsyncAwaitBestPractices" Version="10.0.0" />
+    <PackageVersion Include="AvalonEdit" Version="6.3.1.120" />
+    <PackageVersion Include="Caliburn.Micro" Version="5.0.258" />
+    <PackageVersion Include="Castle.Core" Version="5.2.1" />
+    <PackageVersion Include="CrashReporter.NET.Official" Version="1.6.0" />
+    <PackageVersion Include="CsvHelper" Version="33.1.0" />
+    <PackageVersion Include="Dax.Model.Extractor" Version="1.12.1" />
+    <PackageVersion Include="Dax.ViewModel" Version="1.12.1" />
+    <PackageVersion Include="Dax.ViewVpaExport" Version="1.12.1" />
+    <PackageVersion Include="Dax.Vpax" Version="1.12.1" />
+    <PackageVersion Include="Dax.Vpax.Obfuscator" Version="1.2.1" />
+    <PackageVersion Include="DaxStudio.Controls" Version="0.1.11" />
+    <PackageVersion Include="Dirkster.AvalonDock" Version="4.74.1" />
+    <PackageVersion Include="Dirkster.NumericUpDownLib" Version="3.4.0" />
+    <PackageVersion Include="Expression.Blend.Sdk" Version="1.0.2" />
+    <PackageVersion Include="Fluent.Ribbon" Version="11.0.2" />
+    <PackageVersion Include="gong-wpf-dragdrop" Version="4.0.0" />
+    <PackageVersion Include="Hardcodet.NotifyIcon.Wpf" Version="2.0.1" />
+    <PackageVersion Include="Humanizer" Version="3.0.10" />
+    <PackageVersion Include="LargeXlsx" Version="2.0.1" />
+    <PackageVersion Include="Microsoft.AnalysisServices" Version="19.114.8" />
+    <PackageVersion Include="Microsoft.AnalysisServices.AdomdClient" Version="19.114.8" />
+    <PackageVersion Include="Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel" Version="2.23.0" />
+    <PackageVersion Include="Microsoft.AspNet.SignalR.Client" Version="2.4.3" />
+    <PackageVersion Include="Microsoft.AspNet.WebApi.Client" Version="6.0.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.301" />
+    <PackageVersion Include="Microsoft.Data.SqlClient" Version="7.0.2" />
+    <PackageVersion Include="Microsoft.Expression.Drawing" Version="3.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.9" />
+    <!-- Pinned so the shared bin output folder has a single, consistent
 	     Microsoft.Extensions.DependencyInjection.Abstractions DLL. dscmd (DaxStudio.CommandLine)
 	     uses DependencyInjection 10.0.9 (=> Abstractions 10.0.0.9), while the main app resolves
 	     Abstractions 8.0.2 transitively. Because dscmd probes the shared bin folder, the app's
 	     8.0.2 DLL would otherwise win and dscmd fails to load 10.0.0.9. Transitive pinning brings
 	     every project up to 10.0.9. -->
-	<PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.9" />
-	<PackageVersion Include="Microsoft.Identity.Client.Broker" Version="4.85.2" />
-	<PackageVersion Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.85.2" />
-	<!-- Pinned to match the version referenced by the packages.config Excel add-in so the
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.Identity.Client.Broker" Version="4.85.2" />
+    <PackageVersion Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.85.2" />
+    <!-- Pinned to match the version referenced by the packages.config Excel add-in so the
 	     shared bin\Debug output folder has a single, consistent Microsoft.IdentityModel.Abstractions
 	     DLL (transitive pinning brings the SDK projects up from the transitively-resolved 8.14.0). -->
-	<PackageVersion Include="Microsoft.IdentityModel.Abstractions" Version="8.19.1" />
-	<PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.7.0" />
-	<PackageVersion Include="Microsoft.PowerBI.Api" Version="5.1.0" />
-	<PackageVersion Include="ModernWpfUI" Version="0.9.6" />
-	<PackageVersion Include="Mono.Cecil" Version="0.11.6" />
-	<PackageVersion Include="MSTest.TestAdapter" Version="4.2.3" />
-	<PackageVersion Include="MSTest.TestFramework" Version="4.2.3" />
-	<PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
-	<PackageVersion Include="NSubstitute" Version="5.3.0" />
-	<PackageVersion Include="Parquet.Net" Version="[5.4.0]" />
-	<PackageVersion Include="Polly" Version="8.7.0" />
-	<PackageVersion Include="Serilog" Version="4.3.1" />
-	<PackageVersion Include="Serilog.Settings.AppSettings" Version="3.0.0" />
-	<PackageVersion Include="Serilog.Sinks.Console" Version="6.1.1" />
-	<PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
-	<PackageVersion Include="Serilog.Sinks.Spectre" Version="0.6.0" />
-	<PackageVersion Include="Spectre.Console" Version="0.57.2" />
-	<PackageVersion Include="Spectre.Console.Cli" Version="0.55.0" />
-	<PackageVersion Include="System.Buffers" Version="4.6.1" />
-	<PackageVersion Include="System.Collections.Immutable" Version="9.0.10" />
-	<PackageVersion Include="System.ComponentModel.Composition" Version="10.0.9" />
-	<PackageVersion Include="System.Data.OleDb" Version="10.0.9" />
-	<PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="10.0.9" />
-	<PackageVersion Include="System.Drawing.Common" Version="10.0.9" />
-	<PackageVersion Include="System.Management" Version="10.0.9" />
-	<PackageVersion Include="System.Memory" Version="4.6.3" />
-	<PackageVersion Include="System.Net.Http" Version="4.3.4" />
-	<!-- Consumed by the global PackageReference in src\Directory.Build.targets (kept at the
+    <PackageVersion Include="Microsoft.IdentityModel.Abstractions" Version="8.19.1" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.7.0" />
+    <PackageVersion Include="Microsoft.PowerBI.Api" Version="5.1.0" />
+    <PackageVersion Include="ModernWpfUI" Version="0.9.6" />
+    <PackageVersion Include="Mono.Cecil" Version="0.11.6" />
+    <PackageVersion Include="MSTest.TestAdapter" Version="4.3.0" />
+    <PackageVersion Include="MSTest.TestFramework" Version="4.3.0" />
+    <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageVersion Include="NSubstitute" Version="5.3.0" />
+    <PackageVersion Include="Parquet.Net" Version="[5.4.0]" />
+    <PackageVersion Include="Polly" Version="8.7.0" />
+    <PackageVersion Include="Serilog" Version="4.4.0" />
+    <PackageVersion Include="Serilog.Settings.AppSettings" Version="3.0.0" />
+    <PackageVersion Include="Serilog.Sinks.Console" Version="6.1.1" />
+    <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
+    <PackageVersion Include="Serilog.Sinks.Spectre" Version="0.6.0" />
+    <PackageVersion Include="Spectre.Console" Version="0.57.2" />
+    <PackageVersion Include="Spectre.Console.Cli" Version="0.55.0" />
+    <PackageVersion Include="System.Buffers" Version="4.6.1" />
+    <PackageVersion Include="System.Collections.Immutable" Version="9.0.10" />
+    <PackageVersion Include="System.ComponentModel.Composition" Version="10.0.9" />
+    <PackageVersion Include="System.Data.OleDb" Version="10.0.9" />
+    <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="10.0.9" />
+    <!-- Kept on the 9.0.x line to match System.Collections.Immutable (9.0.10). The .NET 10
+		 build (10.0.9) references System.Collections.Immutable / System.Reflection.Metadata
+		 10.0.0.0, which conflicts with the 9.0.0.0 assemblies the rest of this net8.0-windows
+		 app resolves and produces MSB3277 warnings. -->
+    <PackageVersion Include="System.Drawing.Common" Version="9.0.10" />
+    <PackageVersion Include="System.Management" Version="10.0.9" />
+    <PackageVersion Include="System.Memory" Version="4.6.3" />
+    <PackageVersion Include="System.Net.Http" Version="4.3.4" />
+    <!-- Consumed by the global PackageReference in src\Directory.Build.targets (kept at the
 		 previously-resolved 9.0.3; the old per-project 'Update' pins to 10.0.9 were no-ops). -->
-	<PackageVersion Include="System.Resources.Extensions" Version="9.0.3" />
-	<PackageVersion Include="System.Runtime" Version="4.3.1" />
-	<PackageVersion Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" />
-	<!-- Shared framework assemblies kept on a single version (10.0.9) across every project so
+    <PackageVersion Include="System.Resources.Extensions" Version="9.0.3" />
+    <PackageVersion Include="System.Runtime" Version="4.3.1" />
+    <PackageVersion Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" />
+    <!-- Shared framework assemblies kept on a single version (10.0.9) across every project so
 		 that generated binding redirects match the DLLs deployed to the shared output folder.
 		 The packages.config Excel add-in also references 10.0.9, so all consumers agree. -->
-	<PackageVersion Include="System.Text.Encodings.Web" Version="10.0.9" />
-	<PackageVersion Include="System.Text.Json" Version="10.0.9" />
-	<PackageVersion Include="System.Threading.Channels" Version="10.0.9" />
-	<PackageVersion Include="System.Threading.Tasks.Extensions" Version="4.6.3" />
-	<PackageVersion Include="System.ValueTuple" Version="4.6.2" />
-	<PackageVersion Include="Unofficial.Excel.Amo" Version="11.0.2832.12" />
+    <PackageVersion Include="System.Text.Encodings.Web" Version="10.0.9" />
+    <PackageVersion Include="System.Text.Json" Version="10.0.9" />
+    <PackageVersion Include="System.Threading.Channels" Version="10.0.9" />
+    <PackageVersion Include="System.Threading.Tasks.Extensions" Version="4.6.3" />
+    <PackageVersion Include="System.ValueTuple" Version="4.6.2" />
+    <PackageVersion Include="Unofficial.Excel.Amo" Version="11.0.2832.12" />
   </ItemGroup>
 </Project>

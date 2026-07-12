@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="Delta Analyzer">
+  <defs>
+    <linearGradient id="da-lens" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#29a9ff" stop-opacity="0.18"/>
+    </linearGradient>
+    <linearGradient id="da-header" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2fa4e8"/>
+      <stop offset="1" stop-color="#228ed6"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Table card -->
+  <g>
+    <rect x="6" y="7" width="34" height="38" rx="3.5" ry="3.5"
+          fill="#ffffff" stroke="#8a9199" stroke-width="2"/>
+    <!-- Header bar -->
+    <path d="M6 10.5 A3.5 3.5 0 0 1 9.5 7 H36.5 A3.5 3.5 0 0 1 40 10.5 V16 H6 Z"
+          fill="url(#da-header)"/>
+    <!-- Delta glyph in header, hinting at 'Delta' -->
+    <path d="M11 14.5 L13.4 9.8 L15.8 14.5 Z" fill="#ffffff"/>
+    <path d="M18 11.5 H35" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round" opacity="0.85"/>
+
+    <!-- Row shading -->
+    <rect x="6.5" y="23" width="33" height="6.5" fill="#eef3f8"/>
+    <rect x="6.5" y="36" width="33" height="6.5" fill="#eef3f8"/>
+
+    <!-- Grid lines -->
+    <g stroke="#c2cad2" stroke-width="1.2">
+      <line x1="6" y1="23" x2="40" y2="23"/>
+      <line x1="6" y1="29.5" x2="40" y2="29.5"/>
+      <line x1="6" y1="36" x2="40" y2="36"/>
+      <line x1="17.3" y1="16" x2="17.3" y2="45"/>
+      <line x1="28.6" y1="16" x2="28.6" y2="45"/>
+    </g>
+  </g>
+
+  <!-- Magnifying glass examining the table -->
+  <g>
+    <!-- Handle -->
+    <line x1="45.5" y1="45.5" x2="56" y2="56"
+          stroke="#1c73ad" stroke-width="6" stroke-linecap="round"/>
+    <line x1="45.5" y1="45.5" x2="56" y2="56"
+          stroke="#228ed6" stroke-width="3.4" stroke-linecap="round"/>
+    <!-- Lens -->
+    <circle cx="38" cy="38" r="13" fill="url(#da-lens)"/>
+    <circle cx="38" cy="38" r="13" fill="none" stroke="#228ed6" stroke-width="3.2"/>
+    <!-- Glass highlight -->
+    <path d="M31 33 A9 9 0 0 1 37 30" fill="none" stroke="#ffffff" stroke-width="2"
+          stroke-linecap="round" opacity="0.8"/>
+  </g>
+</svg>

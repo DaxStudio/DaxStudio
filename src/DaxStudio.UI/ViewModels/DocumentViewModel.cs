@@ -3293,6 +3293,19 @@ namespace DaxStudio.UI.ViewModels
                 }, DispatcherPriority.Background);
             }
 
+            // check for embedded Delta Analyzer data (preview feature). The tool window is created on demand
+            // from the ribbon, so it won't be in ToolWindows yet - create and restore it here when present.
+            var deltaUri = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.DeltaAnalyzer, UriKind.Relative));
+            if (package.PartExists(deltaUri) && Options.ShowDeltaAnalyzer)
+            {
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    var deltaView = new DeltaAnalyzerViewModel(this._eventAggregator, this.Options);
+                    ToolWindows.Add(deltaView);
+                    deltaView.LoadPackage(package);
+                }, DispatcherPriority.Background);
+            }
+
         }
 
 

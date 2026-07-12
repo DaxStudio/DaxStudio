@@ -677,6 +677,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => DisplayQueryBuilder);
                 NotifyOfPropertyChange(() => FormatQueryDisabledReason);
                 NotifyOfPropertyChange(() => CanShowModelDiagram);
+                NotifyOfPropertyChange(() => CanShowDeltaAnalyzer);
                 if (_activeDocument != null) _activeDocument.PropertyChanged += ActiveDocumentPropertyChanged;
             }
         }
@@ -717,6 +718,7 @@ namespace DaxStudio.UI.ViewModels
                     NotifyOfPropertyChange(() => CanExportAllData);
                     NotifyOfPropertyChange(() => IsActiveDocumentConnected);
                     NotifyOfPropertyChange(() => CanShowModelDiagram);
+                    NotifyOfPropertyChange(() => CanShowDeltaAnalyzer);
                     break;
                 case nameof(ActiveDocument.ShowQueryBuilder):
                     NotifyOfPropertyChange(() => DisplayQueryBuilder);
@@ -1406,6 +1408,55 @@ namespace DaxStudio.UI.ViewModels
 
         #endregion
 
+        #region Delta Analyzer
+
+        /// <summary>
+        /// Whether the Delta Analyzer feature is enabled in options (preview feature).
+        /// </summary>
+        public bool ShowDeltaAnalyzerEnabled => Options.ShowDeltaAnalyzer;
+
+        /// <summary>
+        /// Whether the Delta Analyzer can be shown. Requires an active connection and the preview option.
+        /// </summary>
+        public bool CanShowDeltaAnalyzer => ShowDeltaAnalyzerEnabled;
+
+        /// <summary>
+        /// Shows the Delta Analyzer tool window and kicks off analysis of the connected Direct Lake model.
+        /// The window is shown before loading so the progress overlay is visible.
+        /// </summary>
+        public void ShowDeltaAnalyzer()
+        {
+            if (ActiveDocument == null) return;
+            try
+            {
+                // Reuse an existing DeltaAnalyzerViewModel if one is already in ToolWindows.
+                var deltaViewModel = ActiveDocument.ToolWindows.OfType<DeltaAnalyzerViewModel>().FirstOrDefault();
+                bool isExisting = deltaViewModel != null;
+
+                if (!isExisting)
+                {
+                    deltaViewModel = new DeltaAnalyzerViewModel(_eventAggregator, Options);
+                }
+                else
+                {
+                    deltaViewModel.IsVisible = true;
+                }
+
+                // Show the tool window first so the loading overlay is visible while we load.
+                _eventAggregator.PublishAsync(new ShowToolWindowEvent(deltaViewModel));
+
+                var hwnd = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
+                deltaViewModel.LoadFromConnection(ActiveDocument.Connection, hwnd);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel), nameof(ShowDeltaAnalyzer), "Error showing Delta Analyzer");
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error showing Delta Analyzer\n{ex.Message}"));
+            }
+        }
+
+        #endregion
+
         public bool CanExportAllData => IsActiveDocumentConnected;
 
         public async void ExportAllData()
@@ -1455,6 +1506,8 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(SwapDelimitersTitle));
             NotifyOfPropertyChange(nameof(CanShowModelDiagram));
             NotifyOfPropertyChange(nameof(ShowModelDiagramEnabled));
+            NotifyOfPropertyChange(nameof(CanShowDeltaAnalyzer));
+            NotifyOfPropertyChange(nameof(ShowDeltaAnalyzerEnabled));
         }
 
         public async void LaunchSqlProfiler()
