@@ -107,7 +107,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Grid>
+    <Grid MinHeight="220">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -470,13 +470,14 @@
                        Foreground="{DynamicResource Theme.Brush.Default.Fore}" />
         </Border>
 
-        <!-- Status / error banner - shown when analysis can't run (e.g. metadata permissions, no Direct Lake tables) -->
+        <!-- Status / error banner - shown when analysis can't run (e.g. metadata permissions, no Direct Lake tables).
+             Anchored near the top (below the tab strip + column header row) so it never overlaps the table headers. -->
         <Border Grid.Row="2"
-                Margin="24"
+                Margin="24,84,24,24"
                 Padding="14,12"
                 MaxWidth="560"
                 CornerRadius="6"
-                VerticalAlignment="Center"
+                VerticalAlignment="Top"
                 HorizontalAlignment="Center"
                 BorderThickness="1"
                 Visibility="{Binding HasStatusMessage, Converter={StaticResource BoolToCollapsedConverter}}">
@@ -493,14 +494,14 @@
                     </Style.Triggers>
                 </Style>
             </Border.Style>
-            <StackPanel Orientation="Horizontal">
-                <Image Width="20" Height="20" VerticalAlignment="Top" Margin="0,1,10,0"
+            <DockPanel>
+                <Image DockPanel.Dock="Left" Width="20" Height="20" VerticalAlignment="Top" Margin="0,1,10,0"
                        Source="{DynamicResource warningDrawingImage}" />
                 <TextBlock Text="{Binding StatusMessage}"
                            TextWrapping="Wrap"
                            VerticalAlignment="Center"
                            Foreground="{DynamicResource Theme.Brush.Default.Fore}" />
-            </StackPanel>
+            </DockPanel>
         </Border>
 
         <!-- Loading Overlay - covers only the results area so the Cancel button remains accessible -->
