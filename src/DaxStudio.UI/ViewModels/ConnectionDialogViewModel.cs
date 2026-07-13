@@ -1066,9 +1066,8 @@ namespace DaxStudio.UI.ViewModels
 #if DEBUG
                 return true;
 #else
-                return false;
+                return Options.ShowBrowseWorkspaces;
 #endif
-                //return Options.PowerBIServiceEnabled;
             }
         }
     } 

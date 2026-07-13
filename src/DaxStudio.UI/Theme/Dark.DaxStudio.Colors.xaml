@@ -79,6 +79,10 @@
     <SolidColorBrush x:Key="Theme.Brush.InfoBar.Back" Color="{StaticResource Theme.InfoBar.Back}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.InfoBar.Border" Color="{StaticResource Theme.InfoBar.Border}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.InfoBar.Fore" Color="{StaticResource Theme.InfoBar.Fore}" options:Freeze="true"/>
+    <SolidColorBrush x:Key="Theme.Brush.UpdatePill.Back" Color="Transparent" options:Freeze="true"/>
+    <SolidColorBrush x:Key="Theme.Brush.UpdatePill.Back.Hover" Color="#332F2A1A" options:Freeze="true"/>
+    <SolidColorBrush x:Key="Theme.Brush.UpdatePill.Border" Color="#DAA520" options:Freeze="true"/>
+    <SolidColorBrush x:Key="Theme.Brush.UpdatePill.Fore" Color="#DAA520" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Tooltip.Border" Color="{StaticResource Theme.Tooltip.Border}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Tooltip.Back" Color="{StaticResource Theme.Tooltip.Back}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.TextBox.Border" Color="{StaticResource Theme.TextBox.Border}" options:Freeze="true"/>

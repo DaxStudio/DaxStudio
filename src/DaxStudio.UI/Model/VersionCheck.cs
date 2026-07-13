@@ -57,7 +57,25 @@ using DaxStudio.UI.Events;
             }
 
             worker.DoWork += new DoWorkEventHandler(BackgroundGetGitHubVersion);
-            if (Enabled && LastVersionCheck.AddHours(CHECK_EVERY_HOURS) < DateTime.UtcNow)
+
+            // Restore the last known download URL / server version type from the persisted options so that,
+            // before the background check completes on this run, the update-available indicator is consistent
+            // with the persisted ServerVersion (otherwise DownloadUrl would default to the main production page
+            // even when the persisted version is a preview release).
+            if (!string.IsNullOrWhiteSpace(_globalOptions.CurrentDownloadUrl)
+                && Uri.TryCreate(_globalOptions.CurrentDownloadUrl, UriKind.Absolute, out var persistedUrl))
+            {
+                _downloadUrl = persistedUrl;
+            }
+            _serverVersionType = _globalOptions.CurrentDownloadIsPreview ? "Preview" : "Production";
+
+            // Force a check when the new download-url / preview-flag options have never been populated
+            // (e.g. first run after upgrading to a build that persists them), even if the normal throttle
+            // window has not elapsed, so the preview indicator and correct download link are available
+            // without waiting for the next scheduled check.
+            var needsInitialPopulate = string.IsNullOrWhiteSpace(_globalOptions.CurrentDownloadUrl);
+
+            if (Enabled && (needsInitialPopulate || LastVersionCheck.AddHours(CHECK_EVERY_HOURS) < DateTime.UtcNow))
             {
                 _isAutomaticCheck = true;
                 worker.RunWorkerAsync();
@@ -218,6 +236,11 @@ using DaxStudio.UI.Events;
                 ServerVersionType = selection.ServerVersionType;
                 _globalOptions.CurrentDownloadVersion = selection.EffectiveVersion;
                 DownloadUrl = selection.EffectiveDownloadUrl;
+
+                // Persist the resolved URL and preview flag so a subsequent restart can show a consistent
+                // update indicator (correct download target + preview label) before the async check runs.
+                _globalOptions.CurrentDownloadUrl = selection.EffectiveDownloadUrl?.ToString() ?? string.Empty;
+                _globalOptions.CurrentDownloadIsPreview = IsServerVersionPreview;
             }
             catch (Exception ex)
             {
@@ -366,8 +389,13 @@ using DaxStudio.UI.Events;
             set {
                 _serverVersionType = value;
                 NotifyOfPropertyChange(() => ServerVersionType);
+                NotifyOfPropertyChange(() => IsServerVersionPreview);
             }
         }
+
+        /// <summary>True when the available server version is a pre-release / preview build.</summary>
+        public bool IsServerVersionPreview =>
+            string.Equals(_serverVersionType, "Preview", StringComparison.OrdinalIgnoreCase);
 
         public bool VersionIsLatest
         {
@@ -395,6 +423,40 @@ using DaxStudio.UI.Events;
             //CheckVersion();
             if (_isCheckRunning) return;
             worker.RunWorkerAsync();
+        }
+
+        /// <summary>
+        /// Clears the cached/persisted version information and triggers an immediate version check.
+        /// Called when the user toggles the "Show Pre-Release Notifications" option so the update
+        /// indicator reflects the new preview preference without waiting for the next scheduled check.
+        /// </summary>
+        public void ForceRecheck()
+        {
+            if (_globalOptions.BlockVersionChecks) return;
+
+            Log.Information(Common.Constants.LogMessageTemplate, nameof(VersionCheck), nameof(ForceRecheck), "Clearing stored version information and forcing a version check");
+
+            // Clear the persisted version information so a stale indicator is not shown if the
+            // check fails, and reset the throttle so a fresh check is not skipped.
+            _globalOptions.CurrentDownloadVersion = new Version(0, 0, 0, 0);
+            _globalOptions.CurrentDownloadUrl = string.Empty;
+            _globalOptions.CurrentDownloadIsPreview = false;
+            _globalOptions.DismissedVersion = new Version(0, 0, 0, 0);
+            _globalOptions.LastVersionCheckUTC = DateTime.MinValue;
+
+            // Reset the in-memory state so the UI does not keep showing the previously resolved values
+            // until the background check completes.
+            _productionVersion = null;
+            _productionDownloadUrl = null;
+            _preReleaseVersion = null;
+            _preReleaseDownloadUrl = null;
+            _serverVersionType = "Production";
+            DownloadUrl = new Uri(Constants.DownloadUrl);
+            NotifyOfPropertyChange(() => ServerVersion);
+            NotifyOfPropertyChange(() => IsServerVersionPreview);
+            NotifyOfPropertyChange(() => VersionIsLatest);
+
+            Update();
         }
 
 

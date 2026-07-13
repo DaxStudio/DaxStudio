@@ -12,7 +12,9 @@ namespace DaxStudio.Interfaces
 
         Version LocalVersion { get; }
         bool VersionIsLatest { get;  }
+        bool IsServerVersionPreview { get; }
         void Update();
+        void ForceRecheck();
         Uri DownloadUrl { get; }
 
         event PropertyChangedEventHandler PropertyChanged;

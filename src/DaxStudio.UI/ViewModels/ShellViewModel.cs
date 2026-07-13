@@ -45,7 +45,8 @@ namespace DaxStudio.UI.ViewModels
         IHandle<StopAutoSaveTimerEvent>,
         IHandle<ChangeThemeEvent>,
         IHandle<UpdateHotkeys>,
-        IHandle<UpdateGlobalOptions>
+        IHandle<UpdateGlobalOptions>,
+        IHandle<PreviewNotificationsChangedEvent>
     {
 
         private readonly IEventAggregator _eventAggregator;
@@ -106,6 +107,7 @@ namespace DaxStudio.UI.ViewModels
         {
             NotifyOfPropertyChange(nameof(IsUpdateAvailable));
             NotifyOfPropertyChange(nameof(UpdateMessage));
+            NotifyOfPropertyChange(nameof(UpdatePillText));
         }
 
         private IThemeManager ThemeManager { get; }
@@ -163,7 +165,10 @@ namespace DaxStudio.UI.ViewModels
         public IVersionCheck VersionChecker { get; set; }
         
         public bool IsUpdateAvailable => !VersionChecker.VersionIsLatest && !Application.Current.Args().NoPreview;
-        public string UpdateMessage => $"Click to open the download page for version {VersionChecker.ServerVersion.ToString(3)}";
+        public string UpdateMessage => VersionChecker.IsServerVersionPreview
+            ? $"Version {VersionChecker.ServerVersion.ToString(3)} (Preview) is available.\nClick to open the preview download page."
+            : $"Version {VersionChecker.ServerVersion.ToString(3)} is available.\nClick to open the download page.";
+        public string UpdatePillText => VersionChecker.IsServerVersionPreview ? "Preview Update Available" : "Update Available";
 
         public void UpdateFlagClick()
         {
@@ -394,6 +399,21 @@ namespace DaxStudio.UI.ViewModels
             {
                 Log.Error(ex, Constants.LogMessageTemplate, nameof(ShellViewModel), "Handle<NewVersionEvent>",ex.Message);
 
+            }
+            return Task.CompletedTask;
+        }
+
+        public Task HandleAsync(PreviewNotificationsChangedEvent message, CancellationToken cancellationToken)
+        {
+            try
+            {
+                Log.Information(Constants.LogMessageTemplate, nameof(ShellViewModel), nameof(HandleAsync), "Pre-release notification option changed - forcing a version re-check");
+                VersionChecker?.ForceRecheck();
+                NotifyOfPropertyChange(() => IsUpdateAvailable);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(ShellViewModel), nameof(HandleAsync), ex.Message);
             }
             return Task.CompletedTask;
         }

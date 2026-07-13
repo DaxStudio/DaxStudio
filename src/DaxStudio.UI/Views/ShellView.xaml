@@ -111,17 +111,44 @@
     </fluent:RibbonWindow.Resources>
     <fluent:RibbonWindow.WindowCommands>
         <fluent:WindowCommands>
-            <fluent:Button Size="Small"
-                           Background="Goldenrod"
-                           Visibility="{Binding IsUpdateAvailable, Converter={StaticResource BoolToVisibilityConverter}}"
-                           cal:Message.Attach="[Event Click] = [Action UpdateFlagClick]">
-                <fluent:Button.Icon>
-                    <Image Source="{DynamicResource notificationsDrawingImage}" Width="16" />
-                </fluent:Button.Icon>
-                <fluent:Button.ToolTip>
-    <fluent:ScreenTip Title="Update Available" Text="{Binding UpdateMessage}"></fluent:ScreenTip>
-</fluent:Button.ToolTip>
-            </fluent:Button>
+            <Button Margin="4,2,8,2"
+                    VerticalAlignment="Center"
+                    Cursor="Hand"
+                    Visibility="{Binding IsUpdateAvailable, Converter={StaticResource BoolToVisibilityConverter}}"
+                    cal:Message.Attach="[Event Click] = [Action UpdateFlagClick]">
+                <Button.ToolTip>
+                    <fluent:ScreenTip Title="Update Available" Text="{Binding UpdateMessage}" />
+                </Button.ToolTip>
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="pill"
+                                Background="{DynamicResource Theme.Brush.UpdatePill.Back}"
+                                BorderBrush="{DynamicResource Theme.Brush.UpdatePill.Border}"
+                                BorderThickness="1"
+                                CornerRadius="3"
+                                Padding="8,1"
+                                SnapsToDevicePixels="True">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Viewbox Width="12" Height="12" VerticalAlignment="Center">
+                                    <Path Data="{DynamicResource notificationsGeometry}"
+                                          Fill="{DynamicResource Theme.Brush.UpdatePill.Fore}" />
+                                </Viewbox>
+                                <TextBlock Text="{Binding UpdatePillText}"
+                                           Margin="4,0,0,0"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource Theme.Brush.UpdatePill.Fore}"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="pill" Property="Background" Value="{DynamicResource Theme.Brush.UpdatePill.Back.Hover}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
         </fluent:WindowCommands>
     </fluent:RibbonWindow.WindowCommands>
     <Grid>

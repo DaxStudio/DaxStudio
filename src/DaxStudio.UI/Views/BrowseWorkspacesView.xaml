@@ -94,6 +94,7 @@ Padding="10 24 10 16">
                           BorderThickness="0"
                           Background="Transparent"
                           MaxHeight="400"
+                          Height="400"
                           ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                           TabIndex="1"
                           Focusable="True">

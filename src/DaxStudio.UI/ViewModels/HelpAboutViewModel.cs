@@ -131,8 +131,12 @@ namespace DaxStudio.UI.ViewModels
                 var versionComparison = VersionChecker.LocalVersion.CompareTo(VersionChecker.ServerVersion);
                 if (versionComparison > 0)  return $"a preview release"; 
                 if (versionComparison == 0) return "up to date"; 
-                    
-                return $"out dated";
+
+                // A newer version is available - call out when it is a preview / pre-release build so the
+                // user knows the update they are being offered is not a production release.
+                return VersionChecker.IsServerVersionPreview
+                    ? $"out dated - preview version {VersionChecker.ServerVersion.ToString(3)} is available"
+                    : $"out dated - version {VersionChecker.ServerVersion.ToString(3)} is available";
 
             }
 

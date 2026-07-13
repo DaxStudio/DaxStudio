@@ -948,6 +948,9 @@ namespace DaxStudio.Core.Options
                 NotifyOfPropertyChange(() => ShowPreReleaseNotifications);
                 _eventAggregator.PublishAsync(new UpdateGlobalOptions());
                 SettingProvider.SetValue(nameof(ShowPreReleaseNotifications), value, _isInitializing, this);
+                // Don't force a re-check while options are still being loaded from disk
+                if (!_isInitializing)
+                    _eventAggregator.PublishAsync(new PreviewNotificationsChangedEvent());
             }
         }
 
@@ -1584,6 +1587,25 @@ namespace DaxStudio.Core.Options
             }
         }
 
+        private bool _showBrowseWorkspaces;
+        [DataMember, DefaultValue(false)]
+        [Category("Preview")]
+        [Subcategory("Connection")]
+        [DisplayName("Show Browse Workspaces")]
+        [SortOrder(3)]
+        [Description("Enable the 'Browse Workspaces' button on the connection dialog to browse Power BI / Fabric workspaces when connecting.\nWARNING: the UI may change before the final release")]
+        public bool ShowBrowseWorkspaces
+        {
+            get => _showBrowseWorkspaces;
+            set
+            {
+                _showBrowseWorkspaces = value;
+                _eventAggregator.PublishAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(ShowBrowseWorkspaces), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => ShowBrowseWorkspaces);
+            }
+        }
+
         private bool _showQueryGroupColumn;
         [DataMember, DefaultValue(false)]
         [Category("Preview")]
@@ -2179,6 +2201,34 @@ namespace DaxStudio.Core.Options
                 _eventAggregator.PublishAsync(new UpdateGlobalOptions());
                 SettingProvider.SetValue(nameof(CurrentDownloadVersion), value, _isInitializing, this);
                 NotifyOfPropertyChange(() => CurrentDownloadVersion);
+            }
+        }
+
+        private string _currentDownloadUrl = string.Empty;
+        [DataMember, DefaultValue("")]
+        public string CurrentDownloadUrl
+        {
+            get => _currentDownloadUrl;
+            set
+            {
+                _currentDownloadUrl = value;
+                _eventAggregator.PublishAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(CurrentDownloadUrl), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => CurrentDownloadUrl);
+            }
+        }
+
+        private bool _currentDownloadIsPreview;
+        [DataMember, DefaultValue(false)]
+        public bool CurrentDownloadIsPreview
+        {
+            get => _currentDownloadIsPreview;
+            set
+            {
+                _currentDownloadIsPreview = value;
+                _eventAggregator.PublishAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(CurrentDownloadIsPreview), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => CurrentDownloadIsPreview);
             }
         }
 

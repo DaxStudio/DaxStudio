@@ -92,6 +92,11 @@ namespace DaxStudio.Tests
             get { throw new NotImplementedException(); }
         }
 
+        public bool IsServerVersionPreview
+        {
+            get { throw new NotImplementedException(); }
+        }
+
         public string VersionStatus
         {
             get { throw new NotImplementedException(); }
@@ -106,6 +111,11 @@ namespace DaxStudio.Tests
         }
 
         public void Update()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ForceRecheck()
         {
             throw new NotImplementedException();
         }

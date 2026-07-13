@@ -26,6 +26,8 @@ namespace DaxStudio.Interfaces
         bool CanPublishDaxFunctions { get; set; }
         int CodeCompletionWindowWidthIncrease { get; set; }
         Version CurrentDownloadVersion { get; set; }
+        string CurrentDownloadUrl { get; set; }
+        bool CurrentDownloadIsPreview { get; set; }
         CustomCsvDelimiterType CustomCsvDelimiterType { get; set; }
         bool CustomCsvQuoteStringFields { get; set; }
         
@@ -121,6 +123,7 @@ namespace DaxStudio.Interfaces
         bool VpaxIncludeTom { get; set; }
         bool ShowModelDiagram { get; set; }
         bool ShowDeltaAnalyzer { get; set; }
+        bool ShowBrowseWorkspaces { get; set; }
         bool ShowQueryGroupColumn { get; set; }
         DiagramColumnStatDisplay DiagramColumnStatDisplay { get; set; }
         DiagramColumnSortOrder DiagramColumnSortOrder { get; set; }
