@@ -51,7 +51,6 @@ namespace DaxStudio.UI.ViewModels
 
         private readonly IEventAggregator _eventAggregator;
         private readonly IDaxStudioHost _host;
-        private NotifyIcon _notifyIcon;
         private Window _window;
         private readonly string _username;
         private readonly DateTime _utcSessionStart;
@@ -193,7 +192,6 @@ namespace DaxStudio.UI.ViewModels
             if (dialogResult != false )
             {
                 Ribbon.OnClose();
-                _notifyIcon?.Dispose();
                 AutoSaveTimer.Enabled = false;
                 ThemeManager.Dispose();
                 if (Application.Current == null) {
@@ -232,8 +230,6 @@ namespace DaxStudio.UI.ViewModels
                 // SetPlacement will adjust the position if it's outside of the visible boundaries
                 Log.Debug(Constants.LogMessageTemplate, nameof(ShellViewModel), nameof(OnViewLoaded), $"Setting Window Placement:\n{Options.WindowPosition}");
                 _window.SetPlacement(Options.WindowPosition);
-                _notifyIcon = new NotifyIcon(_window, _eventAggregator);
-                if (_host.DebugLogging) ShowLoggingEnabledNotification();
                 _window.CommandBindings.Add(new CommandBinding(ApplicationCommands.Paste, OnPaste));
                 //Application.Current.LoadRibbonTheme();
                 _inputBindings = new InputBindings(_window);
@@ -388,12 +384,11 @@ namespace DaxStudio.UI.ViewModels
         #region Event Handlers
         public Task HandleAsync(NewVersionEvent message, CancellationToken cancellationToken)
         {
-            var newVersionText = $"A new version is available for download.\nClick here to go to the download page";
             try
             {
-                newVersionText = $"Version {message.NewVersion.ToString(3)} is available for download.\nClick here to go to the download page";
+                var newVersionText = $"Version {message.NewVersion.ToString(3)} is available for download.";
                 Log.Debug("{class} {method} {message}", "ShellViewModel", "Handle<NewVersionEvent>", newVersionText);
-                _notifyIcon.Notify(newVersionText, message.DownloadUrl.ToString());
+                NotifyOfPropertyChange(() => IsUpdateAvailable);
             }
             catch (Exception ex)
             {
@@ -423,20 +418,6 @@ namespace DaxStudio.UI.ViewModels
             await AutoSaver.Save(Tabs);
         }
         #endregion
-
-        public void ShowLoggingEnabledNotification()
-        {
-            try
-            {
-                var loggingText = "Debug Logging enabled.\nClick here to open the log folder";
-                var fullPath = ApplicationPaths.LogPath;
-                _notifyIcon.Notify(loggingText, fullPath);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Error Showing Notify Icon {0}", ex.Message);
-            }
-        }
 
 #region Overlay code
         private int _overlayDependencies;
@@ -714,7 +695,6 @@ namespace DaxStudio.UI.ViewModels
                 if (disposing)
                 {
                     //  dispose managed state (managed objects)
-                    _notifyIcon.Dispose();
                 }
 
                 // TODO: free unmanaged resources (unmanaged objects) and override finalizer

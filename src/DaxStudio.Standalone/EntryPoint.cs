@@ -85,7 +85,10 @@ namespace DaxStudio.Standalone
             // Setup logging, default to information level to start with to log the startup and key system information
             var levelSwitch = new Serilog.Core.LoggingLevelSwitch(Serilog.Events.LogEventLevel.Information);
 
-            ConfigureLogging(levelSwitch);
+            // Detect whether the Shift key was held down at startup to enable verbose logging.
+            // This value is stored in App.Args() (backed by Application.Properties) but is cleared
+            // again by ReadCommandLineArgs() below, so we capture it here and re-apply it afterwards.
+            var isLoggingKeyDown = ConfigureLogging(levelSwitch);
             Log.Information("============ DaxStudio Startup =============");
 
             // check if the config file has been set to force software rendering
@@ -100,6 +103,11 @@ namespace DaxStudio.Standalone
             _eventAggregator = bootstrapper.GetEventAggregator();
             // read command line arguments
             App.ReadCommandLineArgs(startupArgs);
+
+            // ReadCommandLineArgs() clears App.Args() before parsing, which wipes the
+            // LoggingEnabledByHotKey flag set during ConfigureLogging(). Re-apply it so that
+            // IDaxStudioHost.DebugLogging (and the log level check below) reflect the Shift key.
+            App.Args().LoggingEnabledByHotKey = isLoggingKeyDown;
 
             var settingProvider = IoC.Get<ISettingProvider>();
             if (App.Args().Reset) settingProvider.Reset();
@@ -199,7 +207,7 @@ namespace DaxStudio.Standalone
             
         }
 
-        private static void ConfigureLogging(LoggingLevelSwitch levelSwitch)
+        private static bool ConfigureLogging(LoggingLevelSwitch levelSwitch)
         {
             var config = new LoggerConfiguration()
                 .ReadFrom.AppSettings()
@@ -264,6 +272,7 @@ namespace DaxStudio.Standalone
 #endif
             }
 
+            return isLoggingKeyDown;
         }
 
         private static bool CanWriteToSettings(ISettingProvider settingProvider)

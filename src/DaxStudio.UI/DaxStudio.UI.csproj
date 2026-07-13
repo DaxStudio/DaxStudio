@@ -150,7 +150,6 @@
     <PackageReference Include="Expression.Blend.Sdk" Condition="'$(TargetFramework)' == 'net472'" />
     <PackageReference Include="Fluent.Ribbon" />
     <PackageReference Include="gong-wpf-dragdrop" />
-    <PackageReference Include="Hardcodet.NotifyIcon.Wpf" />
     <PackageReference Include="Humanizer" />
     <PackageReference Include="LargeXlsx" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Client" />

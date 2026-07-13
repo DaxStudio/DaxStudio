@@ -1116,6 +1116,11 @@ namespace DaxStudio.UI.ViewModels
                 Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnActivatedAsync), "Updating EventAggregator Subscriptions");
                 UnsubscribeAll();
                 SubscribeAll();
+
+                // Now that this (the active document) and its Output pane are listening, show the
+                // one-off debug-logging notice if logging was enabled at startup (e.g. via Shift key).
+                ShowDebugLoggingNotification();
+
                 Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnActivatedAsync), "Setting SelectedTarget");
 
                 _ribbon.SelectedTarget = SelectedTarget;
@@ -2431,6 +2436,23 @@ namespace DaxStudio.UI.ViewModels
         public void OutputMessage(OutputMessage message)
         {
             OutputPane?.AddMessage(message);
+        }
+
+        private static bool _debugLoggingNotificationShown;
+        /// <summary>
+        /// When debug logging is enabled, adds a one-off message (per session) to the Output pane
+        /// with a link to the log folder. This replaces the old tray-notification balloon so we no
+        /// longer depend on the Hardcodet NotifyIcon package. It is called from OnActivatedAsync
+        /// (after the document has subscribed to the event aggregator) so the message reliably lands
+        /// in the active document's Output pane rather than racing document/pane initialization.
+        /// </summary>
+        private void ShowDebugLoggingNotification()
+        {
+            if (_debugLoggingNotificationShown) return;
+            if (_host == null || !_host.DebugLogging) return;
+
+            _debugLoggingNotificationShown = true;
+            OutputPane?.AddMessage(new FolderOutputMessage("Debug Logging enabled", ApplicationPaths.LogPath));
         }
 
         public void OutputMessage(string message, double duration)
@@ -4117,7 +4139,16 @@ namespace DaxStudio.UI.ViewModels
             //    if (message.ActivateOutput) ActivateOutput();
             //}
 
-            OutputMessage(message);
+            // Subclasses of OutputMessage (e.g. FolderOutputMessage, LocationOutputMessage) have
+            // their own data templates and are rendered by adding the message object as-is. Plain
+            // OutputMessages instead go through the type switch below which applies the
+            // success/error/warning styling. Previously we did BOTH, which added every message to
+            // the Output pane twice.
+            if (message.GetType() != typeof(OutputMessage))
+            {
+                OutputMessage(message);
+                return Task.CompletedTask;
+            }
 
             switch (message.MessageType)
             {
