@@ -59,8 +59,8 @@ namespace ADOTabular
 #endif
             > OnAccessTokenExpired
         {
-            get => _adomdConn.OnAccessTokenExpired;
-            set => _adomdConn.OnAccessTokenExpired = value;
+            get => _adomdConn?.OnAccessTokenExpired;
+            set { if (_adomdConn != null) _adomdConn.OnAccessTokenExpired = value; }
         }
 
         public ADOTabularConnection(string connectionString, AdomdType connectionType, bool showHiddenObjects, ADOTabularMetadataDiscovery visitorType)

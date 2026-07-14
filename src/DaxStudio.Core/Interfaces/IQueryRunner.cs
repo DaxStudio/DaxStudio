@@ -41,5 +41,11 @@ namespace DaxStudio.Core.Interfaces
         void OutputQueryError(string errorMessage);
         void ClearQueryError();
         void ClearQueryResults();
+
+        /// <summary>
+        /// Displays the tree-grid produced by a Comment Script <c>--&gt; SHOW</c> command
+        /// (DEPENDENCIES / LAST_UPDATED / MAX_UPDATED) in the Results pane.
+        /// </summary>
+        void DisplayShowTree(IList<DaxStudio.Core.Model.ShowTreeNode> roots, DaxStudio.Parsers.CommentScript.ShowType showType);
     }
 }

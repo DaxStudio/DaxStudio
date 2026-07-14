@@ -1,0 +1,129 @@
+using Antlr4.Runtime;
+using DaxStudio.Parsers.Dax;
+using DaxStudio.Parsers.Metadata;
+using System.Collections.Generic;
+
+using DaxStudio.Parsers.Grammars.Generated;
+namespace DaxStudio.Parsers.Dax
+{
+    /// <summary>
+    /// Main facade for the DAX parser, wrapping all intellisense functionality.
+    /// </summary>
+    public class DaxParserService
+    {
+        private readonly IModelMetadataProvider _metadata;
+        private readonly DaxCompletionProvider _completionProvider;
+
+        public DaxParserService(IModelMetadataProvider metadata)
+        {
+            _metadata = metadata;
+            _completionProvider = metadata != null ? new DaxCompletionProvider(metadata) : null;
+        }
+
+        /// <summary>
+        /// Parses DAX input and returns the parse result with any errors.
+        /// </summary>
+        public ParseResult Parse(string input)
+        {
+            ICharStream chars = new DAXCharStream(input);
+            var lexer = new DAXLexer(chars);
+            var errorListener = new DaxIntellisenseErrorListener();
+            lexer.RemoveErrorListeners();
+            lexer.AddErrorListener(errorListener);
+
+            var tokenStream = new CommonTokenStream(lexer);
+            var parser = new DAXParser(tokenStream);
+            parser.RemoveErrorListeners();
+            parser.AddErrorListener(errorListener);
+
+            var strategy = new DaxIntellisenseErrorStrategy();
+            parser.ErrorHandler = strategy;
+
+            var tree = parser.daxQuery();
+
+            return new ParseResult
+            {
+                Tree = tree,
+                Errors = errorListener.Errors,
+                Success = errorListener.Errors.Count == 0
+            };
+        }
+
+        /// <summary>
+        /// Gets the editing state at the cursor position for intellisense.
+        /// </summary>
+        public Metadata.DaxState GetEditState(string input, int cursorOffset)
+        {
+            return DaxCursorStateWalker.GetStateAtCursor(input, cursorOffset);
+        }
+
+        /// <summary>
+        /// Gets completion items at the cursor position.
+        /// </summary>
+        public IReadOnlyList<CompletionItem> GetCompletions(string input, int cursorOffset)
+        {
+            if (_completionProvider == null)
+                return new List<CompletionItem>();
+
+            var state = GetEditState(input, cursorOffset);
+            return _completionProvider.GetCompletions(state);
+        }
+
+        /// <summary>
+        /// Gets completion items for a pre-computed DaxState.
+        /// </summary>
+        public IReadOnlyList<CompletionItem> GetCompletions(Metadata.DaxState state)
+        {
+            if (_completionProvider == null)
+                return new List<CompletionItem>();
+
+            return _completionProvider.GetCompletions(state);
+        }
+
+        /// <summary>
+        /// Gets signature help at the cursor position.
+        /// </summary>
+        public SignatureHelpResult GetSignatureHelp(string input, int cursorOffset)
+        {
+            return DaxSignatureHelper.GetSignatureHelp(input, cursorOffset, _metadata);
+        }
+
+        /// <summary>
+        /// Validates variable scoping rules in DAX input.
+        /// Returns a list of scope errors (forward references, undefined variables).
+        /// </summary>
+        public List<DaxScopeValidator.ScopeError> ValidateScope(string input, IModelMetadataProvider metadata = null)
+        {
+            var result = Parse(input);
+            if (!result.Success || result.Tree == null)
+                return new List<DaxScopeValidator.ScopeError>();
+            return DaxScopeValidator.Validate(result.Tree, metadata);
+        }
+
+        /// <summary>
+        /// Tokenizes DAX input and returns all tokens.
+        /// </summary>
+        public IList<IToken> Tokenize(string input)
+        {
+            ICharStream chars = new DAXCharStream(input);
+            var lexer = new DAXLexer(chars);
+            lexer.RemoveErrorListeners();
+            return lexer.GetAllTokens();
+        }
+    }
+
+    /// <summary>
+    /// Result of a parse operation.
+    /// </summary>
+    public class ParseResult
+    {
+        public DAXParser.DaxQueryContext Tree { get; set; }
+        public List<string> Errors { get; set; }
+        public bool Success { get; set; }
+
+        public ParseResult()
+        {
+            Errors = new List<string>();
+        }
+    }
+}

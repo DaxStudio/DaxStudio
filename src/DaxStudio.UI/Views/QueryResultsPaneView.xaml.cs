@@ -1,4 +1,5 @@
-﻿using DaxStudio.UI.Controls;
+using DaxStudio.Controls;
+using DaxStudio.UI.Controls;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,6 +24,30 @@ namespace DaxStudio.UI.Views
         public QueryResultsPaneView()
         {
             InitializeComponent();
+
+            // A DynamicResource set directly on a DataGridColumn (like the SHOW tree's
+            // TreeColumn) is not re-evaluated when the theme dictionary is swapped, because
+            // columns are not part of the visual tree. Re-apply the theme brushes to the
+            // tree-line columns whenever the actual theme changes so the tree lines re-colour
+            // on a dark<->light switch instead of keeping a stale (e.g. white) brush.
+            ModernWpf.ThemeManager.AddActualThemeChangedHandler(this, OnActualThemeChanged);
+            Loaded += (s, e) => ApplyTreeColumnThemeBrushes();
+        }
+
+        private void OnActualThemeChanged(object sender, RoutedEventArgs e)
+        {
+            ApplyTreeColumnThemeBrushes();
+        }
+
+        private void ApplyTreeColumnThemeBrushes()
+        {
+            if (ShowTree == null) return;
+            if (!(TryFindResource("Theme.Brush.Default.Fore") is Brush lineStroke)) return;
+
+            foreach (var column in ShowTree.Columns.OfType<TreeColumn>())
+            {
+                column.LineStroke = lineStroke;
+            }
         }
     }
 }

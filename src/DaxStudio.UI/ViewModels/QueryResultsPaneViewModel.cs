@@ -23,6 +23,7 @@ using System.Windows.Input;
 using UnitComboLib.Unit.Screen;
 using UnitComboLib.ViewModel;
 using DaxStudio.Core.Interfaces;
+using DaxStudio.Core.Model;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -149,7 +150,7 @@ namespace DaxStudio.UI.ViewModels
         //private bool _showResultsMessage;
         public bool ShowResultsMessage
         {
-            get { return !ShowResultsTable && !ShowErrorMessage; }
+            get { return !ShowResultsTable && !ShowErrorMessage && !IsShowTreeVisible; }
             //private set
             //{
             //    _showResultsMessage = value;
@@ -257,6 +258,8 @@ namespace DaxStudio.UI.ViewModels
 
         public Task HandleAsync(QueryStartedEvent message, CancellationToken cancellation)
         {
+            // hide any tree from a previous --> SHOW command when a new query starts
+            HideShowTree();
             // if we are not outputting to the grid it should be cleared
             if (!ShowResultsTable) Clear();
             IsBusy = true;
@@ -532,8 +535,82 @@ namespace DaxStudio.UI.ViewModels
         {
             ResultsDataSet?.Tables?.Clear();
             ShowResultsTable = false;
+            HideShowTree();
             ResultsMessage = "Results Cleared";
         }
+
+        #region SHOW command tree-grid
+
+        private readonly BindableCollection<ShowTreeNode> _showTreeRoots = new BindableCollection<ShowTreeNode>();
+        /// <summary>Root nodes for the tree-grid rendered by the Comment Script <c>--&gt; SHOW</c> commands.</summary>
+        public BindableCollection<ShowTreeNode> ShowTreeRoots => _showTreeRoots;
+
+        private bool _isShowTreeVisible;
+        /// <summary>When true the SHOW tree-grid overlays (replaces) the normal results grid.</summary>
+        public bool IsShowTreeVisible
+        {
+            get => _isShowTreeVisible;
+            set
+            {
+                _isShowTreeVisible = value;
+                NotifyOfPropertyChange(() => IsShowTreeVisible);
+                NotifyOfPropertyChange(() => ShowResultsMessage);
+            }
+        }
+
+        private string _showTreeTitle = string.Empty;
+        public string ShowTreeTitle
+        {
+            get => _showTreeTitle;
+            set { _showTreeTitle = value; NotifyOfPropertyChange(() => ShowTreeTitle); }
+        }
+
+        private bool _showTreeTimestampColumn;
+        /// <summary>The Last Modified column is only relevant for the LAST_UPDATED / MAX_UPDATED variants.</summary>
+        public bool ShowTreeTimestampColumn
+        {
+            get => _showTreeTimestampColumn;
+            set { _showTreeTimestampColumn = value; NotifyOfPropertyChange(() => ShowTreeTimestampColumn); }
+        }
+
+        /// <summary>Populates and shows the SHOW tree-grid. Called from the query pipeline via the runner.</summary>
+        public void DisplayShowTree(IList<ShowTreeNode> roots, DaxStudio.Parsers.CommentScript.ShowType showType)
+        {
+            Execute.OnUIThread(() =>
+            {
+                _showTreeRoots.Clear();
+                if (roots != null) _showTreeRoots.AddRange(roots);
+
+                switch (showType)
+                {
+                    case DaxStudio.Parsers.CommentScript.ShowType.LastUpdated:
+                        ShowTreeTitle = "Last Updated";
+                        ShowTreeTimestampColumn = true;
+                        break;
+                    case DaxStudio.Parsers.CommentScript.ShowType.MaxUpdated:
+                        ShowTreeTitle = "Most Recently Updated";
+                        ShowTreeTimestampColumn = true;
+                        break;
+                    case DaxStudio.Parsers.CommentScript.ShowType.Dependencies:
+                    default:
+                        ShowTreeTitle = "Dependencies";
+                        ShowTreeTimestampColumn = false;
+                        break;
+                }
+
+                IsShowTreeVisible = true;
+            });
+        }
+
+        /// <summary>Hides the SHOW tree-grid, revealing the normal results grid again. Bound to the Hide button.</summary>
+        public void HideShowTree()
+        {
+            _showTreeRoots.Clear();
+            IsShowTreeVisible = false;
+        }
+
+        #endregion
+
 
         public void CopyError()
         {

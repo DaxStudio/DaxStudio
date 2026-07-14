@@ -184,5 +184,29 @@ namespace DaxStudio.CommandLine.UIStubs
         {
             Log.Information(message);
         }
+
+        public void DisplayShowTree(System.Collections.Generic.IList<ShowTreeNode> roots, DaxStudio.Parsers.CommentScript.ShowType showType)
+        {
+            Log.Information("SHOW {showType}", showType);
+            if (roots == null) return;
+            foreach (var root in roots)
+            {
+                LogShowTreeNode(root, 0, showType);
+            }
+        }
+
+        private static void LogShowTreeNode(ShowTreeNode node, int depth, DaxStudio.Parsers.CommentScript.ShowType showType)
+        {
+            if (node == null) return;
+            var indent = new string(' ', depth * 2);
+            var timestamp = showType == DaxStudio.Parsers.CommentScript.ShowType.Dependencies || string.IsNullOrEmpty(node.LastModifiedDisplay)
+                ? string.Empty
+                : $"  [{node.LastModifiedDisplay}]";
+            Log.Information("{indent}{name} ({objectType}){timestamp}", indent, node.Name, node.ObjectType, timestamp);
+            foreach (var child in node.Children)
+            {
+                LogShowTreeNode(child, depth + 1, showType);
+            }
+        }
     }
 }

@@ -6,6 +6,7 @@ using DaxStudio.Common.Enums;
 using DaxStudio.Core.Model;
 using DaxStudio.Interfaces;
 using DaxStudio.Parsers;
+using DaxStudio.Parsers.StorageEngine;
 using DaxStudio.QueryTrace;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;

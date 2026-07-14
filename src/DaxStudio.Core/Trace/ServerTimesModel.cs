@@ -15,6 +15,7 @@ using DaxStudio.Core.Extensions;
 using DaxStudio.Interfaces;
 using DaxStudio.Interfaces.Enums;
 using DaxStudio.Parsers;
+using DaxStudio.Parsers.StorageEngine;
 using DaxStudio.QueryTrace;
 using Newtonsoft.Json;
 using Serilog;

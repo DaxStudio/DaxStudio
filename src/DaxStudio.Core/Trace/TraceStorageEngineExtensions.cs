@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using DaxStudio.Parsers;
+using DaxStudio.Parsers.StorageEngine;
 
 namespace DaxStudio.Core.Trace
 {

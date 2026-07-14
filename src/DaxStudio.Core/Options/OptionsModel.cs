@@ -1850,6 +1850,24 @@ namespace DaxStudio.Core.Options
                 NotifyOfPropertyChange(() => UseAntlrParser);
             }
         }
+
+        private bool _useNewPreprocessor;
+        [DataMember, DefaultValue(false)]
+        [Category("Preview")]
+        [Subcategory("Editor")]
+        [DisplayName("Use New Query Preprocessor")]
+        [Description("Use the new grammar-based preprocessor instead of the regex-based one when preparing queries for execution.\nParameter handling (@name prompting and <Parameters> blocks) is preserved. Comment-script commands other than PARAMETER are parsed but not yet executed.\nWARNING: this is a preview feature and its behaviour may change before the final release.")]
+        public bool UseNewPreprocessor
+        {
+            get => _useNewPreprocessor;
+
+            set
+            {
+                _useNewPreprocessor = value;
+                SettingProvider.SetValue(nameof(UseNewPreprocessor), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => UseNewPreprocessor);
+            }
+        }
         #endregion
 
 

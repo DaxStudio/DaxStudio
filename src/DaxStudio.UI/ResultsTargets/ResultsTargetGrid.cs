@@ -8,8 +8,11 @@ using DaxStudio.UI.Interfaces;
 using Serilog;
 using DaxStudio.UI.Extensions;
 using System.Data;
+using System.Linq;
 using DaxStudio.Common.Extensions;
 using DaxStudio.Core.Interfaces;
+using DaxStudio.Core.Model;
+using DaxStudio.Parsers.CommentScript;
 
 namespace DaxStudio.UI.ResultsTargets
 {
@@ -56,52 +59,178 @@ namespace DaxStudio.UI.ResultsTargets
                     long durationMs = 0;
                     int queryCnt = 1;
 
+                    var sw = Stopwatch.StartNew();
+
+                    // A "--> SHOW" command produces its own tree-grid output in place of the normal
+                    // results grid. Handle it before clearing/resetting the results grid so the
+                    // "Waiting for query results" placeholder is never shown for a SHOW command.
+                    if (TryHandleShowCommand(runner, textProvider))
+                    {
+                        return;
+                    }
+
                     // Clear any existing results
                     runner.ResultsDataSet = new DataSet();
                     runner.SetResultsMessage("Waiting for query results", OutputTarget.Grid);
                     runner.RowCount = 0;
 
-                    var sw = Stopwatch.StartNew();
+                    // When the pre-processor produced more than one executable batch (script sections
+                    // separated by "--> GO") run each in turn and append its result tables. Otherwise
+                    // this is a single batch equal to the whole processed query text (unchanged path).
+                    var batches = GetExecutableBatches(textProvider);
+                    var isSessionsDmv = batches.Any(b => b.Contains(Common.Constants.SessionsDmv, StringComparison.OrdinalIgnoreCase));
+                    var combined = new DataSet();
+                    int tableIdx = 1;
+                    bool anyReader = false;
 
-                    var dq = textProvider.QueryText;
-                    //var res = runner.ExecuteDataTableQuery(dq);
-                    var isSessionsDmv = dq.Contains(Common.Constants.SessionsDmv, StringComparison.OrdinalIgnoreCase);
-
-
-                    using (var dataReader = runner.ExecuteDataReaderQuery(dq, textProvider.ParameterCollection))
+                    foreach (var dq in batches)
                     {
-                        if (dataReader != null)
+                        // Future hook: dispatch this batch's comment-script commands (CLEAR CACHE,
+                        // TRACE, USE, ...) before running the batch query.
+                        var batchIsSessionsDmv = dq.Contains(Common.Constants.SessionsDmv, StringComparison.OrdinalIgnoreCase);
+                        using (var dataReader = runner.ExecuteDataReaderQuery(dq, textProvider.ParameterCollection))
                         {
-                            Log.Verbose("Start Processing Grid DataReader (Elapsed: {elapsed})" , sw.ElapsedMilliseconds);
-                            runner.ResultsDataSet = dataReader.ConvertToDataSet(autoFormat, isSessionsDmv, autoDateFormat, runner.Connection);
-                            Log.Verbose("End Processing Grid DataReader (Elapsed: {elapsed})", sw.ElapsedMilliseconds);
-
-                            sw.Stop();
-
-                            // add extended properties to DataSet
-                            runner.ResultsDataSet.ExtendedProperties.Add("QueryText", dq);
-                            runner.ResultsDataSet.ExtendedProperties.Add("IsDiscoverSessions", isSessionsDmv);
-
-                            durationMs = sw.ElapsedMilliseconds;
-                            var rowCnt = runner.ResultsDataSet.Tables[0].Rows.Count;
-                            foreach (DataTable tbl in runner.ResultsDataSet.Tables)
+                            if (dataReader != null)
                             {
-                                runner.OutputMessage(
-                                    string.Format("Query {2} Completed ({0:N0} row{1} returned)", tbl.Rows.Count,
-                                                    tbl.Rows.Count == 1 ? "" : "s", queryCnt));
-                                queryCnt++;
+                                anyReader = true;
+                                Log.Verbose("Start Processing Grid DataReader (Elapsed: {elapsed})", sw.ElapsedMilliseconds);
+                                var batchDataSet = dataReader.ConvertToDataSet(autoFormat, batchIsSessionsDmv, autoDateFormat, runner.Connection);
+                                AppendTables(combined, batchDataSet, ref tableIdx);
+                                Log.Verbose("End Processing Grid DataReader (Elapsed: {elapsed})", sw.ElapsedMilliseconds);
                             }
-                            runner.RowCount = rowCnt;
-                            // activate the result only when Counters are not selected...
-                            runner.ActivateResults();
-                            runner.OutputMessage("Query Batch Completed", durationMs);
                         }
-                        else
-                            runner.OutputError("Query Batch Completed with errors listed above (you may need to scroll up)", durationMs);
-
                     }
 
+                    sw.Stop();
+                    durationMs = sw.ElapsedMilliseconds;
+
+                    if (anyReader)
+                    {
+                        // add extended properties to DataSet
+                        combined.ExtendedProperties.Add("QueryText", textProvider.QueryText);
+                        combined.ExtendedProperties.Add("IsDiscoverSessions", isSessionsDmv);
+
+                        // Assign the fully populated DataSet so the results pane is notified and
+                        // binds the grid (assigning the property is what raises the change event).
+                        runner.ResultsDataSet = combined;
+
+                        var rowCnt = combined.Tables.Count > 0 ? combined.Tables[0].Rows.Count : 0;
+                        foreach (DataTable tbl in combined.Tables)
+                        {
+                            runner.OutputMessage(
+                                string.Format("Query {2} Completed ({0:N0} row{1} returned)", tbl.Rows.Count,
+                                                tbl.Rows.Count == 1 ? "" : "s", queryCnt));
+                            queryCnt++;
+                        }
+                        runner.RowCount = rowCnt;
+                        // activate the result only when Counters are not selected...
+                        runner.ActivateResults();
+                        runner.OutputMessage("Query Batch Completed", durationMs);
+                    }
+                    else
+                        runner.OutputError("Query Batch Completed with errors listed above (you may need to scroll up)", durationMs);
+
                 });
+        }
+
+        // Detects a "--> SHOW" command in any parsed batch and, if found, builds the appropriate
+        // tree (query dependencies, or model metadata timestamps) and pushes it into the Results
+        // pane instead of running the batch queries. Returns true when a SHOW command was handled.
+        internal static bool TryHandleShowCommand(IQueryRunner runner, IQueryTextProvider textProvider)
+        {
+            var batches = textProvider.QueryInfo?.ScriptBatches;
+            if (batches == null || batches.Count == 0) return false;
+
+            ScriptBatch showBatch = null;
+            ShowCommand showCommand = null;
+            foreach (var batch in batches)
+            {
+                var cmd = batch.Commands.OfType<ShowCommand>().FirstOrDefault();
+                if (cmd != null)
+                {
+                    showBatch = batch;
+                    showCommand = cmd;
+                    break;
+                }
+            }
+
+            if (showCommand == null) return false;
+
+            try
+            {
+                System.Collections.Generic.List<ShowTreeNode> roots;
+                switch (showCommand.ShowType)
+                {
+                    case ShowType.Dependencies:
+                        var query = string.IsNullOrWhiteSpace(showBatch.QueryText)
+                            ? textProvider.QueryText
+                            : showBatch.QueryText;
+                        if (string.IsNullOrWhiteSpace(query))
+                        {
+                            runner.OutputError("--> SHOW DEPENDENCIES requires a DAX query to analyze");
+                            return true;
+                        }
+                        roots = runner.Connection.BuildQueryDependencyTree(query);
+                        break;
+                    case ShowType.LastUpdated:
+                        roots = runner.Connection.BuildMetadataTimestampTree(false);
+                        break;
+                    case ShowType.MaxUpdated:
+                        roots = runner.Connection.BuildMetadataTimestampTree(true);
+                        break;
+                    default:
+                        runner.OutputError($"Unknown SHOW command type: {showCommand.ShowType}");
+                        return true;
+                }
+
+                if (roots == null || roots.Count == 0)
+                {
+                    runner.OutputWarning($"--> SHOW {showCommand.ShowType} returned no items");
+                    runner.SetResultsMessage($"SHOW {showCommand.ShowType} returned no items", OutputTarget.Grid);
+                    return true;
+                }
+
+                runner.DisplayShowTree(roots, showCommand.ShowType);
+                runner.OutputMessage($"--> SHOW {showCommand.ShowType} completed");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "{class} {method} error handling SHOW command", nameof(ResultsTargetGrid), nameof(TryHandleShowCommand));
+                runner.OutputError($"Error running --> SHOW {showCommand.ShowType}: {ex.Message}");
+            }
+
+            return true;
+        }
+
+        // Returns the executable query text for each batch to run. When the pre-processor produced
+        // multiple non-empty batches (sections separated by "--> GO") each is returned in order;
+        // otherwise a single element equal to the whole processed query text is returned so the
+        // classic / single-batch path is byte-identical to the previous behaviour.
+        private static System.Collections.Generic.List<string> GetExecutableBatches(IQueryTextProvider textProvider)
+        {
+            var batches = textProvider.QueryInfo?.ScriptBatches;
+            if (batches != null && batches.Count > 1)
+            {
+                var list = batches.Select(b => b.QueryText)
+                                  .Where(t => !string.IsNullOrWhiteSpace(t))
+                                  .ToList();
+                if (list.Count > 1) return list;
+            }
+            return new System.Collections.Generic.List<string> { textProvider.QueryText };
+        }
+
+        // Moves the tables from a single batch's result DataSet into the accumulating DataSet,
+        // renaming them to a running sequential index so table names stay unique across batches
+        // (this matches the naming a single multi-result query would produce).
+        private static void AppendTables(DataSet target, DataSet source, ref int tableIdx)
+        {
+            foreach (var tbl in source.Tables.Cast<DataTable>().ToList())
+            {
+                source.Tables.Remove(tbl);
+                tbl.TableName = tableIdx.ToString();
+                tableIdx++;
+                target.Tables.Add(tbl);
+            }
         }
 
     }

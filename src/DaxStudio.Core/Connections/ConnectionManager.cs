@@ -5,6 +5,7 @@ using ADOTabular.MetadataInfo;
 using Caliburn.Micro;
 using DaxStudio.Interfaces;
 using DaxStudio.Core.Events;
+using DaxStudio.Core.Model;
 using Polly;
 using Polly.Retry;
 using Serilog;
@@ -1153,6 +1154,280 @@ namespace DaxStudio.Core.Connections
             }
             return dependentMeasures;
         }
+
+        #region Comment Script "--> SHOW" tree builders
+
+        /// <summary>
+        /// Builds a hierarchical dependency tree for the objects referenced by the supplied query.
+        /// The direct references of the query become the root nodes and each referenced object is
+        /// recursively expanded (all object types) using the DISCOVER_CALC_DEPENDENCY DMV.
+        /// </summary>
+        public List<ShowTreeNode> BuildQueryDependencyTree(string query)
+        {
+            if (!IsConnected)
+            {
+                throw new ApplicationException("Connection required to show dependencies");
+            }
+
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(BuildQueryDependencyTree), "start");
+
+            var roots = new List<ShowTreeNode>();
+            // dedupe roots by their stable identity to avoid repeating the same referenced object
+            var rootKeys = new HashSet<string>();
+
+            var dmvQuery = $"SELECT OBJECT_TYPE, OBJECT, REFERENCED_OBJECT_TYPE, REFERENCED_TABLE, REFERENCED_OBJECT\r\nFROM $SYSTEM.DISCOVER_CALC_DEPENDENCY\r\nWHERE QUERY='{query.Replace("'", "''")}'";
+            using (var dr = ExecuteReader(dmvQuery, null))
+            {
+                int refTypeOrd = OrdinalOrMinusOne(dr, "REFERENCED_OBJECT_TYPE");
+                int refTableOrd = OrdinalOrMinusOne(dr, "REFERENCED_TABLE");
+                int refObjectOrd = OrdinalOrMinusOne(dr, "REFERENCED_OBJECT");
+                while (dr.Read())
+                {
+                    var refObject = GetStringOrNull(dr, refObjectOrd);
+                    if (string.IsNullOrEmpty(refObject)) continue;
+                    var refType = GetStringOrNull(dr, refTypeOrd);
+                    var refTable = GetStringOrNull(dr, refTableOrd);
+                    if (rootKeys.Add(NodeIdentity(refType, refTable, refObject)))
+                    {
+                        roots.Add(new ShowTreeNode(refObject, refType, refTable));
+                    }
+                }
+            }
+
+            var expanded = new HashSet<string>();
+            foreach (var root in roots)
+            {
+                ExpandDependencyNode(root, expanded);
+            }
+
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(BuildQueryDependencyTree), $"end - {roots.Count} root(s)");
+            return roots;
+        }
+
+        /// <summary>
+        /// Recursively expands a dependency node by querying the objects it references. Uses the
+        /// <paramref name="expanded"/> set (keyed by a stable identity) to guarantee a finite tree:
+        /// an object that has already been expanded elsewhere is still added but not re-expanded.
+        /// </summary>
+        private void ExpandDependencyNode(ShowTreeNode node, HashSet<string> expanded)
+        {
+            var key = NodeIdentity(node.ObjectType, node.TableName, node.Name);
+            // if this identity was already fully expanded, keep the node but do not recurse (avoids cycles)
+            if (!expanded.Add(key)) return;
+
+            var where = $"[OBJECT]='{node.Name.Replace("'", "''")}'";
+            if (!string.IsNullOrEmpty(node.ObjectType)) where += $" AND [OBJECT_TYPE]='{node.ObjectType.Replace("'", "''")}'";
+            if (!string.IsNullOrEmpty(node.TableName)) where += $" AND [TABLE]='{node.TableName.Replace("'", "''")}'";
+
+            var dmvDependency = $"SELECT REFERENCED_OBJECT_TYPE, REFERENCED_TABLE, REFERENCED_OBJECT\r\nFROM $SYSTEM.DISCOVER_CALC_DEPENDENCY\r\nWHERE {where}";
+
+            // materialize the children before recursing because the reader holds a live connection
+            var children = new List<ShowTreeNode>();
+            using (var dr = ExecuteReader(dmvDependency, null))
+            {
+                int refTypeOrd = OrdinalOrMinusOne(dr, "REFERENCED_OBJECT_TYPE");
+                int refTableOrd = OrdinalOrMinusOne(dr, "REFERENCED_TABLE");
+                int refObjectOrd = OrdinalOrMinusOne(dr, "REFERENCED_OBJECT");
+                while (dr.Read())
+                {
+                    var refObject = GetStringOrNull(dr, refObjectOrd);
+                    if (string.IsNullOrEmpty(refObject)) continue;
+                    var refType = GetStringOrNull(dr, refTypeOrd);
+                    var refTable = GetStringOrNull(dr, refTableOrd);
+                    // skip a direct self-reference
+                    if (NodeIdentity(refType, refTable, refObject) == key) continue;
+                    children.Add(new ShowTreeNode(refObject, refType, refTable));
+                }
+            }
+
+            foreach (var child in children)
+            {
+                node.Children.Add(child);
+                ExpandDependencyNode(child, expanded);
+            }
+        }
+
+        /// <summary>
+        /// Builds a tree of the model metadata (tables -> columns/measures/partitions) annotated with
+        /// each item's last-modified timestamp using the TMSCHEMA DMVs. When <paramref name="maxOnly"/>
+        /// is true the tree is pruned to only the item(s) whose timestamp equals the single global maximum
+        /// (keeping the owning table node(s) for context).
+        /// </summary>
+        public List<ShowTreeNode> BuildMetadataTimestampTree(bool maxOnly)
+        {
+            if (!IsConnected)
+            {
+                throw new ApplicationException("Connection required to show metadata timestamps");
+            }
+
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(BuildMetadataTimestampTree), $"start (maxOnly={maxOnly})");
+
+            // map table ID -> table node, and table ID -> table name
+            var tableNodes = new Dictionary<string, ShowTreeNode>();
+            var tableNames = new Dictionary<string, string>();
+
+            // --- Tables (root nodes) ---
+            using (var dr = ExecuteReader("SELECT * FROM $SYSTEM.TMSCHEMA_TABLES", null))
+            {
+                int idOrd = OrdinalOrMinusOne(dr, "ID");
+                int nameOrd = OrdinalOrMinusOne(dr, "Name");
+                int modOrd = OrdinalOrMinusOne(dr, "ModifiedTime");
+                while (dr.Read())
+                {
+                    var id = GetStringOrNull(dr, idOrd);
+                    var name = GetStringOrNull(dr, nameOrd);
+                    if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(name)) continue;
+                    tableNodes[id] = new ShowTreeNode(name, "TABLE", null, GetDateTimeOrNull(dr, modOrd));
+                    tableNames[id] = name;
+                }
+            }
+
+            // --- Columns ---
+            using (var dr = ExecuteReader("SELECT * FROM $SYSTEM.TMSCHEMA_COLUMNS", null))
+            {
+                int tableIdOrd = OrdinalOrMinusOne(dr, "TableID");
+                int explicitNameOrd = OrdinalOrMinusOne(dr, "ExplicitName");
+                int inferredNameOrd = OrdinalOrMinusOne(dr, "InferredName");
+                int modOrd = OrdinalOrMinusOne(dr, "ModifiedTime");
+                int structModOrd = OrdinalOrMinusOne(dr, "StructureModifiedTime");
+                while (dr.Read())
+                {
+                    var tableId = GetStringOrNull(dr, tableIdOrd);
+                    if (string.IsNullOrEmpty(tableId) || !tableNodes.TryGetValue(tableId, out var parent)) continue;
+                    var name = GetStringOrNull(dr, explicitNameOrd) ?? GetStringOrNull(dr, inferredNameOrd);
+                    if (string.IsNullOrEmpty(name)) continue; // skip null-named (e.g. system RowNumber) columns
+                    var lastModified = MaxDate(GetDateTimeOrNull(dr, modOrd), GetDateTimeOrNull(dr, structModOrd));
+                    parent.Children.Add(new ShowTreeNode(name, "COLUMN", tableNames[tableId], lastModified));
+                }
+            }
+
+            // --- Measures ---
+            using (var dr = ExecuteReader("SELECT * FROM $SYSTEM.TMSCHEMA_MEASURES", null))
+            {
+                int tableIdOrd = OrdinalOrMinusOne(dr, "TableID");
+                int nameOrd = OrdinalOrMinusOne(dr, "Name");
+                int modOrd = OrdinalOrMinusOne(dr, "ModifiedTime");
+                while (dr.Read())
+                {
+                    var tableId = GetStringOrNull(dr, tableIdOrd);
+                    if (string.IsNullOrEmpty(tableId) || !tableNodes.TryGetValue(tableId, out var parent)) continue;
+                    var name = GetStringOrNull(dr, nameOrd);
+                    if (string.IsNullOrEmpty(name)) continue;
+                    parent.Children.Add(new ShowTreeNode(name, "MEASURE", tableNames[tableId], GetDateTimeOrNull(dr, modOrd)));
+                }
+            }
+
+            // --- Partitions ---
+            using (var dr = ExecuteReader("SELECT * FROM $SYSTEM.TMSCHEMA_PARTITIONS", null))
+            {
+                int tableIdOrd = OrdinalOrMinusOne(dr, "TableID");
+                int nameOrd = OrdinalOrMinusOne(dr, "Name");
+                int modOrd = OrdinalOrMinusOne(dr, "ModifiedTime");
+                int refreshedOrd = OrdinalOrMinusOne(dr, "RefreshedTime");
+                while (dr.Read())
+                {
+                    var tableId = GetStringOrNull(dr, tableIdOrd);
+                    if (string.IsNullOrEmpty(tableId) || !tableNodes.TryGetValue(tableId, out var parent)) continue;
+                    var name = GetStringOrNull(dr, nameOrd);
+                    if (string.IsNullOrEmpty(name)) continue;
+                    var lastModified = MaxDate(GetDateTimeOrNull(dr, modOrd), GetDateTimeOrNull(dr, refreshedOrd));
+                    parent.Children.Add(new ShowTreeNode(name, "PARTITION", tableNames[tableId], lastModified));
+                }
+            }
+
+            // sort children then tables for stable output
+            var tables = tableNodes.Values.ToList();
+            foreach (var table in tables)
+            {
+                table.Children.Sort((x, y) => string.Compare(x.Name, y.Name, StringComparison.OrdinalIgnoreCase));
+            }
+            tables.Sort((x, y) => string.Compare(x.Name, y.Name, StringComparison.OrdinalIgnoreCase));
+
+            if (!maxOnly)
+            {
+                Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(BuildMetadataTimestampTree), $"end - {tables.Count} table(s)");
+                return tables;
+            }
+
+            // compute the single global maximum timestamp across all nodes (tables + children)
+            DateTime? max = null;
+            foreach (var table in tables)
+            {
+                if (table.LastModifiedUtc.HasValue) max = MaxDate(max, table.LastModifiedUtc);
+                foreach (var child in table.Children)
+                {
+                    if (child.LastModifiedUtc.HasValue) max = MaxDate(max, child.LastModifiedUtc);
+                }
+            }
+
+            if (!max.HasValue)
+            {
+                Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(BuildMetadataTimestampTree), "end - no timestamps found");
+                return new List<ShowTreeNode>();
+            }
+
+            // prune to the item(s) at the maximum, keeping ancestor table nodes for context
+            var result = new List<ShowTreeNode>();
+            foreach (var table in tables)
+            {
+                var matchingChildren = table.Children.Where(c => c.LastModifiedUtc == max).ToList();
+                var tableAtMax = table.LastModifiedUtc == max;
+                if (tableAtMax || matchingChildren.Count > 0)
+                {
+                    var prunedTable = new ShowTreeNode(table.Name, table.ObjectType, table.TableName, table.LastModifiedUtc);
+                    foreach (var child in matchingChildren)
+                    {
+                        prunedTable.Children.Add(child);
+                    }
+                    result.Add(prunedTable);
+                }
+            }
+
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(BuildMetadataTimestampTree), $"end - max={max:o}, {result.Count} table(s)");
+            return result;
+        }
+
+        /// <summary>Builds a stable identity key for a tree node used to guard against cycles.</summary>
+        private static string NodeIdentity(string objectType, string tableName, string name)
+            => $"{objectType}|{tableName}|{name}";
+
+        /// <summary>Resolves a column ordinal by name from the reader schema, returning -1 when absent.</summary>
+        private static int OrdinalOrMinusOne(AdomdDataReader dr, string columnName)
+        {
+            for (int i = 0; i < dr.FieldCount; i++)
+            {
+                if (string.Equals(dr.GetName(i), columnName, StringComparison.OrdinalIgnoreCase)) return i;
+            }
+            return -1;
+        }
+
+        /// <summary>Reads a string value defensively, returning null for missing columns or DBNull.</summary>
+        private static string GetStringOrNull(AdomdDataReader dr, int ordinal)
+        {
+            if (ordinal < 0 || dr.IsDBNull(ordinal)) return null;
+            return dr.GetValue(ordinal)?.ToString();
+        }
+
+        /// <summary>Reads a datetime value defensively, returning null for missing columns or DBNull.</summary>
+        private static DateTime? GetDateTimeOrNull(AdomdDataReader dr, int ordinal)
+        {
+            if (ordinal < 0 || dr.IsDBNull(ordinal)) return null;
+            var value = dr.GetValue(ordinal);
+            if (value == null || value is DBNull) return null;
+            if (value is DateTime dt) return dt;
+            if (DateTime.TryParse(value.ToString(), out var parsed)) return parsed;
+            return null;
+        }
+
+        /// <summary>Returns the greater of two nullable datetimes.</summary>
+        private static DateTime? MaxDate(DateTime? a, DateTime? b)
+        {
+            if (!a.HasValue) return b;
+            if (!b.HasValue) return a;
+            return a.Value >= b.Value ? a : b;
+        }
+
+        #endregion
 
         public void SetSelectedDatabase(IDatabaseReference database)
         {

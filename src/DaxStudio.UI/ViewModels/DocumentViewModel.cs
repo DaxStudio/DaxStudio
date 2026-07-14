@@ -367,8 +367,10 @@ namespace DaxStudio.UI.ViewModels
                 {
                     await CopyConnectionAsync(NewDocumentParameters.SourceDocument);
                 }
-                else
+                else if (!_isOfflineVpaxFile)
                 {
+                    // VPAX/OVPAX files load an offline connection during file import, so we
+                    // don't want to prompt the user with the connection dialog in that case
                     await ConnectToServerAsync();
                 }
 
@@ -961,6 +963,12 @@ namespace DaxStudio.UI.ViewModels
                 // trace active
                 OutputPane.Activate();
             }
+        }
+
+        public void DisplayShowTree(IList<DaxStudio.Core.Model.ShowTreeNode> roots, DaxStudio.Parsers.CommentScript.ShowType showType)
+        {
+            QueryResultsPane.DisplayShowTree(roots, showType);
+            QueryResultsPane.Activate();
         }
 
         public void QueryFailed(string errorMessage)
@@ -1622,7 +1630,7 @@ namespace DaxStudio.UI.ViewModels
         {
 
             // merge in any parameters
-            textProvider.QueryInfo = new QueryInfo(textProvider.EditorText, _eventAggregator);
+            textProvider.QueryInfo = new QueryInfo(textProvider.EditorText, _eventAggregator, Options);
             DialogResult paramDialogResult = DialogResult.Skip;
             if (textProvider.QueryInfo.NeedsParameterValues)
             {
@@ -1703,7 +1711,7 @@ namespace DaxStudio.UI.ViewModels
         {
             var editor = GetEditor();
             var txt = GetQueryTextFromEditor();
-            var queryProcessor = new QueryInfo(txt, _eventAggregator);
+            var queryProcessor = new QueryInfo(txt, _eventAggregator, Options);
             txt = DaxHelper.replaceParamsInQuery(queryProcessor.ProcessedQuery, queryProcessor.Parameters);
             if (editor.Dispatcher.CheckAccess())
             {
@@ -2304,10 +2312,13 @@ namespace DaxStudio.UI.ViewModels
                         Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RunQueryInternalAsync), "Sending QueryStarted Event");
                         await _eventAggregator.PublishAsync(new QueryStartedEvent());
 
+                        // Prefer the history text (keeps comment-script "-->" commands visible on the
+                        // new pre-processor path); falls back to the executable QueryText otherwise.
+                        var historyText = (message.QueryProvider.QueryInfo?.HistoryText ?? message.QueryProvider.QueryText).Trim();
                         if (message.QueryProvider is ISaveState)
-                            _currentQueryDetails = CreateQueryHistoryEvent((ISaveState)message.QueryProvider, message.QueryProvider.QueryText.Trim(), ParameterHelper.GetParameterXml(message.QueryProvider.QueryInfo));
+                            _currentQueryDetails = CreateQueryHistoryEvent((ISaveState)message.QueryProvider, historyText, ParameterHelper.GetParameterXml(message.QueryProvider.QueryInfo));
                         else
-                            _currentQueryDetails = CreateQueryHistoryEvent(message.QueryProvider.QueryText.Trim(), ParameterHelper.GetParameterXml(message.QueryProvider.QueryInfo));
+                            _currentQueryDetails = CreateQueryHistoryEvent(historyText, ParameterHelper.GetParameterXml(message.QueryProvider.QueryInfo));
 
 
 
@@ -3344,16 +3355,23 @@ namespace DaxStudio.UI.ViewModels
                     DisplayName = Path.GetFileName(FileName);
                     IsDiskFileName = true;
 
-                    if (FileName.EndsWith(".vpax", StringComparison.OrdinalIgnoreCase))
+                    if (FileName.EndsWith(".vpax", StringComparison.OrdinalIgnoreCase)
+                        || FileName.EndsWith(".ovpax", StringComparison.OrdinalIgnoreCase))
                     {
-                        ImportAnalysisData(fileName, string.Empty);
-                        return;
-                    }
+                        // VPAX files establish their own offline connection, so we flag this
+                        // so that OnViewLoaded does not prompt with the connection dialog.
+                        _isOfflineVpaxFile = true;
+                        _isLoadingFile = true;
 
-                    if (FileName.EndsWith(".ovpax", StringComparison.OrdinalIgnoreCase))
-                    {
-                        // try to get default dict file
-                        ImportAnalysisData(fileName, string.Empty);
+                        var dictFilePath = string.Empty;
+                        if (FileName.EndsWith(".ovpax", StringComparison.OrdinalIgnoreCase))
+                        {
+                            dictFilePath = DaxStudio.UI.Utils.VpaxDictHelper.GetDictPathForOvpax(fileName);
+                        }
+
+                        // Track the import task so OpenFileAsync can await completion and the
+                        // backstage "Opening File" overlay can be closed via FileOpenedEvent.
+                        _loadFileTask = LoadAnalysisDataFileAsync(fileName, dictFilePath);
                         return;
                     }
 
@@ -3943,6 +3961,7 @@ namespace DaxStudio.UI.ViewModels
         }
         private bool _canPaste = true;
         private bool _isLoadingFile;
+        private bool _isOfflineVpaxFile;
         private Task _loadFileTask;
         public bool CanPaste
         {
@@ -5074,12 +5093,35 @@ namespace DaxStudio.UI.ViewModels
                     dictFilePath = DaxStudio.UI.Utils.VpaxDictHelper.GetDictPathForOvpax(filename);
                 }
 
-                ImportAnalysisData(filename, dictFilePath);
+                ImportAnalysisData(filename, dictFilePath).FireAndForget();
             }
 
         }
 
-        private async void ImportAnalysisData(string path, string dictFilePath)
+        /// <summary>
+        /// Loads a VPAX/OVPAX file as a new document. Imports the analysis data (which
+        /// establishes an offline connection) and then publishes a <see cref="FileOpenedEvent"/>
+        /// so that the backstage "Opening File" overlay is closed once loading completes.
+        /// </summary>
+        private async Task LoadAnalysisDataFileAsync(string path, string dictFilePath)
+        {
+            try
+            {
+                await ImportAnalysisData(path, dictFilePath);
+            }
+            finally
+            {
+                await Execute.OnUIThreadAsync(async () =>
+                {
+                    _isLoadingFile = false;
+                    IsDirty = false;
+                    State = DocumentState.Loaded;
+                    await _eventAggregator.PublishAsync(new FileOpenedEvent(path));
+                });
+            }
+        }
+
+        private async Task ImportAnalysisData(string path, string dictFilePath)
         {
 
             try
@@ -5098,6 +5140,15 @@ namespace DaxStudio.UI.ViewModels
 
                     content = Dax.Vpax.Tools.VpaxTools.ImportVpax(vpax);
                 }
+
+                if (content.DaxModel == null)
+                {
+                    Log.Warning(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(ImportAnalysisData), $"The file '{Path.GetFileName(path)}' does not contain a data model");
+                    OutputError($"Unable to open '{Path.GetFileName(path)}' - the file does not contain a data model. It may have been created by an incompatible version of the tooling.");
+                    ActivateOutput();
+                    return;
+                }
+
                 var database = content.TomDatabase;
                 if (!Connection.IsConnected)
                     await Task.Run(async () => { await Connection.ConnectAsync(new ConnectEvent(Connection.ApplicationName, content), UniqueID); });
