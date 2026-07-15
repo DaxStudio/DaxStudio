@@ -604,7 +604,7 @@
                                                    Grid.ColumnSpan="2" MinWidth="80"
                                                    MinHeight="60"
                                                    LineNumbersForeground="{DynamicResource Theme.Brush.LineNumbers}"
-                                                   
+                                                   LineSpacing="3"
                                                    FontSizeInPoints="{Binding SizeUnitLabel.ScreenPoints, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                                                    Document ="{Binding Document, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                    EditorSelectionStart="{Binding SelectionStart, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"

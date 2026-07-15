@@ -10,6 +10,13 @@
   <Color name="Xmla"       foreground="#EE666666"  fontStyle="italic" />
   <Color name="Numbers"    foreground="#EE7F18" />
   <Color name="Parenthesis" foreground="#808080" />
+  <!-- Comment Script directive colors -->
+  <Color name="CsMarker"   foreground="#8A8F98" />
+  <Color name="CsCommand"  foreground="#3A4F6B"  fontWeight="bold" />
+  <Color name="CsText"     foreground="#333333" />
+  <!-- CsChipBackground is not referenced by any rule; it is drawn as a rounded
+       chip by the CommentScriptChipRenderer and theme-swapped like the others -->
+  <Color name="CsChipBackground" background="#E7EEF8" />
   
   <!-- Light theme colors-->
   <Color name="Light.Comment"    foreground="#39A03B" />
@@ -22,6 +29,10 @@
   <Color name="Light.Xmla"       foreground="#EE666666"  fontStyle="italic" />
   <Color name="Light.Numbers"    foreground="#EE7F18" />
   <Color name="Light.Parenthesis"      foreground="#808080" />
+  <Color name="Light.CsMarker"   foreground="#8A8F98" />
+  <Color name="Light.CsCommand"  foreground="#3A4F6B"  fontWeight="bold" />
+  <Color name="Light.CsText"     foreground="#333333" />
+  <Color name="Light.CsChipBackground" background="#E7EEF8" />
   
   <!-- dark theme colors-->
   <Color name="Dark.Comment"    foreground="#86C573" />
@@ -34,9 +45,39 @@
   <Color name="Dark.Xmla"       foreground="#808080"  fontStyle="italic" />
   <Color name="Dark.Numbers"    foreground="#EE7F18" />
   <Color name="Dark.Parenthesis"     foreground="#636363" />
+  <Color name="Dark.CsMarker"   foreground="#6E7681" />
+  <Color name="Dark.CsCommand"  foreground="#AFC6EF"  fontWeight="bold" />
+  <Color name="Dark.CsText"     foreground="#FFFFFF" />
+  <Color name="Dark.CsChipBackground" background="#2C3E5B" />
   
   <RuleSet ignoreCase="true">
 	<!-- comments -->
+	<!-- Comment Script directives (the arrow-prefixed and continuation lines).
+	     Must precede the generic dash-dash comment span so the directive takes
+	     priority over a plain comment. -->
+	<Span color="CsMarker" multiline="false">
+	  <Begin>--&gt;&gt;?</Begin>
+	  <RuleSet>
+	    <Keywords color="CsCommand">
+	      <Word>CONNECT</Word>
+	      <Word>USE</Word>
+	      <Word>OPEN</Word>
+	      <Word>PARAMETER</Word>
+	      <Word>SET</Word>
+	      <Word>OUTPUT</Word>
+	      <Word>TRACE</Word>
+	      <Word>CLEARCACHE</Word>
+	      <Word>SAVEAS</Word>
+	      <Word>METRICS</Word>
+	      <Word>SHOW</Word>
+	      <Word>ASSERT</Word>
+	      <Word>TEST</Word>
+	      <Word>GO</Word>
+	    </Keywords>
+	    <Rule color="Parameter">@([\w]+)</Rule>
+	    <Rule color="CsText">[^\s]+</Rule>
+	  </RuleSet>
+	</Span>
 	<Span color="Comment" multiline="false">
       <Begin>//</Begin>
     </Span>
