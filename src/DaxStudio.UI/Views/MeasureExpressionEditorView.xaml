@@ -84,7 +84,8 @@
                             Grid.Row="1" 
                             MinWidth="80"
                             MinHeight="60"
-                            FontSize="{Binding SizeUnitLabel.ScreenPoints, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                            FontSizeInPoints="{Binding SizeUnitLabel.ScreenPoints, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                            LineSpacing="3"
                             Document ="{Binding MeasureExpression, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                             TabIndex="0"
 
