@@ -20,6 +20,7 @@ namespace DaxStudio.UI.Utils
         private double _priority = 120.0;
 #pragma warning restore IDE0052 // Remove unread private members
         private IInsightProvider _insightProvider;
+        private readonly bool _isCommentScript;
 
         /*
 public DaxCompletionData(IInsightProvider insightProvider, string text, string content, string description, ImageSource image )
@@ -90,6 +91,57 @@ _insightProvider = insightProvider;
             _insightProvider = insightProvider;
         }
 
+        public DaxCompletionData(IInsightProvider insightProvider, DaxStudio.Parsers.Dax.CompletionItem item, bool isCommentScript = false)
+        {
+            _text = string.IsNullOrEmpty(item.InsertText) ? item.Label : item.InsertText;
+            _content = item.Label;
+            _description = string.IsNullOrEmpty(item.Description) ? null : item.Description;
+            _imageResource = GetImageResource(item.Kind);
+            _priority = GetPriority(item.Kind);
+            _insightProvider = insightProvider;
+            _isCommentScript = isCommentScript;
+        }
+
+        private static string GetImageResource(DaxStudio.Parsers.Dax.CompletionItemKind kind)
+        {
+            switch (kind)
+            {
+                case DaxStudio.Parsers.Dax.CompletionItemKind.Function:
+                    return "functionDrawingImage";
+                case DaxStudio.Parsers.Dax.CompletionItemKind.Table:
+                    return "tableDrawingImage";
+                case DaxStudio.Parsers.Dax.CompletionItemKind.Column:
+                    return "columnDrawingImage";
+                case DaxStudio.Parsers.Dax.CompletionItemKind.Measure:
+                    return "measureDrawingImage";
+                case DaxStudio.Parsers.Dax.CompletionItemKind.Calendar:
+                    return "datetimeDrawingImage";
+                case DaxStudio.Parsers.Dax.CompletionItemKind.Variable:
+                case DaxStudio.Parsers.Dax.CompletionItemKind.Keyword:
+                default:
+                    return string.Empty;
+            }
+        }
+
+        private static double GetPriority(DaxStudio.Parsers.Dax.CompletionItemKind kind)
+        {
+            switch (kind)
+            {
+                case DaxStudio.Parsers.Dax.CompletionItemKind.Column:
+                case DaxStudio.Parsers.Dax.CompletionItemKind.Measure:
+                    return 50.0;
+                case DaxStudio.Parsers.Dax.CompletionItemKind.Table:
+                case DaxStudio.Parsers.Dax.CompletionItemKind.Calendar:
+                    return 100.0;
+                case DaxStudio.Parsers.Dax.CompletionItemKind.Function:
+                    return 120.0;
+                case DaxStudio.Parsers.Dax.CompletionItemKind.Keyword:
+                    return 200.0;
+                default:
+                    return 120.0;
+            }
+        }
+
         public void Complete(ICSharpCode.AvalonEdit.Editing.TextArea textArea, ICSharpCode.AvalonEdit.Document.ISegment completionSegment, EventArgs insertionRequestEventArgs)
         {
             CompleteInternal(textArea.Document, completionSegment, insertionRequestEventArgs);
@@ -100,12 +152,32 @@ _insightProvider = insightProvider;
             Log.Debug("{class} {method} {start}-{end}({length})", "DaxCompletionData", "Complete", completionSegment.Offset, completionSegment.EndOffset, completionSegment.Length);
             try
             {
+                var funcParamStart = Text.IndexOf("«", StringComparison.OrdinalIgnoreCase);
+                string insertionText = funcParamStart > 0 ? Text.Substring(0, funcParamStart) : Text;
+
+                if (_isCommentScript)
+                {
+                    // Comment-script command lines are not DAX, so the DAX-aware word-boundary logic
+                    // (which treats "-->" as a comment) would incorrectly consume the marker and the
+                    // separating space. Instead replace only the partial word immediately before the
+                    // caret, bounded by whitespace or the "-->" marker.
+                    int csEnd = completionSegment.EndOffset;
+                    int csStart = csEnd;
+                    while (csStart > 0)
+                    {
+                        var prev = document.GetCharAt(csStart - 1);
+                        if (char.IsWhiteSpace(prev) || prev == '>') break;
+                        csStart--;
+                    }
+                    document.Replace(csStart, csEnd - csStart, insertionText);
+                    _insightProvider.ShowInsight(insertionText);
+                    return;
+                }
+
                 // walk back to start of word
                 var newSegment = GetPreceedingWordSegment(document, completionSegment);
                 var replaceOffset = newSegment.Offset;
                 var replaceLength = newSegment.Length;
-                var funcParamStart = Text.IndexOf("«", StringComparison.OrdinalIgnoreCase);
-                string insertionText = funcParamStart > 0 ? Text.Substring(0, funcParamStart) : Text;
 
                 if (insertionRequestEventArgs is TextCompositionEventArgs args)
                 {

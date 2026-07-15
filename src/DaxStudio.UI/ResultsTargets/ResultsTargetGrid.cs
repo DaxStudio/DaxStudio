@@ -77,7 +77,22 @@ namespace DaxStudio.UI.ResultsTargets
                     // When the pre-processor produced more than one executable batch (script sections
                     // separated by "--> GO") run each in turn and append its result tables. Otherwise
                     // this is a single batch equal to the whole processed query text (unchanged path).
+                    // Batches that contain only comment-script commands (e.g. "--> CONNECT" with no
+                    // DAX after it) have no executable query text and are excluded here.
                     var batches = GetExecutableBatches(textProvider);
+
+                    if (batches.Count == 0)
+                    {
+                        // The script contained only comment-script commands (no DAX to run). Those
+                        // commands (e.g. "--> CONNECT") were already processed, so report success
+                        // instead of sending an empty query to the server.
+                        sw.Stop();
+                        runner.RowCount = 0;
+                        runner.SetResultsMessage("Command(s) completed successfully - no query to run", OutputTarget.Grid);
+                        runner.OutputMessage("Command(s) completed successfully - no query to run", sw.ElapsedMilliseconds);
+                        return;
+                    }
+
                     var isSessionsDmv = batches.Any(b => b.Contains(Common.Constants.SessionsDmv, StringComparison.OrdinalIgnoreCase));
                     var combined = new DataSet();
                     int tableIdx = 1;
@@ -85,8 +100,9 @@ namespace DaxStudio.UI.ResultsTargets
 
                     foreach (var dq in batches)
                     {
-                        // Future hook: dispatch this batch's comment-script commands (CLEAR CACHE,
-                        // TRACE, USE, ...) before running the batch query.
+                        // Comment-script commands that change the document state (e.g. "--> CONNECT")
+                        // are dispatched in DocumentViewModel.RunQueryInternalAsync before we get here.
+                        // Future per-batch commands (CLEAR CACHE, TRACE, USE, ...) would hook in here.
                         var batchIsSessionsDmv = dq.Contains(Common.Constants.SessionsDmv, StringComparison.OrdinalIgnoreCase);
                         using (var dataReader = runner.ExecuteDataReaderQuery(dq, textProvider.ParameterCollection))
                         {
@@ -203,9 +219,11 @@ namespace DaxStudio.UI.ResultsTargets
         }
 
         // Returns the executable query text for each batch to run. When the pre-processor produced
-        // multiple non-empty batches (sections separated by "--> GO") each is returned in order;
-        // otherwise a single element equal to the whole processed query text is returned so the
-        // classic / single-batch path is byte-identical to the previous behaviour.
+        // multiple non-empty batches (sections separated by "--> GO") each is returned in order.
+        // Otherwise a single element equal to the whole processed query text is returned so the
+        // classic / single-batch path is byte-identical to the previous behaviour. Batches with no
+        // executable DAX (only comment-script commands such as "--> CONNECT") are excluded, so the
+        // returned list can be empty when the script contained commands but no query.
         private static System.Collections.Generic.List<string> GetExecutableBatches(IQueryTextProvider textProvider)
         {
             var batches = textProvider.QueryInfo?.ScriptBatches;
@@ -216,7 +234,14 @@ namespace DaxStudio.UI.ResultsTargets
                                   .ToList();
                 if (list.Count > 1) return list;
             }
-            return new System.Collections.Generic.List<string> { textProvider.QueryText };
+
+            // Single-batch / classic path: run the whole processed query text, but only if it
+            // actually contains executable DAX. A batch that is only comment-script commands has
+            // no query text and must not be sent to the server.
+            var queryText = textProvider.QueryText;
+            return string.IsNullOrWhiteSpace(queryText)
+                ? new System.Collections.Generic.List<string>()
+                : new System.Collections.Generic.List<string> { queryText };
         }
 
         // Moves the tables from a single batch's result DataSet into the accumulating DataSet,

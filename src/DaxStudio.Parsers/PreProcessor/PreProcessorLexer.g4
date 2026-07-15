@@ -194,7 +194,6 @@ CS_WHITESPACE:            Whitespace                                           -
 
 CS_CONNECT:               'CONNECT';
 CS_USE:                   'USE';
-CS_OPEN:                  'OPEN';
 CS_SET:                   'SET';
 CS_SET_PARAMETER:         'PARAMETER';
 CS_GO:					  'GO';
@@ -202,8 +201,7 @@ CS_OUTPUT:                'OUTPUT';
 CS_TEST:                  'TEST';
 CS_PERFORMANCE:           'PERFORMANCE';
 CS_ASSERT:                'ASSERT';
-CS_CLEAR:                 'CLEAR';
-CS_CACHE:                 'CACHE';
+CS_CLEARCACHE:            'CLEARCACHE';
 CS_PARAMETER:             '@' IdentifierOrKeyword;
 CS_EQUALS:                 '=' ;
 CS_GREATERTHAN:            '>' ;

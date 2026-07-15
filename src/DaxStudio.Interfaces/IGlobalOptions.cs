@@ -144,6 +144,8 @@ namespace DaxStudio.Interfaces
 
         bool UseNewPreprocessor { get; set; }
 
+        bool UseAntlrCodeCompletion { get; set; }
+
         bool HighlightXmSqlCallbacks { get; set; }
         bool SimplifyXmSqlSyntax { get; set; }
         bool ReplaceXmSqlColumnNames { get; set; }

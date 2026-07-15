@@ -20,6 +20,7 @@ namespace DaxStudio.Parsers.Dax
         // DEFINE-level variables (always in scope after declaration)
         private readonly List<string> _defineVariables = new List<string>();
         private readonly List<string> _definedMeasures = new List<string>();
+        private readonly List<Metadata.DefinedFunctionInfo> _definedFunctions = new List<Metadata.DefinedFunctionInfo>();
 
         // Scope stack for VAR/RETURN blocks — each entry is variables declared in that scope
         private readonly Stack<List<string>> _scopeStack = new Stack<List<string>>();
@@ -95,7 +96,9 @@ namespace DaxStudio.Parsers.Dax
             if (CursorIsWithin(ctx))
             {
                 // Check if cursor is right after DEFINE keyword and before any definition
-                var defineToken = ctx.DEFINE().Symbol;
+                var defineNode = ctx.DEFINE();
+                if (defineNode == null) return;
+                var defineToken = defineNode.Symbol;
                 if (CursorIsAfter(defineToken) && (ctx.definition() == null || ctx.definition().Length == 0 || _cursorOffset < ctx.definition()[0].Start.StartIndex))
                 {
                     SetResult(Metadata.EditState.DefineContext);
@@ -127,7 +130,12 @@ namespace DaxStudio.Parsers.Dax
             if (_resolved) return;
             if (CursorIsWithin(ctx))
             {
-                var evalToken = ctx.EVALUATE().Symbol;
+                // During error recovery on incomplete input the EVALUATE token may be missing, so guard
+                // against a null terminal node before dereferencing its symbol.
+                var evaluateNode = ctx.EVALUATE();
+                if (evaluateNode == null) return;
+
+                var evalToken = evaluateNode.Symbol;
                 if (CursorIsAfter(evalToken) && ctx.expression() != null && _cursorOffset <= ctx.expression().Start.StartIndex)
                 {
                     SetResult(Metadata.EditState.EvaluateContext);
@@ -199,6 +207,14 @@ namespace DaxStudio.Parsers.Dax
             }
         }
 
+        public override void ExitFunctionDefinition(DAXParser.FunctionDefinitionContext ctx)
+        {
+            // Collect the user-defined function (name + parameter names) so it can be offered as a
+            // completion and provide insight help elsewhere in the query (e.g. in a following EVALUATE).
+            var info = DefinedFunctionCollector.FromContext(ctx);
+            if (info != null) _definedFunctions.Add(info);
+        }
+
         // --- Type annotations ---
         public override void EnterTypeAnnotation(DAXParser.TypeAnnotationContext ctx)
         {
@@ -233,11 +249,21 @@ namespace DaxStudio.Parsers.Dax
         public override void EnterColumnRef(DAXParser.ColumnRefContext ctx)
         {
             if (_resolved) return;
-            if (CursorIsWithin(ctx) && ctx.tableRef() != null)
+            if (CursorIsWithin(ctx))
             {
-                var state = new Metadata.DaxState(Metadata.EditState.PartialColumn);
-                state.CurrentTable = ctx.tableRef().GetText();
-                SetResult(state);
+                // A column reference can be qualified by a quoted table ('Table'[Col]), an unquoted
+                // table name (Table[Col]) or a table named like a function. Capture whichever is present.
+                string table = null;
+                if (ctx.tableRef() != null) table = ctx.tableRef().GetText();
+                else if (ctx.identifierOrKeyword() != null) table = ctx.identifierOrKeyword().GetText();
+                else if (ctx.builtInFunction() != null) table = ctx.builtInFunction().GetText();
+
+                if (table != null)
+                {
+                    var state = new Metadata.DaxState(Metadata.EditState.PartialColumn);
+                    state.CurrentTable = table;
+                    SetResult(state);
+                }
             }
         }
 
@@ -296,6 +322,7 @@ namespace DaxStudio.Parsers.Dax
             _result = new Metadata.DaxState(state);
             _result.Variables = GetInScopeVariables();
             _result.DefinedMeasures = _definedMeasures.ToList();
+            _result.DefinedFunctions = _definedFunctions.ToList();
             _resolved = true;
         }
 
@@ -304,6 +331,7 @@ namespace DaxStudio.Parsers.Dax
             if (_resolved) return;
             state.Variables = GetInScopeVariables();
             state.DefinedMeasures = _definedMeasures.ToList();
+            state.DefinedFunctions = _definedFunctions.ToList();
             _result = state;
             _resolved = true;
         }
@@ -422,10 +450,12 @@ namespace DaxStudio.Parsers.Dax
             {
                 if (tokens[i] == currentToken && i > 0)
                 {
-                    // Look back for the closest TABLE_REF (skipping whitespace/hidden channel)
+                    // Look back for the closest table name (skipping whitespace/hidden channel).
+                    // A table qualifying a '[' can be a quoted TABLE_REF ('Sales'[) or an unquoted
+                    // IDENTIFIER (Sales[), so accept either.
                     for (int j = i - 1; j >= 0; j--)
                     {
-                        if (tokens[j].Type == DAXLexer.TABLE_REF)
+                        if (tokens[j].Type == DAXLexer.TABLE_REF || tokens[j].Type == DAXLexer.IDENTIFIER)
                             return tokens[j].Text;
                         if (tokens[j].Channel == 0 && tokens[j].Type != DAXLexer.Eof)
                             break; // Non-hidden, non-table token — stop looking

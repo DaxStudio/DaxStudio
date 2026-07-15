@@ -37,7 +37,7 @@ namespace DaxStudio.UI.ViewModels
         public IGlobalOptions Options { get; }
         public TextDocument MeasureExpression { get; set; } = new TextDocument();
         
-        public DaxIntellisenseProvider IntellisenseProvider { get; set; }
+        public IDaxIntellisenseProvider IntellisenseProvider { get; set; }
         public UnitViewModel SizeUnitLabel { get; set; }
 
         private string _measureName = string.Empty;
@@ -87,7 +87,7 @@ namespace DaxStudio.UI.ViewModels
             EventAggregator = eventAggregator;
             Document = document;
             Options = options;
-            IntellisenseProvider = new DaxIntellisenseProvider(Document, EventAggregator, Options);
+            IntellisenseProvider = IntellisenseProviderFactory.Create(Document, EventAggregator, Options);
             
             
             var items = new ObservableCollection<UnitComboLib.ViewModel.ListItem>(ScreenUnitsHelper.GenerateScreenUnitList());

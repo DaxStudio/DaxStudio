@@ -725,11 +725,19 @@ namespace DAXEditorControl
             }
         }
 
+        // Shows a completion window that was created outside the normal TextEntered flow (e.g. re-opening
+        // the DMV list immediately after the $SYSTEM keyword is completed) and tracks it so subsequent
+        // keystrokes filter/close it correctly.
+        public void ShowCompletionWindow(CompletionWindow window)
+        {
+            _completionWindow = window;
+            _completionWindow?.Show();
+        }
+
         public void DisableIntellisense()
         {
             IntellisenseProvider = new IntellisenseProviderStub();
         }
-
         public void EnableIntellisense(IIntellisenseProvider provider)
         {
             this.IntellisenseProvider = provider;

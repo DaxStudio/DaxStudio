@@ -925,7 +925,7 @@ The parser walks backward from the cursor to find the enclosing function call, c
 | METRICS command | ❌ Not implemented | ✅ EXPORT, VIEW |
 | OUTPUT configuration | ⚠️ Partial | ✅ Full spec (CSV/XLSX/JSON + folder/file) |
 | LOOP command | ❌ Not implemented | ✅ TOPN ISONORAFTER pattern |
-| OPEN command | ❌ Not implemented | ✅ Open PBIX file |
+| OPEN (folded into CONNECT PBIX with a file path) | ✅ Implemented | ✅ CONNECT PBIX "<path>" auto-opens the file and connects |
 
 ---
 

@@ -114,15 +114,6 @@ namespace DaxStudio.Parsers.Dax
                     CompletionItemKind.Column,
                     $"{col.DataType} - {col.Description}"));
             }
-
-            var measures = _metadata.GetMeasures(cleanTable);
-            foreach (var m in measures)
-            {
-                items.Add(new CompletionItem(
-                    $"[{m.Name}]",
-                    CompletionItemKind.Measure,
-                    m.Description));
-            }
             return items;
         }
 
@@ -133,6 +124,7 @@ namespace DaxStudio.Parsers.Dax
             var cleanTable = tableName?.Trim('\'');
             var cleanPartial = partialText?.TrimStart('[');
 
+            // Qualified reference (Table[...]) — only that table's columns are valid in this context.
             if (!string.IsNullOrEmpty(cleanTable))
             {
                 var columns = _metadata.GetColumns(cleanTable);
@@ -146,8 +138,10 @@ namespace DaxStudio.Parsers.Dax
                             $"{col.DataType} - {col.Description}"));
                     }
                 }
+                return items;
             }
 
+            // Unqualified reference ([...]) — suggest measures from across the model.
             var measures = _metadata.GetMeasures();
             foreach (var m in measures)
             {
@@ -185,7 +179,7 @@ namespace DaxStudio.Parsers.Dax
             var tables = _metadata.GetTables();
             foreach (var t in tables)
             {
-                items.Add(new CompletionItem($"'{t.Name}'", CompletionItemKind.Table, t.Description));
+                items.Add(new CompletionItem(FormatTableName(t), CompletionItemKind.Table, t.Description));
             }
 
             // Measures
@@ -213,6 +207,18 @@ namespace DaxStudio.Parsers.Dax
                 }
             }
 
+            // DEFINE FUNCTION user-defined functions declared in the current query
+            if (state.DefinedFunctions != null)
+            {
+                foreach (var fn in state.DefinedFunctions)
+                {
+                    items.Add(new CompletionItem(fn.Name, CompletionItemKind.Function, "Defined function"));
+                }
+            }
+
+            // DAX keywords (DEFINE, EVALUATE, ORDER BY, VAR, RETURN, ...)
+            items.AddRange(GetKeywordCompletions());
+
             return items;
         }
 
@@ -227,12 +233,31 @@ namespace DaxStudio.Parsers.Dax
                 items.Add(new CompletionItem(f.Name, CompletionItemKind.Function, f.Description));
             }
 
+            // User defined (model) functions - may return a table
+            var udfs = _metadata.GetUserDefinedFunctions();
+            foreach (var u in udfs)
+            {
+                items.Add(new CompletionItem(u.Name, CompletionItemKind.Function, u.Description));
+            }
+
             // Tables
             var tables = _metadata.GetTables();
             foreach (var t in tables)
             {
-                items.Add(new CompletionItem($"'{t.Name}'", CompletionItemKind.Table, t.Description));
+                items.Add(new CompletionItem(FormatTableName(t), CompletionItemKind.Table, t.Description));
             }
+
+            // DEFINE FUNCTION user-defined functions declared in the current query (may return a table)
+            if (state.DefinedFunctions != null)
+            {
+                foreach (var fn in state.DefinedFunctions)
+                {
+                    items.Add(new CompletionItem(fn.Name, CompletionItemKind.Function, "Defined function"));
+                }
+            }
+
+            // DAX keywords valid at the start of a table expression
+            items.AddRange(GetKeywordCompletions());
 
             return items;
         }
@@ -307,7 +332,7 @@ namespace DaxStudio.Parsers.Dax
                 foreach (var col in columns)
                 {
                     items.Add(new CompletionItem(
-                        $"'{table.Name}'[{col.Name}]",
+                        $"{FormatTableName(table)}[{col.Name}]",
                         CompletionItemKind.Column,
                         col.Description));
                 }
@@ -317,11 +342,54 @@ namespace DaxStudio.Parsers.Dax
 
         private IReadOnlyList<CompletionItem> GetTopLevelCompletions()
         {
-            return new List<CompletionItem>
-            {
-                new CompletionItem("DEFINE", CompletionItemKind.Keyword, "Begin a DEFINE block"),
-                new CompletionItem("EVALUATE", CompletionItemKind.Keyword, "Begin an EVALUATE statement")
-            };
+            return GetKeywordCompletions();
+        }
+
+        // DAX query/definition keywords surfaced in completion lists. Mirrors the set offered by the
+        // legacy regex-based intellisense provider so behaviour is consistent between the two engines.
+        private static readonly (string Keyword, string Description)[] Keywords =
+        {
+            ("DEFINE",   "Begin a DEFINE block"),
+            ("EVALUATE", "Begin an EVALUATE statement"),
+            ("MEASURE",  "Define a measure"),
+            ("VAR",      "Define a variable"),
+            ("RETURN",   "Return the result of a preceding VAR block"),
+            ("COLUMN",   "Define a calculated column"),
+            ("TABLE",    "Define a calculated/virtual table"),
+            ("FUNCTION", "Define a user-defined function"),
+            ("ORDER BY", "Sort the results of an EVALUATE statement"),
+            ("START AT", "Specify the starting point for an ORDER BY"),
+            ("ASC",      "Sort ascending"),
+            ("DESC",     "Sort descending"),
+        };
+
+        private static IReadOnlyList<CompletionItem> GetKeywordCompletions()
+        {
+            return Keywords
+                .Select(k => new CompletionItem(k.Keyword, CompletionItemKind.Keyword, k.Description))
+                .ToList();
+        }
+
+        // Table names only require single quotes when they contain a space/special character, start with
+        // a digit, or collide with a reserved word. When the metadata provider supplies a pre-computed
+        // DaxName (which already applies the reserved-word rule) we use it; otherwise fall back to a
+        // syntactic check based on the name characters.
+        private static string FormatTableName(TableMetadata table)
+        {
+            if (table == null) return string.Empty;
+            if (!string.IsNullOrEmpty(table.DaxName)) return table.DaxName;
+            return TableNameNeedsQuoting(table.Name)
+                ? $"'{table.Name?.Replace("'", "''")}'"
+                : table.Name;
+        }
+
+        private static bool TableNameNeedsQuoting(string name)
+        {
+            const string validStart = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_";
+            const string validChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789";
+            if (string.IsNullOrEmpty(name)) return true;
+            if (validStart.IndexOf(name[0]) < 0) return true;
+            return name.Any(c => validChars.IndexOf(c) < 0);
         }
 
         private IReadOnlyList<CompletionItem> GetIdentifierCompletions(Metadata.DaxState state)

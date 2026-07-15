@@ -15,6 +15,8 @@ The pre-processor currently does not understand much about DAX other than the ba
 This would be used to bypass the connection dialog. I’m thinking it might make sense to process the commands in the first block when opening a file to see if it has a connect command and then execute that. This command should check if it is already connected to the specified source.
 For PBIX / SSDT we can only pass the part of the file that appears in the title bar of the app. I had a look, but it’s too hard to figure out which exact pbix file in which folder the user has open. You need a kernel level driver to find out that level of detail from another process and that is beyond me (and may require running as admin)
 
+For a PBIX connection the argument can also be a full path to a `.pbix` file, for example `--> CONNECT PBIX "C:\reports\Sales.pbix"`. In that case DAX Studio matches a running Power BI Desktop instance by the file name without its extension (e.g. `Sales`); if no matching instance is running it will open the file in Power BI Desktop, wait for it to finish loading, and then connect. This replaces the earlier standalone OPEN command.
+
 ## Use
 ```
 --> USE <databasename>
@@ -22,13 +24,6 @@ For PBIX / SSDT we can only pass the part of the file that appears in the title 
 
 This would work the same as changing the database from the dropdown in the metadata pane
 
-## Open
-```
---> OPEN <filename>
-```
-
-This could be a way of opening a specific pbix file, then waiting for Power BI Desktop to finish loading before we run a CONNECT command.
- 
 ## Parameter
 ```
 --> PARAMETER @<parametername> [INTEGER|DOUBLE|DATETIME|STRING|BOOLEAN] = <value>
@@ -80,7 +75,7 @@ This would just be a batch separator if there are no other commands that need to
 
 ## Clear Cache
 ```
---> CLEAR CACHE
+--> CLEARCACHE
 ```
 
 This would work the same as clicking the clear cache button in the ribbon

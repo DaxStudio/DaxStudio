@@ -36,6 +36,30 @@ namespace DaxStudio.Parsers.Tests
         }
 
         [TestMethod]
+        public void CursorState_UnquotedTableBracket_CapturesTableContext()
+        {
+            // Unquoted table name before '[' : EVALUATE FILTER(Customer[|
+            var input = "EVALUATE FILTER(Customer[";
+            var state = DaxCursorStateWalker.GetStateAtCursor(input, input.Length);
+
+            Assert.AreEqual(EditState.PartialColumn, state.State);
+            Assert.AreEqual("Customer", state.CurrentTable?.Trim('\''),
+                "The unquoted table name should be captured as the column context");
+        }
+
+        [TestMethod]
+        public void CursorState_QuotedTableBracket_CapturesTableContext()
+        {
+            // Quoted table name before '[' : EVALUATE FILTER('Sales'[|
+            var input = "EVALUATE FILTER('Sales'[";
+            var state = DaxCursorStateWalker.GetStateAtCursor(input, input.Length);
+
+            Assert.AreEqual(EditState.PartialColumn, state.State);
+            Assert.AreEqual("Sales", state.CurrentTable?.Trim('\''),
+                "The quoted table name should be captured as the column context");
+        }
+
+        [TestMethod]
         public void CursorState_AfterDefine_ReturnsDefineContext()
         {
             var input = "DEFINE ";
@@ -491,15 +515,17 @@ namespace DaxStudio.Parsers.Tests
         }
 
         [TestMethod]
-        public void Completions_CompleteTable_ReturnsColumnsAndMeasures()
+        public void Completions_CompleteTable_ReturnsOnlyColumns()
         {
             var state = new DaxState(EditState.CompleteTable, currentTable: "Sales");
             var items = _provider.GetCompletions(state);
 
-            // Should have 3 columns + 2 measures = 5 items
-            Assert.HasCount(5, items);
-            Assert.Contains(i => i.Kind == CompletionItemKind.Column, items);
-            Assert.Contains(i => i.Kind == CompletionItemKind.Measure, items);
+            // A qualified table reference (Table[) should only offer that table's columns.
+            Assert.HasCount(3, items);
+            Assert.IsTrue(items.All(i => i.Kind == CompletionItemKind.Column),
+                "A qualified table reference should only return columns");
+            Assert.IsFalse(items.Any(i => i.Kind == CompletionItemKind.Measure),
+                "A qualified table reference should not return measures");
         }
 
         [TestMethod]

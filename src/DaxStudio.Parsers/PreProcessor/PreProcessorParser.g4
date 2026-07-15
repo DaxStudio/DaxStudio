@@ -87,7 +87,6 @@ script_commands: COMMENT_SCRIPT command (CS_NEWLINE | EOF);
 command
 	: connect
 	| use
-	| open
 	| script_parameter
 	| test
 	| assert
@@ -112,14 +111,13 @@ parameter_array_values
 
 connect:           CS_CONNECT (CS_SERVER|CS_PBIX|CS_SSDT) (CS_STRING_LITERAL | CS_IDENTIFIER);
 use:               CS_USE (CS_STRING_LITERAL | CS_IDENTIFIER);
-open:              CS_OPEN (CS_STRING_LITERAL | CS_IDENTIFIER);
 script_parameter:  CS_SET_PARAMETER (CS_STRING|CS_INTEGER|CS_DATETIME|CS_BOOLEAN|CS_DOUBLE)? CS_PARAMETER CS_EQUALS ( parameter_array_values | parameter_scalar_values );
 output:            CS_OUTPUT (CS_CSV | CS_XLSX | CS_JSON) (CS_STRING_LITERAL | CS_IDENTIFIER);
 test:              CS_TEST CS_PERFORMANCE CS_STRING_LITERAL;
 assert:            CS_ASSERT (CS_DURATION | CS_SE_CPU | CS_SE_QUERIES )  (CS_EQUALS | CS_GREATERTHAN | CS_LESSTHAN | CS_GREATER_OR_EQUAL | CS_LESS_OR_EQUAL ) (CS_INTEGER_LITERAL | CS_REAL_LITERAL);
 assert_rowcount:   CS_ASSERT CS_ROWCOUNT (CS_EQUALS | CS_GREATERTHAN | CS_LESSTHAN | CS_GREATER_OR_EQUAL | CS_LESS_OR_EQUAL ) CS_INTEGER_LITERAL;
 assert_table_header: CS_ASSERT CS_TABLE (CS_UNORDERED | CS_PARTIAL)?;
-clear_cache:       CS_CLEAR CS_CACHE;
+clear_cache:       CS_CLEARCACHE;
 trace:             CS_TRACE (CS_SERVERTIMINGS | CS_QUERYPLAN | CS_ALLQUERIES) (CS_ON | CS_OFF);
 metrics:           CS_METRICS (metrics_export | metrics_view);
 metrics_export:    CS_EXPORT (CS_STRING_LITERAL | CS_IDENTIFIER);

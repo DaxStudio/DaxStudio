@@ -24,6 +24,7 @@ using DaxStudio.Interfaces.Enums;
 using DaxStudio.UI.Enums;
 using DaxStudio.Core.Events;
 using DaxStudio.Core.Utils;
+using CommentScript = DaxStudio.Parsers.CommentScript;
 using DaxStudio.UI.Events;
 using DaxStudio.Core.Extensions;
 using DaxStudio.UI.Extensions;
@@ -181,7 +182,7 @@ namespace DaxStudio.UI.ViewModels
                 IconSource = Application.Current.Resources["dax_smallDrawingImage"] as ImageSource;
                 Connection = new ConnectionManager(_eventAggregator);
                 Connection.AfterReconnect += Connection_AfterReconnect;
-                IntellisenseProvider = new DaxIntellisenseProvider(this, _eventAggregator, Options);
+                IntellisenseProvider = IntellisenseProviderFactory.Create(this, _eventAggregator, Options);
                 Init(_ribbon);
                 SubscribeAll();
             }
@@ -2309,6 +2310,15 @@ namespace DaxStudio.UI.ViewModels
                     }
                     else
                     {
+                        // Process any comment-script commands that must run before the query (e.g.
+                        // "--> CONNECT", "--> CLEARCACHE"). If a CONNECT command was present but the
+                        // connection could not be established, abort the run.
+                        if (!await ProcessCommentScriptPreQueryCommandsAsync(message.QueryProvider))
+                        {
+                            IsQueryRunning = false;
+                            return;
+                        }
+
                         Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RunQueryInternalAsync), "Sending QueryStarted Event");
                         await _eventAggregator.PublishAsync(new QueryStartedEvent());
 
@@ -2373,6 +2383,216 @@ namespace DaxStudio.UI.ViewModels
                 }
 
             }
+        }
+
+
+        // Processes the comment-script commands that must run before the DAX query (currently
+        // "--> CONNECT" and "--> CLEARCACHE"). CONNECT is handled first because it changes the
+        // connection that the remaining commands and the query run against. Returns true when the
+        // pre-query commands succeeded (or there were none); false when a CONNECT command was
+        // present but the connection could not be established (the caller should then abort the run).
+        private async Task<bool> ProcessCommentScriptPreQueryCommandsAsync(IQueryTextProvider queryProvider)
+        {
+            var batches = queryProvider?.QueryInfo?.ScriptBatches;
+            if (batches == null || batches.Count == 0) return true;
+
+            var commands = batches.SelectMany(b => b.Commands).ToList();
+
+            var connectCommand = commands.OfType<CommentScript.ConnectCommand>().FirstOrDefault();
+            if (connectCommand != null && !await ExecuteConnectCommandAsync(connectCommand))
+                return false;
+
+            // "--> CLEARCACHE" runs against the (possibly just-changed) connection before the query.
+            if (commands.OfType<CommentScript.ClearCacheCommand>().Any())
+                await ExecuteClearCacheCommandAsync();
+
+            return true;
+        }
+
+        // Establishes the connection requested by a "--> CONNECT" command. Returns true on success,
+        // false if the connection could not be established (the caller should then abort the run).
+        private async Task<bool> ExecuteConnectCommandAsync(CommentScript.ConnectCommand connectCommand)
+        {
+            try
+            {
+                switch (connectCommand.ConnectionType)
+                {
+                    case CommentScript.ConnectionType.SERVER:
+                        return await ConnectToServerCommandAsync(connectCommand.ConnectionName);
+                    case CommentScript.ConnectionType.PBIX:
+                    case CommentScript.ConnectionType.SSDT:
+                        return await ConnectToLocalInstanceCommandAsync(connectCommand);
+                    default:
+                        OutputError($"--> CONNECT: unsupported connection type '{connectCommand.ConnectionType}'");
+                        return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(ExecuteConnectCommandAsync), ex.Message);
+                OutputError($"--> CONNECT failed: {ex.Message}");
+                return false;
+            }
+        }
+
+        // Clears the database cache in response to a "--> CLEARCACHE" command. Mirrors the guards of
+        // the ribbon "Clear Cache" command (admin permission required) but does not abort the query -
+        // a warning is emitted and the query still runs, matching the "Run with Clear Cache" behaviour.
+        private async Task ExecuteClearCacheCommandAsync()
+        {
+            if (!IsConnected)
+            {
+                OutputWarning("--> CLEARCACHE: not connected, unable to clear the cache");
+                return;
+            }
+            if (!IsAdminConnection)
+            {
+                OutputWarning("--> CLEARCACHE: you do not have sufficient permission to clear the cache");
+                return;
+            }
+
+            try
+            {
+                var sw = Stopwatch.StartNew();
+                await ClearCacheCoreAsync();
+                sw.Stop();
+                OutputMessage($"--> CLEARCACHE: cache cleared for database '{Connection.DatabaseName}'", sw.ElapsedMilliseconds);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(ExecuteClearCacheCommandAsync), ex.Message);
+                OutputError($"--> CLEARCACHE failed: {ex.Message}");
+            }
+        }
+
+        // Handles "--> CONNECT SERVER <datasource>".
+        private async Task<bool> ConnectToServerCommandAsync(string dataSource)
+        {
+            if (string.IsNullOrWhiteSpace(dataSource))
+            {
+                OutputError("--> CONNECT SERVER requires a server name");
+                return false;
+            }
+
+            if (IsConnected && string.Equals(Connection.ServerName, dataSource, StringComparison.OrdinalIgnoreCase))
+            {
+                OutputMessage($"--> CONNECT: already connected to '{dataSource}'");
+                return true;
+            }
+
+            var connectionString = $"Data Source=\"{dataSource}\";Application Name=DAX Studio (SSAS) - {UniqueID};";
+            await ConnectViaCommentScriptAsync(connectionString, ServerType.AnalysisServices, string.Empty);
+            OutputMessage($"--> CONNECT SERVER '{dataSource}'");
+            return true;
+        }
+
+        // Handles "--> CONNECT PBIX|SSDT <instance name or full .pbix path>". When a full path is
+        // supplied and no matching instance is running, the file is launched and we wait for its
+        // local engine to start before connecting.
+        private async Task<bool> ConnectToLocalInstanceCommandAsync(CommentScript.ConnectCommand command)
+        {
+            var instanceName = command.InstanceName;
+            if (string.IsNullOrWhiteSpace(instanceName))
+            {
+                OutputError("--> CONNECT PBIX requires a report name or a full path to a .pbix file");
+                return false;
+            }
+
+            var serverType = command.ConnectionType == CommentScript.ConnectionType.SSDT
+                ? ServerType.SSDT
+                : ServerType.PowerBIDesktop;
+
+            var instance = await FindLocalInstanceAsync(instanceName, refresh: true);
+
+            // Not running - if a full path was supplied, launch the file and wait for it to load.
+            if (instance == null && command.IsFilePath)
+            {
+                if (!File.Exists(command.FilePath))
+                {
+                    OutputError($"--> CONNECT PBIX: file not found '{command.FilePath}'");
+                    return false;
+                }
+                OutputMessage($"--> CONNECT: launching '{command.FilePath}' and waiting for it to load...");
+                instance = await LaunchAndWaitForInstanceAsync(command.FilePath, instanceName);
+            }
+
+            if (instance == null)
+            {
+                var hint = command.IsFilePath ? command.FilePath : instanceName;
+                OutputError($"--> CONNECT: could not find a running Power BI Desktop instance named '{instanceName}' ({hint})");
+                return false;
+            }
+
+            var dataSource = $"localhost:{instance.Port}";
+            if (IsConnected && string.Equals(Connection.ServerName, dataSource, StringComparison.OrdinalIgnoreCase))
+            {
+                OutputMessage($"--> CONNECT: already connected to '{instanceName}'");
+                return true;
+            }
+
+            var connectionString = $"Data Source={dataSource};Application Name=DAX Studio (Power BI) - {UniqueID};";
+            await ConnectViaCommentScriptAsync(connectionString, serverType, instanceName);
+            OutputMessage($"--> CONNECT: connected to '{instanceName}' on {dataSource}");
+            return true;
+        }
+
+        // Finds a running local Analysis Services instance (Power BI Desktop / SSDT) whose title-bar
+        // name matches the requested instance name. The scan (PowerBIHelper.GetLocalInstances) blocks
+        // internally on async work, so it MUST run off the UI thread (via Task.Run) - otherwise the
+        // synchronous .Wait() it performs deadlocks against the captured UI SynchronizationContext.
+        // This mirrors how the connection dialog calls GetLocalInstances inside a Task.Run.
+        private static async Task<PowerBIInstance> FindLocalInstanceAsync(string instanceName, bool refresh)
+        {
+            return await Task.Run(() =>
+            {
+                var instances = PowerBIHelper.GetLocalInstances(includePBIRS: true, refreshList: refresh);
+                return instances.FirstOrDefault(i => string.Equals(i.Name, instanceName, StringComparison.OrdinalIgnoreCase));
+            });
+        }
+
+        // Launches the specified .pbix file and polls until its local Analysis Services engine
+        // appears (or the timeout elapses). Returns the matching instance, or null on timeout/error.
+        private static async Task<PowerBIInstance> LaunchAndWaitForInstanceAsync(string filePath, string instanceName)
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo(filePath) { UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(LaunchAndWaitForInstanceAsync), ex.Message);
+                return null;
+            }
+
+            // A freshly launched Power BI Desktop file can take a while to open the report and
+            // start its local tabular engine, so poll for a couple of minutes before giving up.
+            var timeout = TimeSpan.FromMinutes(2);
+            var pollInterval = TimeSpan.FromSeconds(2);
+            var sw = Stopwatch.StartNew();
+            while (sw.Elapsed < timeout)
+            {
+                await Task.Delay(pollInterval);
+                var instance = await FindLocalInstanceAsync(instanceName, refresh: true);
+                if (instance != null && instance.Port > 0) return instance;
+            }
+            return null;
+        }
+
+        // Builds a ConnectEvent for a comment-script CONNECT command and routes it through the
+        // existing connection handler so metadata and the UI are refreshed. Awaiting this ensures
+        // the connection is fully established before the query runs.
+        private async Task ConnectViaCommentScriptAsync(string connectionString, ServerType serverType, string fileName)
+        {
+            var connectEvent = new ConnectEvent(
+                connectionString,
+                false,
+                $"DAX Studio ({serverType}) - {UniqueID}",
+                fileName,
+                serverType,
+                false,
+                string.Empty,
+                default);
+            await HandleAsync(connectEvent, CancellationToken.None);
         }
 
 
@@ -3754,23 +3974,7 @@ namespace DaxStudio.UI.ViewModels
                 var sw = Stopwatch.StartNew();
                 _currentQueryDetails = CreateQueryHistoryEvent(string.Empty, string.Empty);
 
-                Connection.ClearCache();
-                OutputMessage(string.Format("Evaluating Calculation Script for Database: {0}", Connection.DatabaseName));
-
-
-                string refreshQuery;
-                if (Options.DefaultSeparator == DelimiterType.SemiColon)
-                {
-                    // switch the default delimiter on the refresh query to the semi-colon style
-                    var dsm = new DelimiterStateMachine(DelimiterType.SemiColon);
-                    refreshQuery = dsm.ProcessString(Constants.RefreshSessionQuery);
-                }
-                else
-                {
-                    refreshQuery = Constants.RefreshSessionQuery;
-                }
-
-                await ExecuteDataTableQueryAsync(refreshQuery);
+                await ClearCacheCoreAsync();
 
                 sw.Stop();
                 var duration = sw.ElapsedMilliseconds;
@@ -3787,6 +3991,29 @@ namespace DaxStudio.UI.ViewModels
                 IsQueryRunning = false;
             }
 
+        }
+
+        // Core cache-clear logic shared by the ribbon "Clear Cache" command and the comment-script
+        // "--> CLEARCACHE" command. Deliberately does NOT touch IsQueryRunning or create a query
+        // history event so it can also be called from within a running query pipeline.
+        private async Task ClearCacheCoreAsync()
+        {
+            Connection.ClearCache();
+            OutputMessage(string.Format("Evaluating Calculation Script for Database: {0}", Connection.DatabaseName));
+
+            string refreshQuery;
+            if (Options.DefaultSeparator == DelimiterType.SemiColon)
+            {
+                // switch the default delimiter on the refresh query to the semi-colon style
+                var dsm = new DelimiterStateMachine(DelimiterType.SemiColon);
+                refreshQuery = dsm.ProcessString(Constants.RefreshSessionQuery);
+            }
+            else
+            {
+                refreshQuery = Constants.RefreshSessionQuery;
+            }
+
+            await ExecuteDataTableQueryAsync(refreshQuery);
         }
         public async Task HandleAsync(CancelConnectEvent message, CancellationToken cancellationToken)
         {
@@ -4576,7 +4803,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public DaxIntellisenseProvider IntellisenseProvider { get; set; }
+        public IDaxIntellisenseProvider IntellisenseProvider { get; set; }
 
         public Guid UniqueID { get { return _uniqueId; } }
 

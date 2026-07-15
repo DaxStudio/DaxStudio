@@ -326,6 +326,45 @@ namespace DaxStudio.Parsers.Tests
         }
 
         [TestMethod]
+        public void Intellisense_IncompleteMeasureDefinition_DoesNotThrow()
+        {
+            var service = new DaxParserService(_metadata);
+            // Incomplete input like this puts the ANTLR parser into error recovery, which previously
+            // produced an EvaluateBlock/DefineBlock context with a missing keyword token and threw a
+            // NullReferenceException in DaxCursorStateWalker.
+            var input = "DEFINE MEASURE [te";
+
+            var completions = service.GetCompletions(input, input.Length);
+
+            Assert.IsNotNull(completions);
+        }
+
+        [TestMethod]
+        public void Intellisense_DefinedFunction_AppearsInCompletions()
+        {
+            var service = new DaxParserService(_metadata);
+            var input = "DEFINE FUNCTION hello = (a) => \"hello \" & a\r\nEVALUATE { he";
+
+            var completions = service.GetCompletions(input, input.Length);
+
+            Assert.Contains(c => c.Label == "hello", completions,
+                "A DEFINE FUNCTION name should be offered as a completion");
+        }
+
+        [TestMethod]
+        public void Intellisense_GetDefinedFunctions_ReturnsNameAndParameters()
+        {
+            var service = new DaxParserService(_metadata);
+            var input = "DEFINE FUNCTION hello = (a, b) => \"hello \" & a & b\r\nEVALUATE { hello(1, 2) }";
+
+            var functions = service.GetDefinedFunctions(input);
+
+            var fn = functions.FirstOrDefault(f => f.Name == "hello");
+            Assert.IsNotNull(fn, "Should find the DEFINE FUNCTION named 'hello'");
+            CollectionAssert.AreEqual(new[] { "a", "b" }, fn.Parameters.Select(p => p.Name).ToArray());
+        }
+
+        [TestMethod]
         public void Intellisense_Parse_CollectsErrors()
         {
             var service = new DaxParserService(_metadata);

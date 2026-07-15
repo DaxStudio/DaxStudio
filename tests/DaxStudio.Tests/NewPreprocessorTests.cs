@@ -154,7 +154,7 @@ namespace DaxStudio.Tests
         [TestMethod]
         public void CommandLinesStrippedWithinEachBatchSegment()
         {
-            var query = "--> CLEAR CACHE\nEVALUATE\nROW( \"a\", 1 )\n--> GO\n--> CLEAR CACHE\nEVALUATE\nROW( \"b\", 2 )";
+            var query = "--> CLEARCACHE\nEVALUATE\nROW( \"a\", 1 )\n--> GO\n--> CLEARCACHE\nEVALUATE\nROW( \"b\", 2 )";
             var result = DaxStudio.Parsers.PreProcessor.AntlrPreProcessor.Parse(query);
 
             Assert.AreEqual(2, result.Batches.Count);

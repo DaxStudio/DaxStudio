@@ -357,9 +357,9 @@ EVALUATE { @Color }
         }
 
         [TestMethod]
-        public void OpenCommandWithQuotedFilenameTest()
+        public void ConnectPbixWithFullPathTest()
         {
-            var input = "--> OPEN \"Sales Report.pbix\"\nEVALUATE { 1 }\n";
+            var input = "--> CONNECT PBIX \"C:\\reports\\Sales.pbix\"\nEVALUATE { 1 }\n";
 
             List<Error> errors = new List<Error>();
             PreProcessorParser.DocumentContext tree = Helpers.ConfigureLexerAndParser(input, ref errors);
@@ -374,15 +374,18 @@ EVALUATE { @Color }
             walker.Walk(listener, tree);
 
             Assert.HasCount(1, batch[0].Commands);
-            var openCmd = batch[0].Commands[0] as OpenCommand;
-            Assert.IsNotNull(openCmd);
-            Assert.AreEqual("Sales Report.pbix", openCmd.FileName);
+            var connCmd = batch[0].Commands[0] as ConnectCommand;
+            Assert.IsNotNull(connCmd);
+            Assert.AreEqual(ConnectionType.PBIX, connCmd.ConnectionType);
+            Assert.IsTrue(connCmd.IsFilePath, "IsFilePath should be true for a full .pbix path");
+            Assert.AreEqual("C:\\reports\\Sales.pbix", connCmd.FilePath);
+            Assert.AreEqual("Sales", connCmd.InstanceName);
         }
 
         [TestMethod]
-        public void OpenCommandWithUnquotedFilenameTest()
+        public void ConnectPbixWithBareNameTest()
         {
-            var input = "--> OPEN MyReport\nEVALUATE { 1 }\n";
+            var input = "--> CONNECT PBIX SalesReport\nEVALUATE { 1 }\n";
 
             List<Error> errors = new List<Error>();
             PreProcessorParser.DocumentContext tree = Helpers.ConfigureLexerAndParser(input, ref errors);
@@ -397,15 +400,18 @@ EVALUATE { @Color }
             walker.Walk(listener, tree);
 
             Assert.HasCount(1, batch[0].Commands);
-            var openCmd = batch[0].Commands[0] as OpenCommand;
-            Assert.IsNotNull(openCmd);
-            Assert.AreEqual("MyReport", openCmd.FileName);
+            var connCmd = batch[0].Commands[0] as ConnectCommand;
+            Assert.IsNotNull(connCmd);
+            Assert.AreEqual(ConnectionType.PBIX, connCmd.ConnectionType);
+            Assert.IsFalse(connCmd.IsFilePath, "IsFilePath should be false for a bare instance name");
+            Assert.IsNull(connCmd.FilePath);
+            Assert.AreEqual("SalesReport", connCmd.InstanceName);
         }
 
         [TestMethod]
-        public void OpenCommandFollowedByConnectTest()
+        public void ConnectServerIsNotAFilePathTest()
         {
-            var input = "--> OPEN \"Sales Report.pbix\"\n--> CONNECT PBIX SalesReport\nEVALUATE { 1 }\n";
+            var input = "--> CONNECT SERVER localhost\\tab19\nEVALUATE { 1 }\n";
 
             List<Error> errors = new List<Error>();
             PreProcessorParser.DocumentContext tree = Helpers.ConfigureLexerAndParser(input, ref errors);
@@ -419,9 +425,34 @@ EVALUATE { @Color }
             var walker = new ParseTreeWalker();
             walker.Walk(listener, tree);
 
-            Assert.HasCount(2, batch[0].Commands);
-            Assert.IsInstanceOfType<OpenCommand>(batch[0].Commands[0]);
-            Assert.IsInstanceOfType<ConnectCommand>(batch[0].Commands[1]);
+            Assert.HasCount(1, batch[0].Commands);
+            var connCmd = batch[0].Commands[0] as ConnectCommand;
+            Assert.IsNotNull(connCmd);
+            Assert.AreEqual(ConnectionType.SERVER, connCmd.ConnectionType);
+            Assert.IsFalse(connCmd.IsFilePath, "SERVER connections are never file paths");
+            Assert.IsNull(connCmd.FilePath);
+            Assert.AreEqual("localhost\\tab19", connCmd.InstanceName);
+        }
+
+        [TestMethod]
+        public void ClearCacheCommandTest()
+        {
+            var input = "--> CLEARCACHE\nEVALUATE { 1 }\n";
+
+            List<Error> errors = new List<Error>();
+            PreProcessorParser.DocumentContext tree = Helpers.ConfigureLexerAndParser(input, ref errors);
+
+            Assert.IsNull(tree.exception);
+            Assert.IsEmpty(errors, "The errors list should be empty");
+
+            Dictionary<string, List<string>> arrayParameters = new Dictionary<string, List<string>>();
+            var batch = new List<ScriptBatch>();
+            var listener = new PreProcessorListener(arrayParameters, batch);
+            var walker = new ParseTreeWalker();
+            walker.Walk(listener, tree);
+
+            Assert.HasCount(1, batch[0].Commands);
+            Assert.IsInstanceOfType<ClearCacheCommand>(batch[0].Commands[0]);
         }
 
     }

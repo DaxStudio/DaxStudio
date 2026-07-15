@@ -98,6 +98,9 @@ namespace DaxStudio.Parsers.Metadata
         /// <summary>In-scope DEFINE measures at the cursor position.</summary>
         public IReadOnlyList<string> DefinedMeasures { get; set; }
 
+        /// <summary>In-scope DEFINE FUNCTION names (with parameters) at the cursor position.</summary>
+        public IReadOnlyList<DefinedFunctionInfo> DefinedFunctions { get; set; }
+
         /// <summary>The nesting depth of function calls at the cursor.</summary>
         public int FunctionNestingDepth { get; set; }
 
@@ -107,6 +110,7 @@ namespace DaxStudio.Parsers.Metadata
             ArgumentIndex = -1;
             Variables = new List<string>();
             DefinedMeasures = new List<string>();
+            DefinedFunctions = new List<DefinedFunctionInfo>();
         }
 
         public DaxState(EditState state, string currentFunction = null, int argumentIndex = -1,
@@ -119,6 +123,7 @@ namespace DaxStudio.Parsers.Metadata
             PartialText = partialText;
             Variables = new List<string>();
             DefinedMeasures = new List<string>();
+            DefinedFunctions = new List<DefinedFunctionInfo>();
         }
     }
 }

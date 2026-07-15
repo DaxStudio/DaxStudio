@@ -1868,6 +1868,24 @@ namespace DaxStudio.Core.Options
                 NotifyOfPropertyChange(() => UseNewPreprocessor);
             }
         }
+
+        private bool _useAntlrCodeCompletion;
+        [DataMember, DefaultValue(false)]
+        [Category("Preview")]
+        [Subcategory("Editor")]
+        [DisplayName("Use New Code Completion Engine")]
+        [Description("Use the new grammar-based (ANTLR) engine for editor code completion, signature help and comment-script command completion instead of the current regex-based engine.\nThe new engine applies to newly opened query windows.\nWARNING: this is a preview feature and its behaviour may change before the final release.")]
+        public bool UseAntlrCodeCompletion
+        {
+            get => _useAntlrCodeCompletion;
+
+            set
+            {
+                _useAntlrCodeCompletion = value;
+                SettingProvider.SetValue(nameof(UseAntlrCodeCompletion), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => UseAntlrCodeCompletion);
+            }
+        }
         #endregion
 
 

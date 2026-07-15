@@ -89,6 +89,20 @@ namespace DaxStudio.Parsers.Dax
         }
 
         /// <summary>
+        /// Returns all functions defined in the query itself via DEFINE FUNCTION, including their
+        /// parameter names, so signature/insight help can be provided for them.
+        /// </summary>
+        public IReadOnlyList<DefinedFunctionInfo> GetDefinedFunctions(string input)
+        {
+            var result = Parse(input);
+            if (result.Tree == null) return new List<DefinedFunctionInfo>();
+
+            var collector = new DefinedFunctionCollector();
+            Antlr4.Runtime.Tree.ParseTreeWalker.Default.Walk(collector, result.Tree);
+            return collector.Functions;
+        }
+
+        /// <summary>
         /// Validates variable scoping rules in DAX input.
         /// Returns a list of scope errors (forward references, undefined variables).
         /// </summary>

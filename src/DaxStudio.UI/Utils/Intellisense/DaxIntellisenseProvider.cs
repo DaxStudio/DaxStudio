@@ -39,7 +39,7 @@ namespace DaxStudio.UI.Utils.Intellisense
     }
 
     public class DaxIntellisenseProvider:
-        IIntellisenseProvider, 
+        IDaxIntellisenseProvider,
         IInsightProvider, 
         IHandle<MetadataLoadedEvent>, 
         IHandle<DmvsLoadedEvent>,

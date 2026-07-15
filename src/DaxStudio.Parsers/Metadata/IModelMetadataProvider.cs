@@ -21,15 +21,24 @@ namespace DaxStudio.Parsers.Metadata
     public class TableMetadata
     {
         public string Name { get; set; }
+
+        /// <summary>
+        /// The table name formatted for use in a DAX expression, with single quotes added only when
+        /// they are required (i.e. the name contains a space/special character, starts with a digit,
+        /// or collides with a reserved word). When null/empty the completion provider falls back to a
+        /// syntactic quoting rule based on <see cref="Name"/>.
+        /// </summary>
+        public string DaxName { get; set; }
         public string Description { get; set; }
         public bool IsHidden { get; set; }
 
         public TableMetadata() { }
-        public TableMetadata(string name, string description = "", bool isHidden = false)
+        public TableMetadata(string name, string description = "", bool isHidden = false, string daxName = null)
         {
             Name = name;
             Description = description;
             IsHidden = isHidden;
+            DaxName = daxName;
         }
     }
 

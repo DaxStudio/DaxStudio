@@ -131,26 +131,14 @@ namespace DaxStudio.Parsers.Dax
         {
             if (context.ChildCount != 3) throw new ArgumentException("Invalid number of arguments for CONNECT command. This command should be in the form of: '--> CONNECT <ConnectionType> <ConnectionName>'");
 
-            var serverType = context.children[1].ToString();
-            var serverName = context.children[2].ToString();
+            var serverType = context.children[1].GetText();
+            var serverName = context.children[2].GetText();
 
             var cmd = new ConnectCommand(serverType, serverName);
             _currentBatch.Commands.Add(cmd);
             OutputCommand( _currentBatch.Output, context);
             base.ExitConnect(context);
         }
-
-        public override void ExitOpen([NotNull] PreProcessorParser.OpenContext context)
-        {
-            if (context.ChildCount != 2) throw new ArgumentException("Invalid number of arguments for OPEN command. This command should be in the form of: '--> OPEN [\"]<FileName>[\"]'");
-
-            var fileName = context.children[1].GetText();
-            var cmd = new OpenCommand(fileName);
-            _currentBatch.Commands.Add(cmd);
-            OutputCommand(_currentBatch.Output, context);
-            base.ExitOpen(context);
-        }
-
 
         public override void ExitScript_parameter([NotNull] PreProcessorParser.Script_parameterContext context)
         {
