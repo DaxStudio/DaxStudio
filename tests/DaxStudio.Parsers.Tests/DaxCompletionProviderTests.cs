@@ -118,6 +118,36 @@ namespace DaxStudio.Parsers.Tests
         }
 
         [TestMethod]
+        public void PartialTable_ReturnsAllTablesUnquotedWherePossibleAndNoFunctions()
+        {
+            // Typing an opening quote ('|) should offer every table - unquoted when the name doesn't
+            // require quotes - and must NOT offer functions. Regression for the ANTLR provider showing
+            // only quote-requiring tables (and, once more characters were typed, functions).
+            var state = new DaxState(EditState.PartialTable, partialText: "'");
+            var completions = _provider.GetCompletions(state);
+            var labels = completions.Select(c => c.Label).ToList();
+
+            Assert.IsTrue(completions.All(c => c.Kind == CompletionItemKind.Table || c.Kind == CompletionItemKind.Calendar),
+                "A partial table reference must only offer tables/calendars, never functions");
+            Assert.Contains("Sales", labels, "A table that doesn't need quotes should be offered without them");
+            Assert.Contains("'Product Category'", labels);
+            Assert.Contains("'1Fact'", labels);
+            Assert.Contains("'Date'", labels);
+        }
+
+        [TestMethod]
+        public void PartialTable_FiltersByTypedPrefixIgnoringLeadingQuote()
+        {
+            // 'Sa| -> only tables whose name starts with "Sa"
+            var state = new DaxState(EditState.PartialTable, partialText: "'Sa");
+            var labels = _provider.GetCompletions(state).Select(c => c.Label).ToList();
+
+            Assert.Contains("Sales", labels);
+            CollectionAssert.DoesNotContain(labels, "'Date'");
+            CollectionAssert.DoesNotContain(labels, "'1Fact'");
+        }
+
+        [TestMethod]
         public void QualifiedTableReference_ReturnsOnlyThatTablesColumns()
         {
             // 'Sales'[  -> only Sales columns, no measures from other contexts

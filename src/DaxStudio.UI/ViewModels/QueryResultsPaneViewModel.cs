@@ -7,13 +7,17 @@ using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.Utils;
 using ICSharpCode.AvalonEdit.Document;
+using Newtonsoft.Json;
 using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
 using System.Data;
+using System.IO;
+using System.IO.Packaging;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -23,6 +27,7 @@ using System.Windows.Input;
 using UnitComboLib.Unit.Screen;
 using UnitComboLib.ViewModel;
 using DaxStudio.Core.Interfaces;
+using DaxStudio.Core;
 using DaxStudio.Core.Model;
 
 namespace DaxStudio.UI.ViewModels
@@ -40,6 +45,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<UpdateGlobalOptions>
         , IHandle<SizeUnitsUpdatedEvent>
         , IHandle<CopyWithHeadersEvent>
+        , ISaveState
     {
         private DataTable _resultsTable;
         private string _selectedWorksheet;
@@ -573,11 +579,15 @@ namespace DaxStudio.UI.ViewModels
             set { _showTreeTimestampColumn = value; NotifyOfPropertyChange(() => ShowTreeTimestampColumn); }
         }
 
+        // Remembered so the current SHOW result can be persisted into (and restored from) the .daxx package.
+        private DaxStudio.Parsers.CommentScript.ShowType _lastShowType;
+
         /// <summary>Populates and shows the SHOW tree-grid. Called from the query pipeline via the runner.</summary>
         public void DisplayShowTree(IList<ShowTreeNode> roots, DaxStudio.Parsers.CommentScript.ShowType showType)
         {
             Execute.OnUIThread(() =>
             {
+                _lastShowType = showType;
                 _showTreeRoots.Clear();
                 if (roots != null) _showTreeRoots.AddRange(roots);
 
@@ -607,6 +617,84 @@ namespace DaxStudio.UI.ViewModels
         {
             _showTreeRoots.Clear();
             IsShowTreeVisible = false;
+        }
+
+        #endregion
+
+        #region ISaveState - persist only the SHOW tree result into the .daxx package (the normal result grid is never saved)
+
+        /// <summary>Serializable snapshot of the SHOW tree-grid written to the .daxx package.</summary>
+        private class ShowTreeState
+        {
+            public List<ShowTreeNode> Roots { get; set; } = new List<ShowTreeNode>();
+            public DaxStudio.Parsers.CommentScript.ShowType ShowType { get; set; }
+        }
+
+        // Satellite (.dax) files do not persist SHOW output - persistence is only via the .daxx package.
+        public void Save(string filename) { }
+        public void Load(string filename) { }
+
+        public string GetJson()
+        {
+            var state = new ShowTreeState
+            {
+                Roots = _showTreeRoots.ToList(),
+                ShowType = _lastShowType
+            };
+            return JsonConvert.SerializeObject(state, Formatting.Indented);
+        }
+
+        public void LoadJson(string json)
+        {
+            if (string.IsNullOrWhiteSpace(json)) return;
+            var state = JsonConvert.DeserializeObject<ShowTreeState>(json);
+            if (state?.Roots == null || state.Roots.Count == 0) return;
+            DisplayShowTree(state.Roots, state.ShowType);
+        }
+
+        public void SavePackage(Package package)
+        {
+            // Only the SHOW tree output is persisted, and only when it is actually being displayed.
+            // The normal query result grid is intentionally never saved into the .daxx file.
+            if (!IsShowTreeVisible || _showTreeRoots.Count == 0) return;
+            try
+            {
+                var uri = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.ShowResults, UriKind.Relative));
+                if (package.PartExists(uri)) package.DeletePart(uri);
+                using (var strm = package.CreatePart(uri, "application/json", CompressionOption.Maximum).GetStream())
+                using (var writer = new StreamWriter(strm, new UTF8Encoding(false)))
+                {
+                    writer.Write(GetJson());
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(QueryResultsPaneViewModel), nameof(SavePackage), "Error saving SHOW results to daxx file");
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error saving SHOW results to daxx file\n{ex.Message}"));
+            }
+        }
+
+        public void LoadPackage(Package package)
+        {
+            var uri = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.ShowResults, UriKind.Relative));
+            if (!package.PartExists(uri)) return;
+            try
+            {
+                var part = package.GetPart(uri);
+                string json;
+                using (var strm = part.GetStream())
+                using (var reader = new StreamReader(strm))
+                {
+                    json = reader.ReadToEnd();
+                }
+                LoadJson(json);
+                Activate();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(QueryResultsPaneViewModel), nameof(LoadPackage), "Error loading SHOW results from daxx file");
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error loading SHOW results from daxx file\n{ex.Message}"));
+            }
         }
 
         #endregion

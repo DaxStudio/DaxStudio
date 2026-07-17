@@ -25,8 +25,12 @@ namespace DaxStudio.Parsers.Dax
         // Scope stack for VAR/RETURN blocks — each entry is variables declared in that scope
         private readonly Stack<List<string>> _scopeStack = new Stack<List<string>>();
 
-        // Track whether we're inside a DEFINE block (vs expression-level VAR)
-        private bool _inDefineBlock;
+        // Variables in scope at the last variable declaration that precedes the cursor. Captured
+        // incrementally during the walk (in ExitVariableDefinition) so it excludes variables declared
+        // at or after the cursor. Used as a fallback source of in-scope variables when the cursor state
+        // has to be determined from the token stream, or when a tree-resolved state came back with no
+        // variables (both happen under error recovery on incomplete input).
+        private List<string> _cursorScopeVariables;
 
         private readonly Stack<FunctionCallContext> _functionCallStack = new Stack<FunctionCallContext>();
 
@@ -44,6 +48,15 @@ namespace DaxStudio.Parsers.Dax
         /// </summary>
         public static Metadata.DaxState GetStateAtCursor(string input, int cursorOffset)
         {
+            // The editor can contain several independent query "chunks" (e.g. an "EVALUATE ..." for
+            // one query followed by a "DEFINE ... EVALUATE ..." for another). A DAX query requires
+            // DEFINE to precede EVALUATE, so an earlier EVALUATE makes a following DEFINE a syntax
+            // error and the parser's error recovery loses the DEFINE block's measures/variables. To
+            // give correct completions we restrict parsing to the chunk that contains the cursor.
+            var chunk = ExtractStatementChunk(input, cursorOffset);
+            input = chunk.Text;
+            cursorOffset = chunk.CursorOffset;
+
             ICharStream chars = new DAXCharStream(input);
             var lexer = new DAXLexer(chars);
             lexer.RemoveErrorListeners();
@@ -63,11 +76,104 @@ namespace DaxStudio.Parsers.Dax
 
             if (walker._result != null)
             {
-                return walker._result;
+                // Under error recovery on incomplete input, a tree-resolved expression state can end up
+                // with no in-scope variables even though the cursor sits after variable declarations.
+                // Fall back to the snapshot captured during the walk in that case.
+                if ((walker._result.Variables == null || walker._result.Variables.Count == 0)
+                    && walker._cursorScopeVariables != null && walker._cursorScopeVariables.Count > 0)
+                {
+                    walker._result.Variables = walker._cursorScopeVariables;
+                }
+                return walker.RefinePartialReference(walker._result);
             }
 
-            // Fallback: determine state from the token at/before the cursor
-            return walker.DetermineStateFromTokens(input, tokenStream);
+            // Fallback: determine state from the token at/before the cursor. The token-based path does
+            // not have scope context, so apply the variables/measures/functions collected during the
+            // walk (variables use the snapshot captured at the cursor's enclosing VAR/RETURN block, or
+            // the DEFINE-level variables when the cursor is not inside a VAR/RETURN block).
+            var fallbackState = walker.DetermineStateFromTokens(input, tokenStream);
+            if (fallbackState.Variables == null || fallbackState.Variables.Count == 0)
+                fallbackState.Variables = walker._cursorScopeVariables ?? new List<string>(walker._defineVariables);
+            if (fallbackState.DefinedMeasures == null || fallbackState.DefinedMeasures.Count == 0)
+                fallbackState.DefinedMeasures = walker._definedMeasures.ToList();
+            if (fallbackState.DefinedFunctions == null || fallbackState.DefinedFunctions.Count == 0)
+                fallbackState.DefinedFunctions = walker._definedFunctions.ToList();
+            return fallbackState;
+        }
+
+        /// <summary>
+        /// The text of a query chunk together with the cursor offset translated into that chunk.
+        /// </summary>
+        internal struct StatementChunk
+        {
+            public string Text;
+            public int CursorOffset;
+        }
+
+        /// <summary>
+        /// Returns the slice of the editor text that should be parsed to determine the completion
+        /// state at the cursor: the text from the start of the query containing the cursor up to the
+        /// cursor itself. A DAX query is "[DEFINE ...] EVALUATE ... [EVALUATE ...]*", and DEFINE must be
+        /// the first keyword, so every top-level DEFINE keyword starts a new query; the slice therefore
+        /// begins at the DEFINE at or before the cursor (or the start of the text when the cursor
+        /// precedes the first DEFINE). The slice always ends at the cursor so that text after the cursor
+        /// - which is frequently invalid while the user edits the middle of a query - is never parsed.
+        /// Comments and string literals are ignored because their "DEFINE" text is not tokenised as a
+        /// DEFINE keyword.
+        /// </summary>
+        internal static StatementChunk ExtractStatementChunk(string input, int cursorOffset)
+        {
+            if (string.IsNullOrEmpty(input))
+                return new StatementChunk { Text = input ?? string.Empty, CursorOffset = cursorOffset };
+
+            // Only ever parse up to the cursor. Text after the cursor is irrelevant to the completion
+            // state at the cursor, and while the user edits in the middle of an existing query the
+            // trailing text is frequently (temporarily) invalid - parsing it would derail the parser's
+            // error recovery and lose the in-scope variables/measures we need. Clamp the cursor into
+            // the valid range first.
+            if (cursorOffset < 0) cursorOffset = 0;
+            if (cursorOffset > input.Length) cursorOffset = input.Length;
+
+            var defineOffsets = new List<int>();
+            try
+            {
+                ICharStream chars = new DAXCharStream(input);
+                var lexer = new DAXLexer(chars);
+                lexer.RemoveErrorListeners();
+                var tokenStream = new CommonTokenStream(lexer);
+                tokenStream.Fill();
+                foreach (var token in tokenStream.GetTokens())
+                {
+                    if (token.Type == DAXLexer.Eof) break;
+                    if (token.Channel != 0) continue;
+                    if (token.Type == DAXLexer.DEFINE)
+                        defineOffsets.Add(token.StartIndex);
+                }
+            }
+            catch
+            {
+                // If lexing fails for any reason fall back to parsing the text up to the cursor.
+                return new StatementChunk { Text = input.Substring(0, cursorOffset), CursorOffset = cursorOffset };
+            }
+
+            // Chunk starts at the last DEFINE at or before the cursor (0 if the cursor precedes them all).
+            // A DAX query is "[DEFINE ...] EVALUATE ...", and DEFINE must be the first keyword, so every
+            // top-level DEFINE keyword starts a new query. Comments and string literals are ignored
+            // because their "DEFINE" text is not tokenised as a DEFINE keyword.
+            int chunkStart = 0;
+            foreach (var offset in defineOffsets)
+            {
+                if (offset <= cursorOffset) chunkStart = offset;
+                else break;
+            }
+
+            // The chunk ends at the cursor. Because the cursor is at or before any later DEFINE, this
+            // also naturally excludes any following DEFINE-separated query.
+            return new StatementChunk
+            {
+                Text = input.Substring(chunkStart, cursorOffset - chunkStart),
+                CursorOffset = cursorOffset - chunkStart
+            };
         }
 
         private bool CursorIsWithin(ParserRuleContext ctx)
@@ -91,7 +197,6 @@ namespace DaxStudio.Parsers.Dax
         // --- DEFINE block ---
         public override void EnterDefineBlock(DAXParser.DefineBlockContext ctx)
         {
-            _inDefineBlock = true;
             if (_resolved) return;
             if (CursorIsWithin(ctx))
             {
@@ -104,11 +209,6 @@ namespace DaxStudio.Parsers.Dax
                     SetResult(Metadata.EditState.DefineContext);
                 }
             }
-        }
-
-        public override void ExitDefineBlock(DAXParser.DefineBlockContext ctx)
-        {
-            _inDefineBlock = false;
         }
 
         public override void EnterDefinition(DAXParser.DefinitionContext ctx)
@@ -149,16 +249,39 @@ namespace DaxStudio.Parsers.Dax
             if (ctx.identifierOrKeyword() != null)
             {
                 var name = ctx.identifierOrKeyword().GetText();
-                if (_inDefineBlock || _scopeStack.Count == 0)
+                if (_scopeStack.Count > 0)
                 {
-                    // DEFINE-level variable — always available
-                    _defineVariables.Add(name);
+                    // Inside a VAR/RETURN block (this includes a VAR/RETURN that forms the body of a
+                    // measure/column definition) — the variable is only visible within that block.
+                    _scopeStack.Peek().Add(name);
                 }
                 else
                 {
-                    // Expression-level variable — add to current scope
-                    _scopeStack.Peek().Add(name);
+                    // DEFINE-level variable declared directly in the DEFINE block (not inside a
+                    // VAR/RETURN expression) — always available after declaration.
+                    _defineVariables.Add(name);
                 }
+            }
+
+            // Snapshot the variables in scope once the cursor is strictly PAST this whole declaration.
+            // Under error recovery on incomplete input the cursor's tokens are sometimes parsed outside
+            // the enclosing VAR/RETURN context, so this per-declaration capture (last one before the
+            // cursor wins) is a robust fallback source of in-scope variables. The cursor must be beyond
+            // (not merely adjacent to) the declaration: a variable is only in scope after its full
+            // "VAR name = expr", so while its name/expression is still being typed — e.g. "VAR vte" with
+            // the caret right after "vte" — it must not offer itself as a completion.
+            //
+            // Additionally require a real (default-channel) token between this declaration and the cursor.
+            // When only whitespace follows, the user is still authoring THIS variable's value (its
+            // expression can end in a dangling operator, e.g. "VAR v = 1 + " where the "+" is parsed as
+            // part of the declaration), so the variable is a self-reference that must NOT be in scope yet.
+            // A following VAR/RETURN/EVALUATE token means the declaration is complete and the variable is
+            // genuinely in scope. This mirrors ResetCursorScopeIfPastDefinition's "trailing whitespace
+            // alone does not count" rule.
+            if (ctx.Stop != null && _cursorOffset > ctx.Stop.StopIndex + 1
+                && HasDefaultChannelTokenBetween(ctx.Stop.StopIndex, _cursorOffset))
+            {
+                _cursorScopeVariables = GetInScopeVariables();
             }
         }
 
@@ -169,6 +292,39 @@ namespace DaxStudio.Parsers.Dax
             {
                 _definedMeasures.Add(ctx.COLUMN_OR_MEASURE().GetText());
             }
+
+            ResetCursorScopeIfPastDefinition(ctx);
+        }
+
+        // Variables declared inside a measure/column/function definition's VAR/RETURN body are local to
+        // that definition. Once the definition ends they go out of scope, so if the cursor sits in a
+        // *later* construct (a following DEFINE definition, or the EVALUATE block) reset the fallback
+        // variable snapshot to the query-level (DEFINE) variables so the definition-local variables do
+        // not leak. The boundary is the whole definition rather than the inner VAR/RETURN block, because
+        // grammar/error-recovery can truncate the VAR/RETURN context early (e.g. "RETURN a + par" binds
+        // "+ par" outside the varReturnExpr) yet the variable is still legitimately in scope in the tail
+        // of the same definition. "Later construct" is detected by a real (default-channel) token between
+        // this definition and the cursor; trailing whitespace alone - e.g. an empty "RETURN " still being
+        // typed in this same measure - does not count, so the definition's own RETURN completions remain.
+        private void ResetCursorScopeIfPastDefinition(ParserRuleContext ctx)
+        {
+            if (ctx?.Stop == null) return;
+            if (_cursorOffset <= ctx.Stop.StopIndex + 1) return;
+            if (!HasDefaultChannelTokenBetween(ctx.Stop.StopIndex, _cursorOffset)) return;
+            _cursorScopeVariables = GetInScopeVariables();
+        }
+
+        private bool HasDefaultChannelTokenBetween(int afterStopIndex, int beforeCursorOffset)
+        {
+            _tokenStream.Fill();
+            foreach (var token in _tokenStream.GetTokens())
+            {
+                if (token.Type == DAXLexer.Eof) break;
+                if (token.Channel != 0) continue;
+                if (token.StartIndex > afterStopIndex && token.StopIndex < beforeCursorOffset)
+                    return true;
+            }
+            return false;
         }
 
         // --- Function calls ---
@@ -213,6 +369,8 @@ namespace DaxStudio.Parsers.Dax
             // completion and provide insight help elsewhere in the query (e.g. in a following EVALUATE).
             var info = DefinedFunctionCollector.FromContext(ctx);
             if (info != null) _definedFunctions.Add(info);
+
+            ResetCursorScopeIfPastDefinition(ctx);
         }
 
         // --- Type annotations ---
@@ -348,6 +506,77 @@ namespace DaxStudio.Parsers.Dax
                 result.AddRange(scope);
             }
             return result;
+        }
+
+        // A partial quoted-table ('Tab) or partial bracketed-column/measure ([Col) token at the cursor
+        // unambiguously identifies a table or column/measure reference, even when the cursor also sits
+        // inside a function argument or another generic expression context. The tree walk resolves those
+        // enclosing contexts to an expression state (which also offers functions), so refine the result
+        // to the specific partial-reference state. This matches the legacy line-based provider, which
+        // keyed purely off the open quote/bracket and never offered functions once one was typed.
+        private Metadata.DaxState RefinePartialReference(Metadata.DaxState state)
+        {
+            if (state == null) return state;
+
+            switch (state.State)
+            {
+                case Metadata.EditState.FunctionArgument:
+                case Metadata.EditState.NextArgument:
+                case Metadata.EditState.ExpressionStart:
+                case Metadata.EditState.AfterOperator:
+                case Metadata.EditState.ReturnExpression:
+                case Metadata.EditState.Identifier:
+                case Metadata.EditState.Unknown:
+                    break;
+                default:
+                    return state;
+            }
+
+            var token = GetEffectiveTokenAtCursor();
+            if (token == null) return state;
+
+            if (token.Type == DAXLexer.PARTIAL_TABLE)
+            {
+                return new Metadata.DaxState(Metadata.EditState.PartialTable, partialText: token.Text);
+            }
+
+            if (token.Type == DAXLexer.PARTIAL_COLUMN_OR_MEASURE)
+            {
+                _tokenStream.Fill();
+                var precedingTable = FindPrecedingTableRef(_tokenStream.GetTokens(), token);
+                var pcState = new Metadata.DaxState(Metadata.EditState.PartialColumn, partialText: token.Text);
+                pcState.CurrentTable = precedingTable;
+                return pcState;
+            }
+
+            return state;
+        }
+
+        // Returns the default-channel token that contains the cursor, or the last token before it.
+        private IToken GetEffectiveTokenAtCursor()
+        {
+            _tokenStream.Fill();
+            var tokens = _tokenStream.GetTokens();
+
+            IToken tokenAtCursor = null;
+            IToken tokenBeforeCursor = null;
+
+            foreach (var token in tokens)
+            {
+                if (token.Type == DAXLexer.Eof) break;
+                if (token.Channel != 0) continue;
+
+                if (token.StartIndex <= _cursorOffset && token.StopIndex >= _cursorOffset - 1)
+                {
+                    tokenAtCursor = token;
+                }
+                if (token.StopIndex < _cursorOffset)
+                {
+                    tokenBeforeCursor = token;
+                }
+            }
+
+            return tokenAtCursor ?? tokenBeforeCursor;
         }
 
         private Metadata.DaxState DetermineStateFromTokens(string input, CommonTokenStream tokenStream)

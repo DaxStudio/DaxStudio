@@ -21,9 +21,19 @@ namespace DaxStudio.Parsers.PreProcessor
         public List<Error> Errors { get; } = new List<Error>();
 
         /// <summary>
+        /// Errors caused by a malformed comment-script (<c>--&gt;</c>) command (e.g. a USE with no
+        /// database, a TRACE with an unknown type, or a syntax error on a command line). These are
+        /// mistakes the user made in an explicit command and must be surfaced to the user (rather than
+        /// silently falling back to the classic pre-processor, which would ignore the command).
+        /// </summary>
+        public List<Error> CommandErrors { get; } = new List<Error>();
+
+        /// <summary>
         /// The executable query text: the original input with any comment-script (<c>--&gt;</c>)
-        /// command lines removed. Whitespace and formatting of the DAX are preserved (the listener's
-        /// batch <c>Output</c> cannot be used for this because whitespace is lexed on a hidden channel).
+        /// command lines blanked out (replaced with empty lines so the DAX line numbers stay aligned
+        /// with the editor for accurate error markers). Whitespace and formatting of the DAX are
+        /// preserved (the listener's batch <c>Output</c> cannot be used for this because whitespace is
+        /// lexed on a hidden channel).
         /// </summary>
         public string ProcessedText { get; internal set; } = string.Empty;
 
@@ -35,6 +45,9 @@ namespace DaxStudio.Parsers.PreProcessor
             new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
 
         public bool HasErrors => Errors.Count > 0;
+
+        /// <summary>True when a comment-script (<c>--&gt;</c>) command was malformed or invalid.</summary>
+        public bool HasCommandErrors => CommandErrors.Count > 0;
     }
 
     /// <summary>
@@ -61,12 +74,32 @@ namespace DaxStudio.Parsers.PreProcessor
             parser.RemoveErrorListeners();
             parser.AddErrorListener(errorListener);
 
-            var tree = parser.block();
+            // Parse the whole document (block+ EOF) rather than a single block so that every
+            // "--> GO" separated section becomes its own batch and the comment-script commands in
+            // later sections are captured. (Using block() only parsed the first section, which
+            // dropped trailing batches/commands when an earlier section - e.g. a DMV "$SYSTEM"
+            // query - could not be fully parsed by the DAX-oriented grammar.)
+            var tree = parser.document();
 
             var arrayParameters = new Dictionary<string, List<string>>();
             var listener = new PreProcessorListener(arrayParameters, result.Batches);
             var walker = new ParseTreeWalker();
-            walker.Walk(listener, tree);
+            try
+            {
+                walker.Walk(listener, tree);
+            }
+            catch (CommentScriptCommandException ex)
+            {
+                // A recognised comment-script command was malformed (e.g. USE with no database name).
+                // Record it as a command error - a hard, user-facing error - so the caller can surface
+                // it rather than silently swallowing it and falling back to the classic pre-processor.
+                result.CommandErrors.Add(new Error { Msg = ex.Message, Line = ex.Line, Column = ex.Column });
+            }
+
+            // Promote any syntax error reported on a comment-script command ("-->") line to a command
+            // error: those are mistakes in an explicit command (e.g. "--> BOGUS", "--> TRACE X") and
+            // should be surfaced, not treated as a soft DAX-body parse error that falls back silently.
+            PromoteCommandLineErrors(queryText, result);
 
             // The lexer records every @name token it encounters (keyed with the leading '@').
             // Strip the '@' so the names line up with the values expected by QueryInfo.
@@ -133,14 +166,41 @@ namespace DaxStudio.Parsers.PreProcessor
             return string.Equals(rest, "GO", StringComparison.OrdinalIgnoreCase);
         }
 
-        // Removes whole comment-script command lines (those whose trimmed text starts with '-->')
-        // while leaving all other lines - and their DAX whitespace/formatting - untouched. Comment
-        // script commands are line oriented in the grammar, so this reliably yields executable DAX.
+        // Moves any parser/lexer syntax error whose line points at a comment-script command ("-->")
+        // line from the (soft) Errors list into the (hard) CommandErrors list. A syntax error on a
+        // command line means the user mistyped an explicit command, which must be surfaced; an error
+        // on a DAX-body line is a limitation of the partial grammar and correctly falls back to the
+        // classic pre-processor.
+        private static void PromoteCommandLineErrors(string text, PreProcessResult result)
+        {
+            if (result.Errors.Count == 0) return;
+
+            var lines = (text ?? string.Empty).Split('\n');
+            var remaining = new List<Error>();
+            foreach (var err in result.Errors)
+            {
+                var idx = err.Line - 1; // ANTLR reports 1-based line numbers
+                if (idx >= 0 && idx < lines.Length && lines[idx].TrimStart().StartsWith("-->"))
+                    result.CommandErrors.Add(err);
+                else
+                    remaining.Add(err);
+            }
+            result.Errors.Clear();
+            result.Errors.AddRange(remaining);
+        }
+
+        // Replaces whole comment-script command lines (those whose trimmed text starts with '-->',
+        // which also covers the '-->>' continuation lines) with an EMPTY line, leaving every other
+        // line - and its DAX whitespace/formatting - untouched. Blanking (rather than removing) the
+        // command lines keeps the line numbers of the executable DAX aligned with the editor, so
+        // engine-reported error positions (the red error markers and the "Goto" link) point at the
+        // correct editor line. Blank lines are ignored by the DAX engine. Comment script commands are
+        // line oriented in the grammar, so this reliably yields executable DAX.
         private static string StripCommentScriptLines(string text)
         {
             if (string.IsNullOrEmpty(text)) return text ?? string.Empty;
             var lines = text.Split('\n');
-            var kept = lines.Where(l => !l.TrimStart().StartsWith("-->"));
+            var kept = lines.Select(l => l.TrimStart().StartsWith("-->") ? string.Empty : l);
             return string.Join("\n", kept);
         }
     }

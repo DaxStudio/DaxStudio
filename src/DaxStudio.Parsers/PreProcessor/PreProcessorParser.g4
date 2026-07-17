@@ -43,6 +43,7 @@ query_parts
     | DELIMITED_COMMENT         #Other
 	| K_VAR                     #Other
 	| K_RETURN                  #Other
+	| ANY                       #Other
 	;
 
 punctuation	
@@ -109,8 +110,8 @@ parameter_array_values
 	: CS_ARRAY_START parameter_scalar_values (CS_COMMA parameter_scalar_values)* CS_ARRAY_END
 	;
 
-connect:           CS_CONNECT (CS_SERVER|CS_PBIX|CS_SSDT) (CS_STRING_LITERAL | CS_IDENTIFIER);
-use:               CS_USE (CS_STRING_LITERAL | CS_IDENTIFIER);
+connect:           CS_CONNECT (CS_SERVER|CS_PBIX|CS_SSDT) (CS_STRING_LITERAL | unquoted_value);
+use:               CS_USE (CS_STRING_LITERAL | unquoted_value);
 script_parameter:  CS_SET_PARAMETER (CS_STRING|CS_INTEGER|CS_DATETIME|CS_BOOLEAN|CS_DOUBLE)? CS_PARAMETER CS_EQUALS ( parameter_array_values | parameter_scalar_values );
 output:            CS_OUTPUT (CS_CSV | CS_XLSX | CS_JSON) (CS_STRING_LITERAL | CS_IDENTIFIER);
 test:              CS_TEST CS_PERFORMANCE CS_STRING_LITERAL;
@@ -123,6 +124,13 @@ metrics:           CS_METRICS (metrics_export | metrics_view);
 metrics_export:    CS_EXPORT (CS_STRING_LITERAL | CS_IDENTIFIER);
 metrics_view:      CS_VIEW;
 show:              CS_SHOW (CS_DEPENDENCIES | CS_LAST_UPDATED | CS_MAX_UPDATED);
+
+// An unquoted value for CONNECT/USE that may contain spaces (e.g. a database or Power BI report
+// name like "AW Internet Sales"). It captures every token up to the end of the command line. The
+// first token must not be a string literal so this does not overlap with the quoted alternative;
+// the original source text (including the internal spaces the lexer skips) is recovered in the
+// PreProcessorListener from the parse-tree char interval.
+unquoted_value:    ~(CS_NEWLINE | CS_STRING_LITERAL) (~CS_NEWLINE)* ;
 
 // the go command is special as it terminates a batch
 go_command:        COMMENT_SCRIPT CS_GO (CS_NEWLINE | EOF);

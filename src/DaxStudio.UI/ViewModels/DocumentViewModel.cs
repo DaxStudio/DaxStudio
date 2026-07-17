@@ -1632,6 +1632,22 @@ namespace DaxStudio.UI.ViewModels
 
             // merge in any parameters
             textProvider.QueryInfo = new QueryInfo(textProvider.EditorText, _eventAggregator, Options);
+
+            // A malformed comment-script ("-->") command (e.g. "--> USE" with no database) is a hard
+            // error: surface a helpful message (with a red marker and "Goto" link on the offending
+            // command line) and abort the run rather than silently ignoring the command.
+            if (!string.IsNullOrEmpty(textProvider.QueryInfo.PreProcessError))
+            {
+                var msg = textProvider.QueryInfo.PreProcessError;
+                if (textProvider.QueryInfo.PreProcessErrorLine > 0)
+                    // ANTLR columns are 0-based; the editor marker expects a 1-based column.
+                    OutputError(msg, textProvider.QueryInfo.PreProcessErrorLine, textProvider.QueryInfo.PreProcessErrorColumn + 1);
+                else
+                    OutputError(msg);
+                ActivateOutput();
+                return DialogResult.Cancel;
+            }
+
             DialogResult paramDialogResult = DialogResult.Skip;
             if (textProvider.QueryInfo.NeedsParameterValues)
             {
@@ -2387,10 +2403,15 @@ namespace DaxStudio.UI.ViewModels
 
 
         // Processes the comment-script commands that must run before the DAX query (currently
-        // "--> CONNECT" and "--> CLEARCACHE"). CONNECT is handled first because it changes the
-        // connection that the remaining commands and the query run against. Returns true when the
-        // pre-query commands succeeded (or there were none); false when a CONNECT command was
-        // present but the connection could not be established (the caller should then abort the run).
+        // "--> CONNECT", "--> USE", "--> CLEARCACHE" and "--> TRACE"). CONNECT is handled first
+        // because it changes the connection that the remaining commands and the query run against.
+        // A "--> USE" in the same batch is applied as part of the CONNECT (so it behaves like a
+        // database passed on the command line and the database-selection dialog is not shown); a
+        // standalone USE simply switches the database on the current connection if it is not already
+        // selected. CLEARCACHE runs next, and TRACE last so the trace only captures the query itself.
+        // Returns true when the pre-query commands succeeded (or there were none); false when a
+        // command that must halt the run (CONNECT or USE) could not be completed (the caller should
+        // then abort the run).
         private async Task<bool> ProcessCommentScriptPreQueryCommandsAsync(IQueryTextProvider queryProvider)
         {
             var batches = queryProvider?.QueryInfo?.ScriptBatches;
@@ -2399,29 +2420,179 @@ namespace DaxStudio.UI.ViewModels
             var commands = batches.SelectMany(b => b.Commands).ToList();
 
             var connectCommand = commands.OfType<CommentScript.ConnectCommand>().FirstOrDefault();
-            if (connectCommand != null && !await ExecuteConnectCommandAsync(connectCommand))
-                return false;
+            var useCommand = commands.OfType<CommentScript.UseCommand>().LastOrDefault();
+            var targetDatabase = Utils.CommentScriptCommandHelper.NormalizeDatabaseName(useCommand?.DatabaseName);
+
+            if (connectCommand != null)
+            {
+                // Pass the requested database into the connection so that, on a fresh connection, it
+                // is selected as part of connecting (bypassing the database dialog) exactly like a
+                // database supplied on the command line. When we are already connected to the
+                // requested server the connect is a no-op and the database is switched instead.
+                if (!await ExecuteConnectCommandAsync(connectCommand, targetDatabase))
+                    return false;
+            }
+            else if (useCommand != null)
+            {
+                // No CONNECT in this batch - just switch the database on the current connection.
+                if (!await SwitchDatabaseAsync(targetDatabase, announceAlreadySelected: true))
+                    return false;
+            }
 
             // "--> CLEARCACHE" runs against the (possibly just-changed) connection before the query.
             if (commands.OfType<CommentScript.ClearCacheCommand>().Any())
                 await ExecuteClearCacheCommandAsync();
 
+            // "--> TRACE <type> [ON|OFF]" toggles trace watchers. Started last so the trace is fresh
+            // and only captures the query (not the CLEARCACHE above).
+            var traceCommands = commands.OfType<CommentScript.TraceCommand>().ToList();
+            if (traceCommands.Count > 0)
+                await ExecuteTraceCommandsAsync(traceCommands);
+
             return true;
         }
 
-        // Establishes the connection requested by a "--> CONNECT" command. Returns true on success,
-        // false if the connection could not be established (the caller should then abort the run).
-        private async Task<bool> ExecuteConnectCommandAsync(CommentScript.ConnectCommand connectCommand)
+        // Switches the current database in response to a "--> USE <database>" command (or a USE that
+        // accompanied a CONNECT to a server we were already connected to). Mirrors changing the
+        // database from the metadata pane dropdown. Returns true on success (including when the
+        // database is already selected), false if the database could not be selected. When
+        // announceAlreadySelected is false, no message is emitted if the requested database is
+        // already the current one (used after a fresh connect that already selected it).
+        private async Task<bool> SwitchDatabaseAsync(string databaseName, bool announceAlreadySelected)
+        {
+            if (string.IsNullOrWhiteSpace(databaseName))
+            {
+                OutputError("--> USE requires a database name");
+                return false;
+            }
+
+            if (!IsConnected)
+            {
+                OutputError($"--> USE: not connected, unable to switch to database '{databaseName}'");
+                return false;
+            }
+
+            try
+            {
+                // match on Name or Caption - the Caption is what is shown in the metadata dropdown
+                var db = Utils.CommentScriptCommandHelper.ResolveDatabase(Databases, databaseName);
+
+                if (db == null)
+                {
+                    OutputError($"--> USE: database '{databaseName}' was not found on '{Connection.ServerName}'");
+                    return false;
+                }
+
+                if (string.Equals(Connection.DatabaseName, db.Name, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (announceAlreadySelected)
+                        OutputMessage($"--> USE: already using database '{db.Name}'");
+                    return true;
+                }
+
+                await MetadataPane.ChangeDatabaseAsync(db.Name);
+                OutputMessage($"--> USE: current database changed to '{db.Name}'");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(SwitchDatabaseAsync), ex.Message);
+                OutputError($"--> USE failed: {ex.Message}");
+                return false;
+            }
+        }
+
+        // Toggles the trace watchers requested by "--> TRACE <type> [ON|OFF]" commands. Any traces
+        // that are newly started are awaited (up to the configured startup timeout) so that the
+        // query does not run before the trace begins capturing events. A trace that fails to start
+        // in time only emits a warning - the query still runs.
+        private async Task ExecuteTraceCommandsAsync(List<CommentScript.TraceCommand> traceCommands)
+        {
+            if (!IsConnected)
+            {
+                OutputWarning("--> TRACE: not connected, unable to start traces");
+                return;
+            }
+
+            var newlyStarted = new List<ITraceWatcher>();
+            foreach (var traceCommand in traceCommands)
+            {
+                var watcher = GetTraceWatcherForType(traceCommand.TraceType);
+                if (watcher == null)
+                {
+                    OutputWarning($"--> TRACE: unsupported trace type '{traceCommand.TraceType}'");
+                    continue;
+                }
+
+                if (traceCommand.Enabled)
+                {
+                    if (watcher.IsChecked)
+                    {
+                        OutputMessage($"--> TRACE {traceCommand.TraceType} ON: trace already running");
+                    }
+                    else
+                    {
+                        watcher.IsChecked = true;
+                        newlyStarted.Add(watcher);
+                        OutputMessage($"--> TRACE {traceCommand.TraceType} ON");
+                    }
+                }
+                else
+                {
+                    if (watcher.IsChecked)
+                    {
+                        watcher.IsChecked = false;
+                        OutputMessage($"--> TRACE {traceCommand.TraceType} OFF");
+                    }
+                    else
+                    {
+                        OutputMessage($"--> TRACE {traceCommand.TraceType} OFF: trace was not running");
+                    }
+                }
+            }
+
+            if (newlyStarted.Count == 0) return;
+
+            // wait for the newly-started traces to reach the Started state before the query runs
+            var sw = Stopwatch.StartNew();
+            var timeoutMs = Options.TraceStartupTimeout * 1000;
+            while (newlyStarted.Any(tw => tw.TraceStatus != QueryTrace.Interfaces.QueryTraceStatus.Started)
+                   && sw.ElapsedMilliseconds < timeoutMs)
+            {
+                await Task.Delay(200);
+            }
+            sw.Stop();
+
+            foreach (var tw in newlyStarted.Where(tw => tw.TraceStatus != QueryTrace.Interfaces.QueryTraceStatus.Started))
+            {
+                OutputWarning($"--> TRACE: the {tw.Title} trace did not start within the timeout period");
+            }
+        }
+
+        // Maps a comment-script TraceType to the matching trace watcher instance for this document.
+        private ITraceWatcher GetTraceWatcherForType(CommentScript.TraceType traceType)
+        {
+            var watcherType = Utils.CommentScriptCommandHelper.GetTraceWatcherType(traceType);
+            if (watcherType == null) return null;
+            return TraceWatchers.FirstOrDefault(tw => watcherType.IsInstanceOfType(tw));
+        }
+
+        // Establishes the connection requested by a "--> CONNECT" command. When databaseName is
+        // supplied (from a "--> USE" in the same batch) it is applied as part of the connection so a
+        // fresh connection selects it directly (no database dialog); if we are already connected to
+        // the requested server the database is switched instead. Returns true on success, false if
+        // the connection could not be established (the caller should then abort the run).
+        private async Task<bool> ExecuteConnectCommandAsync(CommentScript.ConnectCommand connectCommand, string databaseName)
         {
             try
             {
                 switch (connectCommand.ConnectionType)
                 {
                     case CommentScript.ConnectionType.SERVER:
-                        return await ConnectToServerCommandAsync(connectCommand.ConnectionName);
+                        return await ConnectToServerCommandAsync(connectCommand.ConnectionName, databaseName);
                     case CommentScript.ConnectionType.PBIX:
                     case CommentScript.ConnectionType.SSDT:
-                        return await ConnectToLocalInstanceCommandAsync(connectCommand);
+                        return await ConnectToLocalInstanceCommandAsync(connectCommand, databaseName);
                     default:
                         OutputError($"--> CONNECT: unsupported connection type '{connectCommand.ConnectionType}'");
                         return false;
@@ -2465,8 +2636,9 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        // Handles "--> CONNECT SERVER <datasource>".
-        private async Task<bool> ConnectToServerCommandAsync(string dataSource)
+        // Handles "--> CONNECT SERVER <datasource>". When databaseName is supplied it is selected as
+        // part of a fresh connection (no dialog), or switched to if we are already connected here.
+        private async Task<bool> ConnectToServerCommandAsync(string dataSource, string databaseName)
         {
             if (string.IsNullOrWhiteSpace(dataSource))
             {
@@ -2477,19 +2649,23 @@ namespace DaxStudio.UI.ViewModels
             if (IsConnected && string.Equals(Connection.ServerName, dataSource, StringComparison.OrdinalIgnoreCase))
             {
                 OutputMessage($"--> CONNECT: already connected to '{dataSource}'");
+                // already on the requested server - just make sure the requested database is selected
+                if (!string.IsNullOrWhiteSpace(databaseName))
+                    return await SwitchDatabaseAsync(databaseName, announceAlreadySelected: true);
                 return true;
             }
 
             var connectionString = $"Data Source=\"{dataSource}\";Application Name=DAX Studio (SSAS) - {UniqueID};";
-            await ConnectViaCommentScriptAsync(connectionString, ServerType.AnalysisServices, string.Empty);
+            await ConnectViaCommentScriptAsync(connectionString, ServerType.AnalysisServices, string.Empty, databaseName);
             OutputMessage($"--> CONNECT SERVER '{dataSource}'");
             return true;
         }
 
         // Handles "--> CONNECT PBIX|SSDT <instance name or full .pbix path>". When a full path is
         // supplied and no matching instance is running, the file is launched and we wait for its
-        // local engine to start before connecting.
-        private async Task<bool> ConnectToLocalInstanceCommandAsync(CommentScript.ConnectCommand command)
+        // local engine to start before connecting. When databaseName is supplied it is selected as
+        // part of a fresh connection (no dialog), or switched to if we are already connected here.
+        private async Task<bool> ConnectToLocalInstanceCommandAsync(CommentScript.ConnectCommand command, string databaseName)
         {
             var instanceName = command.InstanceName;
             if (string.IsNullOrWhiteSpace(instanceName))
@@ -2527,11 +2703,14 @@ namespace DaxStudio.UI.ViewModels
             if (IsConnected && string.Equals(Connection.ServerName, dataSource, StringComparison.OrdinalIgnoreCase))
             {
                 OutputMessage($"--> CONNECT: already connected to '{instanceName}'");
+                // already on the requested instance - just make sure the requested database is selected
+                if (!string.IsNullOrWhiteSpace(databaseName))
+                    return await SwitchDatabaseAsync(databaseName, announceAlreadySelected: true);
                 return true;
             }
 
             var connectionString = $"Data Source={dataSource};Application Name=DAX Studio (Power BI) - {UniqueID};";
-            await ConnectViaCommentScriptAsync(connectionString, serverType, instanceName);
+            await ConnectViaCommentScriptAsync(connectionString, serverType, instanceName, databaseName);
             OutputMessage($"--> CONNECT: connected to '{instanceName}' on {dataSource}");
             return true;
         }
@@ -2580,8 +2759,10 @@ namespace DaxStudio.UI.ViewModels
 
         // Builds a ConnectEvent for a comment-script CONNECT command and routes it through the
         // existing connection handler so metadata and the UI are refreshed. Awaiting this ensures
-        // the connection is fully established before the query runs.
-        private async Task ConnectViaCommentScriptAsync(string connectionString, ServerType serverType, string fileName)
+        // the connection is fully established before the query runs. When databaseName is supplied it
+        // is passed to the ConnectEvent so SetupConnectionAsync selects it directly (bypassing the
+        // database-selection dialog) - exactly like a database supplied on the command line.
+        private async Task ConnectViaCommentScriptAsync(string connectionString, ServerType serverType, string fileName, string databaseName)
         {
             var connectEvent = new ConnectEvent(
                 connectionString,
@@ -2590,7 +2771,7 @@ namespace DaxStudio.UI.ViewModels
                 fileName,
                 serverType,
                 false,
-                string.Empty,
+                databaseName ?? string.Empty,
                 default);
             await HandleAsync(connectEvent, CancellationToken.None);
         }
@@ -3170,6 +3351,9 @@ namespace DaxStudio.UI.ViewModels
                 {
                     var saver = tw as ISaveState;
                     if (saver == null) continue;
+                    // The results pane is saved explicitly below (it self-guards on there being SHOW output)
+                    // so it persists regardless of which bottom tab happens to be active at save time.
+                    if (tw is QueryResultsPaneViewModel) continue;
 
                     var window = tw as ToolWindowBase;
                     if (window?.IsVisible ?? false || tw is ITraceWatcher)
@@ -3177,6 +3361,9 @@ namespace DaxStudio.UI.ViewModels
                         saver.SavePackage(package);
                     }
                 }
+
+                // Persist the --> SHOW command output (only writes when a SHOW tree is currently displayed).
+                QueryResultsPane?.SavePackage(package);
 
                 package.Close();
 
@@ -4830,8 +5017,13 @@ namespace DaxStudio.UI.ViewModels
             {
                 editor.FontFamily = new FontFamily(Options.EditorFontFamily);
             }
-            if (editor.FontSizeInPoints != Options.EditorFontSize)
+            // Only re-apply the editor font size (and reset the zoom level to 100%) when the
+            // configured default font size has actually changed. Comparing against the editor's
+            // current FontSizeInPoints would incorrectly reset the zoom whenever the user has
+            // zoomed in/out, because zooming changes FontSizeInPoints but not Options.EditorFontSize.
+            if (_appliedEditorFontSize != Options.EditorFontSize)
             {
+                _appliedEditorFontSize = Options.EditorFontSize;
                 editor.FontSizeInPoints = Options.EditorFontSize;
                 SizeUnitLabel.SetOneHundredPercentFontSize(Options.EditorFontSize);
                 SizeUnitLabel.StringValue = "100";

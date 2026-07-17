@@ -186,14 +186,26 @@ _insightProvider = insightProvider;
                     var insertionChar = args.Text;
                     if (insertionText.EndsWith(insertionChar, StringComparison.Ordinal)) insertionText = insertionText.TrimEnd(insertionChar[0]);
                 }
-                if (completionSegment.EndOffset <= document.TextLength - 1)
+
+                // When the caret is in the MIDDLE of an existing identifier the segment above only
+                // reaches the caret, so the tail of the old word would be left behind - e.g. editing
+                // "SELE|COLUMNS" to SELECTCOLUMNS would produce "SELECTCOLUMNSCOLUMNS". Extend the
+                // replaced range to the end of the identifier so the whole word is replaced. This is
+                // skipped when the completion itself opens a new call/reference (its text ends with
+                // "(", "[" or a quote) because those are "wrapping" inserts placed at the caret that
+                // must preserve the following text - e.g. inserting "FILTER(" before "VALUES(...)" to
+                // get "FILTER(VALUES(...))".
+                if (insertionText.Length > 0 && !EndsWithWrappingChar(insertionText)
+                    && completionSegment.EndOffset < document.TextLength
+                    && IsIdentifierChar(document.GetCharAt(completionSegment.EndOffset)))
                 {
-                    var lastCompletionChar = insertionText[insertionText.Length - 1];
-                    var lastDocumentChar = document.GetCharAt(completionSegment.EndOffset);
-                    Log.Debug("{class} {method} {lastCompletionChar} vs {lastDocumentChar} off: {offset} len:{length}", "DaxCompletionData", "Complete", lastCompletionChar, lastDocumentChar, newSegment.Offset, newSegment.Length);
-                    if (lastCompletionChar == lastDocumentChar) replaceLength++;
+                    int wordEnd = completionSegment.EndOffset;
+                    while (wordEnd < document.TextLength && IsIdentifierChar(document.GetCharAt(wordEnd))) wordEnd++;
+                    var extendedLength = wordEnd - replaceOffset;
+                    if (extendedLength > replaceLength) replaceLength = extendedLength;
                 }
-                document.Replace(newSegment.Offset, newSegment.Length, insertionText);
+
+                document.Replace(replaceOffset, replaceLength, insertionText);
                 _insightProvider.ShowInsight(insertionText);
             } catch (Exception ex)
             {
@@ -217,6 +229,22 @@ _insightProvider = insightProvider;
             //TODO - look ahead to see if we have a table/column/function end character that we should replace upto
             return DaxLineParser.GetPreceedingWordSegment(docLine.Offset, loc.Column, line, daxState);
 
+        }
+
+        // A DAX identifier (function/keyword/DMV name) is made up of letters, digits, underscores and
+        // '$' (used by DMV names like $SYSTEM). Used to find the end of an identifier the caret sits in.
+        private static bool IsIdentifierChar(char c)
+        {
+            return char.IsLetterOrDigit(c) || c == '_' || c == '$';
+        }
+
+        // A completion whose text opens a new call or reference ("FILTER(", "'Table"[..], "[Column")
+        // is inserted at the caret to wrap the following text, so the current word must not be consumed.
+        private static bool EndsWithWrappingChar(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return false;
+            var last = text[text.Length - 1];
+            return last == '(' || last == '[' || last == '\'' || last == '"';
         }
 
         public object Content

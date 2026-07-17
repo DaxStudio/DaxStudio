@@ -13,7 +13,7 @@ namespace DaxStudio.Parsers.CommentScript
             }
             catch
             {
-                throw new ArgumentException($"Unable to process TRACE command '{traceType}' is not a valid TraceType");
+                throw new CommentScriptCommandException($"Unable to process TRACE command '{traceType}' is not a valid TraceType");
             }
 
             Enabled = enabled;

@@ -15,6 +15,12 @@ namespace DaxStudio.Parsers.Dax
         public string Symbol { get; set; } = "";
         public string Msg { get; set; } = "";
         public string Exception { get; set; } = "";
+
+        /// <summary>The 1-based line the error was reported on (0 when unknown).</summary>
+        public int Line { get; set; }
+
+        /// <summary>The 0-based character position within the line (0 when unknown).</summary>
+        public int Column { get; set; }
     }
 
     public class PreProcessorErrorListener : BaseErrorListener, IAntlrErrorListener<int>
@@ -33,6 +39,8 @@ namespace DaxStudio.Parsers.Dax
                 error.Stack = (recognizer as PreProcessorParser).GetRuleInvocationStackAsString();
 
             error.Msg = $"{msg} at {line}:{charPositionInLine}";
+            error.Line = line;
+            error.Column = charPositionInLine;
             System.Diagnostics.Debug.WriteLine($"ANTLR ERROR: {error.Msg}");
 
             if (offendingSymbol != null)

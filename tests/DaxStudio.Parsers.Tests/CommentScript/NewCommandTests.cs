@@ -738,6 +738,216 @@ namespace DaxStudio.Parsers.Tests.CommentScript
             Assert.IsInstanceOfType(batch[0].Commands[1], typeof(AssertRowcountCommand));
         }
 
+        [TestMethod]
+        public void MultipleTraceCommandsInOneBatch()
+        {
+            // The execution layer collects every TraceCommand in the batch and toggles each
+            // matching trace watcher, so a single script may enable more than one trace at once.
+            var input = "--> TRACE SERVERTIMINGS ON\n" +
+                "--> TRACE QUERYPLAN ON\n" +
+                "--> TRACE ALLQUERIES OFF\n" +
+                "EVALUATE { 1 }\n";
+
+            List<Error> errors = new List<Error>();
+            var tree = Helpers.ConfigureLexerAndParser(input, ref errors);
+
+            Assert.IsNull(tree.exception);
+            Assert.IsEmpty(errors, "Should have no errors");
+
+            Dictionary<string, List<string>> arrayParameters = new Dictionary<string, List<string>>();
+            var batch = new List<ScriptBatch>();
+            var listener = new PreProcessorListener(arrayParameters, batch);
+            var walker = new ParseTreeWalker();
+            walker.Walk(listener, tree);
+
+            var traceCommands = batch[0].Commands.OfType<TraceCommand>().ToList();
+            Assert.HasCount(3, traceCommands);
+
+            Assert.AreEqual(TraceType.ServerTimings, traceCommands[0].TraceType);
+            Assert.IsTrue(traceCommands[0].Enabled);
+
+            Assert.AreEqual(TraceType.QueryPlan, traceCommands[1].TraceType);
+            Assert.IsTrue(traceCommands[1].Enabled);
+
+            Assert.AreEqual(TraceType.AllQueries, traceCommands[2].TraceType);
+            Assert.IsFalse(traceCommands[2].Enabled);
+        }
+
+        [TestMethod]
+        public void ConnectUseAndTraceCombined()
+        {
+            // Mirrors the CONNECT -> USE -> TRACE ordering that the execution layer relies on.
+            var input = "--> CONNECT SERVER localhost\\tab19\n" +
+                "--> USE \"Adventure Works\"\n" +
+                "--> TRACE SERVERTIMINGS ON\n" +
+                "EVALUATE { 1 }\n";
+
+            List<Error> errors = new List<Error>();
+            var tree = Helpers.ConfigureLexerAndParser(input, ref errors);
+
+            Assert.IsNull(tree.exception);
+            Assert.IsEmpty(errors, "Should have no errors");
+
+            Dictionary<string, List<string>> arrayParameters = new Dictionary<string, List<string>>();
+            var batch = new List<ScriptBatch>();
+            var listener = new PreProcessorListener(arrayParameters, batch);
+            var walker = new ParseTreeWalker();
+            walker.Walk(listener, tree);
+
+            Assert.HasCount(3, batch[0].Commands);
+
+            var connCmd = batch[0].Commands[0] as ConnectCommand;
+            Assert.IsNotNull(connCmd);
+            Assert.AreEqual(ConnectionType.SERVER, connCmd.ConnectionType);
+
+            var useCmd = batch[0].Commands[1] as UseCommand;
+            Assert.IsNotNull(useCmd);
+            Assert.AreEqual("Adventure Works", useCmd.DatabaseName);
+
+            var traceCmd = batch[0].Commands[2] as TraceCommand;
+            Assert.IsNotNull(traceCmd);
+            Assert.AreEqual(TraceType.ServerTimings, traceCmd.TraceType);
+            Assert.IsTrue(traceCmd.Enabled);
+        }
+
         #endregion
+
+        [TestMethod]
+        public void UseUnquotedMultiWordDatabase()
+        {
+            // A database name with spaces does not have to be quoted - the USE command captures the
+            // rest of the line (e.g. a Power BI dataset named "AW Internet Sales").
+            var input = "--> CONNECT SERVER localhost\n" +
+                "--> USE AW Internet Sales\n" +
+                "EVALUATE { 1 }\n";
+
+            var result = DaxStudio.Parsers.PreProcessor.AntlrPreProcessor.Parse(input);
+            Assert.IsFalse(result.HasErrors, "an unquoted multi-word database name should parse cleanly");
+
+            var commands = result.Batches.SelectMany(b => b.Commands).ToList();
+            var useCmd = commands.OfType<UseCommand>().FirstOrDefault();
+            Assert.IsNotNull(useCmd, "the USE command must not be dropped for an unquoted multi-word name");
+            Assert.AreEqual("AW Internet Sales", useCmd.DatabaseName);
+        }
+
+        [TestMethod]
+        public void UseUnquotedDatabaseWithTrailingNumber()
+        {
+            // Digits are separate tokens from identifiers, so a name like "Adventure Works 2022" also
+            // exercises the "capture the rest of the line" behaviour.
+            var input = "--> USE Adventure Works 2022\nEVALUATE { 1 }\n";
+
+            var result = DaxStudio.Parsers.PreProcessor.AntlrPreProcessor.Parse(input);
+            Assert.IsFalse(result.HasErrors);
+
+            var useCmd = result.Batches.SelectMany(b => b.Commands).OfType<UseCommand>().FirstOrDefault();
+            Assert.IsNotNull(useCmd);
+            Assert.AreEqual("Adventure Works 2022", useCmd.DatabaseName);
+        }
+
+        [TestMethod]
+        public void UseQuotedDatabaseStillWorks()
+        {
+            // The quoted form must keep working and the surrounding quotes must be stripped.
+            var input = "--> USE \"AW Internet Sales\"\nEVALUATE { 1 }\n";
+
+            var result = DaxStudio.Parsers.PreProcessor.AntlrPreProcessor.Parse(input);
+            Assert.IsFalse(result.HasErrors);
+
+            var useCmd = result.Batches.SelectMany(b => b.Commands).OfType<UseCommand>().FirstOrDefault();
+            Assert.IsNotNull(useCmd);
+            Assert.AreEqual("AW Internet Sales", useCmd.DatabaseName);
+        }
+
+        [TestMethod]
+        public void ConnectPbixUnquotedMultiWordReportName()
+        {
+            // Power BI Desktop report names frequently contain spaces; the unquoted form must capture
+            // the whole name rather than only the first word.
+            var input = "--> CONNECT PBIX My Sales Report\nEVALUATE { 1 }\n";
+
+            var result = DaxStudio.Parsers.PreProcessor.AntlrPreProcessor.Parse(input);
+            Assert.IsFalse(result.HasErrors);
+
+            var connCmd = result.Batches.SelectMany(b => b.Commands).OfType<ConnectCommand>().FirstOrDefault();
+            Assert.IsNotNull(connCmd);
+            Assert.AreEqual(ConnectionType.PBIX, connCmd.ConnectionType);
+            Assert.AreEqual("My Sales Report", connCmd.InstanceName);
+        }
+
+        [TestMethod]
+        public void UseWithNoDatabase_SurfacesHelpfulCommandError()
+        {
+            var input = "--> USE\nEVALUATE { 1 }\n";
+            var result = DaxStudio.Parsers.PreProcessor.AntlrPreProcessor.Parse(input);
+
+            Assert.IsTrue(result.HasCommandErrors, "a USE with no database name must be reported as a command error");
+            var err = result.CommandErrors.First();
+            StringAssert.Contains(err.Msg, "USE command");
+            Assert.AreEqual(1, err.Line, "the error should point at the command line");
+        }
+
+        [TestMethod]
+        public void TraceWithInvalidType_SurfacesHelpfulCommandError()
+        {
+            var input = "--> TRACE BADTYPE ON\nEVALUATE { 1 }\n";
+            var result = DaxStudio.Parsers.PreProcessor.AntlrPreProcessor.Parse(input);
+
+            Assert.IsTrue(result.HasCommandErrors);
+            StringAssert.Contains(result.CommandErrors.First().Msg, "not a valid TraceType");
+        }
+
+        [TestMethod]
+        public void TraceMissingOnOff_DoesNotThrow_SurfacesHelpfulCommandError()
+        {
+            // Regression: a TRACE with no ON/OFF flag used to crash the walker with an
+            // ArgumentOutOfRangeException that was swallowed and replaced with a vague warning.
+            var input = "--> TRACE SERVERTIMINGS\nEVALUATE { 1 }\n";
+            var result = DaxStudio.Parsers.PreProcessor.AntlrPreProcessor.Parse(input);
+
+            Assert.IsTrue(result.HasCommandErrors);
+            StringAssert.Contains(result.CommandErrors.First().Msg, "TRACE");
+        }
+
+        [TestMethod]
+        public void ConnectWrongArguments_SurfacesHelpfulCommandError()
+        {
+            var input = "--> CONNECT XX localhost\nEVALUATE { 1 }\n";
+            var result = DaxStudio.Parsers.PreProcessor.AntlrPreProcessor.Parse(input);
+
+            Assert.IsTrue(result.HasCommandErrors);
+            StringAssert.Contains(result.CommandErrors.First().Msg, "CONNECT command");
+        }
+
+        [TestMethod]
+        public void UnknownCommand_SurfacesCommandError()
+        {
+            var input = "--> BOGUS foo\nEVALUATE { 1 }\n";
+            var result = DaxStudio.Parsers.PreProcessor.AntlrPreProcessor.Parse(input);
+
+            Assert.IsTrue(result.HasCommandErrors, "an unrecognised command must be reported as a command error");
+        }
+
+        [TestMethod]
+        public void ValidCommands_HaveNoCommandErrors()
+        {
+            var input = "--> TRACE SERVERTIMINGS ON\n--> USE Adventure Works\nEVALUATE { 1 }\n";
+            var result = DaxStudio.Parsers.PreProcessor.AntlrPreProcessor.Parse(input);
+
+            Assert.IsFalse(result.HasCommandErrors, "valid commands must not be reported as errors");
+            Assert.IsFalse(result.HasErrors);
+        }
+
+        [TestMethod]
+        public void DaxBodySyntaxError_IsNotPromotedToCommandError()
+        {
+            // A parser error on a DAX-body line (not a "-->" command line) must remain a soft error so
+            // the classic pre-processor fallback still applies - it must NOT become a hard command error.
+            var input = "--> USE Adventure Works\n@@@ not valid dax @@@\n";
+            var result = DaxStudio.Parsers.PreProcessor.AntlrPreProcessor.Parse(input);
+
+            Assert.IsFalse(result.HasCommandErrors,
+                "a syntax error on a DAX-body line must not be treated as a comment-script command error");
+        }
     }
 }

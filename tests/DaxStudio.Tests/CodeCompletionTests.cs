@@ -66,6 +66,62 @@ namespace DaxStudio.Tests
         }
 
         [TestMethod]
+        public void TestMidWordFunctionRename_ReplacesWholeWord()
+        {
+            // The user edits an existing function name: the caret is in the middle of "SELECOLUMNS"
+            // (after "SELE") and they pick "SELECTCOLUMNS". The whole identifier must be replaced so the
+            // result is "SELECTCOLUMNS(...)" and NOT "SELECTCOLUMNSCOLUMNS(...)".
+            var doc = new TextDocument("EVALUATE SELECOLUMNS([MyColumn])");
+            var mockIp = Substitute.For<IInsightProvider>();
+            var compData = new DaxCompletionData(mockIp, "SELECTCOLUMNS", 1.0);
+
+            int caret = "EVALUATE SELE".Length; // caret in the middle of the identifier
+            var seg = new TextSegment { StartOffset = caret, Length = 0 };
+            var e = new TextCompositionEventArgs(Keyboard.PrimaryDevice, new TextComposition(null, null, "\t"));
+
+            compData.CompleteInternal(doc, seg, e);
+
+            Assert.AreEqual("EVALUATE SELECTCOLUMNS([MyColumn])", doc.Text);
+        }
+
+        [TestMethod]
+        public void TestMidWordFunctionRename_CaretAtEndOfWord()
+        {
+            // When the caret is at the end of the word being replaced there is no trailing identifier
+            // text, so only that word is replaced.
+            var doc = new TextDocument("EVALUATE SUM([Sales])");
+            var mockIp = Substitute.For<IInsightProvider>();
+            var compData = new DaxCompletionData(mockIp, "SUMX", 1.0);
+
+            int caret = "EVALUATE SUM".Length; // caret at the end of "SUM", before "("
+            var seg = new TextSegment { StartOffset = caret, Length = 0 };
+            var e = new TextCompositionEventArgs(Keyboard.PrimaryDevice, new TextComposition(null, null, "\t"));
+
+            compData.CompleteInternal(doc, seg, e);
+
+            Assert.AreEqual("EVALUATE SUMX([Sales])", doc.Text);
+        }
+
+        [TestMethod]
+        public void TestMidWordWrappingInsert_PreservesTrailingText()
+        {
+            // A "wrapping" completion whose text ends with "(" is inserted at the caret and must NOT
+            // consume the following identifier: inserting "FILTER(" before "VALUES" yields
+            // "FILTER(VALUES(...))".
+            var doc = new TextDocument("CALCULATE( FVALUES([MyColumn])");
+            var mockIp = Substitute.For<IInsightProvider>();
+            var compData = new DaxCompletionData(mockIp, "FILTER(«Table", 1.0);
+
+            int caret = "CALCULATE( F".Length; // caret right after the "F"
+            var seg = new TextSegment { StartOffset = caret, Length = 0 };
+            var e = new TextCompositionEventArgs(Keyboard.PrimaryDevice, new TextComposition(null, null, "\t"));
+
+            compData.CompleteInternal(doc, seg, e);
+
+            Assert.AreEqual("CALCULATE( FILTER(VALUES([MyColumn])", doc.Text);
+        }
+
+        [TestMethod]
         public void TestCodeCompletionWithUnderscoresInName()
         {
             var testLine = "EVALUATE DIM_D";

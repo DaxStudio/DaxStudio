@@ -90,10 +90,29 @@ namespace DaxStudio.Parsers.Dax
             {
                 if (cleanPartial == null || table.Name.StartsWith(cleanPartial, StringComparison.OrdinalIgnoreCase))
                 {
+                    // Use the pre-computed DaxName (unquoted when the name doesn't require quoting) so a
+                    // table that doesn't need quotes is offered - and inserted - without them. The opening
+                    // quote the user typed to trigger the list is removed when a non-quoted name is chosen.
                     items.Add(new CompletionItem(
-                        $"'{table.Name}'",
+                        FormatTableName(table),
                         CompletionItemKind.Table,
                         table.Description));
+                }
+            }
+
+            // Calendars are referenced with the same quoted-identifier syntax as tables.
+            var calendars = _metadata.GetCalendars();
+            if (calendars != null)
+            {
+                foreach (var c in calendars)
+                {
+                    if (cleanPartial == null || c.Name.StartsWith(cleanPartial, StringComparison.OrdinalIgnoreCase))
+                    {
+                        items.Add(new CompletionItem(
+                            $"'{c.Name}'",
+                            CompletionItemKind.Calendar,
+                            $"Calendar from {c.TableName}"));
+                    }
                 }
             }
             return items;

@@ -151,6 +151,19 @@ namespace DaxStudio.UI.Utils.Intellisense
                     return;
                 }
 
+                // A '[' begins a new column/measure reference and an opening quote begins a new table
+                // reference - both are definitive changes of completion context. If a completion window
+                // is already open (which happens routinely while backspacing and re-typing) the generic
+                // handling below would merely filter the previous context's list, so - for example -
+                // typing '[' after a table name could show the model's measures instead of that table's
+                // columns. Close any open window here and fall through to repopulate a fresh list for
+                // the new context.
+                if (completionWindow != null && (e.Text == "[" || e.Text == "'"))
+                {
+                    CloseCompletionWindow();
+                    completionWindow = null;
+                }
+
                 if (completionWindow != null
                     && !string.IsNullOrWhiteSpace(e.Text)
                     && completionWindow.StartOffset == completionWindow.EndOffset)
@@ -185,7 +198,7 @@ namespace DaxStudio.UI.Utils.Intellisense
 
                 var isCommentScript = CommentScriptCompletionProvider.IsCommentScriptLine(GetCurrentLine());
 
-                if (char.IsLetterOrDigit(e.Text[0]) || "\'[".Contains(e.Text[0]) || (isCommentScript && e.Text[0] == '>')
+                if (char.IsLetterOrDigit(e.Text[0]) || "\'[$".Contains(e.Text[0]) || (isCommentScript && e.Text[0] == '>')
                     || (e.Text[0] == '.' && _daxState.LineState == LineState.Dmv))
                 {
                     // exit if the completion window is already showing
@@ -196,13 +209,41 @@ namespace DaxStudio.UI.Utils.Intellisense
                     {
                         var lineState = _daxState.LineState;
                         if (lineState == LineState.String || _editor.IsInComment()) return;
+
+                        // Don't show completions while typing a numeric literal. A token that starts with a
+                        // digit and is not inside quotes/brackets is a number, not an identifier (table
+                        // names that start with a digit must be single-quoted, in which case the token
+                        // starts with the quote). For qualified/bracketed tokens the partial word starts
+                        // with ' or [ so this check correctly leaves them alone.
+                        if (char.IsDigit(e.Text[0]))
+                        {
+                            var partialToken = _editor.DocumentGetText(new TextSegment() { StartOffset = _daxState.StartOffset, EndOffset = _daxState.EndOffset });
+                            if (!string.IsNullOrEmpty(partialToken) && char.IsDigit(partialToken[0])) return;
+                        }
                     }
 
                     completionWindow = CreateCompletionWindow(sender);
 
-                    if (char.IsLetterOrDigit(e.Text[0]))
+                    if (char.IsLetterOrDigit(e.Text[0]) || e.Text[0] == '[' || e.Text[0] == '$')
                     {
+                        // Anchor the match segment at the start of the token so the text the completion
+                        // list pre-selects/filters on matches the item text. Column and measure items
+                        // include the surrounding brackets (e.g. "[Sales]"), so the '[' must be part of
+                        // the match text - otherwise the typed prefix (without the bracket) won't
+                        // prefix-match the items and an arbitrary item ends up pre-selected. A DMV
+                        // query's "$SYSTEM" keyword includes the leading '$' (DaxLineParser keeps it as
+                        // part of the word) so it also prefix-matches correctly.
                         completionWindow.StartOffset = _daxState.StartOffset;
+                    }
+                    else if (e.Text[0] == '\'')
+                    {
+                        // A quoted table reference. Anchor the filter AFTER the opening quote so the
+                        // completion list filters on the (unquoted) name being typed and matches every
+                        // table - both those that require quotes and those that don't. Anchoring on the
+                        // quote itself would only ever match names that must be quoted (they are the only
+                        // items whose text contains a quote), which is why previously typing a quote hid
+                        // all the tables that don't need one.
+                        completionWindow.StartOffset = _daxState.StartOffset + 1;
                     }
 
                     IList<ICompletionData> data = completionWindow.CompletionList.CompletionData;
@@ -210,7 +251,13 @@ namespace DaxStudio.UI.Utils.Intellisense
 
                     if (data.Count > 0)
                     {
-                        var txt = _editor.DocumentGetText(new TextSegment() { StartOffset = _daxState.StartOffset, EndOffset = _daxState.EndOffset });
+                        // Pre-select using the same anchor the list uses for ongoing filtering so the
+                        // initial selection and subsequent keystrokes stay consistent (an inconsistent
+                        // anchor filtered the initial list differently from later keystrokes).
+                        var matchStart = (char.IsLetterOrDigit(e.Text[0]) || e.Text[0] == '[' || e.Text[0] == '\'' || e.Text[0] == '$')
+                            ? completionWindow.StartOffset
+                            : _daxState.StartOffset;
+                        var txt = _editor.DocumentGetText(new TextSegment() { StartOffset = matchStart, EndOffset = _daxState.EndOffset });
                         completionWindow.CompletionList.SelectItem(txt);
                         if (completionWindow.CompletionList.ListBox.HasItems)
                         {
@@ -285,10 +332,16 @@ namespace DaxStudio.UI.Utils.Intellisense
                 var state = _parserService.GetEditState(_editor.Text, _editor.CaretOffset);
                 var completions = _parserService.GetCompletions(state);
 
-                // DMV/SQL keywords ($SYSTEM, SELECT, FROM, WHERE) are only valid at the start of a
-                // statement (the same place DEFINE/EVALUATE are offered) - a DMV query is an alternative
-                // to a whole DAX query. Don't surface them in other contexts (e.g. after DEFINE).
-                if (state.State == DaxStudio.Parsers.Metadata.EditState.TopLevel)
+                // DMV/SQL keywords ($SYSTEM, SELECT, FROM, WHERE) start a DMV query, which is an
+                // alternative to a whole DAX query. They are valid at the start of a statement
+                // (TopLevel) and while the user is still typing the first word of that statement
+                // (Identifier) - the same places DEFINE/EVALUATE are offered. As soon as a character
+                // is typed the state becomes Identifier, so restricting to TopLevel alone hid them.
+                // The keywords are added unfiltered; the completion window filters the visible list
+                // against the text typed since its StartOffset (which, for "$SYSTEM", is anchored on
+                // the '$'). Pre-filtering here on the ANTLR PartialText would drop "$SYSTEM" because
+                // the lexer reports the partial as "SYSTEM" (without the leading '$').
+                if (ShouldOfferDmvKeywords(state.State))
                 {
                     completions = completions.Concat(_dmvKeywords).ToList();
                 }
@@ -308,13 +361,23 @@ namespace DaxStudio.UI.Utils.Intellisense
 
         // DMV/SQL keywords surfaced alongside the normal DAX completions so a user can start a DMV query
         // (e.g. "select * from $SYSTEM.<dmv>"). Mirrors the keywords the legacy provider exposed.
-        private static readonly IReadOnlyList<CompletionItem> _dmvKeywords = new List<CompletionItem>
+        internal static readonly IReadOnlyList<CompletionItem> _dmvKeywords = new List<CompletionItem>
         {
             new CompletionItem("$SYSTEM", CompletionItemKind.Keyword, "Query the engine's Dynamic Management Views"),
             new CompletionItem("SELECT",  CompletionItemKind.Keyword, "DMV query SELECT clause"),
             new CompletionItem("FROM",    CompletionItemKind.Keyword, "DMV query FROM clause"),
             new CompletionItem("WHERE",   CompletionItemKind.Keyword, "DMV query WHERE clause"),
         };
+
+        // DMV/SQL keywords are offered at the start of a statement (TopLevel) and while the user is
+        // still typing the first word of that statement (Identifier). Typing any character moves the
+        // parser from TopLevel to Identifier, so both states must be accepted for the keywords to
+        // remain visible while typing (e.g. "SE" should still show SELECT).
+        internal static bool ShouldOfferDmvKeywords(DaxStudio.Parsers.Metadata.EditState state)
+        {
+            return state == DaxStudio.Parsers.Metadata.EditState.TopLevel
+                || state == DaxStudio.Parsers.Metadata.EditState.Identifier;
+        }
 
         // Opens the completion window populated with the connection's DMVs (used when a DMV query is
         // started via "$SYSTEM.").

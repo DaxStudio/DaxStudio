@@ -141,6 +141,24 @@ namespace DaxStudio.Tests
         }
 
         [TestMethod]
+        public void CommandLinesBlankedPreserveDaxLineNumbers()
+        {
+            // The engine reports error positions relative to the executable text, so the DAX must stay
+            // on the same line as it appears in the editor for the red error markers / "Goto" link to
+            // land on the correct line. Three command lines precede EVALUATE, so it must be on line 4.
+            var query = "--> PARAMETER @a = \"1\"\n--> PARAMETER @b = \"2\"\n--> CLEARCACHE\nEVALUATE\nROW( \"x\", 1 )";
+            var result = DaxStudio.Parsers.PreProcessor.AntlrPreProcessor.Parse(query);
+
+            var lines = result.ProcessedText.NormalizeNewline().Split('\n');
+            Assert.AreEqual(5, lines.Length, "the processed text must keep the same number of lines as the input");
+            Assert.AreEqual(string.Empty, lines[0], "command line 1 should be blanked, not removed");
+            Assert.AreEqual(string.Empty, lines[1], "command line 2 should be blanked, not removed");
+            Assert.AreEqual(string.Empty, lines[2], "command line 3 should be blanked, not removed");
+            Assert.AreEqual("EVALUATE", lines[3], "EVALUATE must remain on line 4 (index 3)");
+            Assert.IsFalse(result.ProcessedText.Contains("-->"), "command content must be gone");
+        }
+
+        [TestMethod]
         public void NoGoSingleBatchQueryTextMatchesProcessedText()
         {
             var query = "EVALUATE\nROW( \"x\", 1 )";
@@ -175,6 +193,32 @@ namespace DaxStudio.Tests
         }
 
         [TestMethod]
+        public void DmvSelectThenGoThenDax_ProducesTwoBatchesWithCommands()
+        {
+            // A DMV "SELECT ... $SYSTEM.<dmv>" query followed by "--> GO" and a DAX query must split
+            // into two independently executable batches. Previously the DAX-oriented grammar could
+            // not consume the DMV "$SYSTEM." tokens, truncating the parse at the DMV line so the
+            // "--> GO" was never matched: only a single batch was produced (with the DMV and DAX
+            // concatenated in ProcessedText) and the trailing "--> TRACE"/"--> CLEARCACHE" commands
+            // were silently dropped.
+            var query = "SELECT * FROM $SYSTEM.TMSCHEMA_MODEL\n--> GO\n\n--> TRACE SERVERTIMINGS ON\n--> CLEARCACHE\nDEFINE\nvar vtest1 = 1\nEVALUATE\n{ vtest1 }";
+            var result = DaxStudio.Parsers.PreProcessor.AntlrPreProcessor.Parse(query);
+
+            Assert.IsFalse(result.HasErrors, "the DMV + DAX script should parse cleanly");
+            Assert.AreEqual(2, result.Batches.Count, "the --> GO should split the script into two batches");
+
+            StringAssert.Contains(result.Batches[0].QueryText, "$SYSTEM.TMSCHEMA_MODEL", "batch 1 is the DMV query");
+            Assert.IsFalse(result.Batches[0].QueryText.Contains("DEFINE"), "batch 1 must not contain the DAX query");
+
+            StringAssert.Contains(result.Batches[1].QueryText, "DEFINE", "batch 2 is the DAX query");
+            Assert.IsFalse(result.Batches[1].QueryText.Contains("SELECT"), "batch 2 must not contain the DMV query");
+
+            var batch2Commands = result.Batches[1].Commands.Select(c => c.GetType().Name).ToList();
+            Assert.IsTrue(batch2Commands.Any(n => n.Contains("Trace")), "the --> TRACE command must be parsed into batch 2");
+            Assert.IsTrue(batch2Commands.Any(n => n.Contains("ClearCache")), "the --> CLEARCACHE command must be parsed into batch 2");
+        }
+
+        [TestMethod]
         public void HistoryTextKeepsCommentScriptCommandsButProcessedQueryStripsThem()
         {
             var query = "--> PARAMETER @param = \"world\"\nEVALUATE\nFILTER( 'table', 'table'[col] = @param )";
@@ -202,6 +246,28 @@ namespace DaxStudio.Tests
 
             StringAssert.Contains(antlr.HistoryText, "--> PARAMETER", "history keeps the comment-script command");
             Assert.IsFalse(antlr.HistoryText.Contains("<Parameters"), "the <Parameters> XML block should be excluded from history");
+        }
+
+        [TestMethod]
+        public void MalformedCommand_SetsPreProcessError_AndDoesNotFallBackSilently()
+        {
+            // A malformed comment-script command ("--> USE" with no database) must set a helpful
+            // PreProcessError (with the offending line) rather than being silently swallowed.
+            var query = "--> USE\nEVALUATE { 1 }\n";
+            var antlr = new QueryInfo(query, _eventAggregator, NewParserOptions());
+
+            Assert.IsFalse(string.IsNullOrEmpty(antlr.PreProcessError), "a malformed command should populate PreProcessError");
+            StringAssert.Contains(antlr.PreProcessError, "USE command");
+            Assert.AreEqual(1, antlr.PreProcessErrorLine, "the error should point at the command line");
+        }
+
+        [TestMethod]
+        public void ValidCommand_HasNoPreProcessError()
+        {
+            var query = "--> USE Adventure Works\nEVALUATE { 1 }\n";
+            var antlr = new QueryInfo(query, _eventAggregator, NewParserOptions());
+
+            Assert.IsTrue(string.IsNullOrEmpty(antlr.PreProcessError), "a valid command must not set PreProcessError");
         }
     }
 }

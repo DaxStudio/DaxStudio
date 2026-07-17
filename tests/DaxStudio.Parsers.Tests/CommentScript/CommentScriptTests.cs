@@ -110,7 +110,9 @@ namespace DaxStudio.Parsers.Tests.CommentScript
             parser.AddErrorListener(errorListener);
             var tree = parser.document();
 
-            Assert.HasCount(2, errors);
+            // Only the invalid connection type ("XX") is now reported as an error; the value token is
+            // absorbed by the unquoted_value rule rather than producing a second recovery error.
+            Assert.HasCount(1, errors);
 
             Assert.AreEqual(2, tree.ChildCount, "Tree Child Count");
             Assert.IsNull(tree.exception);
@@ -121,7 +123,7 @@ namespace DaxStudio.Parsers.Tests.CommentScript
             var daxParameters = new List<string>();
             var listener = new PreProcessorListener(arrayParameters, batch);
             var walker = new ParseTreeWalker();
-            Assert.ThrowsExactly<ArgumentException>(
+            Assert.ThrowsExactly<CommentScriptCommandException>(
                 () => walker.Walk(listener, tree)
             );
 

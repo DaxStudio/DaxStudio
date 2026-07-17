@@ -69,6 +69,20 @@ namespace DaxStudio.Core.Model
         //public string ProcessedQuery { get; set; }
         public bool NeedsParameterValues { get; set; }
 
+        /// <summary>
+        /// A helpful message describing a malformed comment-script (<c>--&gt;</c>) command (e.g. a
+        /// USE with no database name). Non-null when the new pre-processor found such a command error;
+        /// the query run is aborted and this message is surfaced to the user rather than silently
+        /// falling back to the classic pre-processor (which would ignore the command).
+        /// </summary>
+        public string PreProcessError { get; private set; }
+
+        /// <summary>The 1-based line of the command that caused <see cref="PreProcessError"/> (0 when unknown).</summary>
+        public int PreProcessErrorLine { get; private set; }
+
+        /// <summary>The 0-based character position of the command that caused <see cref="PreProcessError"/> (0 when unknown).</summary>
+        public int PreProcessErrorColumn { get; private set; }
+
         public string QueryWithMergedParameters
         {
             get
@@ -96,6 +110,24 @@ namespace DaxStudio.Core.Model
                 DaxHelper.SplitParametersBlock(query, out var body, out var paramsBlock);
 
                 var result = AntlrPreProcessor.Parse(body);
+
+                // A malformed comment-script command (e.g. "--> USE" with no database) is a mistake in
+                // an explicit command the user typed. Surface it as a hard, user-facing error and do NOT
+                // fall back to the classic pre-processor (which would silently ignore the command). The
+                // caller (DocumentViewModel.PreProcessQuery) checks PreProcessError to abort the run.
+                if (result.HasCommandErrors)
+                {
+                    var cmdErr = result.CommandErrors.First();
+                    PreProcessError = cmdErr.Msg;
+                    PreProcessErrorLine = cmdErr.Line;
+                    PreProcessErrorColumn = cmdErr.Column;
+                    Log.Warning("{class} {method} Comment-script command error: {msg}",
+                        nameof(QueryInfo), nameof(TryPreProcessWithAntlrParser), cmdErr.Msg);
+                    // Return true so the constructor keeps the new path (no regex fallback); the run is
+                    // aborted upstream once PreProcessError is observed.
+                    return true;
+                }
+
                 if (result.HasErrors)
                 {
                     var first = result.Errors.FirstOrDefault();

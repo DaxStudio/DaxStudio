@@ -118,9 +118,9 @@ namespace DaxStudio.Parsers.Dax
 
         public override void ExitUse([NotNull] PreProcessorParser.UseContext context)
         {
-            if (context.ChildCount != 2) throw new ArgumentException("Invalid number of arguments for USE command. This command should be in the form of: '--> USE [\"]<DatabaseName>[\"]'");
+            if (context.ChildCount != 2) throw new CommentScriptCommandException("Invalid number of arguments for USE command. This command should be in the form of: '--> USE [\"]<DatabaseName>[\"]'", context.Start.Line, context.Start.Column);
 
-            var database = context.children[1].GetText();
+            var database = GetCommandValueText(context.children[1]);
             var cmd = new UseCommand(database);
             _currentBatch.Commands.Add(cmd);
             OutputCommand( _currentBatch.Output, context);
@@ -129,15 +129,31 @@ namespace DaxStudio.Parsers.Dax
 
         public override void ExitConnect([NotNull] PreProcessorParser.ConnectContext context)
         {
-            if (context.ChildCount != 3) throw new ArgumentException("Invalid number of arguments for CONNECT command. This command should be in the form of: '--> CONNECT <ConnectionType> <ConnectionName>'");
+            if (context.ChildCount != 3) throw new CommentScriptCommandException("Invalid number of arguments for CONNECT command. This command should be in the form of: '--> CONNECT <ConnectionType> <ConnectionName>'", context.Start.Line, context.Start.Column);
 
             var serverType = context.children[1].GetText();
-            var serverName = context.children[2].GetText();
+            var serverName = GetCommandValueText(context.children[2]);
 
             var cmd = new ConnectCommand(serverType, serverName);
             _currentBatch.Commands.Add(cmd);
             OutputCommand( _currentBatch.Output, context);
             base.ExitConnect(context);
+        }
+
+        // Returns the text of a CONNECT/USE value node. A quoted value is a CS_STRING_LITERAL terminal
+        // whose text the lexer has already un-quoted, so its GetText() is used directly. An unquoted
+        // value is the 'unquoted_value' rule, which may span several tokens (e.g. "AW Internet Sales");
+        // because the lexer skips the whitespace between those tokens, the original source text - with
+        // its internal spaces preserved - is recovered from the node's char interval rather than by
+        // concatenating the child tokens.
+        private static string GetCommandValueText(IParseTree node)
+        {
+            if (node is ParserRuleContext ruleCtx && ruleCtx.Start != null && ruleCtx.Stop != null)
+            {
+                var interval = new Interval(ruleCtx.Start.StartIndex, ruleCtx.Stop.StopIndex);
+                return ruleCtx.Start.InputStream.GetText(interval);
+            }
+            return node.GetText();
         }
 
         public override void ExitScript_parameter([NotNull] PreProcessorParser.Script_parameterContext context)
@@ -305,11 +321,26 @@ namespace DaxStudio.Parsers.Dax
 
         public override void ExitTrace([NotNull] TraceContext context)
         {
+            // The grammar requires a trace type and an ON/OFF flag. If either is missing the parser
+            // recovers with a partial tree, so guard against it here and surface a helpful error
+            // (rather than crashing with an index-out-of-range on the missing child).
+            if (context.ChildCount != 3)
+                throw new CommentScriptCommandException("Invalid TRACE command. This command should be in the form of: '--> TRACE <SERVERTIMINGS|QUERYPLAN|ALLQUERIES> <ON|OFF>'", context.Start.Line, context.Start.Column);
+
             var traceType = context.children[1].GetText();
             var enabledNode = context.children[2] as ITerminalNode;
             var enabled = enabledNode?.Symbol.Type == CS_ON;
 
-            var cmd = new TraceCommand(traceType, enabled);
+            TraceCommand cmd;
+            try
+            {
+                cmd = new TraceCommand(traceType, enabled);
+            }
+            catch (CommentScriptCommandException ex)
+            {
+                // Re-throw with the position of the offending command so the error can be marked.
+                throw new CommentScriptCommandException(ex.Message, context.Start.Line, context.Start.Column);
+            }
             _currentBatch.Commands.Add(cmd);
             OutputCommand(_currentBatch.Output, context);
             base.ExitTrace(context);

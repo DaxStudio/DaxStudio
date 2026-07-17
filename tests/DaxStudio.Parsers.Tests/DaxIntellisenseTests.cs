@@ -26,6 +26,50 @@ namespace DaxStudio.Parsers.Tests
         }
 
         [TestMethod]
+        public void CursorState_PartialTableInsideFunctionArg_DetectsPartialTable()
+        {
+            // A partial quoted table typed as a function argument must be treated as a table reference,
+            // not a generic function-argument expression (which would also offer functions). Regression
+            // for the ANTLR provider showing functions when typing a quote inside VALUES('pr|
+            var input = "EVALUATE VALUES('pr";
+            var state = DaxCursorStateWalker.GetStateAtCursor(input, input.Length);
+
+            Assert.AreEqual(EditState.PartialTable, state.State);
+        }
+
+        [TestMethod]
+        public void CursorState_OpeningQuoteInsideFunctionArg_DetectsPartialTable()
+        {
+            // Just the opening quote inside a function argument: EVALUATE FILTER('|
+            var input = "EVALUATE FILTER('";
+            var state = DaxCursorStateWalker.GetStateAtCursor(input, input.Length);
+
+            Assert.AreEqual(EditState.PartialTable, state.State);
+        }
+
+        [TestMethod]
+        public void CursorState_UnqualifiedBracketInsideFunctionArg_DetectsPartialColumn()
+        {
+            // A bracket with no qualifying table inside a function argument should offer measures/columns
+            // (PartialColumn), not a generic function-argument expression: EVALUATE VALUES([|
+            var input = "EVALUATE VALUES([";
+            var state = DaxCursorStateWalker.GetStateAtCursor(input, input.Length);
+
+            Assert.AreEqual(EditState.PartialColumn, state.State);
+        }
+
+        [TestMethod]
+        public void CursorState_PlainFunctionArg_StillReturnsFunctionArgument()
+        {
+            // Ensure the partial-reference refinement does not regress ordinary function-argument
+            // contexts (no open quote/bracket): EVALUATE VALUES(|
+            var input = "EVALUATE VALUES(";
+            var state = DaxCursorStateWalker.GetStateAtCursor(input, input.Length);
+
+            Assert.AreEqual(EditState.FunctionArgument, state.State);
+        }
+
+        [TestMethod]
         public void CursorState_PartialColumn_DetectsPartialColumnRef()
         {
             // Cursor at end of partial column: EVALUATE ADDCOLUMNS('Sales', "x", 'Product'[Col|
@@ -278,6 +322,141 @@ namespace DaxStudio.Parsers.Tests
                 "DEFINE-level variable 'x' should be in scope");
             Assert.IsTrue(state.Variables.Contains("y"),
                 "DEFINE-level variable 'y' should be in scope");
+        }
+
+        [TestMethod]
+        public void CursorState_MeasureReturn_ShowsLocalVar_Variants()
+        {
+            // Bug 1: a variable declared in a measure's VAR/RETURN body must be offered as a completion
+            // in the RETURN expression, across the incomplete-input shapes that occur while typing.
+            var meta = Substitute.For<DaxStudio.Parsers.Metadata.IModelMetadataProvider>();
+            meta.GetTables().Returns(new List<DaxStudio.Parsers.Metadata.TableMetadata>());
+            meta.GetMeasures().Returns(new List<DaxStudio.Parsers.Metadata.MeasureMetadata>());
+            meta.GetBuiltInFunctions().Returns(new List<DaxStudio.Parsers.Metadata.FunctionSignature>());
+            meta.GetUserDefinedFunctions().Returns(new List<DaxStudio.Parsers.Metadata.UdfMetadata>());
+            var svc = new DaxParserService(meta);
+
+            var variants = new Dictionary<string, string>
+            {
+                {"eol-partial",    "DEFINE MEASURE Customer[test] =\r\nVAR test1 = 1\r\nRETURN tes"},
+                {"eol-space",      "DEFINE MEASURE Customer[test] =\r\nVAR test1 = 1\r\nRETURN "},
+                {"binary-partial", "DEFINE MEASURE Customer[test] =\r\nVAR test1 = 1\r\nRETURN test1 + tes"},
+                {"followed-by-eval-partial", "DEFINE MEASURE Customer[test] =\r\nVAR test1 = 1\r\nRETURN tes\r\nEVALUATE Customer"},
+                {"followed-by-eval-space",   "DEFINE MEASURE Customer[test] =\r\nVAR test1 = 1\r\nRETURN \r\nEVALUATE Customer"},
+            };
+
+            foreach (var kv in variants)
+            {
+                // Place the caret at the end of the RETURN expression (before any trailing EVALUATE).
+                int evalIdx = kv.Value.IndexOf("\r\nEVALUATE");
+                int caret = evalIdx >= 0 ? evalIdx : kv.Value.Length;
+                var state = svc.GetEditState(kv.Value, caret);
+                var labels = svc.GetCompletions(state).Select(c => c.Label).ToList();
+                Assert.IsTrue(labels.Contains("test1"),
+                    "measure-local var 'test1' should be a completion in the measure RETURN (variant '" + kv.Key + "')");
+            }
+        }
+
+        [TestMethod]
+        public void CursorState_EvaluateScope_ExcludesMeasureLocalVar()
+        {
+            // Bug 2: a variable declared inside a measure's VAR/RETURN body must NOT leak into the
+            // outer EVALUATE scope, while a DEFINE-level variable must remain visible there.
+            var meta = Substitute.For<DaxStudio.Parsers.Metadata.IModelMetadataProvider>();
+            meta.GetTables().Returns(new List<DaxStudio.Parsers.Metadata.TableMetadata>());
+            meta.GetMeasures().Returns(new List<DaxStudio.Parsers.Metadata.MeasureMetadata>());
+            meta.GetBuiltInFunctions().Returns(new List<DaxStudio.Parsers.Metadata.FunctionSignature>());
+            meta.GetUserDefinedFunctions().Returns(new List<DaxStudio.Parsers.Metadata.UdfMetadata>());
+            var svc = new DaxParserService(meta);
+
+            var input = "DEFINE\r\nMEASURE Customer[test] = VAR vtest1 = 1 RETURN vtest1\r\nVAR vtest2 = 2\r\nEVALUATE { [test], vt";
+            var state = svc.GetEditState(input, input.Length);
+            var labels = svc.GetCompletions(state).Select(c => c.Label).ToList();
+            Assert.IsFalse(labels.Contains("vtest1"), "measure-local var vtest1 should NOT leak into EVALUATE");
+            Assert.IsTrue(labels.Contains("vtest2"), "DEFINE-level var vtest2 should be visible in EVALUATE");
+        }
+
+        [TestMethod]
+        public void CursorState_MeasureLocalVar_DoesNotLeakAfterClosingReturn()
+        {
+            // A variable declared in a measure's VAR/RETURN body goes out of scope once that measure's
+            // RETURN closes. It must not leak into a *later* part of the DEFINE block (here a following
+            // measure definition), regardless of whether a subsequent declaration overwrites the
+            // fallback snapshot.
+            var meta = Substitute.For<DaxStudio.Parsers.Metadata.IModelMetadataProvider>();
+            meta.GetTables().Returns(new List<DaxStudio.Parsers.Metadata.TableMetadata>());
+            meta.GetMeasures().Returns(new List<DaxStudio.Parsers.Metadata.MeasureMetadata>());
+            meta.GetBuiltInFunctions().Returns(new List<DaxStudio.Parsers.Metadata.FunctionSignature>());
+            meta.GetUserDefinedFunctions().Returns(new List<DaxStudio.Parsers.Metadata.UdfMetadata>());
+            var svc = new DaxParserService(meta);
+
+            var input = "DEFINE\r\nMEASURE Customer[test1] = VAR vtest1 = 1 RETURN vtest1\r\nMEASURE Customer[test2] = vt";
+            var state = svc.GetEditState(input, input.Length);
+            var labels = svc.GetCompletions(state).Select(c => c.Label).ToList();
+            Assert.IsFalse(labels.Contains("vtest1"),
+                "measure-local var vtest1 must go out of scope after its RETURN and not leak into a later measure");
+        }
+
+        [TestMethod]
+        public void CursorState_MeasureLocalVar_DoesNotLeakIntoEvaluate()
+        {
+            // A measure-local var must also not leak into a following EVALUATE when there is no later
+            // DEFINE-level variable to overwrite the fallback snapshot.
+            var meta = Substitute.For<DaxStudio.Parsers.Metadata.IModelMetadataProvider>();
+            meta.GetTables().Returns(new List<DaxStudio.Parsers.Metadata.TableMetadata>());
+            meta.GetMeasures().Returns(new List<DaxStudio.Parsers.Metadata.MeasureMetadata>());
+            meta.GetBuiltInFunctions().Returns(new List<DaxStudio.Parsers.Metadata.FunctionSignature>());
+            meta.GetUserDefinedFunctions().Returns(new List<DaxStudio.Parsers.Metadata.UdfMetadata>());
+            var svc = new DaxParserService(meta);
+
+            var input = "DEFINE\r\nMEASURE Customer[test] = VAR vtest1 = 1 RETURN vtest1\r\nEVALUATE { [test], vt";
+            var state = svc.GetEditState(input, input.Length);
+            var labels = svc.GetCompletions(state).Select(c => c.Label).ToList();
+            Assert.IsFalse(labels.Contains("vtest1"),
+                "measure-local var vtest1 must go out of scope after its RETURN and not leak into EVALUATE");
+        }
+
+        [TestMethod]
+        public void CursorState_TopLevelPartial_OffersDefineKeyword()
+        {
+            // Regression: while typing "DEFINE" at the start of a query, the DEFINE keyword must remain
+            // among the offered completions at every prefix length.
+            var meta = Substitute.For<DaxStudio.Parsers.Metadata.IModelMetadataProvider>();
+            meta.GetTables().Returns(new List<DaxStudio.Parsers.Metadata.TableMetadata>());
+            meta.GetMeasures().Returns(new List<DaxStudio.Parsers.Metadata.MeasureMetadata>());
+            meta.GetBuiltInFunctions().Returns(new List<DaxStudio.Parsers.Metadata.FunctionSignature>());
+            meta.GetUserDefinedFunctions().Returns(new List<DaxStudio.Parsers.Metadata.UdfMetadata>
+            {
+                new DaxStudio.Parsers.Metadata.UdfMetadata { Name = "MyUserDefinedFunction", Description = "hello" }
+            });
+            var svc = new DaxParserService(meta);
+
+            foreach (var prefix in new[] { "D", "DE", "DEF", "DEFI", "DEFIN" })
+            {
+                var state = svc.GetEditState(prefix, prefix.Length);
+                var labels = svc.GetCompletions(state).Select(c => c.Label).ToList();
+                Assert.IsTrue(labels.Contains("DEFINE"),
+                    "DEFINE keyword should be offered while typing prefix '" + prefix + "'");
+            }
+        }
+
+        [TestMethod]
+        public void CursorState_VarBeingTyped_DoesNotOfferItself()
+        {
+            // Regression: the variable name currently being typed is not yet in scope, so it must not be
+            // offered as a completion for itself (e.g. "VAR vte" should not suggest "vte").
+            var meta = Substitute.For<DaxStudio.Parsers.Metadata.IModelMetadataProvider>();
+            meta.GetTables().Returns(new List<DaxStudio.Parsers.Metadata.TableMetadata>());
+            meta.GetMeasures().Returns(new List<DaxStudio.Parsers.Metadata.MeasureMetadata>());
+            meta.GetBuiltInFunctions().Returns(new List<DaxStudio.Parsers.Metadata.FunctionSignature>());
+            meta.GetUserDefinedFunctions().Returns(new List<DaxStudio.Parsers.Metadata.UdfMetadata>());
+            var svc = new DaxParserService(meta);
+
+            var input = "DEFINE MEASURE Customer[Mtest1] = VAR vte";
+            var state = svc.GetEditState(input, input.Length);
+            var labels = svc.GetCompletions(state).Select(c => c.Label).ToList();
+            Assert.IsFalse(labels.Contains("vte"),
+                "the variable being declared ('vte') must not suggest itself before it is in scope");
         }
 
         #endregion
@@ -836,5 +1015,88 @@ ORDER BY 'Sales'[Amount] DESC";
             Assert.IsTrue(result.Errors.Count > 0 || !result.Success || result.Tree != null,
                 "Should either have errors or a partial tree");
         }
+
+        #region Statement chunking
+
+        [TestMethod]
+        public void Chunk_CursorInSecondStatement_ExcludesEarlierEvaluate()
+        {
+            // An earlier complete "EVALUATE customer" query precedes a "DEFINE ... EVALUATE" query.
+            // The chunk containing the cursor (in the second query) must not include the first query.
+            var doc = "EVALUATE customer\r\n\r\nDEFINE MEASURE Customer[mtest] = 1\r\nEVALUATE { ";
+            var chunk = DaxCursorStateWalker.ExtractStatementChunk(doc, doc.Length);
+
+            StringAssert.StartsWith(chunk.Text, "DEFINE");
+            Assert.IsFalse(chunk.Text.Contains("EVALUATE customer"), "Earlier statement should be excluded");
+            Assert.AreEqual(doc.Length - doc.IndexOf("DEFINE"), chunk.CursorOffset);
+        }
+
+        [TestMethod]
+        public void Chunk_CursorInFirstStatement_StopsAtDefine()
+        {
+            var doc = "EVALUATE customer\r\n\r\nDEFINE MEASURE Customer[mtest] = 1\r\nEVALUATE { ";
+            // Cursor at the end of the first "EVALUATE customer" statement (just before the blank line
+            // and the following DEFINE query).
+            var cursor = "EVALUATE customer".Length;
+            var chunk = DaxCursorStateWalker.ExtractStatementChunk(doc, cursor);
+
+            Assert.AreEqual("EVALUATE customer", chunk.Text);
+            Assert.IsFalse(chunk.Text.Contains("DEFINE"), "Later DEFINE statement should be excluded");
+            Assert.AreEqual(cursor, chunk.CursorOffset);
+        }
+
+        [TestMethod]
+        public void Chunk_TruncatesTextAfterCursor()
+        {
+            // Only the text up to the cursor is parsed - text after the cursor (which may be temporarily
+            // invalid while the user edits the middle of the query) must never be included.
+            var doc = "EVALUATE SELECTCOLUMNS( 'product'[Color] )";
+            var cursor = "EVALUATE SELE".Length; // caret in the middle of the function name
+            var chunk = DaxCursorStateWalker.ExtractStatementChunk(doc, cursor);
+
+            Assert.AreEqual("EVALUATE SELE", chunk.Text);
+            Assert.AreEqual(cursor, chunk.CursorOffset);
+        }
+
+        [TestMethod]
+        public void Chunk_InvalidTextAfterCursorDoesNotBreakState()
+        {
+            // The user is editing an existing query; the text after the cursor is temporarily invalid
+            // (an unterminated string and an unbalanced brace). Restricting parsing to the text up to the
+            // cursor must still yield a usable in-EVALUATE state with the in-scope variable available.
+            var doc = "DEFINE\r\nVAR v1 = 1\r\nEVALUATE { v1 } ) \"unterminated";
+            var cursor = doc.IndexOf("v1 }") + 2; // just after "v1" inside the row constructor
+            var state = DaxCursorStateWalker.GetStateAtCursor(doc, cursor);
+
+            Assert.IsNotNull(state);
+            Assert.IsNotNull(state.Variables);
+            CollectionAssert.Contains(state.Variables.ToList(), "v1",
+                "The variable declared before the cursor must be in scope even though the text after the cursor is invalid");
+        }
+
+        [TestMethod]
+        public void Chunk_SingleStatement_ReturnedUnchanged()
+        {
+            var doc = "DEFINE MEASURE Customer[mtest] = 1\r\nEVALUATE { ";
+            var chunk = DaxCursorStateWalker.ExtractStatementChunk(doc, doc.Length);
+
+            Assert.AreEqual(doc, chunk.Text);
+            Assert.AreEqual(doc.Length, chunk.CursorOffset);
+        }
+
+        [TestMethod]
+        public void Chunk_MeasureVisibleWhenPrecededByEvaluate()
+        {
+            // Regression: an earlier "EVALUATE customer" made the following DEFINE a syntax error, so the
+            // measure defined in the second query was not offered. Chunking must restore it.
+            var doc = "EVALUATE customer\r\n\r\nDEFINE MEASURE Customer[mtest] = \r\n    var vtest = 1\r\n    RETURN vtest\r\n    EVALUATE { ";
+            var state = DaxCursorStateWalker.GetStateAtCursor(doc, doc.Length);
+
+            Assert.IsNotNull(state.DefinedMeasures);
+            CollectionAssert.Contains(state.DefinedMeasures.ToList(), "mtest",
+                "Measure defined in the cursor's statement should be offered even when a separate EVALUATE precedes it");
+        }
+
+        #endregion
     }
 }

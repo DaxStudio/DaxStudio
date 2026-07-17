@@ -839,7 +839,7 @@ namespace DaxStudio.UI.ViewModels
             if (!string.IsNullOrWhiteSpace(OverridePath) && !IsValidOneLakePath(OverridePath.Trim(), out var pathError))
             {
                 SetStatus(pathError, true);
-                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, pathError));
+                await _eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, pathError));
                 return;
             }
 
@@ -880,7 +880,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     var message = erroredTables.Select(t => t.Error).Distinct().First();
                     SetStatus(message, true);
-                    _eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, message));
+                    await _eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, message));
                     return;
                 }
 
