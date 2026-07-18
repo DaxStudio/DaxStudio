@@ -110,13 +110,17 @@ button, revealing the last query results again.
 | Sub-command | Behaviour |
 |---|---|
 | `SHOW DEPENDENCIES` | Analyses the DAX query in the batch (**without executing it**) and displays the full recursive dependency tree of every referenced object – measures, columns, tables and functions. Uses `DISCOVER_CALC_DEPENDENCY`. |
-| `SHOW LAST_UPDATED` | Ignores the query and displays the model metadata tree (tables → columns / measures / partitions) with each item's last schema-modified timestamp, sourced from the `TMSCHEMA_*` DMVs. |
-| `SHOW MAX_UPDATED` | Same metadata source as `LAST_UPDATED`, but pruned to the item(s) carrying the **maximum** modified timestamp so you can quickly see what was changed most recently. |
+| `SHOW LAST_UPDATED` | Ignores the query and displays the model metadata as a tree that mirrors the Power BI Desktop model view: a single **Semantic model** root with grouping folders (*Calculation groups*, *Cultures*, *Expressions*, *Functions*, *Perspectives*, *Relationships*, *Roles*, *Tables*) and, under each table, *Calendars*, *Columns*, *Hierarchies*, *Measures* and *Partitions*. Each item shows its last schema-modified timestamp, sourced from the `TMSCHEMA_*` DMVs. |
+| `SHOW MAX_UPDATED` | Same metadata source and structure as `LAST_UPDATED`, but pruned to the object(s) carrying the **maximum** modified timestamp (nested inside their enclosing folders / tables) so you can quickly see what was changed most recently. |
 
 The tree-grid shows an *Object*, *Type* and *Table* column for every variant; the *Last Modified*
-column is only shown for `LAST_UPDATED` / `MAX_UPDATED`. All engines DAX Studio connects to are
-XMLA-capable, so the required DMVs are always available; permission or empty-result errors are
-reported to the Output pane and the tree is left hidden.
+column is shown for `LAST_UPDATED` / `MAX_UPDATED`, and two additional columns are shown for
+`LAST_UPDATED` only: *Max Update* (the most-recent change among a row's descendants) and *Days Since
+Change* (whole days since the row's effective most-recent change). Where a DMV exposes both a
+*ModifiedTime* and a *StructureModifiedTime* the structure-modified value is used. The *Functions* and
+*Calendars* groups are newer features and are omitted when the connected model does not support the
+corresponding DMVs. All engines DAX Studio connects to are XMLA-capable, so the core DMVs are
+available; permission or empty-result errors on individual DMVs are logged and that group is skipped.
 
 ## Assert
 ```

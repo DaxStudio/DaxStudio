@@ -318,6 +318,10 @@ namespace DaxStudio.UI.ViewModels
 
         private DAXEditorControl.DAXEditor _editor;
 
+        // Tracks the editor default font size that was last applied via UpdateSettings so we can
+        // detect a genuine change to Options.EditorFontSize without clobbering the user's zoom level.
+        private double _appliedEditorFontSize = double.NaN;
+
         internal NewDocumentParameters NewDocumentParameters { get; set; } = new NewDocumentParameters();
         #region "Event Handlers"
         /// <summary>

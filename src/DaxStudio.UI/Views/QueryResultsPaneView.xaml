@@ -324,7 +324,7 @@
                     <tg:TreeGrid.Columns>
                         <tg:TreeColumn Header="Object"
                                        Width="320"
-                                       TextPath="Data.Name"
+                                       TextPath="Data.DisplayName"
                                        SortMemberPath="Data.Name"
                                        ShowExpander="True"
                                        LineStroke="{DynamicResource Theme.Brush.Default.Fore}"
@@ -353,6 +353,16 @@
                                             SortMemberPath="Data.LastModifiedUtc"
                                             Width="160" MinWidth="120"
                                             Visibility="{Binding Data.ShowTreeTimestampColumn, Source={StaticResource Proxy}, Converter={StaticResource BoolToVisibilityConverter}}" />
+                        <DataGridTextColumn Header="Max Update"
+                                            Binding="{Binding Data.MaxUpdateDisplay}"
+                                            SortMemberPath="Data.MaxUpdateUtc"
+                                            Width="160" MinWidth="120"
+                                            Visibility="{Binding Data.ShowTreeExtraColumns, Source={StaticResource Proxy}, Converter={StaticResource BoolToVisibilityConverter}}" />
+                        <DataGridTextColumn Header="Days Since Change"
+                                            Binding="{Binding Data.DaysSinceChangeDisplay}"
+                                            SortMemberPath="Data.DaysSinceChange"
+                                            Width="120" MinWidth="90"
+                                            Visibility="{Binding Data.ShowTreeExtraColumns, Source={StaticResource Proxy}, Converter={StaticResource BoolToVisibilityConverter}}" />
                     </tg:TreeGrid.Columns>
                 </tg:TreeGrid>
             </Grid>

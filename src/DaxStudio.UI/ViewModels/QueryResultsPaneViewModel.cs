@@ -579,6 +579,14 @@ namespace DaxStudio.UI.ViewModels
             set { _showTreeTimestampColumn = value; NotifyOfPropertyChange(() => ShowTreeTimestampColumn); }
         }
 
+        private bool _showTreeExtraColumns;
+        /// <summary>The Max Update / Days Since Change columns are only shown for the LAST_UPDATED variant.</summary>
+        public bool ShowTreeExtraColumns
+        {
+            get => _showTreeExtraColumns;
+            set { _showTreeExtraColumns = value; NotifyOfPropertyChange(() => ShowTreeExtraColumns); }
+        }
+
         // Remembered so the current SHOW result can be persisted into (and restored from) the .daxx package.
         private DaxStudio.Parsers.CommentScript.ShowType _lastShowType;
 
@@ -596,15 +604,18 @@ namespace DaxStudio.UI.ViewModels
                     case DaxStudio.Parsers.CommentScript.ShowType.LastUpdated:
                         ShowTreeTitle = "Last Updated";
                         ShowTreeTimestampColumn = true;
+                        ShowTreeExtraColumns = true;
                         break;
                     case DaxStudio.Parsers.CommentScript.ShowType.MaxUpdated:
                         ShowTreeTitle = "Most Recently Updated";
                         ShowTreeTimestampColumn = true;
+                        ShowTreeExtraColumns = false;
                         break;
                     case DaxStudio.Parsers.CommentScript.ShowType.Dependencies:
                     default:
                         ShowTreeTitle = "Dependencies";
                         ShowTreeTimestampColumn = false;
+                        ShowTreeExtraColumns = false;
                         break;
                 }
 

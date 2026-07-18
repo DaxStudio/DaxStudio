@@ -1248,10 +1248,16 @@ namespace DaxStudio.Core.Connections
         }
 
         /// <summary>
-        /// Builds a tree of the model metadata (tables -> columns/measures/partitions) annotated with
-        /// each item's last-modified timestamp using the TMSCHEMA DMVs. When <paramref name="maxOnly"/>
-        /// is true the tree is pruned to only the item(s) whose timestamp equals the single global maximum
-        /// (keeping the owning table node(s) for context).
+        /// Builds a tree of the model metadata that mirrors the Power BI Desktop model view - a single
+        /// "Semantic model" root with grouping folders (Calculation groups, Cultures, Expressions,
+        /// Functions, Perspectives, Relationships, Roles, Tables) and, under each table, Calendars,
+        /// Columns, Hierarchies, Measures and Partitions folders - annotated with each item's last-modified
+        /// timestamp from the TMSCHEMA DMVs. Newer/optional DMVs (Functions, Calendars) are omitted when
+        /// the model does not support them. Every node is rolled up with the most-recent modified time of
+        /// its descendants (<see cref="ShowTreeNode.MaxUpdateUtc"/>) and the number of whole days since that
+        /// effective change (<see cref="ShowTreeNode.DaysSinceChange"/>). When <paramref name="maxOnly"/> is
+        /// true the tree is pruned to only the object(s) whose timestamp equals the single global maximum,
+        /// keeping the enclosing folders/tables for context.
         /// </summary>
         public List<ShowTreeNode> BuildMetadataTimestampTree(bool maxOnly)
         {
@@ -1262,130 +1268,376 @@ namespace DaxStudio.Core.Connections
 
             Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(BuildMetadataTimestampTree), $"start (maxOnly={maxOnly})");
 
-            // map table ID -> table node, and table ID -> table name
+            var dmvs = DynamicManagementViews;
+            bool HasDmv(string name) => dmvs != null && dmvs.Contains(name);
+
+            // --- Model root (TMSCHEMA_MODEL) ---
+            var modelRoot = new ShowTreeNode("Semantic model", "MODEL", null, null);
+            try
+            {
+                using (var dr = ExecuteReader("SELECT * FROM $SYSTEM.TMSCHEMA_MODEL", null))
+                {
+                    int modOrd = OrdinalOrMinusOne(dr, "ModifiedTime");
+                    int structOrd = OrdinalOrMinusOne(dr, "StructureModifiedTime");
+                    if (dr.Read())
+                    {
+                        modelRoot.LastModifiedUtc = PreferStructure(GetDateTimeOrNull(dr, modOrd), GetDateTimeOrNull(dr, structOrd));
+                    }
+                }
+            }
+            catch (Exception ex) { LogTimestampDmvWarning("TMSCHEMA_MODEL", ex); }
+
+            // --- Tables (own timestamps) ---
             var tableNodes = new Dictionary<string, ShowTreeNode>();
             var tableNames = new Dictionary<string, string>();
-
-            // --- Tables (root nodes) ---
-            using (var dr = ExecuteReader("SELECT * FROM $SYSTEM.TMSCHEMA_TABLES", null))
+            try
             {
-                int idOrd = OrdinalOrMinusOne(dr, "ID");
-                int nameOrd = OrdinalOrMinusOne(dr, "Name");
-                int modOrd = OrdinalOrMinusOne(dr, "ModifiedTime");
-                while (dr.Read())
+                using (var dr = ExecuteReader("SELECT * FROM $SYSTEM.TMSCHEMA_TABLES", null))
                 {
-                    var id = GetStringOrNull(dr, idOrd);
-                    var name = GetStringOrNull(dr, nameOrd);
-                    if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(name)) continue;
-                    tableNodes[id] = new ShowTreeNode(name, "TABLE", null, GetDateTimeOrNull(dr, modOrd));
-                    tableNames[id] = name;
+                    int idOrd = OrdinalOrMinusOne(dr, "ID");
+                    int nameOrd = OrdinalOrMinusOne(dr, "Name");
+                    int modOrd = OrdinalOrMinusOne(dr, "ModifiedTime");
+                    int structOrd = OrdinalOrMinusOne(dr, "StructureModifiedTime");
+                    while (dr.Read())
+                    {
+                        var id = GetStringOrNull(dr, idOrd);
+                        var name = GetStringOrNull(dr, nameOrd);
+                        if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(name)) continue;
+                        var ts = PreferStructure(GetDateTimeOrNull(dr, modOrd), GetDateTimeOrNull(dr, structOrd));
+                        tableNodes[id] = new ShowTreeNode(name, "TABLE", null, ts);
+                        tableNames[id] = name;
+                    }
                 }
             }
+            catch (Exception ex) { LogTimestampDmvWarning("TMSCHEMA_TABLES", ex); }
+
+            // per-table leaf collections keyed by table id
+            var tableColumns = new Dictionary<string, List<ShowTreeNode>>();
+            var tableMeasures = new Dictionary<string, List<ShowTreeNode>>();
+            var tablePartitions = new Dictionary<string, List<ShowTreeNode>>();
+            var tableHierarchies = new Dictionary<string, List<ShowTreeNode>>();
+            var tableCalendars = new Dictionary<string, List<ShowTreeNode>>();
+            List<ShowTreeNode> TableList(Dictionary<string, List<ShowTreeNode>> map, string tableId)
+            {
+                if (!map.TryGetValue(tableId, out var list)) { list = new List<ShowTreeNode>(); map[tableId] = list; }
+                return list;
+            }
+
+            var columnNames = new Dictionary<string, string>(); // column id -> name (used to label relationships)
 
             // --- Columns ---
-            using (var dr = ExecuteReader("SELECT * FROM $SYSTEM.TMSCHEMA_COLUMNS", null))
+            try
             {
-                int tableIdOrd = OrdinalOrMinusOne(dr, "TableID");
-                int explicitNameOrd = OrdinalOrMinusOne(dr, "ExplicitName");
-                int inferredNameOrd = OrdinalOrMinusOne(dr, "InferredName");
-                int modOrd = OrdinalOrMinusOne(dr, "ModifiedTime");
-                int structModOrd = OrdinalOrMinusOne(dr, "StructureModifiedTime");
-                while (dr.Read())
+                using (var dr = ExecuteReader("SELECT * FROM $SYSTEM.TMSCHEMA_COLUMNS", null))
                 {
-                    var tableId = GetStringOrNull(dr, tableIdOrd);
-                    if (string.IsNullOrEmpty(tableId) || !tableNodes.TryGetValue(tableId, out var parent)) continue;
-                    var name = GetStringOrNull(dr, explicitNameOrd) ?? GetStringOrNull(dr, inferredNameOrd);
-                    if (string.IsNullOrEmpty(name)) continue; // skip null-named (e.g. system RowNumber) columns
-                    var lastModified = MaxDate(GetDateTimeOrNull(dr, modOrd), GetDateTimeOrNull(dr, structModOrd));
-                    parent.Children.Add(new ShowTreeNode(name, "COLUMN", tableNames[tableId], lastModified));
+                    int idOrd = OrdinalOrMinusOne(dr, "ID");
+                    int tableIdOrd = OrdinalOrMinusOne(dr, "TableID");
+                    int explicitNameOrd = OrdinalOrMinusOne(dr, "ExplicitName");
+                    int inferredNameOrd = OrdinalOrMinusOne(dr, "InferredName");
+                    int modOrd = OrdinalOrMinusOne(dr, "ModifiedTime");
+                    int structOrd = OrdinalOrMinusOne(dr, "StructureModifiedTime");
+                    while (dr.Read())
+                    {
+                        var id = GetStringOrNull(dr, idOrd);
+                        var tableId = GetStringOrNull(dr, tableIdOrd);
+                        var name = GetStringOrNull(dr, explicitNameOrd) ?? GetStringOrNull(dr, inferredNameOrd);
+                        if (!string.IsNullOrEmpty(id) && !string.IsNullOrEmpty(name)) columnNames[id] = name;
+                        if (string.IsNullOrEmpty(tableId) || !tableNodes.ContainsKey(tableId)) continue;
+                        if (string.IsNullOrEmpty(name)) continue; // skip null-named (e.g. system RowNumber) columns
+                        var ts = PreferStructure(GetDateTimeOrNull(dr, modOrd), GetDateTimeOrNull(dr, structOrd));
+                        TableList(tableColumns, tableId).Add(new ShowTreeNode(name, "COLUMN", tableNames[tableId], ts));
+                    }
                 }
             }
+            catch (Exception ex) { LogTimestampDmvWarning("TMSCHEMA_COLUMNS", ex); }
 
             // --- Measures ---
-            using (var dr = ExecuteReader("SELECT * FROM $SYSTEM.TMSCHEMA_MEASURES", null))
+            try
             {
-                int tableIdOrd = OrdinalOrMinusOne(dr, "TableID");
-                int nameOrd = OrdinalOrMinusOne(dr, "Name");
-                int modOrd = OrdinalOrMinusOne(dr, "ModifiedTime");
-                while (dr.Read())
+                using (var dr = ExecuteReader("SELECT * FROM $SYSTEM.TMSCHEMA_MEASURES", null))
                 {
-                    var tableId = GetStringOrNull(dr, tableIdOrd);
-                    if (string.IsNullOrEmpty(tableId) || !tableNodes.TryGetValue(tableId, out var parent)) continue;
-                    var name = GetStringOrNull(dr, nameOrd);
-                    if (string.IsNullOrEmpty(name)) continue;
-                    parent.Children.Add(new ShowTreeNode(name, "MEASURE", tableNames[tableId], GetDateTimeOrNull(dr, modOrd)));
+                    int tableIdOrd = OrdinalOrMinusOne(dr, "TableID");
+                    int nameOrd = OrdinalOrMinusOne(dr, "Name");
+                    int modOrd = OrdinalOrMinusOne(dr, "ModifiedTime");
+                    while (dr.Read())
+                    {
+                        var tableId = GetStringOrNull(dr, tableIdOrd);
+                        if (string.IsNullOrEmpty(tableId) || !tableNodes.ContainsKey(tableId)) continue;
+                        var name = GetStringOrNull(dr, nameOrd);
+                        if (string.IsNullOrEmpty(name)) continue;
+                        TableList(tableMeasures, tableId).Add(new ShowTreeNode(name, "MEASURE", tableNames[tableId], GetDateTimeOrNull(dr, modOrd)));
+                    }
                 }
             }
+            catch (Exception ex) { LogTimestampDmvWarning("TMSCHEMA_MEASURES", ex); }
 
             // --- Partitions ---
-            using (var dr = ExecuteReader("SELECT * FROM $SYSTEM.TMSCHEMA_PARTITIONS", null))
+            try
             {
-                int tableIdOrd = OrdinalOrMinusOne(dr, "TableID");
-                int nameOrd = OrdinalOrMinusOne(dr, "Name");
-                int modOrd = OrdinalOrMinusOne(dr, "ModifiedTime");
-                int refreshedOrd = OrdinalOrMinusOne(dr, "RefreshedTime");
-                while (dr.Read())
+                using (var dr = ExecuteReader("SELECT * FROM $SYSTEM.TMSCHEMA_PARTITIONS", null))
                 {
-                    var tableId = GetStringOrNull(dr, tableIdOrd);
-                    if (string.IsNullOrEmpty(tableId) || !tableNodes.TryGetValue(tableId, out var parent)) continue;
-                    var name = GetStringOrNull(dr, nameOrd);
-                    if (string.IsNullOrEmpty(name)) continue;
-                    var lastModified = MaxDate(GetDateTimeOrNull(dr, modOrd), GetDateTimeOrNull(dr, refreshedOrd));
-                    parent.Children.Add(new ShowTreeNode(name, "PARTITION", tableNames[tableId], lastModified));
+                    int tableIdOrd = OrdinalOrMinusOne(dr, "TableID");
+                    int nameOrd = OrdinalOrMinusOne(dr, "Name");
+                    int modOrd = OrdinalOrMinusOne(dr, "ModifiedTime");
+                    int refreshedOrd = OrdinalOrMinusOne(dr, "RefreshedTime");
+                    while (dr.Read())
+                    {
+                        var tableId = GetStringOrNull(dr, tableIdOrd);
+                        if (string.IsNullOrEmpty(tableId) || !tableNodes.ContainsKey(tableId)) continue;
+                        var name = GetStringOrNull(dr, nameOrd);
+                        if (string.IsNullOrEmpty(name)) continue;
+                        // Partitions have no StructureModifiedTime; RefreshedTime (last data refresh) is meaningful here.
+                        var ts = MaxDate(GetDateTimeOrNull(dr, modOrd), GetDateTimeOrNull(dr, refreshedOrd));
+                        TableList(tablePartitions, tableId).Add(new ShowTreeNode(name, "PARTITION", tableNames[tableId], ts));
+                    }
                 }
             }
+            catch (Exception ex) { LogTimestampDmvWarning("TMSCHEMA_PARTITIONS", ex); }
 
-            // sort children then tables for stable output
-            var tables = tableNodes.Values.ToList();
-            foreach (var table in tables)
+            // --- Hierarchies ---
+            try
             {
-                table.Children.Sort((x, y) => string.Compare(x.Name, y.Name, StringComparison.OrdinalIgnoreCase));
+                using (var dr = ExecuteReader("SELECT * FROM $SYSTEM.TMSCHEMA_HIERARCHIES", null))
+                {
+                    int tableIdOrd = OrdinalOrMinusOne(dr, "TableID");
+                    int nameOrd = OrdinalOrMinusOne(dr, "Name");
+                    int modOrd = OrdinalOrMinusOne(dr, "ModifiedTime");
+                    int structOrd = OrdinalOrMinusOne(dr, "StructureModifiedTime");
+                    while (dr.Read())
+                    {
+                        var tableId = GetStringOrNull(dr, tableIdOrd);
+                        if (string.IsNullOrEmpty(tableId) || !tableNodes.ContainsKey(tableId)) continue;
+                        var name = GetStringOrNull(dr, nameOrd);
+                        if (string.IsNullOrEmpty(name)) continue;
+                        var ts = PreferStructure(GetDateTimeOrNull(dr, modOrd), GetDateTimeOrNull(dr, structOrd));
+                        TableList(tableHierarchies, tableId).Add(new ShowTreeNode(name, "HIERARCHY", tableNames[tableId], ts));
+                    }
+                }
             }
-            tables.Sort((x, y) => string.Compare(x.Name, y.Name, StringComparison.OrdinalIgnoreCase));
+            catch (Exception ex) { LogTimestampDmvWarning("TMSCHEMA_HIERARCHIES", ex); }
+
+            // --- Calendars (newer models only) ---
+            bool calendarsSupported = HasDmv("TMSCHEMA_CALENDARS");
+            if (calendarsSupported)
+            {
+                try
+                {
+                    using (var dr = ExecuteReader("SELECT * FROM $SYSTEM.TMSCHEMA_CALENDARS", null))
+                    {
+                        int tableIdOrd = OrdinalOrMinusOne(dr, "TableID");
+                        int nameOrd = OrdinalOrMinusOne(dr, "Name");
+                        int modOrd = OrdinalOrMinusOne(dr, "ModifiedTime");
+                        while (dr.Read())
+                        {
+                            var tableId = GetStringOrNull(dr, tableIdOrd);
+                            if (string.IsNullOrEmpty(tableId) || !tableNodes.ContainsKey(tableId)) continue;
+                            var name = GetStringOrNull(dr, nameOrd);
+                            if (string.IsNullOrEmpty(name)) continue;
+                            TableList(tableCalendars, tableId).Add(new ShowTreeNode(name, "CALENDAR", tableNames[tableId], GetDateTimeOrNull(dr, modOrd)));
+                        }
+                    }
+                }
+                catch (Exception ex) { LogTimestampDmvWarning("TMSCHEMA_CALENDARS", ex); calendarsSupported = false; }
+            }
+
+            // Assemble each table node with its child folders (Desktop order)
+            foreach (var kvp in tableNodes)
+            {
+                var tableId = kvp.Key;
+                var tableNode = kvp.Value;
+                if (calendarsSupported) tableNode.Children.Add(MakeFolder("Calendars", TableList(tableCalendars, tableId)));
+                tableNode.Children.Add(MakeFolder("Columns", TableList(tableColumns, tableId)));
+                tableNode.Children.Add(MakeFolder("Hierarchies", TableList(tableHierarchies, tableId)));
+                tableNode.Children.Add(MakeFolder("Measures", TableList(tableMeasures, tableId)));
+                tableNode.Children.Add(MakeFolder("Partitions", TableList(tablePartitions, tableId)));
+            }
+
+            // --- Model-level object collections ---
+            var calcGroups = new List<ShowTreeNode>();
+            try
+            {
+                using (var dr = ExecuteReader("SELECT * FROM $SYSTEM.TMSCHEMA_CALCULATION_GROUPS", null))
+                {
+                    int idOrd = OrdinalOrMinusOne(dr, "ID");
+                    int tableIdOrd = OrdinalOrMinusOne(dr, "TableID");
+                    int modOrd = OrdinalOrMinusOne(dr, "ModifiedTime");
+                    while (dr.Read())
+                    {
+                        var tableId = GetStringOrNull(dr, tableIdOrd);
+                        var name = (!string.IsNullOrEmpty(tableId) && tableNames.TryGetValue(tableId, out var tn))
+                            ? tn : GetStringOrNull(dr, idOrd);
+                        if (string.IsNullOrEmpty(name)) continue;
+                        calcGroups.Add(new ShowTreeNode(name, "CALCULATION GROUP", null, GetDateTimeOrNull(dr, modOrd)));
+                    }
+                }
+            }
+            catch (Exception ex) { LogTimestampDmvWarning("TMSCHEMA_CALCULATION_GROUPS", ex); }
+
+            var cultures = ReadModelLevelObjects("TMSCHEMA_CULTURES", "Name", "CULTURE");
+            var expressions = ReadModelLevelObjects("TMSCHEMA_EXPRESSIONS", "Name", "EXPRESSION");
+            var perspectives = ReadModelLevelObjects("TMSCHEMA_PERSPECTIVES", "Name", "PERSPECTIVE");
+            var roles = ReadModelLevelObjects("TMSCHEMA_ROLES", "Name", "ROLE");
+
+            // --- Relationships (friendly From/To label) ---
+            var relationships = new List<ShowTreeNode>();
+            try
+            {
+                using (var dr = ExecuteReader("SELECT * FROM $SYSTEM.TMSCHEMA_RELATIONSHIPS", null))
+                {
+                    int fromTableOrd = OrdinalOrMinusOne(dr, "FromTableID");
+                    int fromColOrd = OrdinalOrMinusOne(dr, "FromColumnID");
+                    int toTableOrd = OrdinalOrMinusOne(dr, "ToTableID");
+                    int toColOrd = OrdinalOrMinusOne(dr, "ToColumnID");
+                    int nameOrd = OrdinalOrMinusOne(dr, "Name");
+                    int modOrd = OrdinalOrMinusOne(dr, "ModifiedTime");
+                    while (dr.Read())
+                    {
+                        var label = RelationshipLabel(dr, fromTableOrd, fromColOrd, toTableOrd, toColOrd, tableNames, columnNames)
+                                    ?? GetStringOrNull(dr, nameOrd);
+                        if (string.IsNullOrEmpty(label)) continue;
+                        relationships.Add(new ShowTreeNode(label, "RELATIONSHIP", null, GetDateTimeOrNull(dr, modOrd)));
+                    }
+                }
+            }
+            catch (Exception ex) { LogTimestampDmvWarning("TMSCHEMA_RELATIONSHIPS", ex); }
+
+            // --- Functions / user-defined functions (newer models only) ---
+            bool functionsSupported = HasDmv("TMSCHEMA_FUNCTIONS");
+            var functions = functionsSupported
+                ? ReadModelLevelObjects("TMSCHEMA_FUNCTIONS", "Name", "FUNCTION")
+                : new List<ShowTreeNode>();
+
+            // Assemble model root groups (Desktop order)
+            modelRoot.Children.Add(MakeFolder("Calculation groups", calcGroups));
+            modelRoot.Children.Add(MakeFolder("Cultures", cultures));
+            modelRoot.Children.Add(MakeFolder("Expressions", expressions));
+            if (functionsSupported) modelRoot.Children.Add(MakeFolder("Functions", functions));
+            modelRoot.Children.Add(MakeFolder("Perspectives", perspectives));
+            modelRoot.Children.Add(MakeFolder("Relationships", relationships));
+            modelRoot.Children.Add(MakeFolder("Roles", roles));
+
+            var tablesFolder = new ShowTreeNode("Tables", string.Empty, null, null, isFolder: true);
+            foreach (var t in tableNodes.Values.OrderBy(t => t.Name, StringComparer.OrdinalIgnoreCase))
+            {
+                tablesFolder.Children.Add(t);
+            }
+            modelRoot.Children.Add(tablesFolder);
+
+            // Roll up MaxUpdate / DaysSinceChange across the whole tree
+            ComputeRollups(modelRoot, DateTime.UtcNow);
 
             if (!maxOnly)
             {
-                Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(BuildMetadataTimestampTree), $"end - {tables.Count} table(s)");
-                return tables;
+                Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(BuildMetadataTimestampTree), $"end - {tableNodes.Count} table(s)");
+                return new List<ShowTreeNode> { modelRoot };
             }
 
-            // compute the single global maximum timestamp across all nodes (tables + children)
-            DateTime? max = null;
-            foreach (var table in tables)
-            {
-                if (table.LastModifiedUtc.HasValue) max = MaxDate(max, table.LastModifiedUtc);
-                foreach (var child in table.Children)
-                {
-                    if (child.LastModifiedUtc.HasValue) max = MaxDate(max, child.LastModifiedUtc);
-                }
-            }
-
-            if (!max.HasValue)
+            // MAX_UPDATED: prune to the object(s) carrying the single global maximum timestamp
+            DateTime? globalMax = null;
+            CollectMaxObjectTimestamp(modelRoot, ref globalMax);
+            if (!globalMax.HasValue)
             {
                 Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(BuildMetadataTimestampTree), "end - no timestamps found");
                 return new List<ShowTreeNode>();
             }
+            PruneToMax(modelRoot, globalMax.Value);
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(BuildMetadataTimestampTree), $"end - max={globalMax:o}");
+            return new List<ShowTreeNode> { modelRoot };
+        }
 
-            // prune to the item(s) at the maximum, keeping ancestor table nodes for context
-            var result = new List<ShowTreeNode>();
-            foreach (var table in tables)
+        /// <summary>Reads a flat list of model-level objects (name + ModifiedTime) from a TMSCHEMA DMV,
+        /// swallowing any error (missing DMV / permissions) and returning what was read so far.</summary>
+        private List<ShowTreeNode> ReadModelLevelObjects(string dmv, string nameColumn, string objectType)
+        {
+            var list = new List<ShowTreeNode>();
+            try
             {
-                var matchingChildren = table.Children.Where(c => c.LastModifiedUtc == max).ToList();
-                var tableAtMax = table.LastModifiedUtc == max;
-                if (tableAtMax || matchingChildren.Count > 0)
+                using (var dr = ExecuteReader($"SELECT * FROM $SYSTEM.{dmv}", null))
                 {
-                    var prunedTable = new ShowTreeNode(table.Name, table.ObjectType, table.TableName, table.LastModifiedUtc);
-                    foreach (var child in matchingChildren)
+                    int nameOrd = OrdinalOrMinusOne(dr, nameColumn);
+                    int modOrd = OrdinalOrMinusOne(dr, "ModifiedTime");
+                    while (dr.Read())
                     {
-                        prunedTable.Children.Add(child);
+                        var name = GetStringOrNull(dr, nameOrd);
+                        if (string.IsNullOrEmpty(name)) continue;
+                        list.Add(new ShowTreeNode(name, objectType, null, GetDateTimeOrNull(dr, modOrd)));
                     }
-                    result.Add(prunedTable);
                 }
             }
-
-            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(BuildMetadataTimestampTree), $"end - max={max:o}, {result.Count} table(s)");
-            return result;
+            catch (Exception ex) { LogTimestampDmvWarning(dmv, ex); }
+            return list;
         }
+
+        /// <summary>Builds a "From[Column] &lt;- To[Column]" relationship label, or null when it cannot be resolved.</summary>
+        private static string RelationshipLabel(AdomdDataReader dr, int fromTableOrd, int fromColOrd, int toTableOrd, int toColOrd,
+            Dictionary<string, string> tableNames, Dictionary<string, string> columnNames)
+        {
+            var fromTableId = GetStringOrNull(dr, fromTableOrd);
+            var toTableId = GetStringOrNull(dr, toTableOrd);
+            if (string.IsNullOrEmpty(fromTableId) || string.IsNullOrEmpty(toTableId)) return null;
+            if (!tableNames.TryGetValue(fromTableId, out var fromTable) || string.IsNullOrEmpty(fromTable)) return null;
+            if (!tableNames.TryGetValue(toTableId, out var toTable) || string.IsNullOrEmpty(toTable)) return null;
+            columnNames.TryGetValue(GetStringOrNull(dr, fromColOrd) ?? string.Empty, out var fromColumn);
+            columnNames.TryGetValue(GetStringOrNull(dr, toColOrd) ?? string.Empty, out var toColumn);
+            return $"{fromTable}[{fromColumn}] <- {toTable}[{toColumn}]";
+        }
+
+        /// <summary>Creates a folder (grouping) node holding the given items, sorted by name.</summary>
+        internal static ShowTreeNode MakeFolder(string label, List<ShowTreeNode> items)
+        {
+            var folder = new ShowTreeNode(label, string.Empty, null, null, isFolder: true);
+            items.Sort((x, y) => string.Compare(x.Name, y.Name, StringComparison.OrdinalIgnoreCase));
+            foreach (var item in items) folder.Children.Add(item);
+            return folder;
+        }
+
+        /// <summary>Prefers the StructureModifiedTime over the ModifiedTime when both are present.</summary>
+        internal static DateTime? PreferStructure(DateTime? modified, DateTime? structureModified)
+            => structureModified.HasValue ? structureModified : modified;
+
+        /// <summary>True for nodes that represent a real model object (not a folder or the model root).</summary>
+        internal static bool IsRealObject(ShowTreeNode node) => !node.IsFolder && node.ObjectType != "MODEL";
+
+        /// <summary>Recursively sets MaxUpdateUtc (most-recent change among descendants) and DaysSinceChange
+        /// (whole days since the node's effective change - its own timestamp rolled up with its descendants').
+        /// Returns the subtree's effective most-recent change.</summary>
+        internal static DateTime? ComputeRollups(ShowTreeNode node, DateTime nowUtc)
+        {
+            DateTime? childMax = null;
+            foreach (var child in node.Children)
+            {
+                childMax = MaxDate(childMax, ComputeRollups(child, nowUtc));
+            }
+            node.MaxUpdateUtc = childMax;
+            var effective = MaxDate(node.LastModifiedUtc, childMax);
+            node.DaysSinceChange = effective.HasValue
+                ? (int?)Math.Max(0, (int)Math.Floor((nowUtc - effective.Value).TotalDays))
+                : null;
+            return effective;
+        }
+
+        /// <summary>Finds the maximum timestamp across all real objects (tables + leaves) in the subtree.</summary>
+        internal static void CollectMaxObjectTimestamp(ShowTreeNode node, ref DateTime? max)
+        {
+            if (IsRealObject(node) && node.LastModifiedUtc.HasValue) max = MaxDate(max, node.LastModifiedUtc);
+            foreach (var child in node.Children) CollectMaxObjectTimestamp(child, ref max);
+        }
+
+        /// <summary>Prunes the subtree in place, keeping only real objects at <paramref name="max"/> and the
+        /// folders/tables enclosing them. Returns true when the node should be kept.</summary>
+        internal static bool PruneToMax(ShowTreeNode node, DateTime max)
+        {
+            for (int i = node.Children.Count - 1; i >= 0; i--)
+            {
+                if (!PruneToMax(node.Children[i], max)) node.Children.RemoveAt(i);
+            }
+            bool selfMatch = IsRealObject(node) && node.LastModifiedUtc.HasValue && node.LastModifiedUtc.Value == max;
+            return selfMatch || node.Children.Count > 0;
+        }
+
+        /// <summary>Logs (but does not throw on) an error reading one of the timestamp DMVs.</summary>
+        private static void LogTimestampDmvWarning(string dmv, Exception ex)
+            => Log.Warning(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(BuildMetadataTimestampTree), $"error reading {dmv} - skipped");
 
         /// <summary>Builds a stable identity key for a tree node used to guard against cycles.</summary>
         private static string NodeIdentity(string objectType, string tableName, string name)
