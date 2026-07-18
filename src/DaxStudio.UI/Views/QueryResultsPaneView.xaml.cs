@@ -41,12 +41,30 @@ namespace DaxStudio.UI.Views
 
         private void ApplyTreeColumnThemeBrushes()
         {
-            if (ShowTree == null) return;
             if (!(TryFindResource("Theme.Brush.Default.Fore") is Brush lineStroke)) return;
 
-            foreach (var column in ShowTree.Columns.OfType<TreeColumn>())
+            // The SHOW tree-grid is now hosted inside a results tab DataTemplate (there may be zero,
+            // one, or several realised instances), so we re-apply the brush to every TreeGrid currently
+            // in the visual tree rather than a single named element.
+            foreach (var tree in FindVisualChildren<TreeGrid>(this))
             {
-                column.LineStroke = lineStroke;
+                foreach (var column in tree.Columns.OfType<TreeColumn>())
+                {
+                    column.LineStroke = lineStroke;
+                }
+            }
+        }
+
+        private static IEnumerable<T> FindVisualChildren<T>(DependencyObject parent) where T : DependencyObject
+        {
+            if (parent == null) yield break;
+            int count = VisualTreeHelper.GetChildrenCount(parent);
+            for (int i = 0; i < count; i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+                if (child is T typed) yield return typed;
+                foreach (var descendant in FindVisualChildren<T>(child))
+                    yield return descendant;
             }
         }
     }

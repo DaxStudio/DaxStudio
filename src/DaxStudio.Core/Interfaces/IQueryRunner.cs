@@ -43,9 +43,10 @@ namespace DaxStudio.Core.Interfaces
         void ClearQueryResults();
 
         /// <summary>
-        /// Displays the tree-grid produced by a Comment Script <c>--&gt; SHOW</c> command
-        /// (DEPENDENCIES / LAST_UPDATED / MAX_UPDATED) in the Results pane.
+        /// Populates the Results pane with an ordered, interspersed set of tabs - a mix of query-result
+        /// data grids and the tree-grids produced by Comment Script <c>--&gt; SHOW</c> commands
+        /// (DEPENDENCIES / LAST_UPDATED / MAX_UPDATED) - preserving batch execution order.
         /// </summary>
-        void DisplayShowTree(IList<DaxStudio.Core.Model.ShowTreeNode> roots, DaxStudio.Parsers.CommentScript.ShowType showType);
+        void SetResultTabs(IList<DaxStudio.Core.Model.ResultTabDescriptor> tabs);
     }
 }

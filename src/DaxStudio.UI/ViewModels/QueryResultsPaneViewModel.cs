@@ -83,13 +83,79 @@ namespace DaxStudio.UI.ViewModels
             {
                 _resultsDataSet?.Dispose();
                 _resultsDataSet = value;
-                ShowResultsTable = true;
-                NotifyOfPropertyChange(() => Tables);
-                ShowResultsTable = _resultsDataSet.Tables.Count > 0;
+                // Rebuild the visible tabs to contain one data-grid tab per result table. This is the
+                // classic / back-compat path (e.g. a cancelled query resetting to an empty DataSet);
+                // the richer interspersed path (data + SHOW tabs) goes through SetResultTabs.
+                RebuildDataTabsFromDataSet();
+                ShowResultsTable = _resultTabs.Count > 0;
                 SelectedTableIndex = 0;
                 NotifyOfPropertyChange(() => SelectedTableIndex);
             }
         }
+
+        /// <summary>The heterogeneous set of tabs shown in the Results TabControl: query-result data
+        /// grids and Comment Script <c>--&gt; SHOW</c> tree-grids interspersed in execution order.</summary>
+        private readonly BindableCollection<ResultTabViewModel> _resultTabs = new BindableCollection<ResultTabViewModel>();
+        public BindableCollection<ResultTabViewModel> ResultTabs => _resultTabs;
+
+        private void RebuildDataTabsFromDataSet()
+        {
+            Execute.OnUIThread(() =>
+            {
+                _resultTabs.Clear();
+                if (_resultsDataSet != null)
+                {
+                    foreach (DataTable table in _resultsDataSet.Tables)
+                    {
+                        _resultTabs.Add(new DataTableResultTab(table));
+                    }
+                }
+                NotifyOfPropertyChange(() => Tables);
+                NotifyOfPropertyChange(() => ShowResultsMessage);
+            });
+        }
+
+        /// <summary>
+        /// Populates the Results pane with an ordered set of tabs - a mix of query-result data grids
+        /// and Comment Script <c>--&gt; SHOW</c> tree-grids - preserving batch execution order. This
+        /// replaces the previous approach of assigning <see cref="ResultsDataSet"/> and separately
+        /// overlaying a single SHOW tree.
+        /// </summary>
+        public void SetResultTabs(IList<DaxStudio.Core.Model.ResultTabDescriptor> tabs)
+        {
+            Execute.OnUIThread(() =>
+            {
+                // The DataSet is still kept in sync (row-counts, exports and other consumers read it)
+                // and holds only the query-result tables in their execution order.
+                _resultsDataSet?.Dispose();
+                _resultsDataSet = new DataSet();
+
+                _resultTabs.Clear();
+                if (tabs != null)
+                {
+                    foreach (var tab in tabs)
+                    {
+                        if (tab.IsShowTree)
+                        {
+                            _resultTabs.Add(new ShowTreeResultTab(tab.ShowTreeRoots, tab.ShowType));
+                        }
+                        else if (tab.Table != null)
+                        {
+                            if (tab.Table.DataSet != null) tab.Table.DataSet.Tables.Remove(tab.Table);
+                            _resultsDataSet.Tables.Add(tab.Table);
+                            _resultTabs.Add(new DataTableResultTab(tab.Table));
+                        }
+                    }
+                }
+
+                ShowResultsTable = _resultTabs.Count > 0;
+                NotifyOfPropertyChange(() => Tables);
+                SelectedTableIndex = 0;
+                NotifyOfPropertyChange(() => SelectedTableIndex);
+                NotifyOfPropertyChange(() => ShowResultsMessage);
+            });
+        }
+
         private int _selectedTabIndex = -1;
         public int SelectedTableIndex
         {
@@ -97,7 +163,11 @@ namespace DaxStudio.UI.ViewModels
             set
             {
                 _selectedTabIndex = value;
-                if (_document != null && value >= 0 && ResultsDataSet != null && ResultsDataSet.Tables.Count > 0) _document.RowCount = ResultsDataSet.Tables[value].Rows.Count;
+                if (_document != null && value >= 0 && value < _resultTabs.Count)
+                {
+                    // a SHOW tree tab has no row data, so it reports a zero row-count
+                    _document.RowCount = _resultTabs[value] is DataTableResultTab dataTab ? dataTab.RowCount : 0;
+                }
                 NotifyOfPropertyChange(() => SelectedTableIndex);
             }
         }
@@ -156,13 +226,7 @@ namespace DaxStudio.UI.ViewModels
         //private bool _showResultsMessage;
         public bool ShowResultsMessage
         {
-            get { return !ShowResultsTable && !ShowErrorMessage && !IsShowTreeVisible; }
-            //private set
-            //{
-            //    _showResultsMessage = value;
-            //    NotifyOfPropertyChange(() => ShowResultsMessage);
-            //    NotifyOfPropertyChange(() => ShowResultsTable);
-            //}
+            get { return !ShowResultsTable && !ShowErrorMessage && _resultTabs.Count == 0; }
         }
         private OutputTarget _icon;
         public OutputTarget ResultsIcon
@@ -264,8 +328,8 @@ namespace DaxStudio.UI.ViewModels
 
         public Task HandleAsync(QueryStartedEvent message, CancellationToken cancellation)
         {
-            // hide any tree from a previous --> SHOW command when a new query starts
-            HideShowTree();
+            // clear any tabs (including SHOW trees) from a previous query when a new query starts
+            ClearShowTabs();
             // if we are not outputting to the grid it should be cleared
             if (!ShowResultsTable) Clear();
             IsBusy = true;
@@ -541,100 +605,55 @@ namespace DaxStudio.UI.ViewModels
         {
             ResultsDataSet?.Tables?.Clear();
             ShowResultsTable = false;
-            HideShowTree();
+            ClearShowTabs();
             ResultsMessage = "Results Cleared";
         }
 
-        #region SHOW command tree-grid
+        #region SHOW command tabs
 
-        private readonly BindableCollection<ShowTreeNode> _showTreeRoots = new BindableCollection<ShowTreeNode>();
-        /// <summary>Root nodes for the tree-grid rendered by the Comment Script <c>--&gt; SHOW</c> commands.</summary>
-        public BindableCollection<ShowTreeNode> ShowTreeRoots => _showTreeRoots;
-
-        private bool _isShowTreeVisible;
-        /// <summary>When true the SHOW tree-grid overlays (replaces) the normal results grid.</summary>
-        public bool IsShowTreeVisible
-        {
-            get => _isShowTreeVisible;
-            set
-            {
-                _isShowTreeVisible = value;
-                NotifyOfPropertyChange(() => IsShowTreeVisible);
-                NotifyOfPropertyChange(() => ShowResultsMessage);
-            }
-        }
-
-        private string _showTreeTitle = string.Empty;
-        public string ShowTreeTitle
-        {
-            get => _showTreeTitle;
-            set { _showTreeTitle = value; NotifyOfPropertyChange(() => ShowTreeTitle); }
-        }
-
-        private bool _showTreeTimestampColumn;
-        /// <summary>The Last Modified column is only relevant for the LAST_UPDATED / MAX_UPDATED variants.</summary>
-        public bool ShowTreeTimestampColumn
-        {
-            get => _showTreeTimestampColumn;
-            set { _showTreeTimestampColumn = value; NotifyOfPropertyChange(() => ShowTreeTimestampColumn); }
-        }
-
-        private bool _showTreeExtraColumns;
-        /// <summary>The Max Update / Days Since Change columns are only shown for the LAST_UPDATED variant.</summary>
-        public bool ShowTreeExtraColumns
-        {
-            get => _showTreeExtraColumns;
-            set { _showTreeExtraColumns = value; NotifyOfPropertyChange(() => ShowTreeExtraColumns); }
-        }
-
-        // Remembered so the current SHOW result can be persisted into (and restored from) the .daxx package.
-        private DaxStudio.Parsers.CommentScript.ShowType _lastShowType;
-
-        /// <summary>Populates and shows the SHOW tree-grid. Called from the query pipeline via the runner.</summary>
-        public void DisplayShowTree(IList<ShowTreeNode> roots, DaxStudio.Parsers.CommentScript.ShowType showType)
+        /// <summary>
+        /// Appends a Comment Script <c>--&gt; SHOW</c> tree-grid as a new tab at the end of the results.
+        /// SHOW output is now a first-class tab interspersed with the query-result grids rather than a
+        /// full-pane overlay.
+        /// </summary>
+        public void AddShowTreeTab(IList<ShowTreeNode> roots, DaxStudio.Parsers.CommentScript.ShowType showType)
         {
             Execute.OnUIThread(() =>
             {
-                _lastShowType = showType;
-                _showTreeRoots.Clear();
-                if (roots != null) _showTreeRoots.AddRange(roots);
-
-                switch (showType)
-                {
-                    case DaxStudio.Parsers.CommentScript.ShowType.LastUpdated:
-                        ShowTreeTitle = "Last Updated";
-                        ShowTreeTimestampColumn = true;
-                        ShowTreeExtraColumns = true;
-                        break;
-                    case DaxStudio.Parsers.CommentScript.ShowType.MaxUpdated:
-                        ShowTreeTitle = "Most Recently Updated";
-                        ShowTreeTimestampColumn = true;
-                        ShowTreeExtraColumns = false;
-                        break;
-                    case DaxStudio.Parsers.CommentScript.ShowType.Dependencies:
-                    default:
-                        ShowTreeTitle = "Dependencies";
-                        ShowTreeTimestampColumn = false;
-                        ShowTreeExtraColumns = false;
-                        break;
-                }
-
-                IsShowTreeVisible = true;
+                _resultTabs.Add(new ShowTreeResultTab(roots, showType));
+                ShowResultsTable = _resultTabs.Count > 0;
+                NotifyOfPropertyChange(() => ShowResultsMessage);
             });
         }
 
-        /// <summary>Hides the SHOW tree-grid, revealing the normal results grid again. Bound to the Hide button.</summary>
-        public void HideShowTree()
+        /// <summary>Removes any SHOW tree tabs, leaving the query-result data tabs untouched.</summary>
+        private void ClearShowTabs()
         {
-            _showTreeRoots.Clear();
-            IsShowTreeVisible = false;
+            Execute.OnUIThread(() =>
+            {
+                var showTabs = _resultTabs.OfType<ShowTreeResultTab>().ToList();
+                foreach (var tab in showTabs) _resultTabs.Remove(tab);
+                ShowResultsTable = _resultTabs.Count > 0;
+                NotifyOfPropertyChange(() => ShowResultsMessage);
+            });
         }
 
         #endregion
 
-        #region ISaveState - persist only the SHOW tree result into the .daxx package (the normal result grid is never saved)
+        #region ISaveState - persist only the SHOW tree tabs into the .daxx package (query-result grids are never saved)
 
-        /// <summary>Serializable snapshot of the SHOW tree-grid written to the .daxx package.</summary>
+        /// <summary>Serializable snapshot of a single SHOW tree tab written to the .daxx package. The
+        /// <see cref="TabIndex"/> records the tab's position within the interspersed results collection
+        /// so the relative order of multiple SHOW tabs is preserved on reload.</summary>
+        private class ShowTreeTabState
+        {
+            public int TabIndex { get; set; }
+            public DaxStudio.Parsers.CommentScript.ShowType ShowType { get; set; }
+            public List<ShowTreeNode> Roots { get; set; } = new List<ShowTreeNode>();
+        }
+
+        /// <summary>The original (pre-array) schema: a single SHOW tree object. Retained so existing
+        /// .daxx files written before SHOW became a tab can still be read.</summary>
         private class ShowTreeState
         {
             public List<ShowTreeNode> Roots { get; set; } = new List<ShowTreeNode>();
@@ -647,27 +666,69 @@ namespace DaxStudio.UI.ViewModels
 
         public string GetJson()
         {
-            var state = new ShowTreeState
+            var states = new List<ShowTreeTabState>();
+            for (int i = 0; i < _resultTabs.Count; i++)
             {
-                Roots = _showTreeRoots.ToList(),
-                ShowType = _lastShowType
-            };
-            return JsonConvert.SerializeObject(state, Formatting.Indented);
+                if (_resultTabs[i] is ShowTreeResultTab showTab)
+                {
+                    states.Add(new ShowTreeTabState
+                    {
+                        TabIndex = i,
+                        ShowType = showTab.ShowType,
+                        Roots = showTab.ShowTreeRoots.ToList()
+                    });
+                }
+            }
+            return JsonConvert.SerializeObject(states, Formatting.Indented);
         }
 
         public void LoadJson(string json)
         {
             if (string.IsNullOrWhiteSpace(json)) return;
-            var state = JsonConvert.DeserializeObject<ShowTreeState>(json);
-            if (state?.Roots == null || state.Roots.Count == 0) return;
-            DisplayShowTree(state.Roots, state.ShowType);
+
+            List<ShowTreeTabState> states;
+            var trimmed = json.TrimStart();
+            if (trimmed.StartsWith("["))
+            {
+                states = JsonConvert.DeserializeObject<List<ShowTreeTabState>>(json) ?? new List<ShowTreeTabState>();
+            }
+            else
+            {
+                // backward-compat: the original schema persisted a single SHOW tree object
+                var legacy = JsonConvert.DeserializeObject<ShowTreeState>(json);
+                states = new List<ShowTreeTabState>();
+                if (legacy?.Roots != null && legacy.Roots.Count > 0)
+                {
+                    states.Add(new ShowTreeTabState { TabIndex = 0, ShowType = legacy.ShowType, Roots = legacy.Roots });
+                }
+            }
+
+            if (states.Count == 0) return;
+
+            Execute.OnUIThread(() =>
+            {
+                // Only SHOW tabs are persisted, so on reload we recreate them at their saved positions.
+                // The index is clamped because the query-result data tabs they were interspersed with
+                // are never saved (so the collection is shorter than when they were written).
+                foreach (var state in states.OrderBy(s => s.TabIndex))
+                {
+                    var index = state.TabIndex;
+                    if (index < 0 || index > _resultTabs.Count) index = _resultTabs.Count;
+                    _resultTabs.Insert(index, new ShowTreeResultTab(state.Roots, state.ShowType));
+                }
+                ShowResultsTable = _resultTabs.Count > 0;
+                NotifyOfPropertyChange(() => Tables);
+                NotifyOfPropertyChange(() => ShowResultsMessage);
+                SelectedTableIndex = 0;
+                NotifyOfPropertyChange(() => SelectedTableIndex);
+            });
         }
 
         public void SavePackage(Package package)
         {
-            // Only the SHOW tree output is persisted, and only when it is actually being displayed.
-            // The normal query result grid is intentionally never saved into the .daxx file.
-            if (!IsShowTreeVisible || _showTreeRoots.Count == 0) return;
+            // Only the SHOW tree tabs are persisted. The query-result data grids are intentionally
+            // never saved into the .daxx file.
+            if (!_resultTabs.OfType<ShowTreeResultTab>().Any()) return;
             try
             {
                 var uri = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.ShowResults, UriKind.Relative));

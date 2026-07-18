@@ -185,13 +185,24 @@ namespace DaxStudio.CommandLine.UIStubs
             Log.Information(message);
         }
 
-        public void DisplayShowTree(System.Collections.Generic.IList<ShowTreeNode> roots, DaxStudio.Parsers.CommentScript.ShowType showType)
+        public void SetResultTabs(System.Collections.Generic.IList<DaxStudio.Core.Model.ResultTabDescriptor> tabs)
         {
-            Log.Information("SHOW {showType}", showType);
-            if (roots == null) return;
-            foreach (var root in roots)
+            if (tabs == null) return;
+            foreach (var tab in tabs)
             {
-                LogShowTreeNode(root, 0, showType);
+                if (tab.IsShowTree)
+                {
+                    Log.Information("SHOW {showType}", tab.ShowType);
+                    if (tab.ShowTreeRoots == null) continue;
+                    foreach (var root in tab.ShowTreeRoots)
+                    {
+                        LogShowTreeNode(root, 0, tab.ShowType);
+                    }
+                }
+                else if (tab.Table != null)
+                {
+                    Log.Information("Result table '{tableName}' ({rowCount} rows)", tab.Table.TableName, tab.Table.Rows.Count);
+                }
             }
         }
 

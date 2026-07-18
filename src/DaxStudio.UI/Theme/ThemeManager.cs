@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Media;
 using Serilog;
 using DaxStudio.Interfaces.Enums;
+using DaxStudio.UI.Utils;
 
 namespace DaxStudio.UI.Theme
 {
@@ -24,6 +25,16 @@ namespace DaxStudio.UI.Theme
             CurrentTheme = Options.Theme;
             _app = Application.Current;
             SystemEvents.UserPreferenceChanged += SystemEvents_UserPreferenceChanged;
+
+            // Ensure the non-client window frame (title bar / resize border) of every window
+            // follows the active theme as each window is loaded and its handle becomes available.
+            EventManager.RegisterClassHandler(typeof(Window), FrameworkElement.LoadedEvent,
+                new RoutedEventHandler(OnWindowLoaded));
+        }
+
+        private void OnWindowLoaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is Window window) ApplyWindowChrome(window);
         }
 
 
@@ -46,7 +57,39 @@ namespace DaxStudio.UI.Theme
 
             ModernWpf.ThemeManager.Current.ApplicationTheme = theme;
             SetAccent(AccentColor);
+
+            // Update the window frame (title bar / resize border) of any already open windows so
+            // they no longer show a light system border while a dark theme is active.
+            ApplyWindowChromeToAllWindows();
             
+        }
+
+        private bool IsDarkTheme => EffectiveTheme == UITheme.Dark;
+
+        private static readonly Color DefaultDarkBorderColor = Color.FromRgb(0x2D, 0x2D, 0x2D);
+
+        private Color WindowBorderColor
+        {
+            get
+            {
+                if (Application.Current?.Resources["Theme.Brush.Dialog.Border"] is SolidColorBrush brush)
+                    return brush.Color;
+                return DefaultDarkBorderColor;
+            }
+        }
+
+        private void ApplyWindowChrome(Window window)
+        {
+            DwmHelper.ApplyThemeToWindow(window, IsDarkTheme, WindowBorderColor);
+        }
+
+        private void ApplyWindowChromeToAllWindows()
+        {
+            if (Application.Current == null) return;
+            foreach (Window window in Application.Current.Windows)
+            {
+                ApplyWindowChrome(window);
+            }
         }
 
         private void SetAccent(Color accentColor)

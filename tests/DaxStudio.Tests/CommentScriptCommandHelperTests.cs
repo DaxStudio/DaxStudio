@@ -133,5 +133,141 @@ namespace DaxStudio.Tests
         }
 
         #endregion
+
+        #region ShouldClearResultsWhenAlreadyRunning
+
+        [TestMethod]
+        public void ShouldClearResultsWhenAlreadyRunning_ServerTimings()
+        {
+            Assert.IsTrue(CommentScriptCommandHelper.ShouldClearResultsWhenAlreadyRunning(TraceType.ServerTimings));
+        }
+
+        [TestMethod]
+        public void ShouldClearResultsWhenAlreadyRunning_QueryPlan()
+        {
+            Assert.IsTrue(CommentScriptCommandHelper.ShouldClearResultsWhenAlreadyRunning(TraceType.QueryPlan));
+        }
+
+        [TestMethod]
+        public void ShouldClearResultsWhenAlreadyRunning_AllQueries()
+        {
+            Assert.IsFalse(CommentScriptCommandHelper.ShouldClearResultsWhenAlreadyRunning(TraceType.AllQueries));
+        }
+
+        #endregion
+
+        #region TryGetAutoConnectCommand
+
+        private static ScriptBatch BatchWith(params ScriptCommand[] commands)
+        {
+            var batch = new ScriptBatch();
+            batch.Commands.AddRange(commands);
+            return batch;
+        }
+
+        [TestMethod]
+        public void TryGetAutoConnectCommand_FirstBatchHasConnect_ReturnsConnect()
+        {
+            var batches = new List<ScriptBatch>
+            {
+                BatchWith(new ConnectCommand("SERVER", "localhost\\tab19"))
+            };
+
+            var result = CommentScriptCommandHelper.TryGetAutoConnectCommand(batches, out var connect, out var db);
+
+            Assert.IsTrue(result);
+            Assert.IsNotNull(connect);
+            Assert.AreEqual(ConnectionType.SERVER, connect.ConnectionType);
+            Assert.AreEqual("localhost\\tab19", connect.ConnectionName);
+            Assert.IsNull(db);
+        }
+
+        [TestMethod]
+        public void TryGetAutoConnectCommand_ConnectWithUse_ReturnsTargetDatabase()
+        {
+            var batches = new List<ScriptBatch>
+            {
+                BatchWith(
+                    new ConnectCommand("SERVER", "localhost\\tab19"),
+                    new UseCommand("\"Adventure Works\""))
+            };
+
+            var result = CommentScriptCommandHelper.TryGetAutoConnectCommand(batches, out var connect, out var db);
+
+            Assert.IsTrue(result);
+            Assert.IsNotNull(connect);
+            // the database name from the USE command is normalized (quotes/whitespace stripped)
+            Assert.AreEqual("Adventure Works", db);
+        }
+
+        [TestMethod]
+        public void TryGetAutoConnectCommand_MultipleUse_UsesLastUseInBatch()
+        {
+            var batches = new List<ScriptBatch>
+            {
+                BatchWith(
+                    new ConnectCommand("SERVER", "localhost\\tab19"),
+                    new UseCommand("First"),
+                    new UseCommand("Second"))
+            };
+
+            var result = CommentScriptCommandHelper.TryGetAutoConnectCommand(batches, out _, out var db);
+
+            Assert.IsTrue(result);
+            Assert.AreEqual("Second", db);
+        }
+
+        [TestMethod]
+        public void TryGetAutoConnectCommand_NoConnectInFirstBatch_ReturnsFalse()
+        {
+            var batches = new List<ScriptBatch>
+            {
+                BatchWith(new UseCommand("Adventure Works"))
+            };
+
+            var result = CommentScriptCommandHelper.TryGetAutoConnectCommand(batches, out var connect, out var db);
+
+            Assert.IsFalse(result);
+            Assert.IsNull(connect);
+            Assert.IsNull(db);
+        }
+
+        [TestMethod]
+        public void TryGetAutoConnectCommand_ConnectOnlyInLaterBatch_ReturnsFalse()
+        {
+            // Only the first batch is inspected - a CONNECT in a later batch must not auto-connect.
+            var batches = new List<ScriptBatch>
+            {
+                BatchWith(),
+                BatchWith(new ConnectCommand("SERVER", "localhost\\tab19"))
+            };
+
+            var result = CommentScriptCommandHelper.TryGetAutoConnectCommand(batches, out var connect, out _);
+
+            Assert.IsFalse(result);
+            Assert.IsNull(connect);
+        }
+
+        [TestMethod]
+        public void TryGetAutoConnectCommand_EmptyBatchList_ReturnsFalse()
+        {
+            var result = CommentScriptCommandHelper.TryGetAutoConnectCommand(new List<ScriptBatch>(), out var connect, out var db);
+
+            Assert.IsFalse(result);
+            Assert.IsNull(connect);
+            Assert.IsNull(db);
+        }
+
+        [TestMethod]
+        public void TryGetAutoConnectCommand_NullBatches_ReturnsFalse()
+        {
+            var result = CommentScriptCommandHelper.TryGetAutoConnectCommand(null, out var connect, out var db);
+
+            Assert.IsFalse(result);
+            Assert.IsNull(connect);
+            Assert.IsNull(db);
+        }
+
+        #endregion
     }
 }

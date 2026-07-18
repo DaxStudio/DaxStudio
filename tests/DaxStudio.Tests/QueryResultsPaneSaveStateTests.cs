@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using Caliburn.Micro;
 using DaxStudio.Core.Model;
 using DaxStudio.Interfaces;
@@ -46,20 +47,22 @@ namespace DaxStudio.Tests
             table.Children.Add(column);
 
             var source = BuildViewModel();
-            source.DisplayShowTree(new List<ShowTreeNode> { table }, ShowType.Dependencies);
+            source.AddShowTreeTab(new List<ShowTreeNode> { table }, ShowType.Dependencies);
 
             // Act - serialize then deserialize into a fresh view-model
             var json = source.GetJson();
-            Assert.IsFalse(string.IsNullOrWhiteSpace(json), "GetJson should produce content when a tree is displayed");
+            Assert.IsFalse(string.IsNullOrWhiteSpace(json), "GetJson should produce content when a SHOW tab is present");
 
             var target = BuildViewModel();
             target.LoadJson(json);
 
             // Assert - structure matches the original
-            Assert.IsTrue(target.IsShowTreeVisible, "Loading a tree should make it visible");
-            Assert.AreEqual(1, target.ShowTreeRoots.Count, "Should have a single root node");
+            Assert.AreEqual(1, target.ResultTabs.Count, "Loading should recreate a single SHOW tab");
+            var loadedTab = target.ResultTabs[0] as ShowTreeResultTab;
+            Assert.IsNotNull(loadedTab, "The loaded tab should be a SHOW tree tab");
+            Assert.AreEqual(1, loadedTab.ShowTreeRoots.Count, "Should have a single root node");
 
-            var loadedTable = target.ShowTreeRoots[0];
+            var loadedTable = loadedTab.ShowTreeRoots[0];
             Assert.AreEqual("Sales", loadedTable.Name);
             Assert.AreEqual("TABLE", loadedTable.ObjectType);
             Assert.IsNull(loadedTable.TableName);
@@ -71,10 +74,12 @@ namespace DaxStudio.Tests
             Assert.AreEqual("Sales", loadedColumn.TableName);
 
             // Dependencies => no timestamp column, "Dependencies" title
-            Assert.IsFalse(target.ShowTreeTimestampColumn, "Dependencies should not show the timestamp column");
-            Assert.AreEqual("Dependencies", target.ShowTreeTitle);
-            Assert.AreEqual(source.ShowTreeTimestampColumn, target.ShowTreeTimestampColumn);
-            Assert.AreEqual(source.ShowTreeTitle, target.ShowTreeTitle);
+            Assert.IsFalse(loadedTab.ShowTreeTimestampColumn, "Dependencies should not show the timestamp column");
+            Assert.AreEqual("Dependencies", loadedTab.Title);
+
+            var sourceTab = source.ResultTabs[0] as ShowTreeResultTab;
+            Assert.AreEqual(sourceTab.ShowTreeTimestampColumn, loadedTab.ShowTreeTimestampColumn);
+            Assert.AreEqual(sourceTab.Title, loadedTab.Title);
         }
 
         [TestMethod]
@@ -87,7 +92,7 @@ namespace DaxStudio.Tests
             table.Children.Add(partition);
 
             var source = BuildViewModel();
-            source.DisplayShowTree(new List<ShowTreeNode> { table }, ShowType.LastUpdated);
+            source.AddShowTreeTab(new List<ShowTreeNode> { table }, ShowType.LastUpdated);
 
             // Act
             var json = source.GetJson();
@@ -95,10 +100,12 @@ namespace DaxStudio.Tests
             target.LoadJson(json);
 
             // Assert - structure
-            Assert.IsTrue(target.IsShowTreeVisible);
-            Assert.AreEqual(1, target.ShowTreeRoots.Count);
+            Assert.AreEqual(1, target.ResultTabs.Count);
+            var loadedTab = target.ResultTabs[0] as ShowTreeResultTab;
+            Assert.IsNotNull(loadedTab);
+            Assert.AreEqual(1, loadedTab.ShowTreeRoots.Count);
 
-            var loadedTable = target.ShowTreeRoots[0];
+            var loadedTable = loadedTab.ShowTreeRoots[0];
             Assert.AreEqual("Product", loadedTable.Name);
             Assert.AreEqual("TABLE", loadedTable.ObjectType);
             Assert.AreEqual(1, loadedTable.Children.Count);
@@ -113,10 +120,79 @@ namespace DaxStudio.Tests
             Assert.AreEqual(lastModified, loadedPartition.LastModifiedUtc.Value.ToUniversalTime());
 
             // LastUpdated => timestamp column visible with the "Last Updated" title
-            Assert.IsTrue(target.ShowTreeTimestampColumn, "LastUpdated should show the timestamp column");
-            Assert.AreEqual("Last Updated", target.ShowTreeTitle);
-            Assert.AreEqual(source.ShowTreeTimestampColumn, target.ShowTreeTimestampColumn);
-            Assert.AreEqual(source.ShowTreeTitle, target.ShowTreeTitle);
+            Assert.IsTrue(loadedTab.ShowTreeTimestampColumn, "LastUpdated should show the timestamp column");
+            Assert.AreEqual("Last Updated", loadedTab.Title);
+        }
+
+        [TestMethod]
+        public void MultipleShowTabsRoundTripPreservingIndices()
+        {
+            // Arrange - two SHOW tabs interspersed with data tabs (data tabs are never saved)
+            var depRoot = new ShowTreeNode("Sales", "TABLE");
+            var updRoot = new ShowTreeNode("Product", "TABLE", null, new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc));
+
+            var source = BuildViewModel();
+            var tabs = new List<DaxStudio.Core.Model.ResultTabDescriptor>
+            {
+                DaxStudio.Core.Model.ResultTabDescriptor.ForTable(new DataTable("1")),                 // index 0
+                DaxStudio.Core.Model.ResultTabDescriptor.ForShowTree(new List<ShowTreeNode> { depRoot }, ShowType.Dependencies), // index 1
+                DaxStudio.Core.Model.ResultTabDescriptor.ForTable(new DataTable("2")),                 // index 2
+                DaxStudio.Core.Model.ResultTabDescriptor.ForShowTree(new List<ShowTreeNode> { updRoot }, ShowType.MaxUpdated),   // index 3
+            };
+            source.SetResultTabs(tabs);
+            Assert.AreEqual(4, source.ResultTabs.Count, "All four tabs should be present in the source");
+
+            // Act
+            var json = source.GetJson();
+            var target = BuildViewModel();
+            target.LoadJson(json);
+
+            // Assert - only the two SHOW tabs are persisted, in their saved relative order
+            Assert.AreEqual(2, target.ResultTabs.Count, "Only the SHOW tabs are persisted (data grids are never saved)");
+            var first = target.ResultTabs[0] as ShowTreeResultTab;
+            var second = target.ResultTabs[1] as ShowTreeResultTab;
+            Assert.IsNotNull(first);
+            Assert.IsNotNull(second);
+            Assert.AreEqual(ShowType.Dependencies, first.ShowType, "The lower-indexed SHOW tab should load first");
+            Assert.AreEqual(ShowType.MaxUpdated, second.ShowType, "The higher-indexed SHOW tab should load second");
+        }
+
+        [TestMethod]
+        public void InterspersedTabsPreserveExecutionOrder()
+        {
+            // query, SHOW, query => 3 tabs in that order
+            var source = BuildViewModel();
+            var tabs = new List<DaxStudio.Core.Model.ResultTabDescriptor>
+            {
+                DaxStudio.Core.Model.ResultTabDescriptor.ForTable(new DataTable("1")),
+                DaxStudio.Core.Model.ResultTabDescriptor.ForShowTree(new List<ShowTreeNode> { new ShowTreeNode("Sales", "TABLE") }, ShowType.Dependencies),
+                DaxStudio.Core.Model.ResultTabDescriptor.ForTable(new DataTable("2")),
+            };
+
+            source.SetResultTabs(tabs);
+
+            Assert.AreEqual(3, source.ResultTabs.Count);
+            Assert.IsInstanceOfType(source.ResultTabs[0], typeof(DataTableResultTab));
+            Assert.IsInstanceOfType(source.ResultTabs[1], typeof(ShowTreeResultTab));
+            Assert.IsInstanceOfType(source.ResultTabs[2], typeof(DataTableResultTab));
+        }
+
+        [TestMethod]
+        public void OldSingleObjectFormatIsLoadedForBackwardCompatibility()
+        {
+            // The original schema serialized a single { Roots, ShowType } object (not an array).
+            var legacyJson =
+                "{ \"Roots\": [ { \"Name\": \"Sales\", \"ObjectType\": \"TABLE\", \"Children\": [] } ], \"ShowType\": 0 }";
+
+            var target = BuildViewModel();
+            target.LoadJson(legacyJson);
+
+            Assert.AreEqual(1, target.ResultTabs.Count, "The legacy single-object schema should load as one SHOW tab");
+            var tab = target.ResultTabs[0] as ShowTreeResultTab;
+            Assert.IsNotNull(tab);
+            Assert.AreEqual(1, tab.ShowTreeRoots.Count);
+            Assert.AreEqual("Sales", tab.ShowTreeRoots[0].Name);
+            Assert.AreEqual(ShowType.Dependencies, tab.ShowType);
         }
 
         [TestMethod]
@@ -128,8 +204,7 @@ namespace DaxStudio.Tests
             target.LoadJson(string.Empty);
             target.LoadJson("   ");
 
-            Assert.IsFalse(target.IsShowTreeVisible, "Empty/blank JSON should not show a tree");
-            Assert.AreEqual(0, target.ShowTreeRoots.Count);
+            Assert.AreEqual(0, target.ResultTabs.Count, "Empty/blank JSON should not create any tabs");
         }
     }
 }

@@ -39,6 +39,36 @@ namespace DaxStudio.UI.Utils
         }
 
         /// <summary>
+        /// Inspects the first batch of a parsed comment-script document for an auto-connect
+        /// declaration: a <c>--&gt; CONNECT</c> command (and the optional accompanying
+        /// <c>--&gt; USE</c> that selects a database). This is used when opening a file so a file that
+        /// already declares its connection can connect automatically instead of prompting with the
+        /// connection dialog. Returns <c>true</c> when a CONNECT command was found in the first batch,
+        /// with <paramref name="connectCommand"/> set to the first CONNECT and
+        /// <paramref name="targetDatabase"/> set to the normalized database from the last USE in that
+        /// batch (or <c>null</c> when no USE was present). Returns <c>false</c> (with <c>null</c>
+        /// outputs) when there are no batches or the first batch has no CONNECT command.
+        /// </summary>
+        public static bool TryGetAutoConnectCommand(
+            IReadOnlyList<ScriptBatch> batches,
+            out ConnectCommand connectCommand,
+            out string targetDatabase)
+        {
+            connectCommand = null;
+            targetDatabase = null;
+
+            var firstBatch = batches?.FirstOrDefault();
+            if (firstBatch == null) return false;
+
+            connectCommand = firstBatch.Commands.OfType<ConnectCommand>().FirstOrDefault();
+            if (connectCommand == null) return false;
+
+            var useCommand = firstBatch.Commands.OfType<UseCommand>().LastOrDefault();
+            targetDatabase = NormalizeDatabaseName(useCommand?.DatabaseName);
+            return true;
+        }
+
+        /// <summary>
         /// Maps a Comment Script <see cref="TraceType"/> to the concrete trace-watcher ViewModel
         /// type that implements it. Returns <c>null</c> for an unknown trace type.
         /// </summary>
@@ -56,5 +86,14 @@ namespace DaxStudio.UI.Utils
                     return null;
             }
         }
+
+        /// <summary>
+        /// Determines whether a <c>--&gt; TRACE &lt;type&gt; ON</c> command should clear the trace's
+        /// accumulated results when the target trace is already running. This is <c>true</c> for
+        /// every trace type except <see cref="TraceType.AllQueries"/>, whose captured queries are
+        /// intentionally left to accumulate across runs.
+        /// </summary>
+        public static bool ShouldClearResultsWhenAlreadyRunning(TraceType traceType)
+            => traceType != TraceType.AllQueries;
     }
 }

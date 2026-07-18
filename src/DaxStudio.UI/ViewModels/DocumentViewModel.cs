@@ -375,8 +375,13 @@ namespace DaxStudio.UI.ViewModels
                 else if (!_isOfflineVpaxFile)
                 {
                     // VPAX/OVPAX files load an offline connection during file import, so we
-                    // don't want to prompt the user with the connection dialog in that case
-                    await ConnectToServerAsync();
+                    // don't want to prompt the user with the connection dialog in that case.
+                    // If the freshly-loaded file declares its connection via a "--> CONNECT"
+                    // comment-script command, use that to connect instead of prompting; only
+                    // fall back to the normal connection flow when there was no such command
+                    // or it could not be established.
+                    if (!await TryAutoConnectFromCommentScriptAsync())
+                        await ConnectToServerAsync();
                 }
 
 
@@ -970,9 +975,9 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public void DisplayShowTree(IList<DaxStudio.Core.Model.ShowTreeNode> roots, DaxStudio.Parsers.CommentScript.ShowType showType)
+        public void SetResultTabs(IList<DaxStudio.Core.Model.ResultTabDescriptor> tabs)
         {
-            QueryResultsPane.DisplayShowTree(roots, showType);
+            QueryResultsPane.SetResultTabs(tabs);
             QueryResultsPane.Activate();
         }
 
@@ -2406,6 +2411,46 @@ namespace DaxStudio.UI.ViewModels
         }
 
 
+        // Attempts to establish a connection from a "--> CONNECT" (and optional "--> USE") comment-script
+        // command found in the first batch of the freshly-loaded file, so that opening a file that already
+        // declares its connection does not prompt the user with the connection dialog.
+        // Only active when the new (ANTLR) pre-processor is enabled, because that is the only path that
+        // parses the "-->" command lines into ConnectCommand/UseCommand objects.
+        // Returns true when a CONNECT command was present AND the connection was established (the caller
+        // should then skip the connection dialog); false when there was no CONNECT command to act on or the
+        // connection could not be established (the caller should fall back to its normal connection flow).
+        private async Task<bool> TryAutoConnectFromCommentScriptAsync()
+        {
+            // The comment-script commands are only parsed on the new pre-processor path.
+            if (Options == null || !Options.UseNewPreprocessor) return false;
+
+            var text = EditorText;
+            if (string.IsNullOrWhiteSpace(text)) return false;
+
+            CommentScript.ConnectCommand connectCommand;
+            string targetDatabase;
+            try
+            {
+                var queryInfo = new QueryInfo(text, _eventAggregator, Options);
+
+                // Only look at the first batch - the connection for the document is declared up front.
+                if (!Utils.CommentScriptCommandHelper.TryGetAutoConnectCommand(
+                        queryInfo.ScriptBatches, out connectCommand, out targetDatabase))
+                    return false;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(TryAutoConnectFromCommentScriptAsync), ex.Message);
+                return false;
+            }
+
+            // Establish the connection using the shared comment-script connect logic. On failure the error
+            // is surfaced by ExecuteConnectCommandAsync and we return false so the caller falls back to the
+            // connection dialog.
+            return await ExecuteConnectCommandAsync(connectCommand, targetDatabase);
+        }
+
+
         // Processes the comment-script commands that must run before the DAX query (currently
         // "--> CONNECT", "--> USE", "--> CLEARCACHE" and "--> TRACE"). CONNECT is handled first
         // because it changes the connection that the remaining commands and the query run against.
@@ -2532,7 +2577,19 @@ namespace DaxStudio.UI.ViewModels
                 {
                     if (watcher.IsChecked)
                     {
-                        OutputMessage($"--> TRACE {traceCommand.TraceType} ON: trace already running");
+                        // The trace is already running. Clearing the accumulated results (for all
+                        // trace types except AllQueries) ensures this batch's query does not append
+                        // to stale data. On a fresh start the QueryStartedEvent already resets the
+                        // trace, but the already-running (and paused) case needs an explicit clear.
+                        if (Utils.CommentScriptCommandHelper.ShouldClearResultsWhenAlreadyRunning(traceCommand.TraceType))
+                        {
+                            watcher.ClearAll();
+                            OutputMessage($"--> TRACE {traceCommand.TraceType} ON: trace already running (previous results cleared)");
+                        }
+                        else
+                        {
+                            OutputMessage($"--> TRACE {traceCommand.TraceType} ON: trace already running");
+                        }
                     }
                     else
                     {

@@ -110,10 +110,142 @@
         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
               Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter }, Path=ShowResultsTable}">
     
-            <TabControl ItemsSource="{Binding Tables}" 
+            <TabControl ItemsSource="{Binding ResultTabs}" 
                         Template="{DynamicResource ScrollingVerticalTabsTemplate}" 
                         TabStripPlacement="Left" 
+                        ContentTemplateSelector="{DynamicResource ResultTabTemplateSelector}"
                         SelectedIndex="{Binding SelectedTableIndex}">
+                <TabControl.Resources>
+                    <!-- Content template for a query-result data-grid tab -->
+                    <DataTemplate x:Key="DataTableTabTemplate">
+                        <controls:ClipBorder 
+                            BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            >
+                            <DataGrid
+                                x:Name="DefaultView" 
+                                AlternationCount="2"
+                                AlternatingRowBackground="{DynamicResource Theme.Brush.Table.Alternate}"
+                                ItemsSource="{Binding DefaultView}"
+                                ClipboardCopyMode="IncludeHeader"
+                                SelectionMode="Extended"       
+                                SelectionUnit="Cell"
+                                CanUserAddRows="False"
+                                CanUserDeleteRows="False"
+                                IsReadOnly="True"
+                                Background="{DynamicResource Theme.Brush.Content.Back}"
+                                AutoGenerateColumns="False"
+                                FontFamily="{Binding RelativeSource={RelativeSource AncestorType=TabControl}, Path=DataContext.FontFamily}"
+                                cal:Message.Attach="[Event CopyingRowClipboardContent] = [Action CopyingRowClipboardContent($this,$eventArgs)];[Event GotFocus] = [Action GridGotFocus];[Event LostFocus]=[Action GridLostFocus]"
+                                custom:DataGridExtension.Columns="{Binding Converter={StaticResource DynamicDataGridConverter }, Path=DefaultView}"
+                                cal:Action.TargetWithoutContext="{Binding Path=., RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                CanUserSortColumns="True"
+                                RowHeaderWidth="10"
+                                GridLinesVisibility="All" 
+                                >
+                                <DataGrid.ContextMenu>
+                                    <ContextMenu >
+                                        <MenuItem Header="Copy" 
+                                                  InputGestureText="Ctrl+C"
+                                                  cal:Action.TargetWithoutContext="{Binding Source={StaticResource Proxy}, Path=Data}"
+                                                  cal:Message.Attach="CopyData($eventArgs)">
+                                            <MenuItem.Icon>
+                                                <Image Source="{DynamicResource copy_toolbarDrawingImage}"/>
+                                            </MenuItem.Icon>
+                                        </MenuItem>
+                                        <MenuItem Header="Copy with Headers" 
+                                                    InputGestureText="Ctrl+Shift+C"
+                                                    cal:Action.TargetWithoutContext="{Binding Source={StaticResource Proxy}, Path=Data}"
+                                                    cal:Message.Attach="CopyWithHeaders($eventArgs)">
+                                        </MenuItem>
+                                        <Separator/>
+                                        <MenuItem Header="Clear Results"
+                                                  cal:Action.TargetWithoutContext="{Binding Source={StaticResource Proxy}, Path=Data}"
+                                                  cal:Message.Attach="Clear()"/>
+                                    </ContextMenu>
+                                </DataGrid.ContextMenu>
+                            </DataGrid>
+                        </controls:ClipBorder>
+                    </DataTemplate>
+
+                    <!-- Content template for a Comment Script SHOW tree-grid tab -->
+                    <DataTemplate x:Key="ShowTreeTabTemplate">
+                        <controls:ClipBorder 
+                            BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            Background="{DynamicResource Theme.Brush.Content.Back}">
+                            <controls:ClipBorder.Resources>
+                                <!-- per-tab proxy so the (visual-tree-detached) DataGrid columns can reach the tab's column-visibility flags -->
+                                <ctrl:BindingProxy x:Key="TabProxy" Data="{Binding}"/>
+                            </controls:ClipBorder.Resources>
+                            <tg:TreeGrid x:Name="ShowTree"
+                                         RootItems="{Binding ShowTreeRoots}"
+                                         ChildrenBindingPath="Children"
+                                         ExpandOnLoad="True"
+                                         FrozenColumnCount="1"
+                                         AutoGenerateColumns="False"
+                                         IsReadOnly="True"
+                                         CanUserAddRows="False"
+                                         CanUserSortColumns="True"
+                                         HeadersVisibility="Column"
+                                         SelectionMode="Extended"
+                                         EnableRowVirtualization="True"
+                                         AlternatingRowBackground="{DynamicResource Theme.Brush.Table.Alternate}"
+                                         Background="{DynamicResource Theme.Brush.Content.Back}"
+                                         Style="{StaticResource ShowTreeGridStyle}">
+                                <tg:TreeGrid.Columns>
+                                    <tg:TreeColumn Header="Object"
+                                                   Width="320"
+                                                   TextPath="Data.DisplayName"
+                                                   SortMemberPath="Data.Name"
+                                                   ShowExpander="True"
+                                                   LineStroke="{DynamicResource Theme.Brush.Default.Fore}"
+                                                   LineThickness="1"
+                                                   SelectedLineStroke="Red"
+                                                   ReserveExpanderSpace="True">
+                                        <tg:TreeColumn.TextTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding .}"
+                                                           VerticalAlignment="Center"
+                                                           Foreground="{DynamicResource Theme.Brush.Default.Fore}" />
+                                            </DataTemplate>
+                                        </tg:TreeColumn.TextTemplate>
+                                    </tg:TreeColumn>
+                                    <DataGridTextColumn Header="Type"
+                                                        Binding="{Binding Data.ObjectType}"
+                                                        SortMemberPath="Data.ObjectType"
+                                                        Width="110" MinWidth="80" />
+                                    <DataGridTextColumn Header="Table"
+                                                        Binding="{Binding Data.TableName}"
+                                                        SortMemberPath="Data.TableName"
+                                                        Width="180" MinWidth="100" />
+                                    <DataGridTextColumn Header="Last Modified"
+                                                        Binding="{Binding Data.LastModifiedDisplay}"
+                                                        SortMemberPath="Data.LastModifiedUtc"
+                                                        Width="160" MinWidth="120"
+                                                        Visibility="{Binding Data.ShowTreeTimestampColumn, Source={StaticResource TabProxy}, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                    <DataGridTextColumn Header="Max Update"
+                                                        Binding="{Binding Data.MaxUpdateDisplay}"
+                                                        SortMemberPath="Data.MaxUpdateUtc"
+                                                        Width="160" MinWidth="120"
+                                                        Visibility="{Binding Data.ShowTreeExtraColumns, Source={StaticResource TabProxy}, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                    <DataGridTextColumn Header="Days Since Change"
+                                                        Binding="{Binding Data.DaysSinceChangeDisplay}"
+                                                        SortMemberPath="Data.DaysSinceChange"
+                                                        Width="120" MinWidth="90"
+                                                        Visibility="{Binding Data.ShowTreeExtraColumns, Source={StaticResource TabProxy}, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                </tg:TreeGrid.Columns>
+                            </tg:TreeGrid>
+                        </controls:ClipBorder>
+                    </DataTemplate>
+
+                    <sel:ResultTabTemplateSelector x:Key="ResultTabTemplateSelector"
+                                                   DataTableTemplate="{StaticResource DataTableTabTemplate}"
+                                                   ShowTreeTemplate="{StaticResource ShowTreeTabTemplate}" />
+                </TabControl.Resources>
+
                 <!-- Style to hide tabs if only one is present -->
                 <TabControl.ItemContainerStyle>
 
@@ -186,92 +318,9 @@
 
                 </TabControl.ItemContainerStyle>
 
-                <!-- Tab Content (DataGrid) -->
-                <TabControl.ContentTemplate>
-                    <DataTemplate>
-                       
-                        <controls:ClipBorder 
-                            BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
-                            BorderThickness="1"
-                            CornerRadius="4"
-                            >
-
-                            <!-- ItemTemplateSelector="{StaticResource ResultsGridCellTemplateSelector}"     -->
-                         <DataGrid
-                            x:Name="DefaultView" 
-                            AlternationCount="2"
-                            AlternatingRowBackground="{DynamicResource Theme.Brush.Table.Alternate}"
-                            ItemsSource="{Binding DefaultView}"
-                            ClipboardCopyMode="IncludeHeader"
-                            SelectionMode="Extended"       
-                            SelectionUnit="Cell"
-                            CanUserAddRows="False"
-                            CanUserDeleteRows="False"
-                            IsReadOnly="True"
-                            Background="{DynamicResource Theme.Brush.Content.Back}"
-                            AutoGenerateColumns="False"
-                            FontFamily="{Binding RelativeSource={RelativeSource AncestorType=TabControl}, Path=DataContext.FontFamily}"
-                            cal:Message.Attach="[Event CopyingRowClipboardContent] = [Action CopyingRowClipboardContent($this,$eventArgs)];[Event GotFocus] = [Action GridGotFocus];[Event LostFocus]=[Action GridLostFocus]"
-                            custom:DataGridExtension.Columns="{Binding Converter={StaticResource DynamicDataGridConverter }, Path=DefaultView}"
-                            cal:Action.TargetWithoutContext="{Binding Path=., RelativeSource={RelativeSource AncestorType=UserControl}}"
-                            CanUserSortColumns="True"
-                            RowHeaderWidth="10"
-                            GridLinesVisibility="All" 
-                            >
-                                    <!--<i:Interaction.Triggers>
-                                        <i:EventTrigger EventName="CopyingRowClipboardContent">
-                                            <cal:Action.TargetWithoutContext>
-                                                <cal:ActionMessage  MethodName="$dataContext.CopyingRowClipboardContent"/>
-                                            </cal:Action.TargetWithoutContext>
-                                        </i:EventTrigger>
-                                    </i:Interaction.Triggers>-->
-                                    <!-- cal:Message.Attach="[Event MouseDoubleClick] = [Action ResizeGridColumns($source, $eventArgs)]
-                                        , [Event CopyingRowClipboardContent] = [Action CopyingRowClipboardContent($source, $eventArgs)]"-->
-                            <!--<DataGrid.Style>
-                                <Style BasedOn="{StaticResource MahApps.Styles.DataGrid}" TargetType="{x:Type DataGrid}">
-                                    <Setter Property="AlternatingRowBackground" Value="{DynamicResource MahApps.Brushes.Gray8}" />
-                                </Style>
-                            </DataGrid.Style>-->
-                            <!--<DataGrid.AlternatingRowBackground>
-                                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                                    <GradientStop Offset="1" Color="#f2f2f2"/>
-                                    <GradientStop Color="#f7f7f7"/>
-                                </LinearGradientBrush>
-                            </DataGrid.AlternatingRowBackground>
-                            <DataGrid.ColumnHeaderStyle>
-                                <Style TargetType="{x:Type DataGridColumnHeader}">
-                                    <Setter Property="FontWeight" Value="SemiBold" />
-                                </Style>
-                            </DataGrid.ColumnHeaderStyle>-->
-                            <DataGrid.ContextMenu>
-                                <ContextMenu >
-                                    <MenuItem Header="Copy" 
-                                              InputGestureText="Ctrl+C"
-                                              cal:Action.TargetWithoutContext="{Binding Source={StaticResource Proxy}, Path=Data}"
-                                              cal:Message.Attach="CopyData($eventArgs)">
-                                        <MenuItem.Icon>
-                                            <Image Source="{DynamicResource copy_toolbarDrawingImage}"/>
-                                        </MenuItem.Icon>
-                                    </MenuItem>
-                                    <MenuItem Header="Copy with Headers" 
-                                                InputGestureText="Ctrl+Shift+C"
-                                                cal:Action.TargetWithoutContext="{Binding Source={StaticResource Proxy}, Path=Data}"
-                                                cal:Message.Attach="CopyWithHeaders($eventArgs)">
-                                                
-                                    </MenuItem>
-                                            <Separator/>
-                                            <MenuItem Header="Clear Results"
-                                                      cal:Action.TargetWithoutContext="{Binding Source={StaticResource Proxy}, Path=Data}"
-                                                cal:Message.Attach="Clear()"/>
-                                        </ContextMenu>
-                            </DataGrid.ContextMenu>
-                        </DataGrid>
-                        </controls:ClipBorder>
-                    </DataTemplate>
-                </TabControl.ContentTemplate>
                 <TabControl.ItemTemplate>
                     <DataTemplate>
-                        <TextBlock Text="{Binding TableName}" FontWeight="DemiBold" Margin="12 0" Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                        <TextBlock Text="{Binding Title}" FontWeight="DemiBold" Margin="12 0" Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
                     </DataTemplate>
                 </TabControl.ItemTemplate>
             </TabControl>
@@ -279,93 +328,6 @@
             
 
         </Grid>
-        </ctrl:ClipBorder>
-
-        <!-- SHOW command tree-grid (overlays the results grid when a SHOW comment-script command is run) -->
-        <ctrl:ClipBorder Style="{StaticResource BusyBlur}"
-                         Background="{DynamicResource Theme.Brush.Content.Back}"
-                         Visibility="{Binding IsShowTreeVisible, Converter={StaticResource BoolToVisibilityConverter}}">
-            <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-
-                <!-- Header: title + hide/close button -->
-                <DockPanel Grid.Row="0" Margin="4 2 4 4" LastChildFill="False">
-                    <TextBlock DockPanel.Dock="Left"
-                               Text="{Binding ShowTreeTitle}"
-                               FontWeight="SemiBold"
-                               VerticalAlignment="Center"
-                               Foreground="{DynamicResource Theme.Brush.Default.Fore}" />
-                    <Button DockPanel.Dock="Right"
-                            x:Name="HideShowTree"
-                            Content="Hide"
-                            Padding="8 1"
-                            ToolTip="Hide the tree and return to the query results grid" />
-                </DockPanel>
-
-                <tg:TreeGrid Grid.Row="1"
-                             x:Name="ShowTree"
-                             RootItems="{Binding ShowTreeRoots}"
-                             ChildrenBindingPath="Children"
-                             ExpandOnLoad="True"
-                             FrozenColumnCount="1"
-                             AutoGenerateColumns="False"
-                             IsReadOnly="True"
-                             CanUserAddRows="False"
-                             CanUserSortColumns="True"
-                             HeadersVisibility="Column"
-                             SelectionMode="Extended"
-                             EnableRowVirtualization="True"
-                             AlternatingRowBackground="{DynamicResource Theme.Brush.Table.Alternate}"
-                             Background="{DynamicResource Theme.Brush.Content.Back}"
-                             Style="{StaticResource ShowTreeGridStyle}">
-                    <tg:TreeGrid.Columns>
-                        <tg:TreeColumn Header="Object"
-                                       Width="320"
-                                       TextPath="Data.DisplayName"
-                                       SortMemberPath="Data.Name"
-                                       ShowExpander="True"
-                                       LineStroke="{DynamicResource Theme.Brush.Default.Fore}"
-                                       LineThickness="1"
-                                       SelectedLineStroke="Red"
-
-                                       ReserveExpanderSpace="True">
-                            <tg:TreeColumn.TextTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding .}"
-                                               VerticalAlignment="Center"
-                                               Foreground="{DynamicResource Theme.Brush.Default.Fore}" />
-                                </DataTemplate>
-                            </tg:TreeColumn.TextTemplate>
-                        </tg:TreeColumn>
-                        <DataGridTextColumn Header="Type"
-                                            Binding="{Binding Data.ObjectType}"
-                                            SortMemberPath="Data.ObjectType"
-                                            Width="110" MinWidth="80" />
-                        <DataGridTextColumn Header="Table"
-                                            Binding="{Binding Data.TableName}"
-                                            SortMemberPath="Data.TableName"
-                                            Width="180" MinWidth="100" />
-                        <DataGridTextColumn Header="Last Modified"
-                                            Binding="{Binding Data.LastModifiedDisplay}"
-                                            SortMemberPath="Data.LastModifiedUtc"
-                                            Width="160" MinWidth="120"
-                                            Visibility="{Binding Data.ShowTreeTimestampColumn, Source={StaticResource Proxy}, Converter={StaticResource BoolToVisibilityConverter}}" />
-                        <DataGridTextColumn Header="Max Update"
-                                            Binding="{Binding Data.MaxUpdateDisplay}"
-                                            SortMemberPath="Data.MaxUpdateUtc"
-                                            Width="160" MinWidth="120"
-                                            Visibility="{Binding Data.ShowTreeExtraColumns, Source={StaticResource Proxy}, Converter={StaticResource BoolToVisibilityConverter}}" />
-                        <DataGridTextColumn Header="Days Since Change"
-                                            Binding="{Binding Data.DaysSinceChangeDisplay}"
-                                            SortMemberPath="Data.DaysSinceChange"
-                                            Width="120" MinWidth="90"
-                                            Visibility="{Binding Data.ShowTreeExtraColumns, Source={StaticResource Proxy}, Converter={StaticResource BoolToVisibilityConverter}}" />
-                    </tg:TreeGrid.Columns>
-                </tg:TreeGrid>
-            </Grid>
         </ctrl:ClipBorder>
 
         <!-- Results Message -->
