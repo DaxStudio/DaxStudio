@@ -14,14 +14,26 @@ namespace DaxStudio.Parsers.Dax
         /// <summary>The marker that introduces a comment-script command line.</summary>
         public const string Marker = "-->";
 
+        /// <summary>
+        /// Sentinel <see cref="CompletionItem.InsertText"/> used by the "&lt;from Results&gt;"
+        /// completion offered after <c>--&gt; ASSERT TABLE</c>. The editor layer detects this marker
+        /// and, instead of inserting the literal text, generates an assertion table block from the
+        /// current query results.
+        /// </summary>
+        public const string FromResultsInsertText = "\u0001FROM_RESULTS";
+
+        /// <summary>The label shown for the "insert from current results" table-assertion helper.</summary>
+        public const string FromResultsLabel = "<from Results>";
+
         private static readonly (string Keyword, string Description)[] TopLevelCommands =
         {
             ("CONNECT",   "Connect to a server, Power BI Desktop (PBIX) or SSDT instance"),
             ("USE",       "Switch to a different database/model on the current connection"),
             ("PARAMETER", "Declare a query parameter (PARAMETER [type] @name = value)"),
             ("OUTPUT",    "Send query results to a CSV, XLSX or JSON file"),
-            ("TEST",      "Run a performance test (TEST PERFORMANCE \"name\")"),
+            ("TEST",      "Group the following asserts into a named test (TEST \"name\")"),
             ("ASSERT",    "Assert a condition on the results or timings"),
+            ("RESULTS",   "Show or hide the results grid (RESULTS ON|OFF)"),
             ("CLEARCACHE", "Clear the database cache"),
             ("TRACE",     "Turn a trace on or off"),
             ("METRICS",   "Export or view VertiPaq Analyzer metrics"),
@@ -44,9 +56,10 @@ namespace DaxStudio.Parsers.Dax
                     ("XLSX", "Output to an Excel file"),
                     ("JSON", "Output to a JSON file"),
                 },
-                ["TEST"] = new[]
+                ["RESULTS"] = new[]
                 {
-                    ("PERFORMANCE", "Run a performance test"),
+                    ("ON",  "Show the results grid"),
+                    ("OFF", "Hide the results grid"),
                 },
                 ["ASSERT"] = new[]
                 {
@@ -130,6 +143,27 @@ namespace DaxStudio.Parsers.Dax
             {
                 var prefix = tokens.Length == 3 ? tokens[2] : string.Empty;
                 return Filter(OnOff, prefix);
+            }
+
+            // "<from Results>" helper offered at the point where ASSERT TABLE rows begin -
+            // i.e. right after "--> ASSERT TABLE " or after an optional UNORDERED/PARTIAL modifier.
+            if (string.Equals(command, "ASSERT", StringComparison.OrdinalIgnoreCase)
+                && tokens.Length >= 2
+                && string.Equals(tokens[1], "TABLE", StringComparison.OrdinalIgnoreCase))
+            {
+                var afterTable = tokens.Length == 2 && endsWithSpace;
+                var afterModifier = tokens.Length == 3 && endsWithSpace
+                    && (string.Equals(tokens[2], "UNORDERED", StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(tokens[2], "PARTIAL", StringComparison.OrdinalIgnoreCase));
+                if (afterTable || afterModifier)
+                {
+                    return new List<CompletionItem>
+                    {
+                        new CompletionItem(FromResultsLabel, CompletionItemKind.Keyword,
+                            "Insert an assertion table built from the current query results",
+                            FromResultsInsertText)
+                    };
+                }
             }
 
             return new List<CompletionItem>();

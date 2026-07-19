@@ -87,6 +87,7 @@ namespace DaxStudio.UI.ViewModels
     [Export(typeof(DocumentViewModel))]
     public class DocumentViewModel : Screen
         , IDaxDocument
+        , IResultsTableProvider
         , IHaveTraceWatchers
         , IHandle<ApplicationActivatedEvent>
         , IHandle<CancelConnectEvent>
@@ -123,6 +124,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<SetFocusEvent>
         , IHandle<ToggleCommentEvent>
         , IHandle<PasteServerTimingsEvent>
+        , IHandle<DaxStudio.Core.Events.QueryTraceCompletedEvent>
         , IDropTarget
         , IQueryRunner
         , IQueryTextProvider
@@ -254,6 +256,7 @@ namespace DaxStudio.UI.ViewModels
             Dispatcher.Yield(DispatcherPriority.Background);
             OutputPane = IoC.Get<OutputPaneViewModel>();// (_eventAggregator);
             QueryResultsPane = IoC.Get<QueryResultsPaneViewModel>();//(_eventAggregator,_host);
+            TestResultsPane = IoC.Get<TestResultsPaneViewModel>();
 
             MeasureExpressionEditor = new MeasureExpressionEditorViewModel(this, _eventAggregator, Options);
 
@@ -357,6 +360,11 @@ namespace DaxStudio.UI.ViewModels
                     _editor.OnPasting += OnPasting;
                     _editor.OnCopying += OnCopying;
                     RemoveShiftEnterBinding(_editor.TextArea.InputBindings);
+
+                    // Discover comment-script tests in the initial text and keep them in sync (debounced)
+                    // as the user types so the Test Results pane shows them in a pending state.
+                    _testDiscoveryTimer.Tick += OnTestDiscoveryTimerTick;
+                    ScheduleTestDiscovery();
                 }
                 switch (State)
                 {
@@ -744,6 +752,7 @@ namespace DaxStudio.UI.ViewModels
                 LastModifiedUtcTime = DateTime.UtcNow;
                 NotifyOfPropertyChange(() => IsDirty);
                 NotifyOfPropertyChange(() => DisplayName);
+                ScheduleTestDiscovery();
             }
             catch (Exception ex)
             {
@@ -841,6 +850,7 @@ namespace DaxStudio.UI.ViewModels
                 DmvPane,
                 OutputPane,
                 QueryResultsPane,
+                TestResultsPane,
                 QueryHistoryPane,
                 QueryBuilder
             }));
@@ -975,6 +985,19 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public void ActivateTestResults()
+        {
+            if (!TraceWatchers.Any(tw => tw.IsChecked))
+            {
+                // only activate if no trace watchers are active
+                // otherwise we assume that the user will want to keep the
+                // trace active. Visibility is controlled by the run path
+                // (ProcessCommentScriptPostQueryCommandsAsync) so a pane the
+                // user has closed is not force-reopened here.
+                TestResultsPane.Activate();
+            }
+        }
+
         public void SetResultTabs(IList<DaxStudio.Core.Model.ResultTabDescriptor> tabs)
         {
             QueryResultsPane.SetResultTabs(tabs);
@@ -1055,6 +1078,12 @@ namespace DaxStudio.UI.ViewModels
                 UnsubscribeAll();
 
                 StopFoldingManager();
+
+                if (close)
+                {
+                    _testDiscoveryTimer.Stop();
+                    _testDiscoveryTimer.Tick -= OnTestDiscoveryTimerTick;
+                }
 
                 IsClosing = close;
                 if (close)
@@ -1214,6 +1243,15 @@ namespace DaxStudio.UI.ViewModels
         }
 
         DispatcherTimer foldingUpdateTimer = new DispatcherTimer();
+        // Debounces re-parsing of the editor text to discover comment-script tests ("--> TEST" /
+        // "--> ASSERT") so the Test Results pane can show them in a pending state while the user types.
+        private readonly DispatcherTimer _testDiscoveryTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(400) };
+
+        // Armed (before a query runs) when the script contains performance assertions and the Server
+        // Timings trace is active. Completed by the QueryTraceCompletedEvent handler once the trace
+        // has finished aggregating, so the post-query assertion step can wait for the metrics.
+        private TaskCompletionSource<bool> _serverTimingsAssertionTcs;
+
         private Model.IndentFoldingStrategy foldingStrategy;
         private FoldingManager foldingManager;
         private void UpdateFoldings()
@@ -1633,6 +1671,7 @@ namespace DaxStudio.UI.ViewModels
         public OutputPaneViewModel OutputPane { get; set; }
 
         public QueryResultsPaneViewModel QueryResultsPane { get; set; }
+        public TestResultsPaneViewModel TestResultsPane { get; set; }
         public MeasureExpressionEditorViewModel MeasureExpressionEditor { get; private set; }
         public QueryInfo QueryInfo { get; set; }
 
@@ -2233,6 +2272,12 @@ namespace DaxStudio.UI.ViewModels
 
         private async Task RunQueryInternalAsync(RunQueryEvent message)
         {
+            // Whether the result grid should be displayed for this run. Resolved from the
+            // comment-script "--> RESULTS ON|OFF" directives / presence of ASSERT commands once the
+            // query has been pre-processed (which is when QueryInfo.ScriptBatches is built), then
+            // applied after the assertion engine has consumed the result data.
+            bool showResultsGrid = true;
+
             using (var msg = NewStatusBarMessage("Running Query..."))
             {
 
@@ -2345,7 +2390,25 @@ namespace DaxStudio.UI.ViewModels
                         }
 
                         Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RunQueryInternalAsync), "Sending QueryStarted Event");
+
+                        // If the script has performance assertions and the Server Timings trace is
+                        // active, arm a completion signal now (before the query runs) so the
+                        // post-query assertion step can wait for the trace to finish aggregating its
+                        // metrics (which happens asynchronously after the query returns) before
+                        // reading them. See HandleAsync(QueryTraceCompletedEvent).
+                        _serverTimingsAssertionTcs =
+                            ScriptHasPerformanceAsserts(message.QueryProvider)
+                            && (TraceWatchers.OfType<ServerTimesViewModel>().FirstOrDefault()?.IsChecked ?? false)
+                                ? new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously)
+                                : null;
+
                         await _eventAggregator.PublishAsync(new QueryStartedEvent());
+
+                        // Now that PreProcessQuery has (re)built QueryInfo.ScriptBatches for the
+                        // current query text, resolve whether the result grid should be shown based
+                        // on the "--> RESULTS ON|OFF" directive / presence of ASSERT commands.
+                        showResultsGrid = Utils.CommentScriptCommandHelper.ResolveResultsGridVisible(
+                            message.QueryProvider?.QueryInfo?.ScriptBatches);
 
                         // Prefer the history text (keeps comment-script "-->" commands visible on the
                         // new pre-processor path); falls back to the executable QueryText otherwise.
@@ -2363,12 +2426,22 @@ namespace DaxStudio.UI.ViewModels
 
                         await message.ResultsTarget.OutputResultsAsync(this, message.QueryProvider, null);
 
+                        await ProcessCommentScriptPostQueryCommandsAsync(message.QueryProvider);
+
                         // if the server times trace watcher is not active then just record client timings
                         if (!TraceWatchers.OfType<ServerTimesViewModel>().First().IsChecked && _currentQueryDetails != null)
                         {
                             _currentQueryDetails.ClientDurationMs = _queryStopWatch?.ElapsedMilliseconds ?? 0;
                             _currentQueryDetails.RowCount = ResultsDataSet?.RowCounts();
                             await _eventAggregator.PublishAsync(_currentQueryDetails);
+                        }
+
+                        // Honor "--> RESULTS OFF" (or the implicit "asserts hide results" default) by
+                        // clearing the grid now that the assertion engine has already read the data.
+                        if (!showResultsGrid)
+                        {
+                            ClearQueryResults();
+                            QueryResultsPane.ResultsMessage = "Results not displayed (--> RESULTS OFF)";
                         }
 
                         QueryCompleted();
@@ -2404,7 +2477,12 @@ namespace DaxStudio.UI.ViewModels
                     IsQueryRunning = false;
                     NotifyOfPropertyChange(() => CanRunQuery);
                     StopTimer();
-                    ActivateResults();
+                    if (showResultsGrid)
+                        ActivateResults();
+                    else if (TestResultsPane.Results.Count > 0)
+                        ActivateTestResults();
+                    else
+                        ActivateOutput();
                 }
 
             }
@@ -2498,10 +2576,202 @@ namespace DaxStudio.UI.ViewModels
             if (traceCommands.Count > 0)
                 await ExecuteTraceCommandsAsync(traceCommands);
 
+            // Performance assertions ("--> ASSERT DURATION|SE_CPU|SE_QUERIES ...") are evaluated
+            // against the Server Timings trace, so auto-start it (if an explicit TRACE command or a
+            // previous run has not already) before the query runs - otherwise the trace would miss
+            // this query's events and every performance assertion would report "metric not captured".
+            if (commands.OfType<CommentScript.AssertCommand>().Any())
+                await EnsureServerTimingsForPerformanceAssertsAsync();
+
             return true;
         }
 
-        // Switches the current database in response to a "--> USE <database>" command (or a USE that
+        // Restarts the debounce timer so test discovery runs a short time after the user stops typing.
+        private void ScheduleTestDiscovery()
+        {
+            if (TestResultsPane == null) return;
+            _testDiscoveryTimer.Stop();
+            _testDiscoveryTimer.Start();
+        }
+
+        private void OnTestDiscoveryTimerTick(object sender, EventArgs e)
+        {
+            _testDiscoveryTimer.Stop();
+            RefreshDiscoveredTests();
+        }
+
+        // Parses the current editor text and shows any discovered comment-script tests ("--> TEST" /
+        // "--> ASSERT [ROWCOUNT|TABLE|...]") in the Test Results pane in a greyed-out "pending" state
+        // (with a clock icon), the way Visual Studio's Test Explorer lists not-yet-run tests. Real
+        // Passed/Failed results from a run are preserved while unrelated text is edited (see
+        // TestResultsPaneViewModel.TryUpdateDiscoveredTests) and only reset back to pending once the
+        // assertions themselves change. This is a no-op unless the new pre-processor is enabled.
+        private void RefreshDiscoveredTests()
+        {
+            try
+            {
+                if (TestResultsPane == null || _editor == null) return;
+                // Don't disturb the pane while a run is populating / has just populated it.
+                if (IsQueryRunning) return;
+                if (Options == null || !Options.UseNewPreprocessor) return;
+
+                var text = _editor.Text;
+
+                // Cheap pre-filter: only parse when the text actually contains a test/assert command,
+                // so ordinary queries never pay the cost of parsing on every keystroke.
+                if (string.IsNullOrEmpty(text)
+                    || text.IndexOf("-->", StringComparison.Ordinal) < 0
+                    || (text.IndexOf("ASSERT", StringComparison.OrdinalIgnoreCase) < 0
+                        && text.IndexOf("TEST", StringComparison.OrdinalIgnoreCase) < 0))
+                {
+                    TestResultsPane.TryUpdateDiscoveredTests(null);
+                    return;
+                }
+
+                // Parse the comment-script commands directly (no event side-effects, unlike QueryInfo,
+                // which would post an Output warning for the partially-typed / invalid DAX that is
+                // normal while editing). The XMLA <Parameters> block is split off first to mirror the
+                // production run path.
+                DaxStudio.Core.Utils.DaxHelper.SplitParametersBlock(text, out var body, out _);
+                var parseResult = DaxStudio.Parsers.PreProcessor.AntlrPreProcessor.Parse(body);
+                var discovered = DaxStudio.Core.Assertions.AssertionEngine.DiscoverTests(parseResult.Batches);
+                TestResultsPane.TryUpdateDiscoveredTests(discovered);
+            }
+            catch (Exception ex)
+            {
+                // Discovery is a best-effort convenience; never let a parse hiccup surface an error.
+                Log.Warning(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RefreshDiscoveredTests), ex.Message);
+            }
+        }
+
+        // Runs the comment-script assertion commands ("--> ASSERT [ROWCOUNT|TABLE|...]") after the
+        // query has produced its results and populates the Test Results pane. The shared,
+        // UI-independent AssertionEngine (DaxStudio.Core.Assertions) does the actual evaluation so
+        // the same logic is used by the dscmd CLI. When a batch has no assert commands the pane is
+        // left untouched.
+        private async Task ProcessCommentScriptPostQueryCommandsAsync(IQueryTextProvider queryProvider)
+        {
+            var batches = queryProvider?.QueryInfo?.ScriptBatches;
+            if (batches == null || batches.Count == 0) return;
+
+            // Only touch the pane when there is at least one assertion to evaluate across all batches.
+            bool HasAsserts(CommentScript.ScriptBatch b) =>
+                b.Commands.OfType<CommentScript.AssertCommand>().Any()
+                || b.Commands.OfType<CommentScript.AssertRowcountCommand>().Any()
+                || b.Commands.OfType<CommentScript.AssertTableCommand>().Any();
+
+            if (!batches.Any(HasAsserts)) return;
+
+            // Performance assertions read their metrics from the Server Timings trace, which finishes
+            // aggregating asynchronously AFTER the query returns. Wait for its completion signal
+            // (armed before the query ran) so the metrics are populated before we evaluate them.
+            if (batches.SelectMany(b => b.Commands).OfType<CommentScript.AssertCommand>().Any())
+                await WaitForServerTimingsAssertionDataAsync();
+
+            TestResultsPane.Clear();
+
+            var perfMetrics = BuildPerformanceMetrics();
+            var results = new List<DaxStudio.Core.Assertions.TestResult>();
+
+            for (int i = 0; i < batches.Count; i++)
+            {
+                var batch = batches[i];
+                if (!HasAsserts(batch)) continue;
+
+                var testName = batch.Commands.OfType<CommentScript.TestCommand>().FirstOrDefault()?.TestName;
+
+                System.Data.DataTable dataTable = null;
+                var tables = ResultsDataSet?.Tables;
+                if (tables != null && tables.Count > 0)
+                {
+                    dataTable = i < tables.Count ? tables[i] : tables[0];
+                }
+
+                var rowCount = dataTable?.Rows.Count ?? 0;
+
+                foreach (var cmd in batch.Commands.OfType<CommentScript.AssertRowcountCommand>())
+                {
+                    results.Add(DaxStudio.Core.Assertions.AssertionEngine.EvaluateRowCount(cmd, rowCount, testName));
+                }
+
+                foreach (var cmd in batch.Commands.OfType<CommentScript.AssertTableCommand>())
+                {
+                    results.Add(DaxStudio.Core.Assertions.AssertionEngine.EvaluateTable(cmd, dataTable, testName));
+                }
+
+                foreach (var cmd in batch.Commands.OfType<CommentScript.AssertCommand>())
+                {
+                    results.Add(DaxStudio.Core.Assertions.AssertionEngine.EvaluatePerformance(cmd, perfMetrics, testName));
+                }
+            }
+
+            if (results.Count == 0) return;
+
+            TestResultsPane.AddResults(results);
+            TestResultsPane.IsVisible = true;
+            ActivateTestResults();
+
+            var passed = results.Count(r => r.Outcome == DaxStudio.Core.Assertions.TestOutcome.Passed);
+            var failed = results.Count(r => r.Outcome == DaxStudio.Core.Assertions.TestOutcome.Failed);
+            var errored = results.Count(r => r.Outcome == DaxStudio.Core.Assertions.TestOutcome.Error);
+            var summary = $"Tests: {passed} passed, {failed} failed, {errored} errors";
+            if (failed > 0 || errored > 0)
+                OutputWarning(summary);
+            else
+                OutputMessage(summary);
+
+            await Task.CompletedTask;
+        }
+
+        // Builds the performance metric dictionary consumed by AssertionEngine.EvaluatePerformance
+        // from the Server Timings trace watcher, when it is active and has captured data. When the
+        // trace is not running an empty dictionary is returned and the engine reports an error for
+        // any performance assertion (metric not captured).
+        private IReadOnlyDictionary<CommentScript.PerformanceProperty, double> BuildPerformanceMetrics()
+        {
+            var metrics = new Dictionary<CommentScript.PerformanceProperty, double>();
+            var serverTimings = TraceWatchers.OfType<ServerTimesViewModel>().FirstOrDefault();
+            if (serverTimings != null && serverTimings.IsChecked && serverTimings.HasData)
+            {
+                metrics[CommentScript.PerformanceProperty.Duration] = serverTimings.TotalDuration;
+                metrics[CommentScript.PerformanceProperty.SE_CPU] = serverTimings.StorageEngineCpu;
+                metrics[CommentScript.PerformanceProperty.SE_QUERIES] = serverTimings.StorageEngineQueryCount;
+            }
+            return metrics;
+        }
+
+        // True when the script contains a performance assertion ("--> ASSERT DURATION|SE_CPU|SE_QUERIES ...").
+        private static bool ScriptHasPerformanceAsserts(IQueryTextProvider queryProvider)
+        {
+            var batches = queryProvider?.QueryInfo?.ScriptBatches;
+            if (batches == null) return false;
+            return batches.SelectMany(b => b.Commands).OfType<CommentScript.AssertCommand>().Any();
+        }
+
+        // Waits for the Server Timings trace to finish aggregating (the QueryTraceCompletedEvent
+        // handler completes the task-completion-source armed before the query ran) so performance
+        // metrics are populated before the assertions read them. Bounded by the trace-startup
+        // timeout; a timeout only warns and the assertions then report the metrics as not captured.
+        private async Task WaitForServerTimingsAssertionDataAsync()
+        {
+            var tcs = _serverTimingsAssertionTcs;
+            if (tcs == null) return;
+
+            var timeoutMs = Math.Max(1, Options.TraceStartupTimeout) * 1000;
+            var completed = await Task.WhenAny(tcs.Task, Task.Delay(timeoutMs));
+            if (completed != tcs.Task)
+                OutputWarning("--> ASSERT: timed out waiting for the Server Timings trace to complete; performance assertions may report metrics as not captured");
+        }
+
+        public Task HandleAsync(DaxStudio.Core.Events.QueryTraceCompletedEvent message, CancellationToken cancellationToken)
+        {
+            // The Server Timings trace has finished aggregating its results (ProcessResults has run,
+            // so metrics such as the SE query count are now populated); release any pending
+            // performance-assertion wait. This is the same completion event the benchmark uses.
+            if (message?.Trace is ServerTimesViewModel)
+                _serverTimingsAssertionTcs?.TrySetResult(true);
+            return Task.CompletedTask;
+        }
         // accompanied a CONNECT to a server we were already connected to). Mirrors changing the
         // database from the metadata pane dropdown. Returns true on success (including when the
         // database is already selected), false if the database could not be selected. When
@@ -2636,6 +2906,41 @@ namespace DaxStudio.UI.ViewModels
             var watcherType = Utils.CommentScriptCommandHelper.GetTraceWatcherType(traceType);
             if (watcherType == null) return null;
             return TraceWatchers.FirstOrDefault(tw => watcherType.IsInstanceOfType(tw));
+        }
+
+        // Ensures the Server Timings trace is running so a script's performance assertions have data
+        // to evaluate against. Does nothing when it is already active (started explicitly via
+        // "--> TRACE ServerTimings ON" or left running from a previous run - a fresh query resets it
+        // via QueryStartedEvent). Newly started, the trace is awaited (up to the configured startup
+        // timeout) so the query does not run before it begins capturing; a trace that fails to start
+        // in time only emits a warning and the query still runs (the assertions will then report the
+        // metrics as not captured).
+        private async Task EnsureServerTimingsForPerformanceAssertsAsync()
+        {
+            var serverTimings = TraceWatchers.OfType<ServerTimesViewModel>().FirstOrDefault();
+            if (serverTimings == null) return;
+            if (serverTimings.IsChecked) return;
+
+            if (!IsConnected)
+            {
+                OutputWarning("--> ASSERT: not connected, unable to start the Server Timings trace required for performance assertions");
+                return;
+            }
+
+            serverTimings.IsChecked = true;
+            OutputMessage("--> ASSERT: Server Timings trace started automatically for performance assertions");
+
+            var sw = Stopwatch.StartNew();
+            var timeoutMs = Options.TraceStartupTimeout * 1000;
+            while (serverTimings.TraceStatus != QueryTrace.Interfaces.QueryTraceStatus.Started
+                   && sw.ElapsedMilliseconds < timeoutMs)
+            {
+                await Task.Delay(200);
+            }
+            sw.Stop();
+
+            if (serverTimings.TraceStatus != QueryTrace.Interfaces.QueryTraceStatus.Started)
+                OutputWarning("--> ASSERT: the Server Timings trace did not start within the timeout period; performance assertions may report metrics as not captured");
         }
 
         // Establishes the connection requested by a "--> CONNECT" command. When databaseName is
@@ -4460,6 +4765,47 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public bool CanPasteAsTableAssertion
+        {
+            get
+            {
+                try
+                {
+                    return System.Windows.Clipboard.ContainsText()
+                        && DaxStudio.Parsers.CommentScript.TableAssertionFormatter.LooksLikeTabDelimited(System.Windows.Clipboard.GetText());
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(CanPasteAsTableAssertion), ex.Message);
+                    return false;
+                }
+            }
+        }
+
+        // Converts tab-delimited clipboard text (e.g. copied from Excel or another grid) into a
+        // "--> ASSERT TABLE" block and inserts it at the caret.
+        public void PasteAsTableAssertion()
+        {
+            try
+            {
+                if (!System.Windows.Clipboard.ContainsText()) return;
+                var clipboardText = System.Windows.Clipboard.GetText();
+                if (!DaxStudio.Parsers.CommentScript.TableAssertionFormatter.LooksLikeTabDelimited(clipboardText))
+                {
+                    OutputWarning("Paste as Table Assertion requires tab-delimited text on the clipboard.");
+                    return;
+                }
+
+                var block = DaxStudio.Parsers.CommentScript.TableAssertionFormatter.FormatTabDelimited(clipboardText, includeHeaderLine: true, includeTypeRow: true);
+                InsertTextAtSelection(block, false, false);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(PasteAsTableAssertion), ex.Message);
+                OutputError($"The following error occurred while pasting as a table assertion: {ex.Message}");
+            }
+        }
+
         public Task HandleAsync(PasteServerTimingsEvent message, CancellationToken cancellationToken)
         {
             GetEditor()?.Paste();
@@ -5938,6 +6284,12 @@ namespace DaxStudio.UI.ViewModels
 
         IConnectionManager IDaxDocument.Connection => Connection;
 
+        /// <summary>
+        /// Returns the <see cref="DataTable"/> backing the current query results, used to build a
+        /// <c>--&gt; ASSERT TABLE</c> block from the live results (see the "&lt;from Results&gt;" completion).
+        /// </summary>
+        public DataTable GetActiveResultsTable() => QueryResultsPane?.ActiveResultsTable;
+
         public bool IsBenchmarkRunning { get; set; }
 
         public void CloseConnection()
@@ -5990,6 +6342,7 @@ namespace DaxStudio.UI.ViewModels
         {
             NotifyOfPropertyChange(nameof(CanLookupDaxGuide));
             NotifyOfPropertyChange(nameof(LookupDaxGuideHeader));
+            NotifyOfPropertyChange(nameof(CanPasteAsTableAssertion));
         }
 
         public bool CanLookupDaxGuide

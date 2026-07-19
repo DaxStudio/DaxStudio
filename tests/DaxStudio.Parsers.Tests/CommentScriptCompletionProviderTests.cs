@@ -60,6 +60,33 @@ namespace DaxStudio.Parsers.Tests
         }
 
         [TestMethod]
+        public void GetCompletions_AfterAssertTable_OffersFromResults()
+        {
+            var items = CommentScriptCompletionProvider.GetCompletions("--> ASSERT TABLE ");
+            var item = items.Single();
+            Assert.AreEqual(CommentScriptCompletionProvider.FromResultsLabel, item.Label);
+            Assert.AreEqual(CommentScriptCompletionProvider.FromResultsInsertText, item.InsertText);
+        }
+
+        [TestMethod]
+        public void GetCompletions_AfterAssertTableModifier_OffersFromResults()
+        {
+            var unordered = CommentScriptCompletionProvider.GetCompletions("--> ASSERT TABLE UNORDERED ");
+            Assert.AreEqual(CommentScriptCompletionProvider.FromResultsLabel, unordered.Single().Label);
+
+            var partial = CommentScriptCompletionProvider.GetCompletions("--> ASSERT TABLE PARTIAL ");
+            Assert.AreEqual(CommentScriptCompletionProvider.FromResultsLabel, partial.Single().Label);
+        }
+
+        [TestMethod]
+        public void GetCompletions_TypingTable_StillOffersTableSubCommand()
+        {
+            var items = CommentScriptCompletionProvider.GetCompletions("--> ASSERT TABLE");
+            var labels = items.Select(i => i.Label).ToList();
+            CollectionAssert.Contains(labels, "TABLE");
+        }
+
+        [TestMethod]
         public void GetCompletions_NonCommentScriptLine_ReturnsEmpty()
         {
             var items = CommentScriptCompletionProvider.GetCompletions("EVALUATE 'Sales'");

@@ -269,5 +269,27 @@ namespace DaxStudio.Tests
 
             Assert.IsTrue(string.IsNullOrEmpty(antlr.PreProcessError), "a valid command must not set PreProcessError");
         }
+
+        [TestMethod]
+        public void ResultsOnCommandIsParsedIntoBatch()
+        {
+            var query = "--> RESULTS ON\nEVALUATE { 1 }\n";
+            var antlr = new QueryInfo(query, _eventAggregator, NewParserOptions());
+
+            var results = antlr.ScriptBatches.SelectMany(b => b.Commands).OfType<ResultsCommand>().ToList();
+            Assert.AreEqual(1, results.Count, "the RESULTS command should be parsed into the batch");
+            Assert.IsTrue(results[0].Enabled, "--> RESULTS ON should set Enabled = true");
+        }
+
+        [TestMethod]
+        public void ResultsOffCommandIsParsedIntoBatch()
+        {
+            var query = "--> RESULTS OFF\nEVALUATE { 1 }\n";
+            var antlr = new QueryInfo(query, _eventAggregator, NewParserOptions());
+
+            var results = antlr.ScriptBatches.SelectMany(b => b.Commands).OfType<ResultsCommand>().ToList();
+            Assert.AreEqual(1, results.Count, "the RESULTS command should be parsed into the batch");
+            Assert.IsFalse(results[0].Enabled, "--> RESULTS OFF should set Enabled = false");
+        }
     }
 }

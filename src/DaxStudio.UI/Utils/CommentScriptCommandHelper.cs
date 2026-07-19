@@ -95,5 +95,32 @@ namespace DaxStudio.UI.Utils
         /// </summary>
         public static bool ShouldClearResultsWhenAlreadyRunning(TraceType traceType)
             => traceType != TraceType.AllQueries;
+
+        /// <summary>
+        /// Resolves whether the query result grid should be displayed for a run, based on the
+        /// comment-script <c>--&gt; RESULTS ON|OFF</c> directives and the presence of assertion
+        /// commands. Precedence:
+        /// <list type="number">
+        /// <item>An explicit <c>--&gt; RESULTS</c> directive wins (the last one in the script when
+        /// several are present).</item>
+        /// <item>Otherwise, if the script contains any <c>--&gt; ASSERT*</c> command the grid
+        /// defaults to hidden (so "run the tests" does not also render the results).</item>
+        /// <item>Otherwise the grid is shown (the normal behavior for a plain query).</item>
+        /// </list>
+        /// </summary>
+        public static bool ResolveResultsGridVisible(IReadOnlyList<ScriptBatch> batches)
+        {
+            if (batches == null || batches.Count == 0) return true;
+
+            var commands = batches.SelectMany(b => b.Commands).ToList();
+
+            var explicitResults = commands.OfType<ResultsCommand>().LastOrDefault();
+            if (explicitResults != null) return explicitResults.Enabled;
+
+            var hasAsserts = commands.Any(c =>
+                c is AssertCommand || c is AssertRowcountCommand || c is AssertTableCommand);
+
+            return !hasAsserts;
+        }
     }
 }

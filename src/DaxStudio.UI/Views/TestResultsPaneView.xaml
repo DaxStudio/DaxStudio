@@ -1,0 +1,195 @@
+﻿<controls:ZoomableUserControl x:Class="DaxStudio.UI.Views.TestResultsPaneView"
+             xmlns:controls="clr-namespace:DaxStudio.UI.Controls"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
+             xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
+             xmlns:behaviours="clr-namespace:DaxStudio.UI.Behaviours"
+             xmlns:extenders="clr-namespace:DaxStudio.UI.AttachedProperties"
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
+             mc:Ignorable="d" 
+             d:DesignHeight="100" d:DesignWidth="300">
+    <UserControl.Resources>
+        <conv:NullToBoolConverter x:Key="NullToBoolConverter" />
+        <conv:ResourceLookupConverter x:Key="IconNames">
+            <ResourceDictionary>
+                <sys:String x:Key="Passed">successDrawingImage</sys:String>
+                <sys:String x:Key="Failed">failDrawingImage</sys:String>
+                <sys:String x:Key="Error">alertDrawingImage</sys:String>
+                <sys:String x:Key="Pending">results_timerDrawingImage</sys:String>
+            </ResourceDictionary>
+        </conv:ResourceLookupConverter>
+
+        <conv:ResourceLookupConverter x:Key="OutcomeColor">
+            <ResourceDictionary>
+                <sys:String x:Key="Passed">Theme.Brush.Log.Success</sys:String>
+                <sys:String x:Key="Failed">Theme.Brush.Log.Error</sys:String>
+                <sys:String x:Key="Error">Theme.Brush.Log.Error</sys:String>
+                <sys:String x:Key="Pending">Theme.Brush.Muted.Fore</sys:String>
+            </ResourceDictionary>
+        </conv:ResourceLookupConverter>
+
+        <Style TargetType="{x:Type GridViewColumnHeader}" BasedOn="{StaticResource {x:Type GridViewColumnHeader}}">
+            <Setter Property="Background" Value="{DynamicResource Theme.Brush.MenuBar.Back}"/>
+            <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Default.Fore}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Theme.Brush.Control.Border}"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="Padding" Value="8 0"/>
+        </Style>
+
+        <Style x:Key="alternatingRows" TargetType="{x:Type ListViewItem}" BasedOn="{StaticResource {x:Static GridView.GridViewItemContainerStyleKey}}">
+            <Style.Triggers>
+                <Trigger Property="ItemsControl.AlternationIndex"  Value="0">
+                    <Setter Property="Background" Value="Transparent" />
+                </Trigger>
+                <Trigger Property="ItemsControl.AlternationIndex"  Value="1">
+                    <Setter Property="Background" Value="{DynamicResource Theme.Brush.Table.Alternate}" />
+                </Trigger>
+                <!-- Discovered-but-not-yet-run tests are shown greyed-out (like Visual Studio's Test Explorer) -->
+                <DataTrigger Binding="{Binding Outcome}" Value="Pending">
+                    <Setter Property="Opacity" Value="0.55" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Summary text: neutral while pending, green when everything passed, red on any failure/error -->
+        <Style x:Key="summaryTextStyle" TargetType="{x:Type TextBlock}">
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Muted.Fore}" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding AllPassed}" Value="True">
+                    <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Log.Success}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding HasFailures}" Value="True">
+                    <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Log.Error}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+    </UserControl.Resources>
+
+    <ctrl:ClipBorder 
+            x:Name="outerBorder"
+            BorderBrush="{DynamicResource Theme.Brush.Control.Border}" 
+            Background="{DynamicResource Theme.Brush.Content.Back}"
+                BorderThickness="1"
+                ClipToBounds="True"
+                CornerRadius="4">
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- Summary line -->
+            <TextBlock Grid.Row="0"
+                       Margin="8,6"
+                       Style="{StaticResource summaryTextStyle}"
+                       Text="{Binding SummaryText}" />
+
+            <ListView Grid.Row="1"
+                      x:Name="Results" 
+                      HorizontalAlignment="Stretch"  
+                      AlternationCount="2"
+                      behaviours:GridViewColumnResize.Enabled="True"
+                      ItemContainerStyle="{StaticResource alternatingRows}">
+                <ListView.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Copy" 
+                                  Command="ApplicationCommands.Copy" CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                  IsEnabled="{Binding SelectedItem, ElementName=Results, Converter={StaticResource NullToBoolConverter}}">
+                            <MenuItem.Icon>
+                                <Image Source="{DynamicResource copy_toolbarDrawingImage}"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <Separator/>
+                        <MenuItem Header="Go To Line"
+                                  Command="{Binding GotoLocation}"
+                                  CommandParameter="{Binding SelectedItem, ElementName=Results}" />
+                    </ContextMenu>
+                </ListView.ContextMenu>
+                <ListView.InputBindings>
+                    <MouseBinding MouseAction="LeftDoubleClick"
+                                  Command="{Binding GotoLocation}"
+                                  CommandParameter="{Binding SelectedItem, ElementName=Results}" />
+                </ListView.InputBindings>
+                <ListView.View>
+                    <GridView>
+                        <!-- Icon -->
+                        <GridViewColumn Header="" Width="Auto">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Image Width="18" Height="18" ap:ImageBindingHelper.SourceResourceKey="{Binding Path=Outcome, Converter={StaticResource IconNames},Mode=OneTime}"  />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+
+                        <!-- Test -->
+                        <GridViewColumn Header="Test" Width="120">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock ap:BrushBindingHelper.ForegroundResourceKey="{Binding Outcome, Converter={StaticResource OutcomeColor},Mode=OneTime}"
+                                               Text="{Binding TestName, Mode=OneTime}" />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+
+                        <!-- Assertion -->
+                        <GridViewColumn Header="Assertion" Width="160">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock ap:BrushBindingHelper.ForegroundResourceKey="{Binding Outcome, Converter={StaticResource OutcomeColor},Mode=OneTime}"
+                                               Text="{Binding Description, Mode=OneTime}" />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+
+                        <!-- Expected -->
+                        <GridViewColumn Header="Expected" Width="120">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Expected, Mode=OneTime}" />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+
+                        <!-- Actual -->
+                        <GridViewColumn Header="Actual" Width="120">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Actual, Mode=OneTime}" />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+
+                        <!-- Message -->
+                        <GridViewColumn Header="Message" behaviours:GridViewColumnResize.Width="*1">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <ScrollViewer MaxHeight="100" VerticalScrollBarVisibility="Auto">
+                                        <TextBlock TextWrapping="Wrap"
+                                                   ap:BrushBindingHelper.ForegroundResourceKey="{Binding Outcome, Converter={StaticResource OutcomeColor},Mode=OneTime}"
+                                                   HorizontalAlignment="Stretch"
+                                                   Text="{Binding Message, Mode=OneTime}" />
+                                    </ScrollViewer>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                    </GridView>
+                </ListView.View>
+
+                <i:Interaction.Behaviors>
+                    <behaviours:ListViewClipboardBehaviour />
+                </i:Interaction.Behaviors>
+            </ListView>
+        </Grid>
+
+    </ctrl:ClipBorder>
+
+</controls:ZoomableUserControl>

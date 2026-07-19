@@ -9,11 +9,9 @@ namespace DaxStudio.Parsers.CommentScript
 {
     public class TestCommand: ScriptCommand
     {
-        public TestCommand(string testType, string testName) {
-            TestType = testType;
+        public TestCommand(string testName) {
             TestName = testName;
         }
-        public string TestType { get; set; }
         public string TestName { get; set; }
     }
 }

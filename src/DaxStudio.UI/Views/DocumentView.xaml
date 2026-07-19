@@ -671,6 +671,9 @@
                                                     </MenuItem.Icon>
 
                                                 </MenuItem>
+                                                <MenuItem x:Name="PasteAsTableAssertion" Header="Paste as Table Assertion"
+                                                      cal:Message.Attach="PasteAsTableAssertion()">
+                                                </MenuItem>
                                                 <Separator />
                                                 <MenuItem x:Name="SelecteAll" Header="Select All" InputGestureText="Ctrl+A"
                                                       cal:Message.Attach="SelectAll()">

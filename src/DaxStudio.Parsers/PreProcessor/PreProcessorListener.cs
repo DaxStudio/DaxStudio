@@ -213,17 +213,16 @@ namespace DaxStudio.Parsers.Dax
 
         public override void ExitTest([NotNull] TestContext context)
         {
-            var node2 = context.children[1] as ITerminalNode;
-            var node3 = context.children[2] as ITerminalNode;
+            // "--> TEST <name>" where the name may be quoted ("Sales Measure") or unquoted
+            // (Sales Measure). The quoted form is a single CS_STRING_LITERAL terminal (already
+            // un-quoted by the lexer); the unquoted form is the 'unquoted_value' rule whose original
+            // source text - internal spaces preserved - is recovered from its char interval.
+            if (context.ChildCount != 2)
+                throw new CommentScriptCommandException("Invalid TEST command. This command should be in the form of: '--> TEST [\"]<TestName>[\"]'", context.Start.Line, context.Start.Column);
 
-            if (node2?.Symbol.Type == CS_PERFORMANCE)
-            {
-                var typename = context.children[1].GetText();
-                var name = context.children[2].GetText();
-                
-                var cmd = new TestCommand(typename, name);
-                _currentBatch.Commands.Add(cmd);
-            }
+            var name = GetCommandValueText(context.children[1]);
+            var cmd = new TestCommand(name);
+            _currentBatch.Commands.Add(cmd);
             OutputCommand( _currentBatch.Output, context);
             base.ExitTest(context);
         }
@@ -317,6 +316,21 @@ namespace DaxStudio.Parsers.Dax
             _currentBatch.Commands.Add(cmd);
             OutputCommand(_currentBatch.Output, context);
             base.ExitClear_cache(context);
+        }
+
+        public override void ExitResults([NotNull] ResultsContext context)
+        {
+            // The grammar requires an ON/OFF flag. If it is missing the parser recovers with a
+            // partial tree, so guard against it here and surface a helpful error.
+            if (context.ChildCount != 2)
+                throw new CommentScriptCommandException("Invalid RESULTS command. This command should be in the form of: '--> RESULTS <ON|OFF>'", context.Start.Line, context.Start.Column);
+
+            var enabledNode = context.children[1] as ITerminalNode;
+            var enabled = enabledNode?.Symbol.Type == CS_ON;
+            var cmd = new ResultsCommand(enabled);
+            _currentBatch.Commands.Add(cmd);
+            OutputCommand(_currentBatch.Output, context);
+            base.ExitResults(context);
         }
 
         public override void ExitTrace([NotNull] TraceContext context)

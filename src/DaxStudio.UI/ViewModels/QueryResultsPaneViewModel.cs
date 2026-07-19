@@ -189,6 +189,30 @@ namespace DaxStudio.UI.ViewModels
         public DataView ResultsDataView
         { get { return _resultsTable == null ? new DataTable("blank").AsDataView() : _resultsTable.AsDataView(); } }
 
+        /// <summary>
+        /// The <see cref="DataTable"/> backing the currently selected result tab (or the first
+        /// data-result tab if the selection isn't a data grid). Returns null when there are no
+        /// query results. Used to build a <c>--&gt; ASSERT TABLE</c> block from the live results.
+        /// </summary>
+        public DataTable ActiveResultsTable
+        {
+            get
+            {
+                if (_selectedTabIndex >= 0 && _selectedTabIndex < _resultTabs.Count
+                    && _resultTabs[_selectedTabIndex] is DataTableResultTab selected)
+                {
+                    return selected.Table;
+                }
+
+                foreach (var tab in _resultTabs)
+                {
+                    if (tab is DataTableResultTab dataTab) return dataTab.Table;
+                }
+
+                return _resultsTable;
+            }
+        }
+
         public void OnListViewItemPreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
             System.Diagnostics.Debug.WriteLine("in OnListViewItemPreviewMouseRightButtonDown");
@@ -404,6 +428,98 @@ namespace DaxStudio.UI.ViewModels
             }
 
 
+        }
+
+        public void CopyAsTableAssertion(RoutedEventArgs args)
+        {
+            if (args?.Source is MenuItem menu
+                && menu.Parent is ContextMenu ctxMenu
+                && ctxMenu.PlacementTarget is DataGrid grid)
+            {
+                var dt = BuildAssertionDataTable(grid);
+                if (dt == null) return;
+
+                var text = DaxStudio.Parsers.CommentScript.TableAssertionFormatter.FormatDataTable(dt, includeHeaderLine: true, includeTypeRow: true);
+
+                try
+                {
+                    Clipboard.SetText(text);
+                }
+                catch (System.Runtime.InteropServices.ExternalException ex)
+                {
+                    Log.Warning(ex, Constants.LogMessageTemplate, nameof(QueryResultsPaneViewModel), nameof(CopyAsTableAssertion), "Error setting clipboard text for table assertion");
+                }
+            }
+        }
+
+        private static DataTable BuildAssertionDataTable(DataGrid grid)
+        {
+            // the grid is bound to a DataView, so the underlying source is its Table
+            var sourceTable = (grid.ItemsSource as DataView)?.Table;
+            if (sourceTable == null) return null;
+
+            var totalCellCount = sourceTable.Rows.Count * sourceTable.Columns.Count;
+            var isProperSubset = grid.SelectedCells.Count > 0 && grid.SelectedCells.Count < totalCellCount;
+
+            if (!isProperSubset)
+            {
+                // nothing selected, or all cells selected - use the full result table
+                return sourceTable;
+            }
+
+            // build the list of distinct selected columns in visual column order. The grid column
+            // Header is the friendly Caption while SortMemberPath holds the underlying (possibly
+            // escaped) ColumnName used to index the source table.
+            var selectedColumns = new List<DataColumn>();
+            foreach (var col in grid.Columns.OrderBy(c => c.DisplayIndex))
+            {
+                var columnName = col.SortMemberPath;
+                if (string.IsNullOrEmpty(columnName)) continue;
+                if (!sourceTable.Columns.Contains(columnName)) continue;
+                var sourceColumn = sourceTable.Columns[columnName];
+                if (grid.SelectedCells.Any(sc => ReferenceEquals(sc.Column, col)) && !selectedColumns.Contains(sourceColumn))
+                {
+                    selectedColumns.Add(sourceColumn);
+                }
+            }
+            if (selectedColumns.Count == 0) return sourceTable;
+
+            // build the set of rows that have at least one selected cell, preserving row order
+            var selectedRowViews = new List<DataRowView>();
+            var seenRows = new HashSet<DataRow>();
+            foreach (var cell in grid.SelectedCells)
+            {
+                if (cell.Item is DataRowView drv && seenRows.Add(drv.Row))
+                {
+                    selectedRowViews.Add(drv);
+                }
+            }
+            // re-order the selected rows to match the underlying table row order
+            selectedRowViews = selectedRowViews
+                .OrderBy(drv => sourceTable.Rows.IndexOf(drv.Row))
+                .ToList();
+
+            var result = new DataTable();
+            foreach (var sourceColumn in selectedColumns)
+            {
+                // preserve the real CLR type so the formatter emits the correct DAX type, and the
+                // Caption so the formatter emits the friendly header (with spaces) rather than the
+                // escaped ColumnName.
+                var newColumn = result.Columns.Add(sourceColumn.ColumnName, sourceColumn.DataType);
+                newColumn.Caption = sourceColumn.Caption;
+            }
+
+            foreach (var drv in selectedRowViews)
+            {
+                var values = new object[selectedColumns.Count];
+                for (int i = 0; i < selectedColumns.Count; i++)
+                {
+                    values[i] = drv.Row[selectedColumns[i].ColumnName];
+                }
+                result.Rows.Add(values);
+            }
+
+            return result;
         }
 
         public void CopyingRowClipboardContent(object sender, DataGridRowClipboardEventArgs e)

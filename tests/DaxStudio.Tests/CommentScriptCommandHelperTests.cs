@@ -269,5 +269,66 @@ namespace DaxStudio.Tests
         }
 
         #endregion
+
+        #region ResolveResultsGridVisible
+
+        [TestMethod]
+        public void ResolveResultsGridVisible_NoCommands_ReturnsTrue()
+        {
+            var batches = new List<ScriptBatch> { BatchWith() };
+            Assert.IsTrue(CommentScriptCommandHelper.ResolveResultsGridVisible(batches));
+        }
+
+        [TestMethod]
+        public void ResolveResultsGridVisible_NullBatches_ReturnsTrue()
+        {
+            Assert.IsTrue(CommentScriptCommandHelper.ResolveResultsGridVisible(null));
+        }
+
+        [TestMethod]
+        public void ResolveResultsGridVisible_AssertsPresent_DefaultsToHidden()
+        {
+            var batches = new List<ScriptBatch>
+            {
+                BatchWith(new AssertRowcountCommand("=", 1))
+            };
+            Assert.IsFalse(CommentScriptCommandHelper.ResolveResultsGridVisible(batches),
+                "a batch containing an ASSERT should default the grid to hidden");
+        }
+
+        [TestMethod]
+        public void ResolveResultsGridVisible_ExplicitOnOverridesImplicitAssertHide()
+        {
+            var batches = new List<ScriptBatch>
+            {
+                BatchWith(new ResultsCommand(true), new AssertRowcountCommand("=", 1))
+            };
+            Assert.IsTrue(CommentScriptCommandHelper.ResolveResultsGridVisible(batches),
+                "an explicit --> RESULTS ON must override the implicit asserts-hide default");
+        }
+
+        [TestMethod]
+        public void ResolveResultsGridVisible_ExplicitOffWithNoAsserts_ReturnsFalse()
+        {
+            var batches = new List<ScriptBatch>
+            {
+                BatchWith(new ResultsCommand(false))
+            };
+            Assert.IsFalse(CommentScriptCommandHelper.ResolveResultsGridVisible(batches));
+        }
+
+        [TestMethod]
+        public void ResolveResultsGridVisible_LastExplicitDirectiveWins()
+        {
+            var batches = new List<ScriptBatch>
+            {
+                BatchWith(new ResultsCommand(true)),
+                BatchWith(new ResultsCommand(false))
+            };
+            Assert.IsFalse(CommentScriptCommandHelper.ResolveResultsGridVisible(batches),
+                "when multiple --> RESULTS directives are present the last one should win");
+        }
+
+        #endregion
     }
 }

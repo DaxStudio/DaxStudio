@@ -710,6 +710,40 @@ namespace DaxStudio.Parsers.Tests.CommentScript
             Assert.AreEqual("Red", cmd.Data.Rows[0]["Color"]);
         }
 
+        [TestMethod]
+        public void AssertTableFollowedByAnotherAssert()
+        {
+            // A second "-->" command after the "-->>" table rows must parse without error
+            // (previously threw "extraneous input '-->'").
+            var input = "--> ASSERT TABLE\n" +
+                "-->> | Color | Count |\n" +
+                "-->> | Red   | 5     |\n" +
+                "-->> | Blue  | 3     |\n" +
+                "--> ASSERT SE_QUERIES > 1\n" +
+                "EVALUATE { 1 }\n";
+
+            List<Error> errors = new List<Error>();
+            var tree = Helpers.ConfigureLexerAndParser(input, ref errors);
+
+            Assert.IsNull(tree.exception);
+            Assert.IsEmpty(errors, "Should have no errors");
+
+            Dictionary<string, List<string>> arrayParameters = new Dictionary<string, List<string>>();
+            var batch = new List<ScriptBatch>();
+            var listener = new PreProcessorListener(arrayParameters, batch);
+            var walker = new ParseTreeWalker();
+            walker.Walk(listener, tree);
+
+            Assert.HasCount(2, batch[0].Commands);
+            var tableCmd = batch[0].Commands.OfType<AssertTableCommand>().Single();
+            Assert.AreEqual(2, tableCmd.Data.Rows.Count);
+            Assert.AreEqual("Red", tableCmd.Data.Rows[0]["Color"]);
+            Assert.AreEqual(5L, tableCmd.Data.Rows[0]["Count"]);
+
+            var perfCmd = batch[0].Commands.OfType<AssertCommand>().Single();
+            Assert.AreEqual(PerformanceProperty.SE_QUERIES, perfCmd.Property);
+        }
+
         #endregion
 
         #region Combined Command Tests

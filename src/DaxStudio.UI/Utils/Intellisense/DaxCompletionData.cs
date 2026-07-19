@@ -21,6 +21,7 @@ namespace DaxStudio.UI.Utils
 #pragma warning restore IDE0052 // Remove unread private members
         private IInsightProvider _insightProvider;
         private readonly bool _isCommentScript;
+        private readonly bool _isFromResults;
 
         /*
 public DaxCompletionData(IInsightProvider insightProvider, string text, string content, string description, ImageSource image )
@@ -93,7 +94,14 @@ _insightProvider = insightProvider;
 
         public DaxCompletionData(IInsightProvider insightProvider, DaxStudio.Parsers.Dax.CompletionItem item, bool isCommentScript = false)
         {
-            _text = string.IsNullOrEmpty(item.InsertText) ? item.Label : item.InsertText;
+            // The "<from Results>" table-assertion helper carries a sentinel InsertText. Keep the
+            // visible label as the completion Text so the list still filters as the user types (the
+            // sentinel would never match), and flag it so Complete inserts the generated block instead.
+            _isFromResults = isCommentScript
+                && string.Equals(item.InsertText, DaxStudio.Parsers.Dax.CommentScriptCompletionProvider.FromResultsInsertText, StringComparison.Ordinal);
+            _text = _isFromResults
+                ? item.Label
+                : (string.IsNullOrEmpty(item.InsertText) ? item.Label : item.InsertText);
             _content = item.Label;
             _description = string.IsNullOrEmpty(item.Description) ? null : item.Description;
             _imageResource = GetImageResource(item.Kind);
@@ -157,6 +165,26 @@ _insightProvider = insightProvider;
 
                 if (_isCommentScript)
                 {
+                    // The "<from Results>" table-assertion helper is a synthetic completion: instead
+                    // of inserting its label we ask the insight provider to build a "-->> | ... |"
+                    // block from the current query results.
+                    if (_isFromResults)
+                    {
+                        var block = _insightProvider?.GetTableAssertionFromResults();
+                        if (string.IsNullOrEmpty(block)) return;
+
+                        int fromEnd = completionSegment.EndOffset;
+                        int fromStart = fromEnd;
+                        while (fromStart > 0)
+                        {
+                            var prev = document.GetCharAt(fromStart - 1);
+                            if (char.IsWhiteSpace(prev) || prev == '>') break;
+                            fromStart--;
+                        }
+                        document.Replace(fromStart, fromEnd - fromStart, block);
+                        return;
+                    }
+
                     // Comment-script command lines are not DAX, so the DAX-aware word-boundary logic
                     // (which treats "-->" as a comment) would incorrectly consume the marker and the
                     // separating space. Instead replace only the partial word immediately before the

@@ -199,7 +199,6 @@ CS_SET_PARAMETER:         'PARAMETER';
 CS_GO:					  'GO';
 CS_OUTPUT:                'OUTPUT';
 CS_TEST:                  'TEST';
-CS_PERFORMANCE:           'PERFORMANCE';
 CS_ASSERT:                'ASSERT';
 CS_CLEARCACHE:            'CLEARCACHE';
 CS_PARAMETER:             '@' IdentifierOrKeyword;
@@ -232,6 +231,8 @@ CS_QUERYPLAN:             'QUERYPLAN';
 CS_ALLQUERIES:            'ALLQUERIES';
 CS_ON:                    'ON';
 CS_OFF:                   'OFF';
+
+CS_RESULTS:               'RESULTS';
 
 CS_METRICS:               'METRICS';
 CS_EXPORT:                'EXPORT';

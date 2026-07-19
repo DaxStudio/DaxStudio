@@ -163,6 +163,24 @@ namespace DaxStudio.Parsers.CommentScript
         /// </summary>
         private Type InferColumnType(int colIndex)
         {
+            var values = new List<string>(Data.Rows.Count);
+            foreach (DataRow row in Data.Rows)
+            {
+                values.Add(row[colIndex] as string);
+            }
+            return InferColumnType(values);
+        }
+
+        /// <summary>
+        /// Infers the .NET type for a column from its (string) values using the same rules the
+        /// ASSERT TABLE parser applies. Shared with <see cref="TableAssertionFormatter"/> so
+        /// generated blocks and parsed blocks agree on types.
+        /// Priority order: Boolean > Int64 > Double > Decimal > DateTime > String.
+        /// Double is checked before Decimal so that plain decimals (3.14) become Double
+        /// while values with thousands separators (1,234.56) become Decimal (currency).
+        /// </summary>
+        internal static Type InferColumnType(IEnumerable<string> values)
+        {
             bool allBoolean = true;
             bool allLong = true;
             bool allDouble = true;
@@ -170,9 +188,8 @@ namespace DaxStudio.Parsers.CommentScript
             bool allDateTime = true;
             bool hasValues = false;
 
-            foreach (DataRow row in Data.Rows)
+            foreach (var val in values)
             {
-                var val = row[colIndex] as string;
                 if (string.IsNullOrEmpty(val)) continue;
 
                 hasValues = true;

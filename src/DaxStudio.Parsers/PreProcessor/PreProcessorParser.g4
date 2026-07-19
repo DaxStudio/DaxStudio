@@ -7,15 +7,17 @@ document
 	;
 
 block
-	: script_commands+ command_block_tail?
+	: (script_commands | table_row)+ command_block_tail?
 	| table_row* query xmla_parameters? go_command?
 	;
 
 // The tail of a command-led block: either the DAX query (and optional xmla params) that the
 // commands apply to, or just a batch terminator. When absent the block is commands-only
-// (e.g. a lone "--> SHOW LAST_UPDATED" with no query to run).
+// (e.g. a lone "--> SHOW LAST_UPDATED" with no query to run). Table rows (from an ASSERT TABLE)
+// are matched as part of the leading command group above so that further "-->" commands may
+// appear after the "-->>" rows.
 command_block_tail
-	: table_row* query xmla_parameters? go_command?
+	: query xmla_parameters? go_command?
 	| go_command
 	;
 
@@ -97,6 +99,7 @@ command
 	| trace
 	| metrics
 	| show
+	| results
 	;
 
 parameter_scalar_values
@@ -114,7 +117,7 @@ connect:           CS_CONNECT (CS_SERVER|CS_PBIX|CS_SSDT) (CS_STRING_LITERAL | u
 use:               CS_USE (CS_STRING_LITERAL | unquoted_value);
 script_parameter:  CS_SET_PARAMETER (CS_STRING|CS_INTEGER|CS_DATETIME|CS_BOOLEAN|CS_DOUBLE)? CS_PARAMETER CS_EQUALS ( parameter_array_values | parameter_scalar_values );
 output:            CS_OUTPUT (CS_CSV | CS_XLSX | CS_JSON) (CS_STRING_LITERAL | CS_IDENTIFIER);
-test:              CS_TEST CS_PERFORMANCE CS_STRING_LITERAL;
+test:              CS_TEST (CS_STRING_LITERAL | unquoted_value);
 assert:            CS_ASSERT (CS_DURATION | CS_SE_CPU | CS_SE_QUERIES )  (CS_EQUALS | CS_GREATERTHAN | CS_LESSTHAN | CS_GREATER_OR_EQUAL | CS_LESS_OR_EQUAL ) (CS_INTEGER_LITERAL | CS_REAL_LITERAL);
 assert_rowcount:   CS_ASSERT CS_ROWCOUNT (CS_EQUALS | CS_GREATERTHAN | CS_LESSTHAN | CS_GREATER_OR_EQUAL | CS_LESS_OR_EQUAL ) CS_INTEGER_LITERAL;
 assert_table_header: CS_ASSERT CS_TABLE (CS_UNORDERED | CS_PARTIAL)?;
@@ -124,6 +127,7 @@ metrics:           CS_METRICS (metrics_export | metrics_view);
 metrics_export:    CS_EXPORT (CS_STRING_LITERAL | CS_IDENTIFIER);
 metrics_view:      CS_VIEW;
 show:              CS_SHOW (CS_DEPENDENCIES | CS_LAST_UPDATED | CS_MAX_UPDATED);
+results:           CS_RESULTS (CS_ON | CS_OFF);
 
 // An unquoted value for CONNECT/USE that may contain spaces (e.g. a database or Power BI report
 // name like "AW Internet Sales"). It captures every token up to the end of the command line. The

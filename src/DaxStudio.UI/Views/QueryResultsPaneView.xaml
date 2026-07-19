@@ -159,6 +159,10 @@
                                                     cal:Action.TargetWithoutContext="{Binding Source={StaticResource Proxy}, Path=Data}"
                                                     cal:Message.Attach="CopyWithHeaders($eventArgs)">
                                         </MenuItem>
+                                        <MenuItem Header="Copy as Table Assertion"
+                                                    cal:Action.TargetWithoutContext="{Binding Source={StaticResource Proxy}, Path=Data}"
+                                                    cal:Message.Attach="CopyAsTableAssertion($eventArgs)">
+                                        </MenuItem>
                                         <Separator/>
                                         <MenuItem Header="Clear Results"
                                                   cal:Action.TargetWithoutContext="{Binding Source={StaticResource Proxy}, Path=Data}"

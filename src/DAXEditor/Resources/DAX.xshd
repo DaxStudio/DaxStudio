@@ -72,6 +72,7 @@
 	      <Word>SHOW</Word>
 	      <Word>ASSERT</Word>
 	      <Word>TEST</Word>
+	      <Word>RESULTS</Word>
 	      <Word>GO</Word>
 	    </Keywords>
 	    <Rule color="Parameter">@([\w]+)</Rule>

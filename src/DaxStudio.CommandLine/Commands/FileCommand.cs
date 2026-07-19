@@ -13,6 +13,11 @@ using DaxStudio.Interfaces.Enums;
 using DaxStudio.CommandLine.UIStubs;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Data;
+using System.Linq;
+using Caliburn.Micro;
+using DaxStudio.Core.Assertions;
+using DaxStudio.Parsers.CommentScript;
 
 namespace DaxStudio.CommandLine.Commands
 {
@@ -121,8 +126,108 @@ namespace DaxStudio.CommandLine.Commands
                 });
 
             Log.Information("Finished FILE command");
-            return 0;
 
+            // Run any comment-script assertions found in the query. The assertion (test-runner)
+            // commands are only produced by the new grammar-based pre-processor, so force it on for
+            // this separate parse without affecting the file-export path above.
+            try
+            {
+                runner.Options.UseNewPreprocessor = true;
+                var queryInfo = new QueryInfo(settings.Query, new EventAggregator(), runner.Options);
+                var batches = queryInfo.ScriptBatches;
+
+                bool HasAsserts(ScriptBatch b) =>
+                    b.Commands.Any(c => c is AssertRowcountCommand || c is AssertTableCommand || c is AssertCommand);
+
+                var assertBatches = batches?.Where(HasAsserts).ToList() ?? new List<ScriptBatch>();
+                if (assertBatches.Count == 0)
+                {
+                    return 0;
+                }
+
+                var results = new List<TestResult>();
+                var warnedPerf = false;
+
+                foreach (var batch in assertBatches)
+                {
+                    var testName = batch.Commands.OfType<TestCommand>().FirstOrDefault()?.TestName;
+
+                    DataTable dt = null;
+                    if (!string.IsNullOrWhiteSpace(batch.QueryText))
+                    {
+                        using (var reader = runner.ExecuteDataReaderQuery(batch.QueryText, settings.ParameterCollection))
+                        {
+                            dt = new DataTable();
+                            dt.Load(reader);
+                        }
+                    }
+                    var rowCount = dt?.Rows.Count ?? 0;
+
+                    foreach (var cmd in batch.Commands.OfType<AssertRowcountCommand>())
+                    {
+                        results.Add(AssertionEngine.EvaluateRowCount(cmd, rowCount, testName));
+                    }
+                    foreach (var cmd in batch.Commands.OfType<AssertTableCommand>())
+                    {
+                        results.Add(AssertionEngine.EvaluateTable(cmd, dt, testName));
+                    }
+                    foreach (var cmd in batch.Commands.OfType<AssertCommand>())
+                    {
+                        if (!warnedPerf)
+                        {
+                            Log.Warning("Performance assertions are not yet supported in dscmd and will be reported as errors");
+                            warnedPerf = true;
+                        }
+                        results.Add(AssertionEngine.EvaluatePerformance(cmd, new Dictionary<PerformanceProperty, double>(), testName));
+                    }
+                }
+
+                var passed = results.Count(r => r.Outcome == TestOutcome.Passed);
+                var failed = results.Count(r => r.Outcome == TestOutcome.Failed);
+                var errored = results.Count(r => r.Outcome == TestOutcome.Error);
+
+                var table = new Table().Title("[bold]Test Results[/]");
+                table.AddColumn("Test");
+                table.AddColumn("Assertion");
+                table.AddColumn("Expected");
+                table.AddColumn("Actual");
+                table.AddColumn("Result");
+
+                foreach (var r in results)
+                {
+                    string resultCell;
+                    switch (r.Outcome)
+                    {
+                        case TestOutcome.Passed:
+                            resultCell = "[green]Passed[/]";
+                            break;
+                        case TestOutcome.Failed:
+                            resultCell = "[red]Failed[/]";
+                            break;
+                        default:
+                            resultCell = "[yellow]Error[/]";
+                            break;
+                    }
+
+                    table.AddRow(
+                        Markup.Escape(r.TestName ?? string.Empty),
+                        Markup.Escape(r.Description ?? string.Empty),
+                        Markup.Escape(r.Expected ?? string.Empty),
+                        Markup.Escape(r.Actual ?? string.Empty),
+                        resultCell);
+                }
+
+                AnsiConsole.Write(table);
+                AnsiConsole.MarkupLine($"[bold]{passed} passed, {failed} failed, {errored} errors[/]");
+                Log.Information("Test results: {passed} passed, {failed} failed, {errored} errors", passed, failed, errored);
+
+                return (failed == 0 && errored == 0) ? 0 : 1;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "{class} {method} Unexpected error while evaluating comment-script assertions", nameof(FileCommand), nameof(ExecuteAsync));
+                return 2;
+            }
         }
     }
 

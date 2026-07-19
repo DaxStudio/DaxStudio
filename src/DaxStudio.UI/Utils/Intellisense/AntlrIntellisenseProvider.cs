@@ -575,6 +575,11 @@ namespace DaxStudio.UI.Utils.Intellisense
             ShowInsight(funcName, -1);
         }
 
+        public string GetTableAssertionFromResults()
+        {
+            return TableAssertionInsertHelper.BuildFromResults(Document);
+        }
+
         public void ShowInsight(string funcName, int offset)
         {
             funcName = funcName.TrimEnd('(');

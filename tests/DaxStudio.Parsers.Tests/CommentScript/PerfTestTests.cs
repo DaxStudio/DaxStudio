@@ -17,7 +17,7 @@ namespace DaxStudio.Parsers.Tests.CommentScript
         public void BasicPerformanceTest()
         {
             // --> USE ""Adventure Works""
-            var input = "--> TEST PERFORMANCE \"Query 1\"\n" +
+            var input = "--> TEST \"Query 1\"\n" +
                 "--> ASSERT DURATION < 20\n" +
                 "EVALUATE { 1 }\n" +
                 "";
@@ -44,7 +44,6 @@ namespace DaxStudio.Parsers.Tests.CommentScript
             Assert.HasCount(2, batch[0].Commands);
 
             var testCmd = batch[0].Commands[0] as TestCommand;
-            Assert.AreEqual("PERFORMANCE", testCmd.TestType);
             Assert.AreEqual("Query 1", testCmd.TestName);
 
             var assertCmd = batch[0].Commands[1] as AssertCommand;
@@ -54,10 +53,38 @@ namespace DaxStudio.Parsers.Tests.CommentScript
         }
 
         [TestMethod]
+        public void UnquotedTestNameTest()
+        {
+            // The TEST name may be supplied unquoted and may contain spaces.
+            var input = "--> TEST Sales Measure\n" +
+                "--> ASSERT DURATION < 20\n" +
+                "EVALUATE { 1 }\n" +
+                "";
+
+            ICharStream chars = new DAXCharStream(input);
+            PreProcessorLexer lexer = new PreProcessorLexer(chars);
+            ITokenStream stream = new BufferedTokenStream(lexer);
+            PreProcessorParser parser = new PreProcessorParser(stream);
+            var tree = parser.document();
+
+            Assert.IsNull(tree.exception);
+
+            Dictionary<string, List<string>> arrayParameters = new Dictionary<string, List<string>>();
+            var batch = new List<ScriptBatch>();
+            var listener = new PreProcessorListener(arrayParameters, batch);
+            var walker = new ParseTreeWalker();
+            walker.Walk(listener, tree);
+
+            var testCmd = batch[0].Commands[0] as TestCommand;
+            Assert.IsNotNull(testCmd);
+            Assert.AreEqual("Sales Measure", testCmd.TestName);
+        }
+
+        [TestMethod]
         public void AllAssertionPerformanceTest()
         {
             // --> USE ""Adventure Works""
-            var input = "--> TEST PERFORMANCE \"Query 1\"\n" +
+            var input = "--> TEST \"Query 1\"\n" +
                 "--> ASSERT DURATION < 20\n" +
                 "--> ASSERT SE_CPU > 10\n" +
                 "--> ASSERT SE_QUERIES = 1\n" +
@@ -92,7 +119,6 @@ namespace DaxStudio.Parsers.Tests.CommentScript
             Assert.HasCount(4, batch[0].Commands, "Incorrect Command Count");
 
             var testCmd = batch[0].Commands[0] as TestCommand;
-            Assert.AreEqual("PERFORMANCE", testCmd.TestType);
             Assert.AreEqual("Query 1", testCmd.TestName);
 
             var assertCmd = batch[0].Commands[1] as AssertCommand;
