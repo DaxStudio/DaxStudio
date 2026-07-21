@@ -361,7 +361,7 @@ EVALUATE { @Color }
         [TestMethod]
         public void ConnectPbixWithFullPathTest()
         {
-            var input = "--> CONNECT PBIX \"C:\\reports\\Sales.pbix\"\nEVALUATE { 1 }\n";
+            var input = "--> CONNECT DESKTOP \"C:\\reports\\Sales.pbix\"\nEVALUATE { 1 }\n";
 
             List<Error> errors = new List<Error>();
             PreProcessorParser.DocumentContext tree = Helpers.ConfigureLexerAndParser(input, ref errors);
@@ -378,7 +378,7 @@ EVALUATE { @Color }
             Assert.HasCount(1, batch[0].Commands);
             var connCmd = batch[0].Commands[0] as ConnectCommand;
             Assert.IsNotNull(connCmd);
-            Assert.AreEqual(ConnectionType.PBIX, connCmd.ConnectionType);
+            Assert.AreEqual(ConnectionType.DESKTOP, connCmd.ConnectionType);
             Assert.IsTrue(connCmd.IsFilePath, "IsFilePath should be true for a full .pbix path");
             Assert.AreEqual("C:\\reports\\Sales.pbix", connCmd.FilePath);
             Assert.AreEqual("Sales", connCmd.InstanceName);
@@ -387,7 +387,7 @@ EVALUATE { @Color }
         [TestMethod]
         public void ConnectPbixWithBareNameTest()
         {
-            var input = "--> CONNECT PBIX SalesReport\nEVALUATE { 1 }\n";
+            var input = "--> CONNECT DESKTOP SalesReport\nEVALUATE { 1 }\n";
 
             List<Error> errors = new List<Error>();
             PreProcessorParser.DocumentContext tree = Helpers.ConfigureLexerAndParser(input, ref errors);
@@ -404,7 +404,7 @@ EVALUATE { @Color }
             Assert.HasCount(1, batch[0].Commands);
             var connCmd = batch[0].Commands[0] as ConnectCommand;
             Assert.IsNotNull(connCmd);
-            Assert.AreEqual(ConnectionType.PBIX, connCmd.ConnectionType);
+            Assert.AreEqual(ConnectionType.DESKTOP, connCmd.ConnectionType);
             Assert.IsFalse(connCmd.IsFilePath, "IsFilePath should be false for a bare instance name");
             Assert.IsNull(connCmd.FilePath);
             Assert.AreEqual("SalesReport", connCmd.InstanceName);

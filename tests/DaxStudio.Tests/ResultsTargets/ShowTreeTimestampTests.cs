@@ -83,8 +83,40 @@ namespace DaxStudio.Tests.ResultsTargets
             Assert.AreEqual(5, table.DaysSinceChange);
 
             var colA = table.Children.Single(c => c.Name == "Columns").Children.Single(c => c.Name == "A");
-            Assert.IsNull(colA.MaxUpdateUtc, "A leaf has no descendants so Max Update is blank");
+            Assert.AreEqual(Day5, colA.MaxUpdateUtc, "A carries the newest change in its Columns folder, so its own date is surfaced");
             Assert.AreEqual(5, colA.DaysSinceChange, "Days Since Change falls back to the leaf's own timestamp");
+
+            var colB = table.Children.Single(c => c.Name == "Columns").Children.Single(c => c.Name == "B");
+            Assert.IsNull(colB.MaxUpdateUtc, "B is not the newest column, so its Max Update stays blank");
+
+            var m1 = table.Children.Single(c => c.Name == "Measures").Children.Single(c => c.Name == "M1");
+            Assert.AreEqual(Day3, m1.MaxUpdateUtc, "M1 is the sole (hence newest) measure, so its own date is surfaced");
+        }
+
+        [TestMethod]
+        public void ComputeRollups_SurfacesContainerMaxOnLeafItems()
+        {
+            // Columns folder with a tie for the newest change (A and C both Day5, B older).
+            var colA = new ShowTreeNode("A", "COLUMN", "Sales", Day5);
+            var colB = new ShowTreeNode("B", "COLUMN", "Sales", Day2);
+            var colC = new ShowTreeNode("C", "COLUMN", "Sales", Day5);
+
+            var table = new ShowTreeNode("Sales", "TABLE", null, Day1);
+            table.Children.Add(ConnectionManager.MakeFolder("Columns", new List<ShowTreeNode> { colA, colB, colC }));
+
+            var tablesFolder = new ShowTreeNode("Tables", string.Empty, null, null, isFolder: true);
+            tablesFolder.Children.Add(table);
+            var root = new ShowTreeNode("Semantic model", "MODEL", null, null);
+            root.Children.Add(tablesFolder);
+
+            ConnectionManager.ComputeRollups(root, Now);
+
+            var columnsFolder = table.Children.Single(c => c.Name == "Columns");
+            Assert.AreEqual(Day5, colA.MaxUpdateUtc, "Tied newest column shows its date");
+            Assert.AreEqual(Day5, colC.MaxUpdateUtc, "All ties for the container max show their date");
+            Assert.IsNull(colB.MaxUpdateUtc, "Older column stays blank");
+            Assert.AreEqual(Day5, columnsFolder.MaxUpdateUtc, "Folder keeps its descendant rollup");
+            Assert.AreEqual(Day5, table.MaxUpdateUtc, "Table keeps its descendant rollup");
         }
 
         [TestMethod]

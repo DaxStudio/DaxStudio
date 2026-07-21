@@ -196,6 +196,7 @@
                                          HeadersVisibility="Column"
                                          SelectionMode="Extended"
                                          EnableRowVirtualization="True"
+                                         cal:Message.Attach="[Event Sorting] = [Action OnSorting($source, $eventArgs)]"
                                          AlternatingRowBackground="{DynamicResource Theme.Brush.Table.Alternate}"
                                          Background="{DynamicResource Theme.Brush.Content.Back}"
                                          Style="{StaticResource ShowTreeGridStyle}">
@@ -204,9 +205,10 @@
                                                    Width="320"
                                                    TextPath="Data.DisplayName"
                                                    SortMemberPath="Data.Name"
-                                                   ShowExpander="True"
+                                                   ShowExpander="{Binding Data.ShowTreeLines, Source={StaticResource TabProxy}}"
+                                                   ShowTreeLines="{Binding Data.ShowTreeLines, Source={StaticResource TabProxy}}"
                                                    LineStroke="{DynamicResource Theme.Brush.Default.Fore}"
-                                                   LineThickness="1"
+                                                   LineThickness="0.5"
                                                    SelectedLineStroke="Red"
                                                    ReserveExpanderSpace="True">
                                         <tg:TreeColumn.TextTemplate>

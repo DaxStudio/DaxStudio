@@ -12,6 +12,14 @@ namespace DaxStudio.Parsers.CommentScript
         private bool _headersSet;
         private Type[] _explicitTypes;
 
+        // A cell equal to this token represents an explicit empty string (vs an empty cell, which is null/BLANK).
+        private const string EmptyStringToken = "\"\"";
+
+        // A cell beginning with this char is an escape: the leading backslash is dropped and the
+        // remainder is taken as a literal string (bypassing null / empty-token interpretation).
+        // e.g. "\\\"\"" -> literal "", "\\\"" -> literal ", "\\\\x" -> literal "\x".
+        private const char EscapeChar = '\\';
+
         // Date formats accepted in ASSERT TABLE cells (most specific first)
         private static readonly string[] DateFormats = new[]
         {
@@ -52,6 +60,61 @@ namespace DaxStudio.Parsers.CommentScript
 
         public AssertTableMode Mode { get; }
         public DataTable Data { get; }
+
+        /// <summary>
+        /// The source of the expected table data. <see cref="AssertTableFormat.Inline"/> means the
+        /// expected rows are authored inline as "--&gt;&gt;" continuation rows; any other value means the
+        /// rows are loaded from <see cref="FilePath"/> at evaluation time.
+        /// </summary>
+        public AssertTableFormat Format { get; set; } = AssertTableFormat.Inline;
+
+        /// <summary>
+        /// The (possibly relative) path to the file that provides the expected table, when
+        /// <see cref="Format"/> is not <see cref="AssertTableFormat.Inline"/>. Null for inline tables.
+        /// </summary>
+        public string FilePath { get; set; }
+
+        /// <summary>1-based line of the source "--&gt; ASSERT TABLE" command (0 when unknown).</summary>
+        public int Line { get; set; }
+
+        /// <summary>0-based character position of the source "--&gt; ASSERT TABLE" command (0 when unknown).</summary>
+        public int Column { get; set; }
+
+        /// <summary>
+        /// True once the assertion has a defined expected table: either at least one inline table row
+        /// ("--&gt;&gt;") has defined the columns, or the command loads its rows from a file
+        /// (<see cref="Format"/> is not <see cref="AssertTableFormat.Inline"/>).
+        /// An ASSERT TABLE with no following table rows and no file clause leaves this false.
+        /// </summary>
+        public bool HasTableDefinition => Data.Columns.Count > 0 || Format != AssertTableFormat.Inline;
+
+        /// <summary>
+        /// Populates this assertion's expected table from externally-loaded rows (e.g. a
+        /// CSV/TXT/MD/PARQUET file). The first row supplies the column headers; an optional following
+        /// all-type-names row is treated as an explicit type declaration; the remaining rows are data.
+        /// Column types are inferred (or taken from the type row) using the same rules as inline
+        /// "--&gt;&gt;" rows, so file-based and inline assertions behave identically. Any previously
+        /// loaded data is discarded first so the call is idempotent.
+        /// </summary>
+        public void LoadRows(IEnumerable<string[]> rows)
+        {
+            if (rows == null) throw new ArgumentNullException(nameof(rows));
+
+            Data.Rows.Clear();
+            Data.Columns.Clear();
+            _headersSet = false;
+            _explicitTypes = null;
+
+            foreach (var row in rows)
+            {
+                AddRow(row);
+            }
+
+            if (Data.Rows.Count > 0)
+            {
+                InferColumnTypes();
+            }
+        }
 
         /// <summary>
         /// Adds a row of cell values. The first call sets column headers.
@@ -109,8 +172,6 @@ namespace DaxStudio.Parsers.CommentScript
                     targetType = InferColumnType(col);
                 }
 
-                if (targetType == typeof(string)) continue;
-
                 ReplaceColumnWithType(col, targetType);
             }
         }
@@ -123,21 +184,36 @@ namespace DaxStudio.Parsers.CommentScript
 
             foreach (DataRow row in Data.Rows)
             {
-                var val = row[col] as string;
-                if (string.IsNullOrEmpty(val))
-                {
-                    row[newCol] = DBNull.Value;
-                }
-                else
-                {
-                    row[newCol] = ConvertValue(val, targetType);
-                }
+                row[newCol] = NormalizeCellValue(row[col] as string, targetType);
             }
 
             var ordinal = Data.Columns[col].Ordinal;
             Data.Columns.Remove(Data.Columns[col]);
             newCol.ColumnName = colName;
             newCol.SetOrdinal(ordinal);
+        }
+
+        /// <summary>
+        /// Converts a raw cell string to its typed value applying the null / empty-string / escape rules:
+        /// a leading backslash escapes the rest as a literal string; an empty cell is null (DBNull) for
+        /// every column type; the "" token is an explicit empty string for a string column; otherwise
+        /// the raw value is converted to the target type.
+        /// </summary>
+        private static object NormalizeCellValue(string raw, Type targetType)
+        {
+            if (raw != null && raw.Length > 0 && raw[0] == EscapeChar)
+            {
+                var literal = raw.Substring(1);
+                return targetType == typeof(string) ? (object)literal : ConvertValue(literal, targetType);
+            }
+
+            if (string.IsNullOrEmpty(raw))
+                return DBNull.Value;
+
+            if (targetType == typeof(string))
+                return raw == EmptyStringToken ? string.Empty : raw;
+
+            return ConvertValue(raw, targetType);
         }
 
         private static object ConvertValue(string val, Type targetType)
@@ -191,6 +267,10 @@ namespace DaxStudio.Parsers.CommentScript
             foreach (var val in values)
             {
                 if (string.IsNullOrEmpty(val)) continue;
+
+                // An explicit empty-string token or an escaped literal forces the column to string.
+                if (val == EmptyStringToken || val[0] == EscapeChar)
+                    return typeof(string);
 
                 hasValues = true;
 

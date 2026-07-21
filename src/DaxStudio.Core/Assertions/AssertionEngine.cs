@@ -129,11 +129,10 @@ namespace DaxStudio.Core.Assertions
         /// contain extra rows and extra columns); order is ignored.</item>
         /// </list>
         /// </summary>
-        public static TestResult EvaluateTable(AssertTableCommand command, DataTable actual, string testName = null)
+        public static TestResult EvaluateTable(AssertTableCommand command, DataTable actual, string testName = null, string baseDirectory = null)
         {
             if (command == null) throw new ArgumentNullException(nameof(command));
 
-            var expected = command.Data;
             var result = new TestResult
             {
                 TestName = testName,
@@ -145,6 +144,15 @@ namespace DaxStudio.Core.Assertions
 
             try
             {
+                // For file-based ASSERT TABLE the expected rows are loaded lazily here so that
+                // missing-file / bad-format errors surface as an assertion error alongside the query.
+                if (command.Format != AssertTableFormat.Inline)
+                {
+                    AssertTableFileLoader.LoadInto(command, baseDirectory);
+                    result.Expected = ExpectedTable(command);
+                }
+
+                var expected = command.Data;
                 if (expected == null)
                 {
                     result.Outcome = TestOutcome.Error;
@@ -397,26 +405,27 @@ namespace DaxStudio.Core.Assertions
             var results = new List<TestResult>();
             if (batches == null) return results;
 
-            foreach (var batch in batches)
+            for (int batchIndex = 0; batchIndex < batches.Count; batchIndex++)
             {
+                var batch = batches[batchIndex];
                 if (batch?.Commands == null) continue;
 
                 var testName = batch.Commands.OfType<TestCommand>().FirstOrDefault()?.TestName;
 
                 foreach (var cmd in batch.Commands.OfType<AssertRowcountCommand>())
-                    results.Add(CreatePending(AssertionKind.RowCount, DescribeRowCount(cmd), ExpectedRowCount(cmd), testName));
+                    results.Add(CreatePending(AssertionKind.RowCount, DescribeRowCount(cmd), ExpectedRowCount(cmd), testName, batchIndex));
 
                 foreach (var cmd in batch.Commands.OfType<AssertTableCommand>())
-                    results.Add(CreatePending(AssertionKind.Table, DescribeTable(cmd), ExpectedTable(cmd), testName));
+                    results.Add(CreatePending(AssertionKind.Table, DescribeTable(cmd), ExpectedTable(cmd), testName, batchIndex));
 
                 foreach (var cmd in batch.Commands.OfType<AssertCommand>())
-                    results.Add(CreatePending(AssertionKind.Performance, DescribePerformance(cmd), ExpectedPerformance(cmd), testName));
+                    results.Add(CreatePending(AssertionKind.Performance, DescribePerformance(cmd), ExpectedPerformance(cmd), testName, batchIndex));
             }
 
             return results;
         }
 
-        private static TestResult CreatePending(AssertionKind kind, string description, string expected, string testName)
+        private static TestResult CreatePending(AssertionKind kind, string description, string expected, string testName, int batchIndex)
         {
             return new TestResult
             {
@@ -427,6 +436,7 @@ namespace DaxStudio.Core.Assertions
                 Actual = string.Empty,
                 Message = string.Empty,
                 Outcome = TestOutcome.Pending,
+                BatchIndex = batchIndex,
             };
         }
 

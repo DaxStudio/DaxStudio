@@ -719,10 +719,18 @@ namespace DaxStudio.UI.ViewModels
 
         public void Clear()
         {
-            ResultsDataSet?.Tables?.Clear();
-            ShowResultsTable = false;
-            ClearShowTabs();
-            ResultsMessage = "Results Cleared";
+            Execute.OnUIThread(() =>
+            {
+                ResultsDataSet?.Tables?.Clear();
+                // Remove every tab (query-result data grids AND SHOW trees) so an error / cleared state
+                // hides the TabControl entirely rather than leaving stale grids visible behind the error
+                // overlay. ShowResultsTable is bound to the grid's visibility.
+                _resultTabs.Clear();
+                ShowResultsTable = false;
+                ResultsMessage = "Results Cleared";
+                NotifyOfPropertyChange(() => Tables);
+                NotifyOfPropertyChange(() => ShowResultsMessage);
+            });
         }
 
         #region SHOW command tabs

@@ -212,9 +212,12 @@ CS_COMMA:                  ',';
 CS_CSV:                   'CSV';
 CS_XLSX:                  'XLSX';
 CS_JSON:                  'JSON';
+CS_TXT:                   'TXT';
+CS_MD:                    'MD';
+CS_PARQUET:               'PARQUET';
 
 CS_SERVER:                'SERVER';
-CS_PBIX:                  'PBIX' ;
+CS_DESKTOP:               'DESKTOP' ;
 CS_SSDT:                  'SSDT' ;
 
 CS_DURATION:              'DURATION';

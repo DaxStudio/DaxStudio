@@ -2907,6 +2907,20 @@ namespace DaxStudio.Core.Options
             } 
         }
 
+        private bool _useStructuralCodeFolding;
+        [Category("Editor")]
+        [DisplayName("Use structural code folding")]
+        [Description("Collapse sections of code based on the structure of the DAX (DEFINE, MEASURE, EVALUATE, VAR/RETURN, brackets, etc.) instead of indenting. When disabled the 'Use Indent based code folding' setting is used instead.")]
+        [DataMember, DefaultValue(true)]
+        public bool UseStructuralCodeFolding { get => _useStructuralCodeFolding;
+            set {
+                _useStructuralCodeFolding = value;
+                SettingProvider.SetValue(nameof(UseStructuralCodeFolding), value, _isInitializing, this);
+                NotifyOfPropertyChange();
+                _eventAggregator.PublishAsync(new UpdateGlobalOptions());
+            }
+        }
+
         [Category("Defaults")]
         [DisplayName("Show Database dialog")]
         [Description("Show a dialog to select the database when connecting")]

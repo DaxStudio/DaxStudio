@@ -1,5 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
+using System.Windows.Controls;
 using Caliburn.Micro;
 using DaxStudio.Core.Model;
 using DaxStudio.Parsers.CommentScript;
@@ -99,5 +102,104 @@ namespace DaxStudio.UI.ViewModels
 
         /// <summary>The Max Update / Days Since Change columns are only shown for the LAST_UPDATED variant.</summary>
         public bool ShowTreeExtraColumns { get; }
+
+        private bool _showTreeLines = true;
+        /// <summary>
+        /// Whether the tree connector lines (and node expanders) are drawn. They are only meaningful while the
+        /// grid preserves the hierarchy - i.e. when sorted by the Object column - so they are switched off when
+        /// the user sorts by any other column (which produces a flat list).
+        /// </summary>
+        public bool ShowTreeLines
+        {
+            get => _showTreeLines;
+            set { _showTreeLines = value; NotifyOfPropertyChange(() => ShowTreeLines); }
+        }
+
+        /// <summary>
+        /// Column-header sort handler for the SHOW tree-grid. Sorting by the Object (tree) column re-orders the
+        /// nodes recursively so the hierarchy is preserved and the tree lines stay meaningful; sorting by any
+        /// other column falls back to the grid's default flat sort with the tree lines switched off.
+        /// </summary>
+        public void OnSorting(object source, DataGridSortingEventArgs e)
+        {
+            var isObjectColumn = e.Column is DaxStudio.Controls.TreeColumn;
+
+            if (!isObjectColumn)
+            {
+                // Let the base DataGrid perform its flat sort; the hierarchy is no longer represented so hide
+                // the connector lines / expanders.
+                ShowTreeLines = false;
+                return;
+            }
+
+            // Recursive, hierarchy-preserving sort of the tree nodes - suppress the flat sort the grid would do.
+            e.Handled = true;
+
+            var descending = e.Column.SortDirection == System.ComponentModel.ListSortDirection.Ascending;
+            if (source is DataGrid grid)
+            {
+                // Remove any flat sort left over from a previous non-Object column click. The TreeGrid is a
+                // plain DataGrid that flat-sorts its flattened rows via Items.SortDescriptions; if that stale
+                // sort is not cleared it is re-applied when we rebuild the roots below, re-flattening the
+                // hierarchy back into the previous column's order (so the tree never returns to its shape).
+                grid.Items.SortDescriptions.Clear();
+                foreach (var column in grid.Columns)
+                {
+                    if (column != e.Column) column.SortDirection = null;
+                }
+            }
+            e.Column.SortDirection = descending
+                ? System.ComponentModel.ListSortDirection.Descending
+                : System.ComponentModel.ListSortDirection.Ascending;
+
+            SortNodesRecursive(ShowTreeRoots, descending);
+            ShowTreeLines = true;
+            RefreshRoots();
+        }
+
+        /// <summary>Stable recursive sort of the tree nodes by <see cref="ShowTreeNode.Name"/> at every level.</summary>
+        internal static void SortNodesRecursive(IList<ShowTreeNode> nodes, bool descending)
+        {
+            if (nodes == null || nodes.Count == 0) return;
+
+            var ordered = descending
+                ? nodes.OrderByDescending(n => n.Name, StringComparer.OrdinalIgnoreCase).ToList()
+                : nodes.OrderBy(n => n.Name, StringComparer.OrdinalIgnoreCase).ToList();
+
+            if (nodes is List<ShowTreeNode> list)
+            {
+                list.Clear();
+                list.AddRange(ordered);
+            }
+            else
+            {
+                nodes.Clear();
+                foreach (var n in ordered) nodes.Add(n);
+            }
+
+            foreach (var node in ordered) SortNodesRecursive(node.Children, descending);
+        }
+
+        /// <summary>
+        /// Resets <see cref="ShowTreeRoots"/> in place so the tree grid re-reads the re-ordered node hierarchy. A
+        /// single Reset notification fires while the collection already holds the (unchanged) roots, letting the
+        /// grid rebuild the tree while preserving each node's expanded state by identity.
+        /// </summary>
+        private void RefreshRoots()
+        {
+            var items = ShowTreeRoots.ToList();
+            var wasNotifying = ShowTreeRoots.IsNotifying;
+            ShowTreeRoots.IsNotifying = false;
+            try
+            {
+                ShowTreeRoots.Clear();
+                foreach (var item in items) ShowTreeRoots.Add(item);
+            }
+            finally
+            {
+                ShowTreeRoots.IsNotifying = wasNotifying;
+            }
+            ShowTreeRoots.Refresh();
+        }
     }
 }

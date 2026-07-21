@@ -375,9 +375,90 @@ namespace DaxStudio.Parsers.Tests.CommentScript
             Assert.IsNotNull(cmd);
             Assert.AreEqual(1, cmd.Data.Rows.Count);
             Assert.AreEqual("Red", cmd.Data.Rows[0]["Color"]);
-            // Empty cell with type inference: Count column has one empty value, 
-            // so it stays string (no values to infer from)
-            Assert.AreEqual("", cmd.Data.Rows[0]["Count"]);
+            // An empty cell is null (DBNull / BLANK) for every column type, including string columns.
+            Assert.AreEqual(DBNull.Value, cmd.Data.Rows[0]["Count"]);
+        }
+
+        [TestMethod]
+        public void AssertTableEmptyStringToken_YieldsEmptyString()
+        {
+            var input = "--> ASSERT TABLE\n" +
+                "-->> | Color | Note |\n" +
+                "-->> | Red   | \"\"   |\n" +
+                "-->> | Blue  |      |\n" +
+                "EVALUATE { 1 }\n";
+
+            List<Error> errors = new List<Error>();
+            var tree = Helpers.ConfigureLexerAndParser(input, ref errors);
+
+            Assert.IsNull(tree.exception);
+            Assert.IsEmpty(errors, "Should have no errors");
+
+            var batch = new List<ScriptBatch>();
+            var listener = new PreProcessorListener(new Dictionary<string, List<string>>(), batch);
+            new ParseTreeWalker().Walk(listener, tree);
+
+            var cmd = batch[0].Commands[0] as AssertTableCommand;
+            Assert.IsNotNull(cmd);
+            Assert.AreEqual(typeof(string), cmd.Data.Columns["Note"].DataType);
+            // "" token -> explicit empty string; blank cell -> null.
+            Assert.AreEqual(string.Empty, cmd.Data.Rows[0]["Note"]);
+            Assert.AreEqual(DBNull.Value, cmd.Data.Rows[1]["Note"]);
+        }
+
+        [TestMethod]
+        public void AssertTableEmptyStringToken_ForcesStringColumn()
+        {
+            var input = "--> ASSERT TABLE\n" +
+                "-->> | Value |\n" +
+                "-->> | 10    |\n" +
+                "-->> | \"\"    |\n" +
+                "EVALUATE { 1 }\n";
+
+            List<Error> errors = new List<Error>();
+            var tree = Helpers.ConfigureLexerAndParser(input, ref errors);
+
+            Assert.IsNull(tree.exception);
+            Assert.IsEmpty(errors, "Should have no errors");
+
+            var batch = new List<ScriptBatch>();
+            var listener = new PreProcessorListener(new Dictionary<string, List<string>>(), batch);
+            new ParseTreeWalker().Walk(listener, tree);
+
+            var cmd = batch[0].Commands[0] as AssertTableCommand;
+            Assert.IsNotNull(cmd);
+            // An explicit "" token forces the column to string even though the other value is numeric.
+            Assert.AreEqual(typeof(string), cmd.Data.Columns["Value"].DataType);
+            Assert.AreEqual("10", cmd.Data.Rows[0]["Value"]);
+            Assert.AreEqual(string.Empty, cmd.Data.Rows[1]["Value"]);
+        }
+
+        [TestMethod]
+        public void AssertTableBackslashEscape_YieldsLiteralString()
+        {
+            var input = "--> ASSERT TABLE\n" +
+                "-->> | V |\n" +
+                "-->> | \\\"\" |\n" +
+                "-->> | \\\" |\n" +
+                "-->> | \\\\x |\n" +
+                "EVALUATE { 1 }\n";
+
+            List<Error> errors = new List<Error>();
+            var tree = Helpers.ConfigureLexerAndParser(input, ref errors);
+
+            Assert.IsNull(tree.exception);
+            Assert.IsEmpty(errors, "Should have no errors");
+
+            var batch = new List<ScriptBatch>();
+            var listener = new PreProcessorListener(new Dictionary<string, List<string>>(), batch);
+            new ParseTreeWalker().Walk(listener, tree);
+
+            var cmd = batch[0].Commands[0] as AssertTableCommand;
+            Assert.IsNotNull(cmd);
+            Assert.AreEqual(typeof(string), cmd.Data.Columns["V"].DataType);
+            Assert.AreEqual("\"\"", cmd.Data.Rows[0]["V"]);   // \"" -> literal ""
+            Assert.AreEqual("\"", cmd.Data.Rows[1]["V"]);     // \"  -> literal "
+            Assert.AreEqual("\\x", cmd.Data.Rows[2]["V"]);    // \\x -> literal \x
         }
 
         [TestMethod]
@@ -744,6 +825,143 @@ namespace DaxStudio.Parsers.Tests.CommentScript
             Assert.AreEqual(PerformanceProperty.SE_QUERIES, perfCmd.Property);
         }
 
+        [TestMethod]
+        public void AssertTableWithNoTableDefinition_SurfacesCommandError()
+        {
+            var input = "--> ASSERT TABLE\n" +
+                "EVALUATE { 1 }\n";
+            var result = DaxStudio.Parsers.PreProcessor.AntlrPreProcessor.Parse(input);
+
+            Assert.IsTrue(result.HasCommandErrors, "An ASSERT TABLE with no '-->>' rows must be a command error");
+            var err = result.CommandErrors.First();
+            StringAssert.Contains(err.Msg, "ASSERT TABLE");
+            Assert.AreEqual(1, err.Line, "The error should point at the ASSERT TABLE command line");
+        }
+
+        [TestMethod]
+        public void AssertTableWithOnlySeparatorRow_SurfacesCommandError()
+        {
+            // A separator row does not define any columns, so this is still "no table definition".
+            var input = "--> ASSERT TABLE\n" +
+                "-->> |---|---|\n" +
+                "EVALUATE { 1 }\n";
+            var result = DaxStudio.Parsers.PreProcessor.AntlrPreProcessor.Parse(input);
+
+            Assert.IsTrue(result.HasCommandErrors);
+            StringAssert.Contains(result.CommandErrors.First().Msg, "ASSERT TABLE");
+        }
+
+        [TestMethod]
+        public void TableRowsWithoutAssertTable_SurfacesCommandError()
+        {
+            var input = "-->> | Color | Count |\n" +
+                "-->> | Red   | 5     |\n" +
+                "EVALUATE { 1 }\n";
+            var result = DaxStudio.Parsers.PreProcessor.AntlrPreProcessor.Parse(input);
+
+            Assert.IsTrue(result.HasCommandErrors, "Orphan '-->>' rows with no ASSERT TABLE must be a command error");
+            var err = result.CommandErrors.First();
+            StringAssert.Contains(err.Msg, "-->>");
+            Assert.AreEqual(1, err.Line, "The error should point at the first orphan '-->>' row");
+        }
+
+        [TestMethod]
+        public void AssertTableSpanningGo_IsValid()
+        {
+            // A complete ASSERT TABLE terminated by GO must still validate and infer types.
+            var input = "--> ASSERT TABLE\n" +
+                "-->> | Color | Count |\n" +
+                "-->> | Red   | 5     |\n" +
+                "EVALUATE { 1 }\n" +
+                "--> GO\n" +
+                "EVALUATE { 2 }\n";
+            var result = DaxStudio.Parsers.PreProcessor.AntlrPreProcessor.Parse(input);
+
+            Assert.IsFalse(result.HasCommandErrors, "A valid ASSERT TABLE before GO should not be a command error");
+            var tableCmd = result.Batches[0].Commands.OfType<AssertTableCommand>().Single();
+            Assert.AreEqual(typeof(long), tableCmd.Data.Columns["Count"].DataType, "Column types should be inferred for a GO-terminated batch");
+        }
+
+        [TestMethod]
+        public void AssertTableFromCsvFile_CapturesFormatAndPath()
+        {
+            var input = "--> ASSERT TABLE CSV \"data\\expected.csv\"\n" +
+                "EVALUATE { 1 }\n";
+            var result = DaxStudio.Parsers.PreProcessor.AntlrPreProcessor.Parse(input);
+
+            Assert.IsFalse(result.HasCommandErrors, "A file-based ASSERT TABLE is a valid table definition");
+            var cmd = result.Batches[0].Commands.OfType<AssertTableCommand>().Single();
+            Assert.AreEqual(AssertTableFormat.Csv, cmd.Format);
+            Assert.AreEqual("data\\expected.csv", cmd.FilePath);
+            Assert.IsTrue(cmd.HasTableDefinition, "A file clause satisfies the table-definition requirement");
+        }
+
+        [TestMethod]
+        public void AssertTableFromTxtFile_CapturesFormat()
+        {
+            var input = "--> ASSERT TABLE TXT \"c:\\temp\\expected.txt\"\n" +
+                "EVALUATE { 1 }\n";
+            var result = DaxStudio.Parsers.PreProcessor.AntlrPreProcessor.Parse(input);
+
+            Assert.IsFalse(result.HasCommandErrors);
+            var cmd = result.Batches[0].Commands.OfType<AssertTableCommand>().Single();
+            Assert.AreEqual(AssertTableFormat.Txt, cmd.Format);
+            Assert.AreEqual("c:\\temp\\expected.txt", cmd.FilePath);
+        }
+
+        [TestMethod]
+        public void AssertTableFromMdFile_CapturesFormat()
+        {
+            var input = "--> ASSERT TABLE MD \"expected.md\"\n" +
+                "EVALUATE { 1 }\n";
+            var result = DaxStudio.Parsers.PreProcessor.AntlrPreProcessor.Parse(input);
+
+            Assert.IsFalse(result.HasCommandErrors);
+            var cmd = result.Batches[0].Commands.OfType<AssertTableCommand>().Single();
+            Assert.AreEqual(AssertTableFormat.Md, cmd.Format);
+            Assert.AreEqual("expected.md", cmd.FilePath);
+        }
+
+        [TestMethod]
+        public void AssertTableFromParquetFile_CapturesFormat()
+        {
+            var input = "--> ASSERT TABLE PARQUET \"expected.parquet\"\n" +
+                "EVALUATE { 1 }\n";
+            var result = DaxStudio.Parsers.PreProcessor.AntlrPreProcessor.Parse(input);
+
+            Assert.IsFalse(result.HasCommandErrors);
+            var cmd = result.Batches[0].Commands.OfType<AssertTableCommand>().Single();
+            Assert.AreEqual(AssertTableFormat.Parquet, cmd.Format);
+            Assert.AreEqual("expected.parquet", cmd.FilePath);
+        }
+
+        [TestMethod]
+        public void AssertTableFileWithMode_CapturesBoth()
+        {
+            var input = "--> ASSERT TABLE UNORDERED CSV \"expected.csv\"\n" +
+                "EVALUATE { 1 }\n";
+            var result = DaxStudio.Parsers.PreProcessor.AntlrPreProcessor.Parse(input);
+
+            Assert.IsFalse(result.HasCommandErrors);
+            var cmd = result.Batches[0].Commands.OfType<AssertTableCommand>().Single();
+            Assert.AreEqual(AssertTableMode.Unordered, cmd.Mode);
+            Assert.AreEqual(AssertTableFormat.Csv, cmd.Format);
+        }
+
+        [TestMethod]
+        public void AssertTableFileWithInlineRows_SurfacesCommandError()
+        {
+            // Mixing a file clause with inline '-->>' rows is ambiguous and must be an error.
+            var input = "--> ASSERT TABLE CSV \"expected.csv\"\n" +
+                "-->> | Color | Count |\n" +
+                "-->> | Red   | 5     |\n" +
+                "EVALUATE { 1 }\n";
+            var result = DaxStudio.Parsers.PreProcessor.AntlrPreProcessor.Parse(input);
+
+            Assert.IsTrue(result.HasCommandErrors, "A file-based ASSERT TABLE cannot also have inline rows");
+            StringAssert.Contains(result.CommandErrors.First().Msg, "cannot combine");
+        }
+
         #endregion
 
         #region Combined Command Tests
@@ -898,14 +1116,14 @@ namespace DaxStudio.Parsers.Tests.CommentScript
         {
             // Power BI Desktop report names frequently contain spaces; the unquoted form must capture
             // the whole name rather than only the first word.
-            var input = "--> CONNECT PBIX My Sales Report\nEVALUATE { 1 }\n";
+            var input = "--> CONNECT DESKTOP My Sales Report\nEVALUATE { 1 }\n";
 
             var result = DaxStudio.Parsers.PreProcessor.AntlrPreProcessor.Parse(input);
             Assert.IsFalse(result.HasErrors);
 
             var connCmd = result.Batches.SelectMany(b => b.Commands).OfType<ConnectCommand>().FirstOrDefault();
             Assert.IsNotNull(connCmd);
-            Assert.AreEqual(ConnectionType.PBIX, connCmd.ConnectionType);
+            Assert.AreEqual(ConnectionType.DESKTOP, connCmd.ConnectionType);
             Assert.AreEqual("My Sales Report", connCmd.InstanceName);
         }
 
@@ -983,5 +1201,86 @@ namespace DaxStudio.Parsers.Tests.CommentScript
             Assert.IsFalse(result.HasCommandErrors,
                 "a syntax error on a DAX-body line must not be treated as a comment-script command error");
         }
+
+        #region SET (script variable) Tests
+
+        private static VariableCommand ParseSingleSetCommand(string input)
+        {
+            List<Error> errors = new List<Error>();
+            var tree = Helpers.ConfigureLexerAndParser(input, ref errors);
+            Assert.IsNull(tree.exception);
+            Assert.IsEmpty(errors, "Should have no errors");
+
+            var arrayParameters = new Dictionary<string, List<string>>();
+            var batch = new List<ScriptBatch>();
+            var listener = new PreProcessorListener(arrayParameters, batch);
+            new ParseTreeWalker().Walk(listener, tree);
+
+            Assert.HasCount(1, batch[0].Commands);
+            var cmd = batch[0].Commands[0] as VariableCommand;
+            Assert.IsNotNull(cmd);
+            return cmd;
+        }
+
+        [TestMethod]
+        public void SetVariable_QuotedStringValue()
+        {
+            var cmd = ParseSingleSetCommand("--> SET OutDir = \"C:\\Reports\"\nEVALUATE { 1 }\n");
+            Assert.AreEqual("OutDir", cmd.Name);
+            Assert.AreEqual("C:\\Reports", cmd.RawValue);
+        }
+
+        [TestMethod]
+        public void SetVariable_IdentifierValue()
+        {
+            var cmd = ParseSingleSetCommand("--> SET Env = prod\nEVALUATE { 1 }\n");
+            Assert.AreEqual("Env", cmd.Name);
+            Assert.AreEqual("prod", cmd.RawValue);
+        }
+
+        [TestMethod]
+        public void SetVariable_IntegerValue()
+        {
+            var cmd = ParseSingleSetCommand("--> SET Retries = 5\nEVALUATE { 1 }\n");
+            Assert.AreEqual("Retries", cmd.Name);
+            Assert.AreEqual("5", cmd.RawValue);
+        }
+
+        [TestMethod]
+        public void SetVariable_RealValue()
+        {
+            var cmd = ParseSingleSetCommand("--> SET Threshold = 1.5\nEVALUATE { 1 }\n");
+            Assert.AreEqual("Threshold", cmd.Name);
+            Assert.AreEqual("1.5", cmd.RawValue);
+        }
+
+        [TestMethod]
+        public void SetVariable_KeepsUnexpandedReference()
+        {
+            var cmd = ParseSingleSetCommand("--> SET OutDir = \"C:\\Report\\$(now:yyyy-MM-dd)\"\nEVALUATE { 1 }\n");
+            Assert.AreEqual("OutDir", cmd.Name);
+            Assert.AreEqual("C:\\Report\\$(now:yyyy-MM-dd)", cmd.RawValue);
+        }
+
+        [TestMethod]
+        public void SetVariable_RedefinitionKeepsBothInOrder()
+        {
+            var input = "--> SET Env = dev\n--> SET Env = prod\nEVALUATE { 1 }\n";
+            List<Error> errors = new List<Error>();
+            var tree = Helpers.ConfigureLexerAndParser(input, ref errors);
+            Assert.IsEmpty(errors);
+
+            var arrayParameters = new Dictionary<string, List<string>>();
+            var batch = new List<ScriptBatch>();
+            var listener = new PreProcessorListener(arrayParameters, batch);
+            new ParseTreeWalker().Walk(listener, tree);
+
+            var sets = batch[0].Commands.OfType<VariableCommand>().ToList();
+            Assert.HasCount(2, sets);
+            Assert.AreEqual("dev", sets[0].RawValue);
+            Assert.AreEqual("prod", sets[1].RawValue);
+        }
+
+        #endregion
     }
 }

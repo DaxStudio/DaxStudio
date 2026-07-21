@@ -54,25 +54,25 @@ namespace DaxStudio.UI.ResultsTargets
             // Read the AutoFormat option from the options singleton
             bool autoFormat = _options.ResultAutoFormat;
             string autoDateFormat = _options.DefaultDateAutoFormat;
-            await Task.Run(() =>
+            await Task.Run(async () =>
                 {
                     // When any batch contains a "--> SHOW" command the results become a heterogeneous,
                     // interspersed set of tabs (query grids and SHOW trees in batch execution order).
                     // Otherwise we keep the classic single/multi data-batch path byte-for-byte unchanged.
                     if (AnyShowCommand(textProvider))
                     {
-                        RunInterspersedBatches(runner, textProvider, autoFormat, autoDateFormat);
+                        await RunInterspersedBatches(runner, textProvider, autoFormat, autoDateFormat);
                     }
                     else
                     {
-                        RunDataBatches(runner, textProvider, autoFormat, autoDateFormat);
+                        await RunDataBatches(runner, textProvider, autoFormat, autoDateFormat);
                     }
                 });
         }
 
         // The classic path: no "--> SHOW" commands anywhere. Runs each executable batch and appends its
         // result tables into a single combined DataSet, exactly as before.
-        private void RunDataBatches(IQueryRunner runner, IQueryTextProvider textProvider, bool autoFormat, string autoDateFormat)
+        private async Task RunDataBatches(IQueryRunner runner, IQueryTextProvider textProvider, bool autoFormat, string autoDateFormat)
         {
             long durationMs = 0;
             int queryCnt = 1;
@@ -103,17 +103,26 @@ namespace DaxStudio.UI.ResultsTargets
                 return;
             }
 
-            var isSessionsDmv = batches.Any(b => b.Contains(Common.Constants.SessionsDmv, StringComparison.OrdinalIgnoreCase));
+            var isSessionsDmv = batches.Any(b => b.QueryText.Contains(Common.Constants.SessionsDmv, StringComparison.OrdinalIgnoreCase));
             var combined = new DataSet();
             int tableIdx = 1;
             bool anyReader = false;
 
-            foreach (var dq in batches)
+            foreach (var (batchIndex, dq) in batches)
             {
                 // Comment-script commands that change the document state (e.g. "--> CONNECT")
                 // are dispatched in DocumentViewModel.RunQueryInternalAsync before we get here.
                 // Future per-batch commands (CLEAR CACHE, TRACE, USE, ...) would hook in here.
+                // Let the runner arm any per-batch assertion state (e.g. reset the Server Timings
+                // trace) BEFORE the query runs so this batch's metrics are captured in isolation.
+                runner.PrepareBatchAssertions(batchIndex);
+
+                // Signal that this batch's query is starting so the Test Results pane can mark just
+                // this batch's tests as running (batches run sequentially).
+                _ = _eventAggregator.PublishAsync(new DaxStudio.Core.Events.QueryBatchStartedEvent(batchIndex));
+
                 var batchIsSessionsDmv = dq.Contains(Common.Constants.SessionsDmv, StringComparison.OrdinalIgnoreCase);
+                var batchTables = new System.Collections.Generic.List<System.Data.DataTable>();
                 using (var dataReader = runner.ExecuteDataReaderQuery(dq, textProvider.ParameterCollection))
                 {
                     if (dataReader != null)
@@ -121,10 +130,18 @@ namespace DaxStudio.UI.ResultsTargets
                         anyReader = true;
                         Log.Verbose("Start Processing Grid DataReader (Elapsed: {elapsed})", sw.ElapsedMilliseconds);
                         var batchDataSet = dataReader.ConvertToDataSet(autoFormat, batchIsSessionsDmv, autoDateFormat, runner.Connection);
+                        // Capture the batch's tables before AppendTables moves them into the combined set,
+                        // so this batch's assertions can be evaluated against them.
+                        batchTables.AddRange(batchDataSet.Tables.Cast<System.Data.DataTable>());
                         AppendTables(combined, batchDataSet, ref tableIdx);
                         Log.Verbose("End Processing Grid DataReader (Elapsed: {elapsed})", sw.ElapsedMilliseconds);
                     }
                 }
+
+                // Evaluate just this batch's assertions (waiting for / capturing this batch's Server
+                // Timings slice) before the next batch starts, so a completed batch's tests show their
+                // outcome while later batches remain pending. A no-op when the script has no asserts.
+                await runner.ProcessBatchAssertionsAsync(batchIndex, batchTables);
             }
 
             sw.Stop();
@@ -161,7 +178,7 @@ namespace DaxStudio.UI.ResultsTargets
         // batches in order and builds an ordered list of tab descriptors - a SHOW tree-grid for each
         // SHOW batch and a query-result grid for each executable DAX batch - then hands the ordered
         // list to the runner so the tabs appear interspersed in execution order.
-        private void RunInterspersedBatches(IQueryRunner runner, IQueryTextProvider textProvider, bool autoFormat, string autoDateFormat)
+        private async Task RunInterspersedBatches(IQueryRunner runner, IQueryTextProvider textProvider, bool autoFormat, string autoDateFormat)
         {
             var sw = Stopwatch.StartNew();
 
@@ -174,8 +191,9 @@ namespace DaxStudio.UI.ResultsTargets
             int queryCnt = 1;
             bool anyError = false;
 
-            foreach (var batch in batches)
+            for (int batchIndex = 0; batchIndex < batches.Count; batchIndex++)
             {
+                var batch = batches[batchIndex];
                 var showCommands = batch.Commands.OfType<ShowCommand>().ToList();
                 if (showCommands.Count > 0)
                 {
@@ -196,7 +214,15 @@ namespace DaxStudio.UI.ResultsTargets
                 var dax = batch.QueryText;
                 if (string.IsNullOrWhiteSpace(dax)) continue; // comment-only batch (e.g. "--> CONNECT")
 
+                // Let the runner arm any per-batch assertion state before the query runs.
+                runner.PrepareBatchAssertions(batchIndex);
+
+                // Signal that this batch's query is starting so the Test Results pane can mark just
+                // this batch's tests as running (batches run sequentially).
+                _ = _eventAggregator.PublishAsync(new DaxStudio.Core.Events.QueryBatchStartedEvent(batchIndex));
+
                 var batchIsSessionsDmv = dax.Contains(Common.Constants.SessionsDmv, StringComparison.OrdinalIgnoreCase);
+                var batchTables = new System.Collections.Generic.List<DataTable>();
                 using (var dataReader = runner.ExecuteDataReaderQuery(dax, textProvider.ParameterCollection))
                 {
                     if (dataReader != null)
@@ -205,6 +231,7 @@ namespace DaxStudio.UI.ResultsTargets
                         foreach (var tbl in batchDataSet.Tables.Cast<DataTable>().ToList())
                         {
                             batchDataSet.Tables.Remove(tbl);
+                            batchTables.Add(tbl);
                             tbl.TableName = tableIdx.ToString();
                             tableIdx++;
                             tabs.Add(ResultTabDescriptor.ForTable(tbl));
@@ -219,6 +246,9 @@ namespace DaxStudio.UI.ResultsTargets
                         anyError = true;
                     }
                 }
+
+                // Evaluate just this batch's assertions before the next batch starts (no-op without asserts).
+                await runner.ProcessBatchAssertionsAsync(batchIndex, batchTables);
             }
 
             sw.Stop();
@@ -291,11 +321,10 @@ namespace DaxStudio.UI.ResultsTargets
                         roots = runner.Connection.BuildQueryDependencyTree(query);
                         break;
                     case ShowType.LastUpdated:
-                        roots = runner.Connection.BuildMetadataTimestampTree(false);
-                        break;
                     case ShowType.MaxUpdated:
-                        roots = runner.Connection.BuildMetadataTimestampTree(true);
-                        break;
+                        // The timestamp trees are built purely from the connection metadata (no DAX),
+                        // so they share the same code path used by the metadata-pane context menu.
+                        return TryBuildTimestampShowTab(runner, showCommand.ShowType, out descriptor);
                     default:
                         runner.OutputError($"Unknown SHOW command type: {showCommand.ShowType}");
                         return true;
@@ -319,19 +348,75 @@ namespace DaxStudio.UI.ResultsTargets
             return true;
         }
 
-        // Returns the executable query text for each batch to run. When the pre-processor produced
-        // multiple non-empty batches (sections separated by "--> GO") each is returned in order.
-        // Otherwise a single element equal to the whole processed query text is returned so the
-        // classic / single-batch path is byte-identical to the previous behaviour. Batches with no
-        // executable DAX (only comment-script commands such as "--> CONNECT") are excluded, so the
-        // returned list can be empty when the script contained commands but no query.
-        private static System.Collections.Generic.List<string> GetExecutableBatches(IQueryTextProvider textProvider)
+        // Builds a metadata timestamp tree-grid tab (SHOW LAST_UPDATED / SHOW MAX_UPDATED) directly
+        // from the connection. Shared by the "--> SHOW" command dispatcher and the metadata-pane
+        // database context menu so both produce byte-identical results, messages and error handling.
+        // Returns true when the request was handled (a produced descriptor, an empty-result warning or
+        // an error message); descriptor is non-null only on success.
+        internal static bool TryBuildTimestampShowTab(IQueryRunner runner, ShowType showType, out ResultTabDescriptor descriptor)
+        {
+            descriptor = null;
+            try
+            {
+                System.Collections.Generic.List<ShowTreeNode> roots;
+                switch (showType)
+                {
+                    case ShowType.LastUpdated:
+                        roots = runner.Connection.BuildMetadataTimestampTree(false);
+                        break;
+                    case ShowType.MaxUpdated:
+                        roots = runner.Connection.BuildMetadataTimestampTree(true);
+                        break;
+                    default:
+                        runner.OutputError($"Unknown SHOW command type: {showType}");
+                        return true;
+                }
+
+                if (roots == null || roots.Count == 0)
+                {
+                    runner.OutputWarning($"--> SHOW {showType} returned no items");
+                    return true;
+                }
+
+                descriptor = ResultTabDescriptor.ForShowTree(roots, showType);
+                runner.OutputMessage($"--> SHOW {showType} completed");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "{class} {method} error handling SHOW command", nameof(ResultsTargetGrid), nameof(TryBuildTimestampShowTab));
+                runner.OutputError($"Error running --> SHOW {showType}: {ex.Message}");
+            }
+
+            return true;
+        }
+
+        // Runs a SHOW LAST_UPDATED / SHOW MAX_UPDATED request outside the query pipeline (e.g. from the
+        // metadata-pane database context menu) and displays the resulting timestamp tree as the single
+        // result tab, exactly as running the equivalent "--> SHOW" command on its own would.
+        internal static void RunMetadataTimestampShow(IQueryRunner runner, ShowType showType)
+        {
+            if (TryBuildTimestampShowTab(runner, showType, out var descriptor) && descriptor != null)
+            {
+                runner.SetResultTabs(new System.Collections.Generic.List<ResultTabDescriptor> { descriptor });
+                runner.ActivateResults();
+            }
+        }
+
+        // Returns the executable query text for each batch to run, paired with the zero-based index of
+        // the script batch it came from (so callers can map a running batch back to its assertions).
+        // When the pre-processor produced multiple non-empty batches (sections separated by "--> GO")
+        // each is returned in order. Otherwise a single element equal to the whole processed query text
+        // is returned (batch index 0) so the classic / single-batch path is byte-identical to the
+        // previous behaviour. Batches with no executable DAX (only comment-script commands such as
+        // "--> CONNECT") are excluded, so the returned list can be empty when the script contained
+        // commands but no query.
+        private static System.Collections.Generic.List<(int BatchIndex, string QueryText)> GetExecutableBatches(IQueryTextProvider textProvider)
         {
             var batches = textProvider.QueryInfo?.ScriptBatches;
             if (batches != null && batches.Count > 1)
             {
-                var list = batches.Select(b => b.QueryText)
-                                  .Where(t => !string.IsNullOrWhiteSpace(t))
+                var list = batches.Select((b, idx) => (BatchIndex: idx, QueryText: b.QueryText))
+                                  .Where(t => !string.IsNullOrWhiteSpace(t.QueryText))
                                   .ToList();
                 if (list.Count > 1) return list;
             }
@@ -341,8 +426,8 @@ namespace DaxStudio.UI.ResultsTargets
             // no query text and must not be sent to the server.
             var queryText = textProvider.QueryText;
             return string.IsNullOrWhiteSpace(queryText)
-                ? new System.Collections.Generic.List<string>()
-                : new System.Collections.Generic.List<string> { queryText };
+                ? new System.Collections.Generic.List<(int, string)>()
+                : new System.Collections.Generic.List<(int, string)> { (0, queryText) };
         }
 
         // Moves the tables from a single batch's result DataSet into the accumulating DataSet,

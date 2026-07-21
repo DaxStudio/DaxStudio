@@ -45,7 +45,7 @@ namespace DaxStudio.Parsers.Tests
             var labels = items.Select(i => i.Label).ToList();
 
             CollectionAssert.Contains(labels, "SERVER");
-            CollectionAssert.Contains(labels, "PBIX");
+            CollectionAssert.Contains(labels, "DESKTOP");
             CollectionAssert.Contains(labels, "SSDT");
         }
 

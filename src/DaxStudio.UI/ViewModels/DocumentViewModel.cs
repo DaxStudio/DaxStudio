@@ -125,6 +125,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<ToggleCommentEvent>
         , IHandle<PasteServerTimingsEvent>
         , IHandle<DaxStudio.Core.Events.QueryTraceCompletedEvent>
+        , IHandle<DaxStudio.Core.Events.QueryBatchStartedEvent>
         , IDropTarget
         , IQueryRunner
         , IQueryTextProvider
@@ -1176,7 +1177,7 @@ namespace DaxStudio.UI.ViewModels
                 var loc = Document.GetLocation(0);
                 //SelectedWorksheet = QueryResultsPane.SelectedWorksheet;
 
-                if (Options.UseIndentCodeFolding) StartFoldingManager();
+                if (Options.UseStructuralCodeFolding || Options.UseIndentCodeFolding) StartFoldingManager();
 
                 // exit here if we are not in a state to run a query
                 // means something is using the connection like
@@ -1227,10 +1228,23 @@ namespace DaxStudio.UI.ViewModels
             {
                 if (foldingManager == null)
                 {
-                    foldingStrategy = new Model.IndentFoldingStrategy();
+                    foldingStrategy = CreateFoldingStrategy();
                     foldingManager = FoldingManager.Install(this.GetEditor().TextArea);
                 }
             }
+        }
+
+        /// <summary>
+        /// Builds the folding strategy for the current options: structural (parser based) folding
+        /// when <see cref="IGlobalOptions.UseStructuralCodeFolding"/> is enabled, otherwise the
+        /// indentation based strategy.
+        /// </summary>
+        private Model.IFoldingStrategy CreateFoldingStrategy()
+        {
+            if (Options.UseStructuralCodeFolding)
+                return new Model.StructuralFoldingStrategy();
+
+            return new Model.IndentFoldingStrategy { TabIndent = Options.EditorIndentationSize };
         }
 
         private void StopFoldingManager()
@@ -1252,7 +1266,26 @@ namespace DaxStudio.UI.ViewModels
         // has finished aggregating, so the post-query assertion step can wait for the metrics.
         private TaskCompletionSource<bool> _serverTimingsAssertionTcs;
 
-        private Model.IndentFoldingStrategy foldingStrategy;
+        // Set at the start of a run when the script contains test assertions. Read by the
+        // QueryBatchStartedEvent handler (which fires from the background query loop) to transition each
+        // batch's tests to "running", and by the finally block to clean up if the run is aborted.
+        private bool _hasTestAsserts;
+
+        // The script batches for the current run (captured when the run resets the Test Results pane),
+        // so the per-batch assertion hooks (PrepareBatchAssertions / ProcessBatchAssertionsAsync) called
+        // from the background results-target loop can find each batch's assert commands by index.
+        private IReadOnlyList<CommentScript.ScriptBatch> _currentRunBatches;
+
+        // Batch indexes whose assertions have already been evaluated by the per-batch hook, so the
+        // end-of-run pass only handles batches the hook did not cover (e.g. a batch whose query errored).
+        private readonly HashSet<int> _evaluatedBatches = new HashSet<int>();
+
+        // Re-armed before each performance-assert batch's query runs (when the Server Timings trace is
+        // active) and completed by the QueryTraceCompletedEvent handler once that batch's trace slice has
+        // finished aggregating, so the batch's performance assertions read metrics captured in isolation.
+        private TaskCompletionSource<bool> _perBatchServerTimingsTcs;
+
+        private Model.IFoldingStrategy foldingStrategy;
         private FoldingManager foldingManager;
         private void UpdateFoldings()
         {
@@ -1260,7 +1293,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 if (foldingManager == null)
                 {
-                    foldingStrategy = new Model.IndentFoldingStrategy();
+                    foldingStrategy = CreateFoldingStrategy();
                     foldingManager = FoldingManager.Install(this.GetEditor().TextArea);
                 }
 
@@ -1683,16 +1716,26 @@ namespace DaxStudio.UI.ViewModels
 
             // A malformed comment-script ("-->") command (e.g. "--> USE" with no database) is a hard
             // error: surface a helpful message (with a red marker and "Goto" link on the offending
-            // command line) and abort the run rather than silently ignoring the command.
+            // command line) and abort the run rather than silently ignoring the command. The error is
+            // shown in both the Output pane and the results-pane error box, mirroring how a DAX engine
+            // error is displayed.
             if (!string.IsNullOrEmpty(textProvider.QueryInfo.PreProcessError))
             {
                 var msg = textProvider.QueryInfo.PreProcessError;
                 if (textProvider.QueryInfo.PreProcessErrorLine > 0)
+                {
                     // ANTLR columns are 0-based; the editor marker expects a 1-based column.
-                    OutputError(msg, textProvider.QueryInfo.PreProcessErrorLine, textProvider.QueryInfo.PreProcessErrorColumn + 1);
+                    var line = textProvider.QueryInfo.PreProcessErrorLine;
+                    var column = textProvider.QueryInfo.PreProcessErrorColumn + 1;
+                    OutputError(msg, line, column);
+                    OutputQueryError(msg, line, column);
+                }
                 else
+                {
                     OutputError(msg);
-                ActivateOutput();
+                    OutputQueryError(msg);
+                }
+                ActivateResults();
                 return DialogResult.Cancel;
             }
 
@@ -2278,6 +2321,12 @@ namespace DaxStudio.UI.ViewModels
             // applied after the assertion engine has consumed the result data.
             bool showResultsGrid = true;
 
+            // Reset the per-run assertion flag (a field, not a local, so the QueryBatchStartedEvent
+            // handler that fires from the background query loop can see it). When true the Test Results
+            // pane is reset to a pending (clock) state up-front, each batch's tests are marked "running"
+            // as that batch's query executes, and all are updated to their final outcome once done.
+            _hasTestAsserts = false;
+
             using (var msg = NewStatusBarMessage("Running Query..."))
             {
 
@@ -2380,6 +2429,19 @@ namespace DaxStudio.UI.ViewModels
                     }
                     else
                     {
+                        // If this run contains test assertions, reset the Test Results pane so every
+                        // discovered test shows a pending (clock) icon - clearing any Passed/Failed
+                        // results from a previous run - before we mark them running and then update them
+                        // with their final outcome. Done before the pre-query commands so the tests read
+                        // as pending while the connection / traces are being set up.
+                        _hasTestAsserts = ResetTestResultsForRun(message.QueryProvider);
+
+                        // Capture the batches for the per-batch assertion hooks and reset the
+                        // per-run evaluation tracking (the hooks run from the background query loop).
+                        _currentRunBatches = message.QueryProvider?.QueryInfo?.ScriptBatches;
+                        _evaluatedBatches.Clear();
+                        _perBatchServerTimingsTcs = null;
+
                         // Process any comment-script commands that must run before the query (e.g.
                         // "--> CONNECT", "--> CLEARCACHE"). If a CONNECT command was present but the
                         // connection could not be established, abort the run.
@@ -2424,6 +2486,10 @@ namespace DaxStudio.UI.ViewModels
                         ClearQueryError();
                         StartTimer();
 
+                        // The discovered tests were reset to pending above; each batch's tests now
+                        // transition to "running" as its query executes, driven by the
+                        // QueryBatchStartedEvent raised per batch from the results target (batches run
+                        // sequentially). See HandleAsync(QueryBatchStartedEvent).
                         await message.ResultsTarget.OutputResultsAsync(this, message.QueryProvider, null);
 
                         await ProcessCommentScriptPostQueryCommandsAsync(message.QueryProvider);
@@ -2477,6 +2543,11 @@ namespace DaxStudio.UI.ViewModels
                     IsQueryRunning = false;
                     NotifyOfPropertyChange(() => CanRunQuery);
                     StopTimer();
+                    // If the run was aborted (e.g. the query threw) before the assertions could be
+                    // evaluated, any tests left showing the "running" icon are marked as errored so the
+                    // pane does not leave them spinning indefinitely.
+                    if (_hasTestAsserts && TestResultsPane.RunningCount > 0)
+                        TestResultsPane.MarkRunningAsError("Test not evaluated - the query did not complete");
                     if (showResultsGrid)
                         ActivateResults();
                     else if (TestResultsPane.Results.Count > 0)
@@ -2543,6 +2614,20 @@ namespace DaxStudio.UI.ViewModels
         {
             var batches = queryProvider?.QueryInfo?.ScriptBatches;
             if (batches == null || batches.Count == 0) return true;
+
+            // Expand any "$(...)" script-variable / built-in references in command arguments (file
+            // paths, connection/database targets, etc.) before the commands are used. Runs in command
+            // order so a "--> SET" is visible only to later commands. A bad reference (undefined
+            // variable, unknown namespace, etc.) aborts the run with a helpful message.
+            try
+            {
+                CommentScript.ScriptVariableExpander.ExpandBatches(batches);
+            }
+            catch (CommentScript.CommentScriptCommandException ex)
+            {
+                OutputError(ex.Message);
+                return false;
+            }
 
             var commands = batches.SelectMany(b => b.Commands).ToList();
 
@@ -2644,76 +2729,85 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        // At the start of a run, if the script contains test assertions, resets the Test Results pane
+        // to show every discovered test in a pending (clock) state - clearing any Passed/Failed/Error
+        // results from a previous run - and reveals the pane. Returns true when the script has
+        // assertions so the caller knows to transition the tests to "running" once the query starts and
+        // to clean up any left "running" if the run is aborted.
+        private bool ResetTestResultsForRun(IQueryTextProvider queryProvider)
+        {
+            if (TestResultsPane == null) return false;
+            var batches = queryProvider?.QueryInfo?.ScriptBatches;
+            if (batches == null || batches.Count == 0) return false;
+            if (!batches.Any(BatchHasAsserts)) return false;
+
+            var discovered = DaxStudio.Core.Assertions.AssertionEngine.DiscoverTests(batches);
+            TestResultsPane.SetPendingForRun(discovered);
+            TestResultsPane.IsVisible = true;
+            return true;
+        }
+
+        // True when a batch contains at least one assertion command ("--> ASSERT [ROWCOUNT|TABLE|...]").
+        private static bool BatchHasAsserts(CommentScript.ScriptBatch b) =>
+            b.Commands.OfType<CommentScript.AssertCommand>().Any()
+            || b.Commands.OfType<CommentScript.AssertRowcountCommand>().Any()
+            || b.Commands.OfType<CommentScript.AssertTableCommand>().Any();
+
         // Runs the comment-script assertion commands ("--> ASSERT [ROWCOUNT|TABLE|...]") after the
-        // query has produced its results and populates the Test Results pane. The shared,
-        // UI-independent AssertionEngine (DaxStudio.Core.Assertions) does the actual evaluation so
-        // the same logic is used by the dscmd CLI. When a batch has no assert commands the pane is
-        // left untouched.
+        // query has produced its results and populates the Test Results pane. Batches are normally
+        // evaluated one-at-a-time by the per-batch hook (ProcessBatchAssertionsAsync) as each batch's
+        // query completes, so this end-of-run pass only covers any assert batch the hook did not reach
+        // (e.g. a batch whose query errored) and then reports the overall summary. The shared,
+        // UI-independent AssertionEngine (DaxStudio.Core.Assertions) does the actual evaluation so the
+        // same logic is used by the dscmd CLI.
         private async Task ProcessCommentScriptPostQueryCommandsAsync(IQueryTextProvider queryProvider)
         {
             var batches = queryProvider?.QueryInfo?.ScriptBatches;
             if (batches == null || batches.Count == 0) return;
 
             // Only touch the pane when there is at least one assertion to evaluate across all batches.
-            bool HasAsserts(CommentScript.ScriptBatch b) =>
-                b.Commands.OfType<CommentScript.AssertCommand>().Any()
-                || b.Commands.OfType<CommentScript.AssertRowcountCommand>().Any()
-                || b.Commands.OfType<CommentScript.AssertTableCommand>().Any();
+            if (!batches.Any(BatchHasAsserts)) return;
 
-            if (!batches.Any(HasAsserts)) return;
-
-            // Performance assertions read their metrics from the Server Timings trace, which finishes
-            // aggregating asynchronously AFTER the query returns. Wait for its completion signal
-            // (armed before the query ran) so the metrics are populated before we evaluate them.
-            if (batches.SelectMany(b => b.Commands).OfType<CommentScript.AssertCommand>().Any())
-                await WaitForServerTimingsAssertionDataAsync();
-
-            TestResultsPane.Clear();
+            // Fallback: evaluate any assert batch the per-batch hook did not cover. Performance
+            // assertions in such a batch fall back to the whole-run trace wait (armed before the query).
+            var uncoveredHasPerf = false;
+            for (int i = 0; i < batches.Count; i++)
+            {
+                if (BatchHasAsserts(batches[i]) && !_evaluatedBatches.Contains(i)
+                    && batches[i].Commands.OfType<CommentScript.AssertCommand>().Any())
+                {
+                    uncoveredHasPerf = true;
+                    break;
+                }
+            }
+            if (uncoveredHasPerf) await WaitForServerTimingsAssertionDataAsync();
 
             var perfMetrics = BuildPerformanceMetrics();
-            var results = new List<DaxStudio.Core.Assertions.TestResult>();
-
             for (int i = 0; i < batches.Count; i++)
             {
                 var batch = batches[i];
-                if (!HasAsserts(batch)) continue;
-
-                var testName = batch.Commands.OfType<CommentScript.TestCommand>().FirstOrDefault()?.TestName;
+                if (!BatchHasAsserts(batch) || _evaluatedBatches.Contains(i)) continue;
 
                 System.Data.DataTable dataTable = null;
                 var tables = ResultsDataSet?.Tables;
                 if (tables != null && tables.Count > 0)
-                {
                     dataTable = i < tables.Count ? tables[i] : tables[0];
-                }
 
-                var rowCount = dataTable?.Rows.Count ?? 0;
+                var batchTables = dataTable != null
+                    ? new List<System.Data.DataTable> { dataTable }
+                    : new List<System.Data.DataTable>();
 
-                foreach (var cmd in batch.Commands.OfType<CommentScript.AssertRowcountCommand>())
-                {
-                    results.Add(DaxStudio.Core.Assertions.AssertionEngine.EvaluateRowCount(cmd, rowCount, testName));
-                }
-
-                foreach (var cmd in batch.Commands.OfType<CommentScript.AssertTableCommand>())
-                {
-                    results.Add(DaxStudio.Core.Assertions.AssertionEngine.EvaluateTable(cmd, dataTable, testName));
-                }
-
-                foreach (var cmd in batch.Commands.OfType<CommentScript.AssertCommand>())
-                {
-                    results.Add(DaxStudio.Core.Assertions.AssertionEngine.EvaluatePerformance(cmd, perfMetrics, testName));
-                }
+                var batchResults = EvaluateBatchAssertions(i, batch, batchTables, perfMetrics, AssertionBaseDirectory);
+                _evaluatedBatches.Add(i);
+                TestResultsPane.SetBatchResults(i, batchResults);
             }
 
-            if (results.Count == 0) return;
-
-            TestResultsPane.AddResults(results);
             TestResultsPane.IsVisible = true;
             ActivateTestResults();
 
-            var passed = results.Count(r => r.Outcome == DaxStudio.Core.Assertions.TestOutcome.Passed);
-            var failed = results.Count(r => r.Outcome == DaxStudio.Core.Assertions.TestOutcome.Failed);
-            var errored = results.Count(r => r.Outcome == DaxStudio.Core.Assertions.TestOutcome.Error);
+            var passed = TestResultsPane.PassedCount;
+            var failed = TestResultsPane.FailedCount;
+            var errored = TestResultsPane.ErrorCount;
             var summary = $"Tests: {passed} passed, {failed} failed, {errored} errors";
             if (failed > 0 || errored > 0)
                 OutputWarning(summary);
@@ -2753,8 +2847,10 @@ namespace DaxStudio.UI.ViewModels
         // metrics are populated before the assertions read them. Bounded by the trace-startup
         // timeout; a timeout only warns and the assertions then report the metrics as not captured.
         private async Task WaitForServerTimingsAssertionDataAsync()
+            => await WaitForServerTimingsAssertionDataAsync(_serverTimingsAssertionTcs);
+
+        private async Task WaitForServerTimingsAssertionDataAsync(TaskCompletionSource<bool> tcs)
         {
-            var tcs = _serverTimingsAssertionTcs;
             if (tcs == null) return;
 
             var timeoutMs = Math.Max(1, Options.TraceStartupTimeout) * 1000;
@@ -2763,13 +2859,113 @@ namespace DaxStudio.UI.ViewModels
                 OutputWarning("--> ASSERT: timed out waiting for the Server Timings trace to complete; performance assertions may report metrics as not captured");
         }
 
+        // Called synchronously by the results-target batch loop before a batch's query runs. When the
+        // batch has performance assertions and the Server Timings trace is active, resets that trace and
+        // arms a fresh completion signal so the batch's metrics are captured in isolation (mirrors the
+        // benchmark's per-iteration OnReset - ServerTimesModel.ProcessResults early-returns while the
+        // previous results are still present, so only the first batch would otherwise be captured).
+        public void PrepareBatchAssertions(int batchIndex)
+        {
+            if (!_hasTestAsserts) return;
+            var batches = _currentRunBatches;
+            if (batches == null || batchIndex < 0 || batchIndex >= batches.Count) return;
+
+            var batch = batches[batchIndex];
+            var hasPerfAsserts = batch.Commands.OfType<CommentScript.AssertCommand>().Any();
+            var serverTimings = TraceWatchers.OfType<ServerTimesViewModel>().FirstOrDefault();
+
+            if (hasPerfAsserts && (serverTimings?.IsChecked ?? false))
+            {
+                _perBatchServerTimingsTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                Execute.OnUIThread(() => serverTimings.OnReset());
+            }
+            else
+            {
+                _perBatchServerTimingsTcs = null;
+            }
+        }
+
+        // Called (and awaited) by the results-target batch loop after a batch's query has produced its
+        // result tables, before the next batch starts. Evaluates just this batch's assertions - waiting
+        // for and capturing this batch's Server Timings slice for any performance assertions - and
+        // updates the Test Results pane for this batch only, so a completed batch shows its outcome while
+        // later batches remain pending. A no-op when the script has no assertions.
+        public async Task ProcessBatchAssertionsAsync(int batchIndex, IReadOnlyList<System.Data.DataTable> batchTables)
+        {
+            if (!_hasTestAsserts) return;
+            var batches = _currentRunBatches;
+            if (batches == null || batchIndex < 0 || batchIndex >= batches.Count) return;
+
+            var batch = batches[batchIndex];
+            if (!BatchHasAsserts(batch)) { _evaluatedBatches.Add(batchIndex); return; }
+
+            // For performance assertions, wait for THIS batch's trace slice to finish aggregating.
+            if (batch.Commands.OfType<CommentScript.AssertCommand>().Any() && _perBatchServerTimingsTcs != null)
+                await WaitForServerTimingsAssertionDataAsync(_perBatchServerTimingsTcs);
+
+            var perfMetrics = BuildPerformanceMetrics();
+            var results = EvaluateBatchAssertions(batchIndex, batch, batchTables, perfMetrics, AssertionBaseDirectory);
+            _evaluatedBatches.Add(batchIndex);
+
+            await Execute.OnUIThreadAsync(() =>
+            {
+                TestResultsPane.SetBatchResults(batchIndex, results);
+                TestResultsPane.IsVisible = true;
+                return Task.CompletedTask;
+            });
+        }
+
+        // Evaluates every assertion command in a single batch against that batch's result tables and
+        // performance metrics, stamping each result with the batch index. Shared by the per-batch hook
+        // and the end-of-run fallback so both produce identical results.
+        private static List<DaxStudio.Core.Assertions.TestResult> EvaluateBatchAssertions(
+            int batchIndex, CommentScript.ScriptBatch batch,
+            IReadOnlyList<System.Data.DataTable> batchTables,
+            IReadOnlyDictionary<CommentScript.PerformanceProperty, double> perfMetrics,
+            string baseDirectory)
+        {
+            var results = new List<DaxStudio.Core.Assertions.TestResult>();
+            var testName = batch.Commands.OfType<CommentScript.TestCommand>().FirstOrDefault()?.TestName;
+
+            var dataTable = (batchTables != null && batchTables.Count > 0) ? batchTables[0] : null;
+            var rowCount = dataTable?.Rows.Count ?? 0;
+
+            foreach (var cmd in batch.Commands.OfType<CommentScript.AssertRowcountCommand>())
+                results.Add(DaxStudio.Core.Assertions.AssertionEngine.EvaluateRowCount(cmd, rowCount, testName));
+
+            foreach (var cmd in batch.Commands.OfType<CommentScript.AssertTableCommand>())
+                results.Add(DaxStudio.Core.Assertions.AssertionEngine.EvaluateTable(cmd, dataTable, testName, baseDirectory));
+
+            foreach (var cmd in batch.Commands.OfType<CommentScript.AssertCommand>())
+                results.Add(DaxStudio.Core.Assertions.AssertionEngine.EvaluatePerformance(cmd, perfMetrics, testName));
+
+            foreach (var r in results) r.BatchIndex = batchIndex;
+            return results;
+        }
+
         public Task HandleAsync(DaxStudio.Core.Events.QueryTraceCompletedEvent message, CancellationToken cancellationToken)
         {
             // The Server Timings trace has finished aggregating its results (ProcessResults has run,
             // so metrics such as the SE query count are now populated); release any pending
-            // performance-assertion wait. This is the same completion event the benchmark uses.
+            // performance-assertion wait (both the whole-run wait and the current per-batch wait).
+            // This is the same completion event the benchmark uses.
             if (message?.Trace is ServerTimesViewModel)
+            {
                 _serverTimingsAssertionTcs?.TrySetResult(true);
+                _perBatchServerTimingsTcs?.TrySetResult(true);
+            }
+            return Task.CompletedTask;
+        }
+
+        public Task HandleAsync(DaxStudio.Core.Events.QueryBatchStartedEvent message, CancellationToken cancellationToken)
+        {
+            // A script batch's query is about to run (batches separated by "--> GO" execute
+            // sequentially); transition just that batch's tests from pending to running. Handled on the
+            // UI thread (SubscribeOnUIThread) so the pane update is marshalled correctly even though the
+            // event is published from the background query loop. Guarded by _hasTestAsserts so ordinary
+            // runs do nothing.
+            if (_hasTestAsserts && message != null)
+                TestResultsPane?.MarkBatchRunning(message.BatchIndex);
             return Task.CompletedTask;
         }
         // accompanied a CONNECT to a server we were already connected to). Mirrors changing the
@@ -2956,7 +3152,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     case CommentScript.ConnectionType.SERVER:
                         return await ConnectToServerCommandAsync(connectCommand.ConnectionName, databaseName);
-                    case CommentScript.ConnectionType.PBIX:
+                    case CommentScript.ConnectionType.DESKTOP:
                     case CommentScript.ConnectionType.SSDT:
                         return await ConnectToLocalInstanceCommandAsync(connectCommand, databaseName);
                     default:
@@ -3027,7 +3223,7 @@ namespace DaxStudio.UI.ViewModels
             return true;
         }
 
-        // Handles "--> CONNECT PBIX|SSDT <instance name or full .pbix path>". When a full path is
+        // Handles "--> CONNECT DESKTOP|SSDT <instance name or full .pbix path>". When a full path is
         // supplied and no matching instance is running, the file is launched and we wait for its
         // local engine to start before connecting. When databaseName is supplied it is selected as
         // part of a fresh connection (no dialog), or switched to if we are already connected here.
@@ -3036,7 +3232,7 @@ namespace DaxStudio.UI.ViewModels
             var instanceName = command.InstanceName;
             if (string.IsNullOrWhiteSpace(instanceName))
             {
-                OutputError("--> CONNECT PBIX requires a report name or a full path to a .pbix file");
+                OutputError("--> CONNECT DESKTOP requires a report name or a full path to a .pbix file");
                 return false;
             }
 
@@ -3051,7 +3247,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 if (!File.Exists(command.FilePath))
                 {
-                    OutputError($"--> CONNECT PBIX: file not found '{command.FilePath}'");
+                    OutputError($"--> CONNECT DESKTOP: file not found '{command.FilePath}'");
                     return false;
                 }
                 OutputMessage($"--> CONNECT: launching '{command.FilePath}' and waiting for it to load...");
@@ -5444,9 +5640,9 @@ namespace DaxStudio.UI.ViewModels
             {
                 editor.DisableIntellisense();
             }
-            if (foldingStrategy != null)
+            if (foldingStrategy is Model.IndentFoldingStrategy indentStrategy)
             {
-                foldingStrategy.TabIndent = Options.EditorIndentationSize;
+                indentStrategy.TabIndent = Options.EditorIndentationSize;
             }
         }
 
@@ -5633,6 +5829,11 @@ namespace DaxStudio.UI.ViewModels
         public string Title => FileAndExtension;
 
         public string Folder { get { return IsDiskFileName ? Path.GetDirectoryName(FileName) : ""; } }
+
+        // Base directory used to resolve relative file paths in file-based "--> ASSERT TABLE" commands.
+        // Null when the document has not been saved to disk, in which case relative paths are rejected.
+        private string AssertionBaseDirectory => IsDiskFileName ? Path.GetDirectoryName(FileName) : null;
+
         private bool _shouldSave = true;
 
         public bool ShouldSave
@@ -6197,14 +6398,18 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(ConvertTabsToSpaces));
             NotifyOfPropertyChange(nameof(IndentationSize));
             NotifyOfPropertyChange(nameof(UseIndentCodeFolding));
+            NotifyOfPropertyChange(nameof(UseStructuralCodeFolding));
             NotifyOfPropertyChange(nameof(ShowWhitespace));
             NotifyOfPropertyChange(nameof(ShowControlCharacters));
-            if (Options.UseIndentCodeFolding) StartFoldingManager();
-            else StopFoldingManager();
-            if (foldingStrategy != null)
+            if (Options.UseStructuralCodeFolding || Options.UseIndentCodeFolding)
             {
-                foldingStrategy.TabIndent = Options.EditorIndentationSize;
+                StartFoldingManager();
+                // rebuild the strategy in case the folding style (structural vs indent) or the
+                // indentation size changed, then refresh the folds immediately
+                foldingStrategy = CreateFoldingStrategy();
+                UpdateFoldings();
             }
+            else StopFoldingManager();
             UpdateTheme();
             return Task.CompletedTask;
         }
@@ -6546,6 +6751,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public bool UseIndentCodeFolding => Options.UseIndentCodeFolding;
+        public bool UseStructuralCodeFolding => Options.UseStructuralCodeFolding;
 
         public void OutputQueryError(string errorMessage)
         {
@@ -6561,6 +6767,18 @@ namespace DaxStudio.UI.ViewModels
                 }
                 QueryResultsPane.SelectionLocation = selectionLoc;
             }
+        }
+
+        // Surfaces an error that already carries an explicit source location (e.g. a malformed
+        // comment-script "-->" command) in the results-pane error box. Unlike a DAX engine error, the
+        // message text has no embedded "Line/Column" for RegexHelper to parse, so the location is set
+        // directly here so the "Goto" link works the same way. The location is treated as an absolute
+        // editor position, so the selection offset used for engine errors is cleared.
+        public void OutputQueryError(string errorMessage, int line, int column)
+        {
+            QueryResultsPane.ErrorMessage = errorMessage;
+            QueryResultsPane.SelectionLocation = new TextLocation();
+            QueryResultsPane.ErrorLocation = (line, column);
         }
 
         public void ClearQueryError()

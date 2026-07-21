@@ -12,6 +12,6 @@ namespace DaxStudio.Parsers.CommentScript
         }
 
         public MetricsAction Action { get; }
-        public string FileName { get; }
+        public string FileName { get; set; }
     }
 }

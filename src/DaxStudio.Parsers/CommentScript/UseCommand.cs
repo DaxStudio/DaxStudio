@@ -7,6 +7,6 @@ namespace DaxStudio.Parsers.CommentScript
         {
             DatabaseName = database;
         }
-        public string DatabaseName {get;}
+        public string DatabaseName {get; set;}
     }
 }

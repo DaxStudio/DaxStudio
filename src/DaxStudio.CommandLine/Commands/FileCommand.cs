@@ -136,6 +136,11 @@ namespace DaxStudio.CommandLine.Commands
                 var queryInfo = new QueryInfo(settings.Query, new EventAggregator(), runner.Options);
                 var batches = queryInfo.ScriptBatches;
 
+                // Expand any "$(...)" script-variable / built-in references in command arguments (e.g.
+                // an "--> ASSERT TABLE CSV" file path) before the commands are used. A fresh expander
+                // is created per file so variables do not leak across files in a folder run.
+                ScriptVariableExpander.ExpandBatches(batches);
+
                 bool HasAsserts(ScriptBatch b) =>
                     b.Commands.Any(c => c is AssertRowcountCommand || c is AssertTableCommand || c is AssertCommand);
 
@@ -147,6 +152,9 @@ namespace DaxStudio.CommandLine.Commands
 
                 var results = new List<TestResult>();
                 var warnedPerf = false;
+                var assertBaseDir = !string.IsNullOrEmpty(settings.File)
+                    ? Path.GetDirectoryName(Path.GetFullPath(settings.File))
+                    : null;
 
                 foreach (var batch in assertBatches)
                 {
@@ -169,7 +177,7 @@ namespace DaxStudio.CommandLine.Commands
                     }
                     foreach (var cmd in batch.Commands.OfType<AssertTableCommand>())
                     {
-                        results.Add(AssertionEngine.EvaluateTable(cmd, dt, testName));
+                        results.Add(AssertionEngine.EvaluateTable(cmd, dt, testName, assertBaseDir));
                     }
                     foreach (var cmd in batch.Commands.OfType<AssertCommand>())
                     {

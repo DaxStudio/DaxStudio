@@ -115,6 +115,21 @@ namespace DaxStudio.Parsers.Dax
         }
 
         /// <summary>
+        /// Parses DAX input and returns the structural foldable regions (DEFINE block, definitions,
+        /// VAR/RETURN, EVALUATE, ORDER BY, function calls and table constructors) as character offset
+        /// ranges. Uses parser error recovery so partial folds are returned for incomplete input.
+        /// </summary>
+        public IReadOnlyList<FoldRange> GetFoldings(string input)
+        {
+            var result = Parse(input);
+            if (result.Tree == null) return new List<FoldRange>();
+
+            var collector = new FoldingCollector();
+            Antlr4.Runtime.Tree.ParseTreeWalker.Default.Walk(collector, result.Tree);
+            return collector.Foldings;
+        }
+
+        /// <summary>
         /// Tokenizes DAX input and returns all tokens.
         /// </summary>
         public IList<IToken> Tokenize(string input)

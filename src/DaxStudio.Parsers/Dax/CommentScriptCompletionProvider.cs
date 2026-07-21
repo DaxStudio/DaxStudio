@@ -27,7 +27,7 @@ namespace DaxStudio.Parsers.Dax
 
         private static readonly (string Keyword, string Description)[] TopLevelCommands =
         {
-            ("CONNECT",   "Connect to a server, Power BI Desktop (PBIX) or SSDT instance"),
+            ("CONNECT",   "Connect to a server, Power BI Desktop (DESKTOP) or SSDT instance"),
             ("USE",       "Switch to a different database/model on the current connection"),
             ("PARAMETER", "Declare a query parameter (PARAMETER [type] @name = value)"),
             ("OUTPUT",    "Send query results to a CSV, XLSX or JSON file"),
@@ -47,7 +47,7 @@ namespace DaxStudio.Parsers.Dax
                 ["CONNECT"] = new[]
                 {
                     ("SERVER", "Connect to an Analysis Services server"),
-                    ("PBIX",   "Connect to a Power BI Desktop file (running instance name or full .pbix path)"),
+                    ("DESKTOP", "Connect to a Power BI Desktop file (running instance name or full .pbix path)"),
                     ("SSDT",   "Connect to a running SSDT / Tabular project"),
                 },
                 ["OUTPUT"] = new[]

@@ -94,6 +94,7 @@ namespace DAXEditorControl
         private SelectionBackgroundRenderer _selectionBackgroundRenderer;
         private readonly TextMarkerService _textMarkerService;
         private readonly CommentScriptChipRenderer _commentScriptChipRenderer;
+        private readonly AssertTableRowRenderer _assertTableRowRenderer;
         private readonly LineSpacingElementGenerator _lineSpacingGenerator;
         private ToolTip _toolTip;
         private bool _syntaxErrorDisplayed;
@@ -133,6 +134,10 @@ namespace DAXEditorControl
             // Add Comment Script directive keyword chip renderer
             _commentScriptChipRenderer = new CommentScriptChipRenderer(this);
             textView.BackgroundRenderers.Add(_commentScriptChipRenderer);
+
+            // Add faint full-width tint behind "-->>" assert-table rows
+            _assertTableRowRenderer = new AssertTableRowRenderer(this);
+            textView.BackgroundRenderers.Add(_assertTableRowRenderer);
 
             // Add line spacing generator (opt-in via the LineSpacing property, default 0 = off)
             _lineSpacingGenerator = new LineSpacingElementGenerator(0);

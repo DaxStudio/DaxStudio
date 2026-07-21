@@ -1600,15 +1600,33 @@ namespace DaxStudio.Core.Connections
 
         /// <summary>Recursively sets MaxUpdateUtc (most-recent change among descendants) and DaysSinceChange
         /// (whole days since the node's effective change - its own timestamp rolled up with its descendants').
-        /// Returns the subtree's effective most-recent change.</summary>
+        /// For individual leaf items, MaxUpdateUtc is instead set to the item's own timestamp when it carries
+        /// the newest change within its container folder (so sorting by Max Update groups the most-recently
+        /// changed item(s) of each folder together). Returns the subtree's effective most-recent change.</summary>
         internal static DateTime? ComputeRollups(ShowTreeNode node, DateTime nowUtc)
         {
             DateTime? childMax = null;
+            DateTime? leafChildMax = null;
             foreach (var child in node.Children)
             {
                 childMax = MaxDate(childMax, ComputeRollups(child, nowUtc));
+                if (IsRealObject(child) && child.Children.Count == 0 && child.LastModifiedUtc.HasValue)
+                    leafChildMax = MaxDate(leafChildMax, child.LastModifiedUtc);
             }
             node.MaxUpdateUtc = childMax;
+            // Surface the container's newest change on the individual leaf item(s) carrying it, so the
+            // Max Update column is populated for those rows (folders/tables keep their descendant rollup).
+            if (leafChildMax.HasValue)
+            {
+                foreach (var child in node.Children)
+                {
+                    if (IsRealObject(child) && child.Children.Count == 0
+                        && child.LastModifiedUtc.HasValue && child.LastModifiedUtc.Value == leafChildMax.Value)
+                    {
+                        child.MaxUpdateUtc = child.LastModifiedUtc;
+                    }
+                }
+            }
             var effective = MaxDate(node.LastModifiedUtc, childMax);
             node.DaysSinceChange = effective.HasValue
                 ? (int?)Math.Max(0, (int)Math.Floor((nowUtc - effective.Value).TotalDays))

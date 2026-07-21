@@ -102,6 +102,59 @@ namespace DaxStudio.Parsers.Tests.CommentScript
             Assert.AreEqual("-->> |   |   |", lines[1]);
         }
 
+        private static string TrimmedCell(string line, int index)
+        {
+            var body = line.Substring(line.IndexOf('|') + 1);
+            return body.Trim().Trim('|').Split('|')[index].Trim();
+        }
+
+        [TestMethod]
+        public void FormatDataTable_EmptyStringBecomesToken()
+        {
+            var dt = new DataTable();
+            dt.Columns.Add("A", typeof(string));
+            dt.Rows.Add(string.Empty);
+
+            var block = TableAssertionFormatter.FormatDataTable(dt, includeHeaderLine: false, includeTypeRow: false);
+            var lines = block.Replace("\r\n", "\n").Split('\n');
+            Assert.AreEqual("\"\"", TrimmedCell(lines[1], 0));
+        }
+
+        [TestMethod]
+        public void FormatDataTable_EscapesLiteralQuoteTokenAndBackslash()
+        {
+            var dt = new DataTable();
+            dt.Columns.Add("A", typeof(string));
+            dt.Rows.Add("\"\"");  // literal two quote chars
+            dt.Rows.Add("\\x");   // literal leading backslash
+
+            var block = TableAssertionFormatter.FormatDataTable(dt, includeHeaderLine: false, includeTypeRow: false);
+            var lines = block.Replace("\r\n", "\n").Split('\n');
+            Assert.AreEqual("\\\"\"", TrimmedCell(lines[1], 0));  // "" -> \""
+            Assert.AreEqual("\\\\x", TrimmedCell(lines[2], 0));   // \x -> \\x
+        }
+
+        [TestMethod]
+        public void FormatDataTable_RoundTripsNullEmptyAndLiterals()
+        {
+            var dt = new DataTable();
+            dt.Columns.Add("A", typeof(string));
+            dt.Rows.Add(DBNull.Value);   // null
+            dt.Rows.Add(string.Empty);   // empty string
+            dt.Rows.Add("abc");          // plain
+            dt.Rows.Add("\"\"");         // literal two quotes
+
+            var block = TableAssertionFormatter.FormatDataTable(dt);  // includes header + STRING type row
+            var cmd = ParseBlock(block);
+
+            Assert.AreEqual(typeof(string), cmd.Data.Columns["A"].DataType);
+            Assert.AreEqual(4, cmd.Data.Rows.Count);
+            Assert.AreEqual(DBNull.Value, cmd.Data.Rows[0]["A"]);
+            Assert.AreEqual(string.Empty, cmd.Data.Rows[1]["A"]);
+            Assert.AreEqual("abc", cmd.Data.Rows[2]["A"]);
+            Assert.AreEqual("\"\"", cmd.Data.Rows[3]["A"]);
+        }
+
         [TestMethod]
         public void FormatDataTable_SanitizesPipeAndNewlineInCell()
         {

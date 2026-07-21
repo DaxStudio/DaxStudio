@@ -9,7 +9,7 @@ namespace DaxStudio.UI.Model
     /// <summary>
     /// Allows producing foldings from a document based on indentation.
     /// </summary>
-    public class IndentFoldingStrategy
+    public class IndentFoldingStrategy : IFoldingStrategy
     {
         private List<NewFolding> newFoldings = new List<NewFolding>();
         private ITextSourceVersion prevVersion;

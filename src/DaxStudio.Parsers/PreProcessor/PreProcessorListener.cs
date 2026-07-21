@@ -192,6 +192,26 @@ namespace DaxStudio.Parsers.Dax
             base.ExitScript_parameter(context);
         }
 
+        public override void ExitSet_variable([NotNull] PreProcessorParser.Set_variableContext context)
+        {
+            // "--> SET <name> = <value>". children: [0]=SET keyword, [1]=name (CS_IDENTIFIER),
+            // [2]='=', [3]=value. GetText() on a CS_STRING_LITERAL terminal returns the value already
+            // un-quoted by the lexer; identifiers/integers/reals return their literal text. Any $(...)
+            // references in the raw value are left intact and expanded at run time by
+            // ScriptVariableExpander (eager/capture-time semantics).
+            if (context.ChildCount != 4)
+                throw new CommentScriptCommandException("Invalid SET command. This command should be in the form of: '--> SET <name> = <value>'", context.Start.Line, context.Start.Column);
+
+            var name = context.children[1].GetText();
+            var rawValue = context.children[3].GetText();
+
+            var cmd = new VariableCommand(name, rawValue);
+            _currentBatch.Commands.Add(cmd);
+
+            OutputCommand( _currentBatch.Output, context);
+            base.ExitSet_variable(context);
+        }
+
         private object GetParameterValue(IParseTree parseTree)
         {
             if (parseTree is PreProcessorParser.Parameter_array_valuesContext arr)
@@ -274,25 +294,45 @@ namespace DaxStudio.Parsers.Dax
                 else if (modeNode?.Symbol.Type == CS_PARTIAL) mode = AssertTableMode.Partial;
             }
 
-            var cmd = new AssertTableCommand(mode);
+            var cmd = new AssertTableCommand(mode)
+            {
+                Line = context.Start.Line,
+                Column = context.Start.Column,
+            };
+
+            var fileCtx = context.assert_table_file();
+            if (fileCtx != null)
+            {
+                cmd.Format = MapAssertTableFormat(fileCtx);
+                // CS_STRING_LITERAL is already unquoted/unescaped by the lexer action.
+                cmd.FilePath = fileCtx.CS_STRING_LITERAL().GetText();
+            }
+
             _currentBatch.Commands.Add(cmd);
             OutputCommand(_currentBatch.Output, context);
             base.ExitAssert_table_header(context);
         }
 
+        private static AssertTableFormat MapAssertTableFormat(Assert_table_fileContext fileCtx)
+        {
+            if (fileCtx.CS_CSV() != null) return AssertTableFormat.Csv;
+            if (fileCtx.CS_TXT() != null) return AssertTableFormat.Txt;
+            if (fileCtx.CS_MD() != null) return AssertTableFormat.Md;
+            if (fileCtx.CS_PARQUET() != null) return AssertTableFormat.Parquet;
+            return AssertTableFormat.Inline;
+        }
+
         public override void ExitTable_data_row([NotNull] Table_data_rowContext context)
         {
-            // Find the most recent AssertTableCommand in the current batch
-            AssertTableCommand assertTableCmd = null;
-            for (int i = _currentBatch.Commands.Count - 1; i >= 0; i--)
+            var assertTableCmd = FindCurrentAssertTable();
+            if (assertTableCmd == null) return; // orphan row - reported in ExitTable_row
+
+            if (assertTableCmd.Format != AssertTableFormat.Inline)
             {
-                if (_currentBatch.Commands[i] is AssertTableCommand atc)
-                {
-                    assertTableCmd = atc;
-                    break;
-                }
+                throw new CommentScriptCommandException(
+                    "'--> ASSERT TABLE' cannot combine inline '-->>' rows with a file (CSV/TXT/MD/PARQUET). Use one or the other.",
+                    context.Start.Line, context.Start.Column);
             }
-            if (assertTableCmd == null) return;
 
             var cells = new List<string>();
             foreach (var child in context.children)
@@ -308,6 +348,32 @@ namespace DaxStudio.Parsers.Dax
             assertTableCmd.AddRow(cells.ToArray());
 
             base.ExitTable_data_row(context);
+        }
+
+        /// <summary>
+        /// Every comment-script table row ("--&gt;&gt; | ... |") must belong to a preceding
+        /// "--&gt; ASSERT TABLE" command in the same batch. A run of "--&gt;&gt;" rows with no leading
+        /// ASSERT TABLE is a user mistake and is surfaced as a command error rather than silently ignored.
+        /// </summary>
+        public override void ExitTable_row([NotNull] Table_rowContext context)
+        {
+            if (FindCurrentAssertTable() == null)
+            {
+                throw new CommentScriptCommandException(
+                    "Table rows ('-->>') must be preceded by an '--> ASSERT TABLE' command.",
+                    context.Start.Line, context.Start.Column);
+            }
+            base.ExitTable_row(context);
+        }
+
+        // Returns the most recent AssertTableCommand in the current batch, or null when the batch has none.
+        private AssertTableCommand FindCurrentAssertTable()
+        {
+            for (int i = _currentBatch.Commands.Count - 1; i >= 0; i--)
+            {
+                if (_currentBatch.Commands[i] is AssertTableCommand atc) return atc;
+            }
+            return null;
         }
 
         public override void ExitClear_cache([NotNull] Clear_cacheContext context)
@@ -465,19 +531,42 @@ namespace DaxStudio.Parsers.Dax
 
         public override void ExitBlock([NotNull] BlockContext context)
         {
-            // After all table rows are processed, infer column types for any AssertTableCommand
-            foreach (var cmd in _currentBatch.Commands)
+            base.ExitBlock(context);
+        }
+
+        // Finalizes a batch once it is closed (at "--> GO" or end of document): validates each
+        // ASSERT TABLE has a table definition and infers the column types for its rows. Runs exactly
+        // once per batch so InferColumnTypes is never applied twice.
+        private void FinalizeBatch(ScriptBatch batch)
+        {
+            if (batch == null) return;
+            foreach (var cmd in batch.Commands)
             {
-                if (cmd is AssertTableCommand atc && atc.Data.Rows.Count > 0)
+                if (!(cmd is AssertTableCommand atc)) continue;
+
+                if (!atc.HasTableDefinition)
+                {
+                    throw new CommentScriptCommandException(
+                        "'--> ASSERT TABLE' must be followed by a table definition (one or more '-->>' rows) or a file (CSV/TXT/MD/PARQUET).",
+                        atc.Line, atc.Column);
+                }
+
+                if (atc.Data.Rows.Count > 0)
                 {
                     atc.InferColumnTypes();
                 }
             }
-            base.ExitBlock(context);
+        }
+
+        public override void ExitDocument([NotNull] DocumentContext context)
+        {
+            FinalizeBatch(_currentBatch);
+            base.ExitDocument(context);
         }
 
         public override void ExitGo_command([NotNull] Go_commandContext context)
         {
+            FinalizeBatch(_currentBatch);
             _currentBatch = new ScriptBatch();
             _scriptBatches.Add(_currentBatch);
         }

@@ -7,8 +7,6 @@ using DaxStudio.Interfaces.Attributes;
 using Serilog.Events;
 using Serilog.Core;
 using DaxStudio.Common.Interfaces;
-using System.Drawing;
-
 
 namespace DaxStudio.Interfaces
 {
@@ -133,6 +131,7 @@ namespace DaxStudio.Interfaces
         
         
         bool UseIndentCodeFolding { get; set; }
+        bool UseStructuralCodeFolding { get; set; }
         bool ShowDebugCommas { get; set; }
         bool ShowXmlaInAllQueries { get; set; }
         bool EnablePasteFileOnExistingWindow { get; set; }

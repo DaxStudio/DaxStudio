@@ -175,6 +175,15 @@ namespace DaxStudio.Parsers.CommentScript
                 return dt.ToString(format, CultureInfo.InvariantCulture);
             }
             if (value is bool b) return b ? "TRUE" : "FALSE";
+
+            if (value is string s)
+            {
+                if (s.Length == 0) return "\"\"";                 // explicit empty string token
+                if (s == "\"\"") return "\\\"\"";                 // escape a literal "" so it isn't read as empty string
+                if (s[0] == '\\') return "\\" + SanitizeCell(s);  // escape a leading backslash
+                return SanitizeCell(s);
+            }
+
             if (value is IFormattable f) return f.ToString(null, CultureInfo.InvariantCulture);
 
             return SanitizeCell(value.ToString());

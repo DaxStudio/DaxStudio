@@ -22,6 +22,7 @@
                 <sys:String x:Key="Failed">failDrawingImage</sys:String>
                 <sys:String x:Key="Error">alertDrawingImage</sys:String>
                 <sys:String x:Key="Pending">results_timerDrawingImage</sys:String>
+                <sys:String x:Key="Running">runDrawingImage</sys:String>
             </ResourceDictionary>
         </conv:ResourceLookupConverter>
 
@@ -31,6 +32,7 @@
                 <sys:String x:Key="Failed">Theme.Brush.Log.Error</sys:String>
                 <sys:String x:Key="Error">Theme.Brush.Log.Error</sys:String>
                 <sys:String x:Key="Pending">Theme.Brush.Muted.Fore</sys:String>
+                <sys:String x:Key="Running">Theme.Brush.Default.Fore</sys:String>
             </ResourceDictionary>
         </conv:ResourceLookupConverter>
 

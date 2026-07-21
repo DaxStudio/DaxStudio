@@ -10,7 +10,7 @@ The Comment Script spec already covers a solid set of connection, output, tracin
 
 | Category | Commands | Status |
 |----------|----------|--------|
-| Connection | `CONNECT`, `USE`, `OPEN` | CONNECT/USE implemented; OPEN spec'd |
+| Connection | `CONNECT`, `USE` | Implemented (a `CONNECT PBIX "<full path>"` supersedes the old `OPEN`) |
 | Parameters | `PARAMETER @name TYPE = value` | Implemented (scalars + arrays) |
 | Batch control | `GO` | Implemented |
 | Output | `OUTPUT`, `OUTPUT-FOLDER`, `OUTPUT-FILE`, `EXCEL-SHEET` | Spec'd, partially implemented |
@@ -24,9 +24,12 @@ The Comment Script spec already covers a solid set of connection, output, tracin
 ### What's Mentioned but Not Fully Developed
 
 - **LOOP** — Referenced in the spec ("which is already used by the LOOP command for multi-line constructs")[^1] but no grammar or spec exists.
-- **OPEN** — Spec'd but not implemented. Needs interaction with Power BI Desktop process lifecycle.
+- **OPEN** — **Removed — superseded by `CONNECT PBIX "<full path to .pbix>"`**, which opens the file in
+  Power BI Desktop (if not already running) and connects.
 - **SAVEAS** with timestamp tokens (`%yyyy-MM-dd%`) — Spec mentions this but no token expansion mechanism exists.
-- **ASSERT VALUE / COLUMN / RESULTS** — Spec'd but not implemented in the parser.
+- **ASSERT VALUE / COLUMN / RESULTS** — **Removed from the spec, superseded by `ASSERT TABLE`** (which
+  covers single-value, single-column, and full result-set comparison, inline or from a `CSV/TXT/MD/PARQUET`
+  baseline file).
 
 ---
 
@@ -120,7 +123,7 @@ This would be especially useful for CI/CD scenarios where a common setup (CONNEC
 | `bag_eq()` | Same rows with duplicates | ❌ Missing (would need ASSERT TABLE with dup awareness) |
 | `is_empty()` | Result has zero rows | ❌ Missing (ASSERT ROWCOUNT = 0 works but verbose) |
 | `isnt_empty()` | Result has at least one row | ❌ Missing (ASSERT ROWCOUNT > 0 works) |
-| `row_eq()` | Single row matches | ❌ Missing (ASSERT VALUE is close but single-column) |
+| `row_eq()` | Single row matches | ✅ `ASSERT TABLE` with a single expected row |
 | `performs_ok()` | Query completes within N ms | ASSERT DURATION ✅ |
 | `throws_ok()` | Query produces an error | ❌ Missing |
 
@@ -243,7 +246,7 @@ Based on impact, implementation complexity, and alignment with CI/CD use cases:
 |----------|---------|-----------|
 | **P1** | Variables & `SET` command | Enables SAVEAS tokens, reusable scripts, DRY principles |
 | **P1** | Error handling (`ON ERROR`) | Essential for CI/CD — must control what happens on failure |
-| **P1** | `ASSERT VALUE` / `ASSERT COLUMN` / `ASSERT RESULTS` | Already spec'd, completes the assertion story |
+| ~~P1~~ | ~~`ASSERT VALUE` / `ASSERT COLUMN` / `ASSERT RESULTS`~~ | **Dropped — superseded by `ASSERT TABLE`** (single-value, single-column, and result-set comparison, inline or from a baseline file) |
 | **P2** | File inclusion (`INCLUDE`) | Key for script reusability and test suites |
 | **P2** | Test naming & tags | Enables selective test execution in CI/CD |
 | **P2** | `ASSERT EMPTY` / `ASSERT NOT EMPTY` | Simple, high-value assertion shorthand |
@@ -265,7 +268,7 @@ Based on impact, implementation complexity, and alignment with CI/CD use cases:
 | **dbt** | Data transformation & testing | YAML-defined tests + Jinja templating | Generic test patterns, severity levels, test naming/tagging, CI/CD artifacts, snapshot testing |
 | **pgTAP** | PostgreSQL unit testing | TAP-emitting SQL assertions | Rich result-set comparison (`set_eq`, `set_has`, `bag_eq`), schema assertions, performance tests |
 | **tSQLt** | SQL Server unit testing | Test classes + mock tables | Test organization, FakeTable for isolation, ApplyConstraint |
-| **Verify** (.NET) | Snapshot testing | Serialize → compare against saved `.verified.` files | Baseline comparison model — relevant to `ASSERT RESULTS` with CSV files |
+| **Verify** (.NET) | Snapshot testing | Serialize → compare against saved `.verified.` files | Baseline comparison model — relevant to `ASSERT TABLE` with a `CSV/TXT/MD/PARQUET` baseline file |
 
 ---
 

@@ -23,6 +23,14 @@ namespace DaxStudio.Core.Assertions
         /// produces a real Passed/Failed/Error outcome.
         /// </summary>
         Pending,
+
+        /// <summary>
+        /// The query that produces the data for this assertion is currently executing. Shown in the
+        /// Test Results pane with a "running" icon between the pending state (set when the run starts)
+        /// and the final Passed/Failed/Error outcome (set once the query completes and the assertion
+        /// is evaluated).
+        /// </summary>
+        Running,
     }
 
     /// <summary>
@@ -61,6 +69,13 @@ namespace DaxStudio.Core.Assertions
 
         /// <summary>The 1-based source line of the assertion command (0 when unknown).</summary>
         public int Line { get; set; }
+
+        /// <summary>
+        /// The index of the script batch (sections separated by <c>--&gt; GO</c>) this assertion belongs
+        /// to. Used by the Test Results pane to transition just this batch's tests to a "running" state
+        /// when the batch's query starts executing (batches run sequentially). Defaults to 0.
+        /// </summary>
+        public int BatchIndex { get; set; }
 
         public bool Passed => Outcome == TestOutcome.Passed;
     }

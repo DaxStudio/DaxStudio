@@ -25,6 +25,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using FocusManager = DaxStudio.UI.Utils.FocusManager;
+using DaxStudio.Parsers.CommentScript;
+using DaxStudio.UI.ResultsTargets;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -1142,6 +1144,39 @@ namespace DaxStudio.UI.ViewModels
             await ActiveDocument.Connection.ProcessDatabaseAsync("calculate");
             await EventAggregator.PublishAsync(new OutputMessage(MessageType.Information, "Finished Process Calculate"));
 
+        }
+
+        public async Task ShowLastUpdated()
+        {
+            await RunTimestampShowAsync(ShowType.LastUpdated);
+        }
+
+        public async Task ShowMaxUpdated()
+        {
+            await RunTimestampShowAsync(ShowType.MaxUpdated);
+        }
+
+        // Builds and displays the SHOW LAST_UPDATED / SHOW MAX_UPDATED timestamp tree from the metadata
+        // pane database context menu, producing the same result tab as running the equivalent
+        // "--> SHOW" comment-script command. The tree is built off the UI thread as it issues DMV
+        // queries against the connection.
+        private async Task RunTimestampShowAsync(ShowType showType)
+        {
+            if (!_metadataProvider.IsConnected)
+            {
+                await EventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, "Cannot show metadata timestamps - there is no open connection"));
+                return;
+            }
+
+            try
+            {
+                await Task.Run(() => ResultsTargetGrid.RunMetadataTimestampShow(ActiveDocument, showType));
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), nameof(RunTimestampShowAsync), ex.Message);
+                await EventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error showing metadata timestamps: {ex.Message}"));
+            }
         }
 
         public Task HandleAsync(QueryStartedEvent message, CancellationToken cancellationToken)

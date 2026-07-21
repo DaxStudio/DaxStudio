@@ -185,6 +185,14 @@ namespace DaxStudio.CommandLine.UIStubs
             Log.Information(message);
         }
 
+        // The command-line assertion flow evaluates "--> ASSERT" commands directly via the shared
+        // AssertionEngine (see the file/test commands), not through the interactive per-batch Test
+        // Results pane hooks, so these are no-ops here.
+        public void PrepareBatchAssertions(int batchIndex) { }
+
+        public System.Threading.Tasks.Task ProcessBatchAssertionsAsync(int batchIndex, System.Collections.Generic.IReadOnlyList<System.Data.DataTable> batchTables)
+            => System.Threading.Tasks.Task.CompletedTask;
+
         public void SetResultTabs(System.Collections.Generic.IList<DaxStudio.Core.Model.ResultTabDescriptor> tabs)
         {
             if (tabs == null) return;

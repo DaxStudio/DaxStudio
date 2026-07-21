@@ -304,6 +304,42 @@ namespace DaxStudio.Tests
         }
 
         [TestMethod]
+        public void EvaluateTable_EmptyStringsMatch()
+        {
+            var expected = ExpectedTable(AssertTableMode.Ordered,
+                new[] { "Name" }, new[] { typeof(string) },
+                new object[] { string.Empty });
+            var actual = Table(new[] { "Name" }, new[] { typeof(string) },
+                new object[] { string.Empty });
+
+            Assert.AreEqual(TestOutcome.Passed, AssertionEngine.EvaluateTable(expected, actual).Outcome);
+        }
+
+        [TestMethod]
+        public void EvaluateTable_EmptyStringVsNull_Fails()
+        {
+            var expected = ExpectedTable(AssertTableMode.Ordered,
+                new[] { "Name" }, new[] { typeof(string) },
+                new object[] { string.Empty });
+            var actual = Table(new[] { "Name" }, new[] { typeof(string) },
+                new object[] { DBNull.Value });
+
+            Assert.AreEqual(TestOutcome.Failed, AssertionEngine.EvaluateTable(expected, actual).Outcome);
+        }
+
+        [TestMethod]
+        public void EvaluateTable_NullVsEmptyString_Fails()
+        {
+            var expected = ExpectedTable(AssertTableMode.Ordered,
+                new[] { "Name" }, new[] { typeof(string) },
+                new object[] { DBNull.Value });
+            var actual = Table(new[] { "Name" }, new[] { typeof(string) },
+                new object[] { string.Empty });
+
+            Assert.AreEqual(TestOutcome.Failed, AssertionEngine.EvaluateTable(expected, actual).Outcome);
+        }
+
+        [TestMethod]
         public void EvaluateTable_NullExpectedData_ReturnsError()
         {
             var cmd = new AssertTableCommand(AssertTableMode.Ordered); // no rows/columns added
@@ -314,6 +350,164 @@ namespace DaxStudio.Tests
             // not throw and produces a definite outcome.
             var result = AssertionEngine.EvaluateTable(cmd, actual);
             Assert.IsTrue(result.Outcome == TestOutcome.Failed || result.Outcome == TestOutcome.Passed);
+        }
+
+        #endregion
+
+        #region TABLE from file
+
+        private static string _tempDir;
+
+        private static string WriteTemp(string fileName, string content)
+        {
+            var path = System.IO.Path.Combine(EnsureTempDir(), fileName);
+            System.IO.File.WriteAllText(path, content);
+            return path;
+        }
+
+        [ClassCleanup]
+        public static void CleanupTempDir()
+        {
+            try
+            {
+                if (_tempDir != null && System.IO.Directory.Exists(_tempDir))
+                    System.IO.Directory.Delete(_tempDir, true);
+            }
+            catch { /* best-effort temp cleanup */ }
+        }
+
+        private static AssertTableCommand FileCommand(AssertTableFormat format, string filePath, AssertTableMode mode = AssertTableMode.Ordered)
+        {
+            return new AssertTableCommand(mode) { Format = format, FilePath = filePath };
+        }
+
+        [TestMethod]
+        public void EvaluateTable_FromCsvFile_Passes()
+        {
+            var path = WriteTemp("expected.csv", "Name,Qty\r\nA,1\r\nB,2\r\n");
+            var cmd = FileCommand(AssertTableFormat.Csv, path);
+            var actual = Table(new[] { "Name", "Qty" }, new[] { typeof(string), typeof(long) },
+                new object[] { "A", 1L }, new object[] { "B", 2L });
+
+            var result = AssertionEngine.EvaluateTable(cmd, actual);
+
+            Assert.AreEqual(TestOutcome.Passed, result.Outcome, result.Message);
+            Assert.AreEqual(typeof(long), cmd.Data.Columns["Qty"].DataType, "CSV column types should be inferred like inline rows");
+        }
+
+        [TestMethod]
+        public void EvaluateTable_FromCsvFile_ValueMismatch_Fails()
+        {
+            var path = WriteTemp("mismatch.csv", "Name,Qty\r\nA,1\r\nB,99\r\n");
+            var cmd = FileCommand(AssertTableFormat.Csv, path);
+            var actual = Table(new[] { "Name", "Qty" }, new[] { typeof(string), typeof(long) },
+                new object[] { "A", 1L }, new object[] { "B", 2L });
+
+            Assert.AreEqual(TestOutcome.Failed, AssertionEngine.EvaluateTable(cmd, actual).Outcome);
+        }
+
+        [TestMethod]
+        public void EvaluateTable_FromTxtFile_TabDelimited_Passes()
+        {
+            var path = WriteTemp("expected.txt", "Name\tQty\r\nA\t1\r\nB\t2\r\n");
+            var cmd = FileCommand(AssertTableFormat.Txt, path);
+            var actual = Table(new[] { "Name", "Qty" }, new[] { typeof(string), typeof(long) },
+                new object[] { "A", 1L }, new object[] { "B", 2L });
+
+            Assert.AreEqual(TestOutcome.Passed, AssertionEngine.EvaluateTable(cmd, actual).Outcome);
+        }
+
+        [TestMethod]
+        public void EvaluateTable_FromMarkdownFile_SkipsSeparator_Passes()
+        {
+            var path = WriteTemp("expected.md",
+                "| Name | Qty |\r\n| --- | --- |\r\nsome preamble line to ignore\r\n| A | 1 |\r\n| B | 2 |\r\n");
+            var cmd = FileCommand(AssertTableFormat.Md, path);
+            var actual = Table(new[] { "Name", "Qty" }, new[] { typeof(string), typeof(long) },
+                new object[] { "A", 1L }, new object[] { "B", 2L });
+
+            var result = AssertionEngine.EvaluateTable(cmd, actual);
+
+            Assert.AreEqual(TestOutcome.Passed, result.Outcome, result.Message);
+            Assert.AreEqual(2, cmd.Data.Rows.Count, "The markdown separator and non-table lines must be ignored");
+        }
+
+        [TestMethod]
+        public void EvaluateTable_FromParquetFile_Passes()
+        {
+            var path = System.IO.Path.Combine(EnsureTempDir(), "expected.parquet");
+            WriteParquet(path, new[] { "A", "B" }, new long[] { 1L, 2L });
+
+            var cmd = FileCommand(AssertTableFormat.Parquet, path);
+            var actual = Table(new[] { "Name", "Qty" }, new[] { typeof(string), typeof(long) },
+                new object[] { "A", 1L }, new object[] { "B", 2L });
+
+            var result = AssertionEngine.EvaluateTable(cmd, actual);
+
+            Assert.AreEqual(TestOutcome.Passed, result.Outcome, result.Message);
+        }
+
+        [TestMethod]
+        public void EvaluateTable_FileNotFound_ReturnsError()
+        {
+            var cmd = FileCommand(AssertTableFormat.Csv, System.IO.Path.Combine(EnsureTempDir(), "does_not_exist.csv"));
+            var actual = Table(new[] { "Name" }, new[] { typeof(string) }, new object[] { "A" });
+
+            var result = AssertionEngine.EvaluateTable(cmd, actual);
+
+            Assert.AreEqual(TestOutcome.Error, result.Outcome);
+        }
+
+        [TestMethod]
+        public void EvaluateTable_RelativePathWithoutBaseDirectory_ReturnsError()
+        {
+            // A relative path with no base directory (unsaved document) cannot be resolved -> Error.
+            var cmd = FileCommand(AssertTableFormat.Csv, "expected.csv");
+            var actual = Table(new[] { "Name" }, new[] { typeof(string) }, new object[] { "A" });
+
+            var result = AssertionEngine.EvaluateTable(cmd, actual, testName: null, baseDirectory: null);
+
+            Assert.AreEqual(TestOutcome.Error, result.Outcome);
+            StringAssert.Contains(result.Message, "has not been saved");
+        }
+
+        [TestMethod]
+        public void EvaluateTable_RelativePathWithBaseDirectory_Resolves()
+        {
+            var dir = EnsureTempDir();
+            System.IO.File.WriteAllText(System.IO.Path.Combine(dir, "rel.csv"), "Name,Qty\r\nA,1\r\n");
+            var cmd = FileCommand(AssertTableFormat.Csv, "rel.csv");
+            var actual = Table(new[] { "Name", "Qty" }, new[] { typeof(string), typeof(long) },
+                new object[] { "A", 1L });
+
+            var result = AssertionEngine.EvaluateTable(cmd, actual, testName: null, baseDirectory: dir);
+
+            Assert.AreEqual(TestOutcome.Passed, result.Outcome, result.Message);
+        }
+
+        private static string EnsureTempDir()
+        {
+            if (_tempDir == null)
+            {
+                _tempDir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "DaxAssertFileTests_" + Guid.NewGuid().ToString("N"));
+                System.IO.Directory.CreateDirectory(_tempDir);
+            }
+            return _tempDir;
+        }
+
+        private static void WriteParquet(string path, string[] names, long[] qty)
+        {
+            var schema = new Parquet.Schema.ParquetSchema(
+                new Parquet.Schema.DataField<string>("Name"),
+                new Parquet.Schema.DataField<long>("Qty"));
+
+            using (var fs = System.IO.File.Create(path))
+            using (var writer = Parquet.ParquetWriter.CreateAsync(schema, fs).GetAwaiter().GetResult())
+            using (var rg = writer.CreateRowGroup())
+            {
+                rg.WriteColumnAsync(new Parquet.Data.DataColumn((Parquet.Schema.DataField)schema[0], names)).GetAwaiter().GetResult();
+                rg.WriteColumnAsync(new Parquet.Data.DataColumn((Parquet.Schema.DataField)schema[1], qty)).GetAwaiter().GetResult();
+            }
         }
 
         #endregion
@@ -371,6 +565,22 @@ namespace DaxStudio.Tests
             var batch = BatchWith(new TestCommand("Empty"));
 
             Assert.AreEqual(0, AssertionEngine.DiscoverTests(new List<ScriptBatch> { batch }).Count);
+        }
+
+        [TestMethod]
+        public void DiscoverTests_SetsBatchIndexPerBatch()
+        {
+            // Each discovered test carries the index of the "--> GO"-separated batch it belongs to, so
+            // the Test Results pane can mark just that batch's tests running as its query executes.
+            var batch0 = BatchWith(new AssertRowcountCommand(">", 1));
+            var batch1 = BatchWith(new AssertRowcountCommand(">", 2), new AssertCommand("DURATION", "<", 200, 0));
+
+            var results = AssertionEngine.DiscoverTests(new List<ScriptBatch> { batch0, batch1 });
+
+            Assert.AreEqual(3, results.Count);
+            Assert.AreEqual(0, results[0].BatchIndex);
+            Assert.AreEqual(1, results[1].BatchIndex);
+            Assert.AreEqual(1, results[2].BatchIndex);
         }
 
         #endregion

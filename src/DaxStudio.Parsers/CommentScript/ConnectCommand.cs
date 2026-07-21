@@ -19,16 +19,16 @@ namespace DaxStudio.Parsers.CommentScript
             ConnectionName = serverName;
         }
         public ConnectionType ConnectionType {get;}
-        public string ConnectionName { get;  }
+        public string ConnectionName { get; set; }
 
         /// <summary>
-        /// True when this is a PBIX connection whose name is a path to a .pbix file
+        /// True when this is a DESKTOP connection whose name is a path to a .pbix file
         /// (either a rooted path or a value ending in ".pbix"). In that case
         /// <see cref="FilePath"/> holds the full path and <see cref="InstanceName"/>
         /// is the file name without its extension.
         /// </summary>
         public bool IsFilePath =>
-            ConnectionType == ConnectionType.PBIX
+            ConnectionType == ConnectionType.DESKTOP
             && !string.IsNullOrWhiteSpace(ConnectionName)
             && (ConnectionName.EndsWith(".pbix", StringComparison.OrdinalIgnoreCase)
                 || Path.IsPathRooted(ConnectionName));

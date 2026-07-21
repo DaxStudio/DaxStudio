@@ -11,7 +11,7 @@ namespace DAXEditorControl.Renderers
 {
     /// <summary>
     /// Draws a rounded, padded "chip" behind the command keyword of a Comment Script
-    /// directive line (eg. the CONNECT in "--> CONNECT PBIX ..."). AvalonEdit's syntax
+    /// directive line (eg. the CONNECT in "--> CONNECT DESKTOP ..."). AvalonEdit's syntax
     /// highlighting can only paint a flat rectangle tight around the glyphs, so this
     /// background renderer is used instead to get padding and rounded corners.
     /// The fill colour is read from the (unreferenced) "CsChipBackground" highlighting
@@ -34,7 +34,7 @@ namespace DAXEditorControl.Renderers
             };
 
         private const double HorizontalPadding = 3.0;
-        private const double VerticalPadding = 1.0;
+        private const double VerticalPadding = 0.0;
         private const double CornerRadius = 3.0;
 
         private readonly TextEditor _editor;
@@ -52,8 +52,9 @@ namespace DAXEditorControl.Renderers
             if (textView == null || drawingContext == null) return;
             if (!textView.VisualLinesValid) return;
 
-            var brush = GetChipBrush();
-            if (brush == null) return;
+            var brush = GetChipBrush("CsChipBackground");
+            var goBrush = GetChipBrush("CsGoChipBackground");
+            if (brush == null && goBrush == null) return;
 
             var document = _editor.Document;
             if (document == null) return;
@@ -69,6 +70,10 @@ namespace DAXEditorControl.Renderers
                 var keywordGroup = match.Groups[1];
                 if (!CommandKeywords.Contains(keywordGroup.Value)) continue;
 
+                var isGo = string.Equals(keywordGroup.Value, "GO", StringComparison.OrdinalIgnoreCase);
+                var chipBrush = isGo ? goBrush : brush;
+                if (chipBrush == null) continue;
+
                 var startOffset = documentLine.Offset + keywordGroup.Index;
                 var endOffset = startOffset + keywordGroup.Length;
 
@@ -80,15 +85,15 @@ namespace DAXEditorControl.Renderers
                         rect.Top - VerticalPadding,
                         rect.Width + (HorizontalPadding * 2),
                         rect.Height + (VerticalPadding * 2));
-                    drawingContext.DrawRoundedRectangle(brush, null, chip, CornerRadius, CornerRadius);
+                    drawingContext.DrawRoundedRectangle(chipBrush, null, chip, CornerRadius, CornerRadius);
                 }
             }
         }
 
-        private Brush GetChipBrush()
+        private Brush GetChipBrush(string colorName)
         {
             var definition = _editor.SyntaxHighlighting;
-            var color = definition?.GetNamedColor("CsChipBackground");
+            var color = definition?.GetNamedColor(colorName);
             var brush = color?.Background?.GetBrush(null);
             return brush;
         }

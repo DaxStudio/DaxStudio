@@ -5,7 +5,7 @@ namespace DaxStudio.Parsers.CommentScript
     public enum ConnectionType
     {
         SERVER,
-        PBIX,
+        DESKTOP,
         SSDT
     }
 
@@ -34,6 +34,15 @@ namespace DaxStudio.Parsers.CommentScript
         Ordered,
         Unordered,
         Partial,
+    }
+
+    public enum AssertTableFormat
+    {
+        Inline,
+        Csv,
+        Txt,
+        Md,
+        Parquet,
     }
 
     public enum ShowType
