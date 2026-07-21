@@ -872,9 +872,17 @@ namespace DaxStudio.Core.Connections
                 {
                     if (Database != null && !string.IsNullOrEmpty( databaseName) && _connection.Database.Name != databaseName) 
                     {
-                        Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(SetSelectedDatabase), databaseName);
+                        Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(SetSelectedDatabase), $"{databaseName} (thread {System.Threading.Thread.CurrentThread.ManagedThreadId})");
+                        var sw = System.Diagnostics.Stopwatch.StartNew();
                         _connection.ChangeDatabase(databaseName);
+                        var queryMs = sw.ElapsedMilliseconds;
                         _dmvConnection.ChangeDatabase(databaseName);
+                        sw.Stop();
+                        Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(SetSelectedDatabase), $"ChangeDatabase '{databaseName}' complete (query conn: {queryMs}ms, dmv conn: {sw.ElapsedMilliseconds - queryMs}ms)");
+                    }
+                    else
+                    {
+                        Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(SetSelectedDatabase), $"{databaseName} - skipped ChangeDatabase (already selected)");
                     }
                     if (_dmvConnection.Database != null)
                     {
@@ -1701,18 +1709,26 @@ namespace DaxStudio.Core.Connections
 
         public void SetSelectedDatabase(IDatabaseReference database)
         {
-            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(SetSelectedDatabase), database.Name + " - start");
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(SetSelectedDatabase), $"{database.Name} - start (thread {System.Threading.Thread.CurrentThread.ManagedThreadId})");
             if (_connection == null) return;
             if (_connection.State == ConnectionState.Open || _connection.ServerType == ServerType.Offline)
             {
-                if (Database != null && database.Name == Database.Name) return;
+                if (Database != null && database.Name == Database.Name)
+                {
+                    Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(SetSelectedDatabase), $"{database.Name} - skipped (already selected)");
+                    return;
+                }
 
                 var context = new Polly.Context().WithDatabaseName(database?.Name??string.Empty);
                 _retry.Execute(ctx =>
                 {
-                    if (database != null) { 
+                    if (database != null) {
+                        var sw = System.Diagnostics.Stopwatch.StartNew();
                         _dmvConnection?.ChangeDatabase(database.Name);
+                        var dmvMs = sw.ElapsedMilliseconds;
                         _connection?.ChangeDatabase(database.Name);
+                        sw.Stop();
+                        Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(SetSelectedDatabase), $"ChangeDatabase '{database.Name}' complete (dmv conn: {dmvMs}ms, query conn: {sw.ElapsedMilliseconds - dmvMs}ms)");
                     }
                     //Database = _dmvConnection.Database;
                     ModelList = _dmvConnection.Database?.Models;
@@ -1803,8 +1819,10 @@ namespace DaxStudio.Core.Connections
             var openConnTask = _connection.OpenAsync();
 
             Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OpenOnlineConnectionAsync), "Start open connections");
+            var swOpen = System.Diagnostics.Stopwatch.StartNew();
             await Task.WhenAll(openConnTask, openDmvConnTask);
-            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OpenOnlineConnectionAsync), "End open connections");
+            swOpen.Stop();
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OpenOnlineConnectionAsync), $"End open connections (duration: {swOpen.ElapsedMilliseconds}ms)");
 
             // Change to the requested database after both connections are fully open
             if (!string.IsNullOrEmpty(message.DatabaseName))

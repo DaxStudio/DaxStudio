@@ -3220,7 +3220,7 @@ namespace DaxStudio.UI.ViewModels
 
             var connectionString = $"Data Source=\"{dataSource}\";Application Name=DAX Studio (SSAS) - {UniqueID};";
             await ConnectViaCommentScriptAsync(connectionString, ServerType.AnalysisServices, string.Empty, databaseName);
-            OutputMessage($"--> CONNECT SERVER '{dataSource}'");
+            OutputMessage($"--> CONNECT SERVER '{dataSource}'{CommentScriptUseSuffix(databaseName)}");
             return true;
         }
 
@@ -3274,8 +3274,17 @@ namespace DaxStudio.UI.ViewModels
 
             var connectionString = $"Data Source={dataSource};Application Name=DAX Studio (Power BI) - {UniqueID};";
             await ConnectViaCommentScriptAsync(connectionString, serverType, instanceName, databaseName);
-            OutputMessage($"--> CONNECT: connected to '{instanceName}' on {dataSource}");
+            OutputMessage($"--> CONNECT: connected to '{instanceName}' on {dataSource}{CommentScriptUseSuffix(databaseName)}");
             return true;
+        }
+
+        // Builds the ", USE '<database>'" suffix appended to auto-connect output messages when a
+        // "--> USE" command accompanied the "--> CONNECT" in the same batch, so the logged message
+        // reflects both the connection and the database that was selected. Returns an empty string
+        // when no database was supplied.
+        private static string CommentScriptUseSuffix(string databaseName)
+        {
+            return string.IsNullOrWhiteSpace(databaseName) ? string.Empty : $", USE '{databaseName}'";
         }
 
         // Finds a running local Analysis Services instance (Power BI Desktop / SSDT) whose title-bar

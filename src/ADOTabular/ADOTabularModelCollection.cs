@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Serilog;
 
 //using Microsoft.AnalysisServices.AdomdClient;
 
@@ -19,13 +20,21 @@ namespace ADOTabular
             //_models = _adoTabConn.Visitor.Visit(this);
         }
 
+        // True once the model list has been materialized (the DISCOVER query has run). Callers can
+        // check this to avoid triggering the blocking query on the UI thread.
+        public bool IsMaterialized => _models != null;
+
         private SortedDictionary<string,ADOTabularModel> InternalModelCollection
         {
             get
             {
                 if (_models == null)
                 {
+                    var sw = System.Diagnostics.Stopwatch.StartNew();
                     _models = _adoTabConn.Visitor.Visit(this);
+                    sw.Stop();
+                    Log.Debug("{class} {method} {message}", nameof(ADOTabularModelCollection), nameof(InternalModelCollection),
+                        $"Materialized model collection via DISCOVER (duration: {sw.ElapsedMilliseconds}ms, thread {System.Threading.Thread.CurrentThread.ManagedThreadId})");
                 }
                 return _models;
             }
