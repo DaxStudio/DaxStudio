@@ -5,7 +5,7 @@ using Spectre.Console;
 using Spectre.Console.Cli;
 using System;
 using System.ComponentModel;
-using System.Data.OleDb;
+using ADOTabular.Utils;
 
 namespace DaxStudio.CommandLine.Commands
 {
@@ -43,13 +43,11 @@ namespace DaxStudio.CommandLine.Commands
                 string user = GetPropertyOrEnvironmentVariable(nameof(UserID), UserID, "DSCMD_USER");
                 string pass = GetPropertyOrEnvironmentVariable(nameof(Password), Password, "DSCMD_PASSWORD");
 
-                // Always build the connection string through OleDbConnectionStringBuilder
+                // Always build the connection string through a DbConnectionStringBuilder
                 // so that values containing special characters (';', '=', '"', leading/
                 // trailing whitespace) are quoted correctly and any embedded single
                 // quotes are doubled per the connection-string grammar.
-                var builder = string.IsNullOrEmpty(ConnectionString)
-                    ? new OleDbConnectionStringBuilder()
-                    : new OleDbConnectionStringBuilder(ConnectionString);
+                var builder = ConnectionString.ToConnectionStringBuilder();
 
                 if (string.IsNullOrEmpty(ConnectionString))
                 {

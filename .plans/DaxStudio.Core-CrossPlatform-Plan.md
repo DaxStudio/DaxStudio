@@ -47,9 +47,9 @@ SqlFormatter  Interfaces  Parsers(net8.0 ✔)
 |---|---|---|
 | DaxStudio.Parsers | none — already `net8.0` | ✅ done |
 | DaxStudio.SqlFormatter | none found | trivial |
-| DaxStudio.Interfaces | stray `using System.Drawing;` (unused) | trivial |
+| DaxStudio.Interfaces | ~~stray `using System.Drawing;`~~ resolved — none | trivial |
 | DaxStudio.QueryTrace | one `OleDbConnectionStringBuilder` (conn-string parse) | low |
-| DaxStudio.Common | `System.Drawing.Common` PackageReference (appears unused in code) | low |
+| DaxStudio.Common | System.Drawing.Common already guarded to `-windows`; no blocker | trivial |
 | ADOTabular | 4× `OleDbConnectionStringBuilder` in `ADOTabularConnection.cs` | medium |
 | DaxStudio.Core | full `Caliburn.Micro` + `UseWPF`; `Screen`; Registry; WMI | medium-high |
 | DaxStudio.CommandLine | add `net8.0` target; verify Spectre/Serilog/Adomd | low-medium |
@@ -94,29 +94,57 @@ but wrap it so the assembly compiles and runs on any OS:
 - Move `System.Management` to a `net8.0-windows`-only PackageReference so the plain
   `net8.0` build doesn't pull a Windows-only package.
 
-### 2. `System.Drawing` / `System.Drawing.Common`
-Investigation shows these are **not actually used** in the `dscmd` chain:
-- `IGlobalOptions.cs` — `using System.Drawing;` is stray; every property is
-  `string`/`double`/`int`. Just delete the `using`.
-- `MailUtility.cs` — the only "Drawing/Color/Font" hit is HTML text inside a string
-  literal (`color: red`), not the namespace.
-- Plan: remove the stray `using`, then drop the `System.Drawing.Common` PackageReference
-  from Common (or, if a hidden use surfaces at build time, keep it conditioned to
-  `net8.0-windows` only). No abstraction layer needed.
+### 2. `System.Drawing` / `System.Drawing.Common` — RESOLVED (2026-07-21)
+No GDI+ / `System.Drawing.Common` blocker remains in the `dscmd` chain:
+- `IGlobalOptions.cs` — stray `using System.Drawing;` **already removed**.
+- Common `System.Drawing.Common` PackageReference is already
+  `Condition="'$(TargetFramework)' == 'net8.0-windows'"`, so it never affects a plain
+  `net8.0` build. It is effectively unused (only a false-positive `color: red` HTML
+  string in `MailUtility.cs`) and could be dropped entirely, but this is optional.
+- The **only** real `System.Drawing` use in the chain is
+  `ResultsTargets\ResultsTargetExcelFile.cs` (`Color`, `Color.FromArgb`, `Color.White`
+  passed to LargeXlsx). These live in **`System.Drawing.Primitives`**, which is part of
+  the cross-platform shared framework — NOT the Windows-only `System.Drawing.Common`
+  (GDI+: Bitmap/Graphics/Font/Brush/Pen/Icon, none of which are used). Safe cross-platform.
+- Conclusion: nothing further needed for System.Drawing.
 
-### 3. `System.Data.OleDb` (`OleDbConnectionStringBuilder`)
-Used only to **parse/edit Analysis Services connection strings** (add `SessionId`,
-RLS params, `Initial Catalog`) in `ADOTabularConnection.cs` (×4) and
-`QueryTraceEngine.cs` (×1). `System.Data.OleDb` is Windows-only on .NET 8.
-- Replace with `System.Data.Common.DbConnectionStringBuilder`, which is cross-platform
-  and offers the same `builder["Key"] = value` / `ConnectionString` API.
-- **Risk to verify:** `DbConnectionStringBuilder` quoting/escaping differs from the
-  OleDb builder for values containing `;`, `=`, or quotes, and it does not special-case
-  `Provider=`. AS connection strings for the affected keys (`SessionId`, `Initial
-  Catalog`, `Roles`, `EffectiveUserName`) are simple, but round-trip tests will confirm
-  no regression, especially for data-source paths/URLs and quoted values.
-- Add/extend unit tests asserting the rebuilt connection strings match the current
-  OleDb output for representative inputs before switching.
+### 3. `System.Data.OleDb` (`OleDbConnectionStringBuilder`) — DONE (2026-07-21)
+`System.Data.OleDb` is Windows-only on .NET 8 and was used across the `dscmd` chain
+(not just ADOTabular/QueryTrace) purely to parse/edit AS connection strings:
+`ADOTabularConnection.cs` (×4), `Core\Connections\ConnectionManager.cs` (×2),
+`CommandLine\Helpers\AccessTokenHelper.cs` (×3, incl. `.DataSource`),
+`CommandLine\Commands\CommandSettingsRawBase.cs` (×2), `QueryTraceEngine.cs` (×1),
+plus an unused `using` in `CommandLine\UIStubs\QueryRunner.cs`.
+
+Implemented a shared cross-platform helper
+`ADOTabular\Utils\ConnectionStringBuilderExtensions.cs` (referenced by every chain
+project via ADOTabular):
+- `string.ToConnectionStringBuilder()` → a `System.Data.Common.DbConnectionStringBuilder`
+  (null/empty-safe), replacing `new OleDbConnectionStringBuilder(...)`.
+- `DbConnectionStringBuilder.GetDataSource()` → replaces the OleDb-only `.DataSource`
+  property and the unsafe `builder["Data Source"]` indexer (which throws on a missing
+  key, unlike the OleDb known-keyword behaviour).
+
+**Verification:** empirically confirmed `DbConnectionStringBuilder` produces identical
+value quoting/escaping to `OleDbConnectionStringBuilder` for AS connection strings
+(incl. embedded `;`, `=`, and `"`); the only difference is parsed keys are lower-cased,
+which is inconsequential (AS keys are case-insensitive; DAX Studio's own `Properties`
+dict is `OrdinalIgnoreCase` and parsed from the original string). Added
+`ConnectionStringBuilderExtensionsTests` (13 cases, round-trip + `HasRlsParameters` +
+`IsPbiXmlaEndpoint`); pass on both `net472` and `net8.0-windows`. Whole `dscmd` chain
+builds clean (0 errors) on both TFMs.
+
+**Package fully removed:** the `System.Data.OleDb` PackageReference was deleted from
+`ADOTabular` and the `PackageVersion` from `Directory.Packages.props`. `DaxStudio.UI`'s
+3 OleDb usages (in `Model\ConnectionManager.cs` and `ViewModels\DocumentViewModel.cs`)
+were migrated to the helper, so no project depends on the package. The entire graph
+(dscmd chain + `DaxStudio.UI`) compiles for `net8.0-windows` with **zero** OleDb/CS0246
+errors — verified via `dotnet build` of `DaxStudio.Standalone` (the only remaining error
+is a pre-existing WPF `_wpftmp` `WorkingAnimation.InitializeComponent` markup-compile
+quirk that reproduces on `net472` too and is unrelated to OleDb). The only remaining
+OleDb references in `src` are the framework (not-package) `System.Data.OleDb` in the
+`DaxStudio.ExcelAddin` VSTO project (net472 only, intentionally left as-is) and a
+doc-comment mention in the helper.
 
 ## Notes / risks
 

@@ -18,7 +18,7 @@ using System.Threading.Tasks;
 using DaxStudio.Common.Enums;
 using System.Xml.XPath;
 using System.IO;
-using System.Data.OleDb;
+using ADOTabular.Utils;
 using TOM = Microsoft.AnalysisServices;
 using System.Xml;
 using ADOTabular.Interfaces;
@@ -1882,7 +1882,7 @@ namespace DaxStudio.Core.Connections
 
         private static string UpdateApplicationName(string connectionString, Guid uniqueId)
         {
-            var builder = new OleDbConnectionStringBuilder(connectionString);
+            var builder = connectionString.ToConnectionStringBuilder();
             builder.TryGetValue("Application Name", out var appName);
             if (appName == null) return connectionString;
             appName = guidRegex.Replace((appName ?? string.Empty).ToString(), uniqueId.ToString());
@@ -1919,8 +1919,8 @@ namespace DaxStudio.Core.Connections
 
         public static bool IsPbiXmlaEndpoint(string connectionString)
         {
-            var builder = new System.Data.OleDb.OleDbConnectionStringBuilder(connectionString);
-            var server = builder["Data Source"].ToString();
+            var builder = connectionString.ToConnectionStringBuilder();
+            var server = builder.GetDataSource();
             return server.StartsWith("powerbi://", StringComparison.InvariantCultureIgnoreCase)
                 || server.StartsWith("pbiazure://", StringComparison.InvariantCultureIgnoreCase)
                 || server.StartsWith("pbidedicated://", StringComparison.InvariantCultureIgnoreCase);

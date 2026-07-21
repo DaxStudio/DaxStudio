@@ -18,7 +18,6 @@ using Serilog;
 using System;
 using System.Data;
 using System.Data.Common;
-using System.Data.OleDb;
 using System.Threading.Tasks;
 
 namespace DaxStudio.CommandLine.UIStubs

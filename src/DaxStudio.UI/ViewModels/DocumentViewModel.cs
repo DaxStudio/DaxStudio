@@ -1,4 +1,5 @@
 using ADOTabular;
+using ADOTabular.Utils;
 using ADOTabular.AdomdClientWrappers;
 using ADOTabular.Enums;
 using ADOTabular.Extensions;
@@ -1536,7 +1537,7 @@ namespace DaxStudio.UI.ViewModels
 
         private void UpdateViewAsDescription(string connectionString)
         {
-            var builder = new System.Data.OleDb.OleDbConnectionStringBuilder(connectionString);
+            var builder = connectionString.ToConnectionStringBuilder();
             var effUser = builder.ContainsKey("EffectiveUserName") ? builder["EffectiveUserName"].ToString() : string.Empty;
             var roles = builder.ContainsKey("Roles") ? builder["Roles"].ToString() : string.Empty;
             SetViewAsDescription(effUser, roles);
