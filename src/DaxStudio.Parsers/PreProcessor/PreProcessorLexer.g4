@@ -201,6 +201,7 @@ CS_OUTPUT:                'OUTPUT';
 CS_TEST:                  'TEST';
 CS_ASSERT:                'ASSERT';
 CS_CLEARCACHE:            'CLEARCACHE';
+CS_SAVEAS:                'SAVEAS';
 CS_PARAMETER:             '@' IdentifierOrKeyword;
 CS_EQUALS:                 '=' ;
 CS_GREATERTHAN:            '>' ;

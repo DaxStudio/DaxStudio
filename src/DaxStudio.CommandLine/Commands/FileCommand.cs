@@ -18,6 +18,15 @@ using System.Linq;
 using Caliburn.Micro;
 using DaxStudio.Core.Assertions;
 using DaxStudio.Parsers.CommentScript;
+using DaxStudio.Core;
+using DaxStudio.Core.Connections;
+using DaxStudio.Core.Events;
+using DaxStudio.Core.Trace;
+using DaxStudio.CommandLine.ViewModel;
+using DaxStudio.QueryTrace;
+using DaxStudio.QueryTrace.Interfaces;
+using System.IO.Packaging;
+using System.Text;
 
 namespace DaxStudio.CommandLine.Commands
 {
@@ -141,6 +150,18 @@ namespace DaxStudio.CommandLine.Commands
                 // is created per file so variables do not leak across files in a folder run.
                 ScriptVariableExpander.ExpandBatches(batches);
 
+                // "--> SAVEAS <path>" snapshots the query (and, for a .daxx package, the captured
+                // server timings) to a separate file. Handled before the assert-only early return
+                // below because a script may contain SAVEAS without any assertions.
+                var saveAsCommands = batches?
+                    .SelectMany(b => b.Commands)
+                    .OfType<SaveAsCommand>()
+                    .ToList() ?? new List<SaveAsCommand>();
+                if (saveAsCommands.Count > 0)
+                {
+                    await ExecuteSaveAsCommandsAsync(runner, settings, batches, saveAsCommands, cancellationToken);
+                }
+
                 bool HasAsserts(ScriptBatch b) =>
                     b.Commands.Any(c => c is AssertRowcountCommand || c is AssertTableCommand || c is AssertCommand);
 
@@ -235,6 +256,184 @@ namespace DaxStudio.CommandLine.Commands
             {
                 Log.Error(ex, "{class} {method} Unexpected error while evaluating comment-script assertions", nameof(FileCommand), nameof(ExecuteAsync));
                 return 2;
+            }
+        }
+
+        private static bool IsDaxxPath(string path)
+            => !string.IsNullOrEmpty(path) && path.EndsWith(".daxx", StringComparison.OrdinalIgnoreCase);
+
+        // Executes all "--> SAVEAS <path>" commands. Non-package targets get the query text; a .daxx
+        // target gets a package with the query text and (when the script enables a Server Timings
+        // trace) the captured server-timing data. Errors are logged and reported but do not abort.
+        private async Task ExecuteSaveAsCommandsAsync(
+            QueryRunner runner, Settings settings, IReadOnlyList<ScriptBatch> batches,
+            List<SaveAsCommand> saveAsCommands, CancellationToken cancellationToken)
+        {
+            // The full script text (including comment-script directives) is saved, matching the
+            // interactive SAVEAS which persists the whole editor buffer.
+            var scriptText = settings.Query ?? string.Empty;
+
+            var daxxTargets = saveAsCommands.Where(c => IsDaxxPath(c.FileName)).ToList();
+            foreach (var cmd in saveAsCommands.Where(c => !IsDaxxPath(c.FileName)))
+                WriteSaveAsQueryText(cmd.FileName, scriptText);
+
+            if (daxxTargets.Count == 0) return;
+
+            var wantsTimings = batches
+                .SelectMany(b => b.Commands)
+                .OfType<TraceCommand>()
+                .Any(t => t.TraceType == TraceType.ServerTimings && t.Enabled);
+
+            CmdServerTimesViewModel serverTimes = null;
+            if (wantsTimings)
+                serverTimes = await CaptureServerTimingsAsync(runner, settings, batches, cancellationToken);
+
+            foreach (var cmd in daxxTargets)
+                WriteSaveAsPackage(cmd.FileName, scriptText, serverTimes);
+        }
+
+        // Runs the script's queries under a fresh Server Timings trace and returns the populated
+        // trace model so its data can be embedded in a .daxx package. Returns null (and logs a
+        // warning) if a connection or the trace cannot be established.
+        private async Task<CmdServerTimesViewModel> CaptureServerTimingsAsync(
+            QueryRunner runner, Settings settings, IReadOnlyList<ScriptBatch> batches, CancellationToken cancellationToken)
+        {
+            var eventAggregator = new EventAggregator();
+            var connMgr = new ConnectionManager(eventAggregator);
+            try
+            {
+                connMgr.Connect(new UIStubs.ConnectEvent()
+                {
+                    ConnectionString = settings.FullConnectionString,
+                    ApplicationName = "DAX Studio Command Line",
+                    DatabaseName = settings.Database,
+                    PowerBIFileName = settings.PowerBIFileName ?? ""
+                });
+                connMgr.SelectedModel = connMgr.Database.Models.BaseModel;
+                connMgr.SelectedModelName = connMgr.SelectedModel.Name;
+            }
+            catch (Exception ex)
+            {
+                Log.Warning("SAVEAS: could not connect to capture server timings: {message}", ex.Message);
+                try { connMgr.Close(); } catch { }
+                return null;
+            }
+
+            var doc = new CmdLineDocument(connMgr, new CmdLineMetadataPane());
+            var serverTimes = new CmdServerTimesViewModel(
+                eventAggregator, new ServerTimingDetailsViewModel(), runner.Options, null);
+            serverTimes.Document = doc;
+
+            var timingReady = new ManualResetEventSlim(false);
+            eventAggregator.SubscribeOnPublishedThread(
+                new SaveAsTraceCompletedHandler(serverTimes, () => timingReady.Set()));
+
+            serverTimes.IsChecked = true;
+
+            int waitMs = 0;
+            while (serverTimes.TraceStatus != QueryTraceStatus.Started && waitMs < 30000)
+            {
+                Thread.Sleep(500);
+                waitMs += 500;
+            }
+            if (serverTimes.TraceStatus != QueryTraceStatus.Started)
+            {
+                Log.Warning("SAVEAS: server timings trace did not start; package will not include timings");
+                try { connMgr.Close(); } catch { }
+                return null;
+            }
+
+            foreach (var batch in batches)
+            {
+                if (cancellationToken.IsCancellationRequested) break;
+                if (string.IsNullOrWhiteSpace(batch.QueryText)) continue;
+
+                timingReady.Reset();
+                try
+                {
+                    using (var reader = connMgr.ExecuteReader(batch.QueryText, new List<AdomdParameter>()))
+                    {
+                        do { while (reader.Read()) { } } while (reader.NextResult());
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning("SAVEAS: query failed while capturing server timings: {message}", ex.Message);
+                }
+                timingReady.Wait(15000);
+            }
+
+            try { await serverTimes.StopTraceAsync(); } catch { }
+            try { connMgr.Close(); } catch { }
+            return serverTimes;
+        }
+
+        private static void WriteSaveAsQueryText(string path, string queryText)
+        {
+            try
+            {
+                EnsureSaveAsDirectory(path);
+                File.WriteAllText(path, queryText ?? string.Empty, new UTF8Encoding(false));
+                AnsiConsole.MarkupLine($"[green]SAVEAS:[/] saved {Markup.Escape(path)}");
+                Log.Information("SAVEAS wrote query text to {path}", path);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "SAVEAS failed for {path}", path);
+                AnsiConsole.MarkupLine($"[red]SAVEAS failed for {Markup.Escape(path)}:[/] {Markup.Escape(ex.Message)}");
+            }
+        }
+
+        private static void WriteSaveAsPackage(string path, string queryText, CmdServerTimesViewModel serverTimes)
+        {
+            try
+            {
+                EnsureSaveAsDirectory(path);
+                using (var package = Package.Open(path, FileMode.Create))
+                {
+                    var uriDax = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.Query, UriKind.Relative));
+                    using (var tw = new StreamWriter(
+                        package.CreatePart(uriDax, "text/plain", CompressionOption.Maximum).GetStream(), Encoding.UTF8))
+                    {
+                        tw.Write(queryText ?? string.Empty);
+                    }
+
+                    if (serverTimes != null && serverTimes.CanExport)
+                        serverTimes.SavePackage(package);
+                }
+                AnsiConsole.MarkupLine($"[green]SAVEAS:[/] saved package {Markup.Escape(path)}");
+                Log.Information("SAVEAS wrote package to {path}", path);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "SAVEAS failed for {path}", path);
+                AnsiConsole.MarkupLine($"[red]SAVEAS failed for {Markup.Escape(path)}:[/] {Markup.Escape(ex.Message)}");
+            }
+        }
+
+        private static void EnsureSaveAsDirectory(string path)
+        {
+            var dir = Path.GetDirectoryName(path);
+            if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+                Directory.CreateDirectory(dir);
+        }
+
+        // Signals when the Server Timings trace has finished aggregating for the current query,
+        // mirroring BenchmarkCommand's handler.
+        private class SaveAsTraceCompletedHandler : IHandle<QueryTraceCompletedEvent>
+        {
+            private readonly ITraceWatcher _traceWatcher;
+            private readonly System.Action _callback;
+            public SaveAsTraceCompletedHandler(ITraceWatcher traceWatcher, System.Action callback)
+            {
+                _traceWatcher = traceWatcher;
+                _callback = callback;
+            }
+            public Task HandleAsync(QueryTraceCompletedEvent message, CancellationToken cancellationToken)
+            {
+                if (!ReferenceEquals(message.Trace, _traceWatcher)) return Task.CompletedTask;
+                _callback();
+                return Task.CompletedTask;
             }
         }
     }

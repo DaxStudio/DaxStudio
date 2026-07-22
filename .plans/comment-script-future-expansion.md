@@ -19,14 +19,17 @@ The Comment Script spec already covers a solid set of connection, output, tracin
 | Metrics | `METRICS EXPORT/VIEW` | Implemented |
 | Assertions | `ASSERT DURATION/ROWCOUNT/VALUE/COLUMN/RESULTS/TABLE` | DURATION/ROWCOUNT/TABLE implemented; VALUE/COLUMN/RESULTS spec'd |
 | Testing | `TEST PERFORMANCE` | Implemented |
-| Save | `SAVEAS` | Spec'd only |
+| Save | `SAVEAS` | Implemented |
 
 ### What's Mentioned but Not Fully Developed
 
 - **LOOP** — Referenced in the spec ("which is already used by the LOOP command for multi-line constructs")[^1] but no grammar or spec exists.
 - **OPEN** — **Removed — superseded by `CONNECT PBIX "<full path to .pbix>"`**, which opens the file in
   Power BI Desktop (if not already running) and connects.
-- **SAVEAS** with timestamp tokens (`%yyyy-MM-dd%`) — Spec mentions this but no token expansion mechanism exists.
+- **SAVEAS** — **Implemented.** `--> SAVEAS "<path>"` saves a post-query snapshot: `.daxx` writes a full
+  package (query + trace watchers + `--> SHOW` output, with Server Timings embedded when active), any
+  other extension writes the query text. Timestamp / dynamic paths use `$(now:...)` / `$(...)` variable
+  expansion (the earlier `%yyyy-MM-dd%` idea is superseded). Works in both the UI and the `dscmd` CLI.
 - **ASSERT VALUE / COLUMN / RESULTS** — **Removed from the spec, superseded by `ASSERT TABLE`** (which
   covers single-value, single-column, and full result-set comparison, inline or from a `CSV/TXT/MD/PARQUET`
   baseline file).

@@ -1282,5 +1282,64 @@ namespace DaxStudio.Parsers.Tests.CommentScript
         }
 
         #endregion
+
+        #region SAVEAS Tests
+
+        private static SaveAsCommand ParseSingleSaveAsCommand(string input)
+        {
+            List<Error> errors = new List<Error>();
+            var tree = Helpers.ConfigureLexerAndParser(input, ref errors);
+            Assert.IsNull(tree.exception);
+            Assert.IsEmpty(errors, "Should have no errors");
+
+            var arrayParameters = new Dictionary<string, List<string>>();
+            var batch = new List<ScriptBatch>();
+            var listener = new PreProcessorListener(arrayParameters, batch);
+            new ParseTreeWalker().Walk(listener, tree);
+
+            Assert.HasCount(1, batch[0].Commands);
+            var cmd = batch[0].Commands[0] as SaveAsCommand;
+            Assert.IsNotNull(cmd);
+            return cmd;
+        }
+
+        [TestMethod]
+        public void SaveAs_QuotedPath()
+        {
+            var cmd = ParseSingleSaveAsCommand("--> SAVEAS \"C:\\out\\report.daxx\"\nEVALUATE { 1 }\n");
+            Assert.AreEqual("C:\\out\\report.daxx", cmd.FileName);
+        }
+
+        [TestMethod]
+        public void SaveAs_UnquotedIdentifier()
+        {
+            // A bare (unquoted) value is supported for a simple name; full Windows paths (with ':' or
+            // '\') must be quoted, exactly like METRICS EXPORT / ASSERT TABLE file paths.
+            var cmd = ParseSingleSaveAsCommand("--> SAVEAS report\nEVALUATE { 1 }\n");
+            Assert.AreEqual("report", cmd.FileName);
+        }
+
+        [TestMethod]
+        public void SaveAs_KeepsUnexpandedReference()
+        {
+            var cmd = ParseSingleSaveAsCommand("--> SAVEAS \"C:\\out\\report-$(now:yyyy-MM-dd).daxx\"\nEVALUATE { 1 }\n");
+            Assert.AreEqual("C:\\out\\report-$(now:yyyy-MM-dd).daxx", cmd.FileName);
+        }
+
+        [TestMethod]
+        public void SaveAs_IsAVariableExpansionTarget()
+        {
+            var day = new DateTime(2026, 7, 21);
+            var batch = new ScriptBatch();
+            batch.Commands.Add(new VariableCommand("OutDir", "C:\\ci"));
+            var saveAs = new SaveAsCommand("$(OutDir)\\report-$(now:yyyyMMdd).daxx");
+            batch.Commands.Add(saveAs);
+
+            ScriptVariableExpander.ExpandBatches(new[] { batch }, () => day, () => day);
+
+            Assert.AreEqual("C:\\ci\\report-20260721.daxx", saveAs.FileName);
+        }
+
+        #endregion
     }
 }

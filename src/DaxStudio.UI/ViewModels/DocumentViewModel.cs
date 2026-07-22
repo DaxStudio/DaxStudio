@@ -2454,13 +2454,14 @@ namespace DaxStudio.UI.ViewModels
 
                         Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RunQueryInternalAsync), "Sending QueryStarted Event");
 
-                        // If the script has performance assertions and the Server Timings trace is
+                        // If the script has performance assertions (or a SAVEAS that writes a .daxx
+                        // package, which embeds the trace results) and the Server Timings trace is
                         // active, arm a completion signal now (before the query runs) so the
-                        // post-query assertion step can wait for the trace to finish aggregating its
-                        // metrics (which happens asynchronously after the query returns) before
-                        // reading them. See HandleAsync(QueryTraceCompletedEvent).
+                        // post-query step can wait for the trace to finish aggregating its metrics
+                        // (which happens asynchronously after the query returns) before reading /
+                        // saving them. See HandleAsync(QueryTraceCompletedEvent).
                         _serverTimingsAssertionTcs =
-                            ScriptHasPerformanceAsserts(message.QueryProvider)
+                            (ScriptHasPerformanceAsserts(message.QueryProvider) || ScriptHasDaxxSaveAs(message.QueryProvider))
                             && (TraceWatchers.OfType<ServerTimesViewModel>().FirstOrDefault()?.IsChecked ?? false)
                                 ? new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously)
                                 : null;
@@ -2766,6 +2767,24 @@ namespace DaxStudio.UI.ViewModels
             var batches = queryProvider?.QueryInfo?.ScriptBatches;
             if (batches == null || batches.Count == 0) return;
 
+            // "--> SAVEAS" runs after the query so a .daxx snapshot captures the query results and
+            // (when Server Timings is active) the server-timing / query-plan traces. Handle it before
+            // the assert-only early return below because a script can contain SAVEAS without asserts.
+            var saveAsCommands = batches
+                .SelectMany(b => b.Commands)
+                .OfType<CommentScript.SaveAsCommand>()
+                .ToList();
+            if (saveAsCommands.Count > 0)
+            {
+                // If any target is a .daxx package and Server Timings is running, wait for the trace to
+                // finish aggregating so the embedded server-timings data is complete before we save.
+                if (saveAsCommands.Any(c => IsDaxxPath(c.FileName)))
+                    await WaitForServerTimingsAssertionDataAsync();
+
+                foreach (var cmd in saveAsCommands)
+                    ExecuteSaveAsCommand(cmd.FileName);
+            }
+
             // Only touch the pane when there is at least one assertion to evaluate across all batches.
             if (!batches.Any(BatchHasAsserts)) return;
 
@@ -2841,6 +2860,49 @@ namespace DaxStudio.UI.ViewModels
             var batches = queryProvider?.QueryInfo?.ScriptBatches;
             if (batches == null) return false;
             return batches.SelectMany(b => b.Commands).OfType<CommentScript.AssertCommand>().Any();
+        }
+
+        // True when the script contains a "--> SAVEAS <file>.daxx" command. A .daxx package embeds
+        // the query results and trace output, so we arm the Server Timings completion signal for it
+        // (same as a performance assertion) to ensure the trace has finished before the save.
+        private static bool ScriptHasDaxxSaveAs(IQueryTextProvider queryProvider)
+        {
+            var batches = queryProvider?.QueryInfo?.ScriptBatches;
+            if (batches == null) return false;
+            return batches.SelectMany(b => b.Commands)
+                .OfType<CommentScript.SaveAsCommand>()
+                .Any(c => IsDaxxPath(c.FileName));
+        }
+
+        private static bool IsDaxxPath(string path)
+            => !string.IsNullOrEmpty(path)
+               && path.EndsWith(".daxx", StringComparison.OrdinalIgnoreCase);
+
+        // Executes a "--> SAVEAS <path>" command: writes a snapshot of the current document to <path>
+        // without altering this document's own FileName / dirty state / open tab. A .daxx target writes
+        // a full package (query + trace watchers + SHOW output + query results); any other extension
+        // writes just the query text. Errors are reported to the Output pane and do not abort the run.
+        private void ExecuteSaveAsCommand(string path)
+        {
+            try
+            {
+                var dir = System.IO.Path.GetDirectoryName(path);
+                if (!string.IsNullOrEmpty(dir) && !System.IO.Directory.Exists(dir))
+                    System.IO.Directory.CreateDirectory(dir);
+
+                if (IsDaxxPath(path))
+                    WritePackageFile(path);
+                else
+                    WriteSingleFile(path);
+
+                OutputMessage($"--> SAVEAS: saved '{path}'");
+                _eventAggregator.PublishAsync(new FolderOutputMessage($"{System.IO.Path.GetFileName(path)} saved", System.IO.Path.GetDirectoryName(path)));
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(ExecuteSaveAsCommand), ex.Message);
+                OutputError($"--> SAVEAS failed for '{path}': {ex.Message}");
+            }
         }
 
         // Waits for the Server Timings trace to finish aggregating (the QueryTraceCompletedEvent
@@ -3910,34 +3972,7 @@ namespace DaxStudio.UI.ViewModels
         {
             try
             {
-                var package = Package.Open(FileName, FileMode.Create);
-                Uri uriDax = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.Query, UriKind.Relative));
-                using (StreamWriter tw = new StreamWriter(package.CreatePart(uriDax, "text/plain", CompressionOption.Maximum).GetStream(), Encoding.UTF8))
-                {
-                    tw.Write(GetEditor().Text);
-                }
-
-
-                // Save all visible TraceWatchers
-                foreach (var tw in ToolWindows)
-                {
-                    var saver = tw as ISaveState;
-                    if (saver == null) continue;
-                    // The results pane is saved explicitly below (it self-guards on there being SHOW output)
-                    // so it persists regardless of which bottom tab happens to be active at save time.
-                    if (tw is QueryResultsPaneViewModel) continue;
-
-                    var window = tw as ToolWindowBase;
-                    if (window?.IsVisible ?? false || tw is ITraceWatcher)
-                    {
-                        saver.SavePackage(package);
-                    }
-                }
-
-                // Persist the --> SHOW command output (only writes when a SHOW tree is currently displayed).
-                QueryResultsPane?.SavePackage(package);
-
-                package.Close();
+                WritePackageFile(FileName);
 
                 _eventAggregator.PublishAsync(new FileSavedEvent(FileName));
                 IsDirty = false;
@@ -3958,27 +3993,46 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error saving: {ex.Message}"));
             }
         }
+
+        // Writes a .daxx package (query text plus the visible tool windows / trace watchers and the
+        // SHOW output) to the given path. Does not mutate the document's own FileName / dirty state,
+        // so it is reused both by the interactive save (which saves to its own FileName) and by the
+        // "--> SAVEAS" comment-script command (which writes a snapshot to a separate path).
+        private void WritePackageFile(string path)
+        {
+            var package = Package.Open(path, FileMode.Create);
+            Uri uriDax = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.Query, UriKind.Relative));
+            using (StreamWriter tw = new StreamWriter(package.CreatePart(uriDax, "text/plain", CompressionOption.Maximum).GetStream(), Encoding.UTF8))
+            {
+                tw.Write(GetEditor().Text);
+            }
+
+            // Save all visible TraceWatchers
+            foreach (var tw in ToolWindows)
+            {
+                var saver = tw as ISaveState;
+                if (saver == null) continue;
+                // The results pane is saved explicitly below (it self-guards on there being SHOW output)
+                // so it persists regardless of which bottom tab happens to be active at save time.
+                if (tw is QueryResultsPaneViewModel) continue;
+
+                var window = tw as ToolWindowBase;
+                if (window?.IsVisible ?? false || tw is ITraceWatcher)
+                {
+                    saver.SavePackage(package);
+                }
+            }
+
+            // Persist the --> SHOW command output (only writes when a SHOW tree is currently displayed).
+            QueryResultsPane?.SavePackage(package);
+
+            package.Close();
+        }
         private void SaveSingleFiles()
         {
             try
             {
-                using (StreamWriter tw = new StreamWriter(FileName, false, _defaultFileEncoding))
-                {
-                    tw.Write(GetEditor().Text);
-                }
-
-                // Save all visible TraceWatchers
-                foreach (var tw in ToolWindows)
-                {
-                    var saver = tw as ISaveState;
-                    if (saver == null) continue; // go to next item in collection if this one does not implement ISaveState
-
-                    var window = tw as ToolWindowBase;
-                    if (window?.IsVisible ?? false || tw is ITraceWatcher)
-                    {
-                        saver.Save(FileName);
-                    }
-                }
+                WriteSingleFile(FileName);
 
                 _eventAggregator.PublishAsync(new FileSavedEvent(FileName));
                 IsDirty = false;
@@ -3997,6 +4051,30 @@ namespace DaxStudio.UI.ViewModels
                 // catch and report any errors while trying to save
                 Log.Error(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(SaveSingleFiles), ex.Message);
                 _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error saving: {ex.Message}"));
+            }
+        }
+
+        // Writes the query text (and the visible tool windows / trace watchers as sidecar files) to the
+        // given path. Does not mutate the document's own FileName / dirty state; reused by the
+        // interactive save and by the "--> SAVEAS" comment-script command.
+        private void WriteSingleFile(string path)
+        {
+            using (StreamWriter tw = new StreamWriter(path, false, _defaultFileEncoding))
+            {
+                tw.Write(GetEditor().Text);
+            }
+
+            // Save all visible TraceWatchers
+            foreach (var tw in ToolWindows)
+            {
+                var saver = tw as ISaveState;
+                if (saver == null) continue; // go to next item in collection if this one does not implement ISaveState
+
+                var window = tw as ToolWindowBase;
+                if (window?.IsVisible ?? false || tw is ITraceWatcher)
+                {
+                    saver.Save(path);
+                }
             }
         }
 

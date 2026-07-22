@@ -138,10 +138,31 @@ This would work the same as clicking the clear cache button in the ribbon
 
 ## Save As
 ```
---> SAVEAS <filename>
+--> SAVEAS "<filename>"
 ```
 
-This would work the same as the Save As option in the ribbon. I probably need some way of adding timestamp information. This probably makes more sense if I add a command line option. So if you run a file with something like --> SAVEAS “products-%yyyy-MM-dd%.dax” if you had server timings on you could save a file with the timings as part of a CI/CD script.
+Saves a snapshot of the current query to `<filename>` **after** the query has run, without changing
+the identity of the open document (its tab name / dirty state are left untouched). The path must be
+quoted when it contains a drive letter or backslashes (e.g. `"C:\Reports\products.daxx"`).
+
+The extension controls the format, mirroring the ribbon's Save As:
+
+* `.daxx` &mdash; a full DAX Studio package containing the query text plus the visible trace watchers
+  and any `--> SHOW` output. When Server Timings is active the server-timing data is captured too, so
+  a `.daxx` snapshot doubles as a performance record.
+* any other extension (e.g. `.dax`, `.txt`) &mdash; just the query text.
+
+Because it runs after the query (and, for `.daxx`, after the Server Timings trace finishes
+aggregating), the file reflects the fully-executed script. `$(...)` variable / built-in references are
+expanded in the path, which is the intended way to add a timestamp for CI/CD runs:
+
+```
+--> SET OutDir = "C:\Reports"
+--> SAVEAS "$(OutDir)\products-$(now:yyyy-MM-dd).daxx"
+```
+
+In the `dscmd` command line, a `.dax` target writes the query text and a `.daxx` target writes a
+package that also embeds Server Timings when the script contains `--> TRACE SERVERTIMINGS ON`.
 
 ## Metrics
 ```

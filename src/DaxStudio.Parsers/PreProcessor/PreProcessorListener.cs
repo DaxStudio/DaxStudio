@@ -212,6 +212,23 @@ namespace DaxStudio.Parsers.Dax
             base.ExitSet_variable(context);
         }
 
+        public override void ExitSaveas([NotNull] PreProcessorParser.SaveasContext context)
+        {
+            // "--> SAVEAS <filename>" where the filename may be quoted ("out\report.daxx") or an
+            // unquoted path. The quoted form is a single CS_STRING_LITERAL terminal (already un-quoted
+            // by the lexer); the unquoted form is the 'unquoted_value' rule whose original source text
+            // is recovered from its char interval (so any $(...) references survive intact for run-time
+            // expansion).
+            if (context.ChildCount != 2)
+                throw new CommentScriptCommandException("Invalid SAVEAS command. This command should be in the form of: '--> SAVEAS [\"]<FileName>[\"]'", context.Start.Line, context.Start.Column);
+
+            var fileName = GetCommandValueText(context.children[1]);
+            var cmd = new SaveAsCommand(fileName);
+            _currentBatch.Commands.Add(cmd);
+            OutputCommand( _currentBatch.Output, context);
+            base.ExitSaveas(context);
+        }
+
         private object GetParameterValue(IParseTree parseTree)
         {
             if (parseTree is PreProcessorParser.Parameter_array_valuesContext arr)

@@ -167,6 +167,9 @@ namespace DaxStudio.Parsers.CommentScript
                         case AssertTableCommand a when a.FilePath != null:
                             a.FilePath = expander.Expand(a.FilePath);
                             break;
+                        case SaveAsCommand s when s.FileName != null:
+                            s.FileName = expander.Expand(s.FileName);
+                            break;
                     }
                 }
             }

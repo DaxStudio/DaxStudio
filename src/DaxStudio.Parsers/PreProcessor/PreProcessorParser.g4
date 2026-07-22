@@ -101,6 +101,7 @@ command
 	| show
 	| results
 	| set_variable
+	| saveas
 	;
 
 parameter_scalar_values
@@ -131,6 +132,7 @@ metrics_view:      CS_VIEW;
 show:              CS_SHOW (CS_DEPENDENCIES | CS_LAST_UPDATED | CS_MAX_UPDATED);
 results:           CS_RESULTS (CS_ON | CS_OFF);
 set_variable:      CS_SET CS_IDENTIFIER CS_EQUALS ( CS_STRING_LITERAL | CS_INTEGER_LITERAL | CS_REAL_LITERAL | CS_IDENTIFIER );
+saveas:            CS_SAVEAS (CS_STRING_LITERAL | CS_IDENTIFIER);
 
 // An unquoted value for CONNECT/USE that may contain spaces (e.g. a database or Power BI report
 // name like "AW Internet Sales"). It captures every token up to the end of the command line. The
