@@ -90,7 +90,7 @@ Source: "..\release\DaxStudio.exe"; DestDir: "{app}"; Flags: ignoreversion; Comp
 Source: "..\release\bin\DaxStudio.vsto"; DestDir: "{app}"; Flags: ignoreversion; Components: Excel
 Source: "..\release\bin\DaxStudio.dll"; DestDir: "{app}"; Flags: ignoreversion; Components: Excel
 Source: "..\release\bin\DaxStudio.dll.manifest"; DestDir: "{app}"; Flags: ignoreversion; Components: Excel
-Source: "..\release\*"; DestDir: "{app}"; Flags: replacesameversion recursesubdirs createallsubdirs ignoreversion; Components: Core; Excludes: "*.pdb,*.xml,DaxStudio.vshost.*,*.config,DaxStudio.dll,DaxStudio.exe,DaxStudio.vsto"
+Source: "..\release\*"; DestDir: "{app}"; Flags: replacesameversion recursesubdirs createallsubdirs ignoreversion; Components: Core; Excludes: "*.pdb,*.xml,DaxStudio.vshost.*,*.config,DaxStudio.dll,DaxStudio.exe,DaxStudio.vsto,*.Tests.dll,Microsoft.Testing.*,Microsoft.TestPlatform.*,Microsoft.VisualStudio.TestPlatform.*,Microsoft.VisualStudio.CodeCoverage.*,MSTest.*,MSTestAdapter.*,NSubstitute.dll,.msCoverageSourceRootsMapping*"
 
 ;Standalone configs
 ;Source: "..\release\DaxStudio.exe.2016.config"; DestDir: "{app}"; DestName: "DaxStudio.exe.config"; Flags: ignoreversion; Components: Core; Check: Not IsComponentSelected('ASAzureSupport')
