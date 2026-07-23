@@ -2,6 +2,7 @@
 using DaxStudio.CommandLine.Commands;
 using Spectre.Console.Cli;
 using System.Data.OleDb;
+using ADOTabular.Utils;
 
 namespace DaxStudio.CommandLine.Tests
 {
@@ -147,7 +148,7 @@ namespace DaxStudio.CommandLine.Tests
 
         private static string ParseValue(string connectionString, string key)
         {
-            var builder = new OleDbConnectionStringBuilder(connectionString);
+            var builder = connectionString.ToConnectionStringBuilder();
             return builder.ContainsKey(key) ? (string)builder[key] : null;
         }
 

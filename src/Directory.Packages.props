@@ -35,6 +35,10 @@
     <PackageVersion Include="Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel" Version="2.23.0" />
     <PackageVersion Include="Microsoft.AspNet.SignalR.Client" Version="2.4.3" />
     <PackageVersion Include="Microsoft.AspNet.WebApi.Client" Version="6.0.0" />
+    <!-- Transitively pinned (Spectre.Console pulls 10.0.8) so the SDK-style projects resolve the
+         same 10.0.9 as the packages.config-based DaxStudio.ExcelAddin and the shared bin\Debug
+         output; a version split here produces a net472 binding-redirect mismatch at runtime. -->
+    <PackageVersion Include="Microsoft.Bcl.TimeProvider" Version="10.0.9" />
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.301" />
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="7.0.2" />
     <PackageVersion Include="Microsoft.Expression.Drawing" Version="3.0.0" />

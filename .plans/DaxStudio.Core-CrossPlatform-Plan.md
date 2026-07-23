@@ -83,16 +83,32 @@ SqlFormatter  Interfaces  Parsers(net8.0 ✔)
 
 ## How the non-trivial dependencies are handled
 
-### 1. WMI (`ProcessExtensions.GetParent`, `System.Management`)
-Used only to walk up to a parent process for **host discovery** (Excel / Power BI
-Desktop), a Windows-only scenario. Plan: keep the WMI (`Win32_Process`) implementation
-but wrap it so the assembly compiles and runs on any OS:
-- Annotate the Windows path with `[SupportedOSPlatform("windows")]` and gate the call
-  with `if (OperatingSystem.IsWindows())`.
-- Off-Windows, return `null` (no Power BI/Excel host to discover there anyway). A
-  `/proc/<pid>/stat` fallback can be added later if a real Linux use case appears.
-- Move `System.Management` to a `net8.0-windows`-only PackageReference so the plain
-  `net8.0` build doesn't pull a Windows-only package.
+### 1. WMI (`ProcessExtensions.GetParent`, `System.Management`) — DONE (2026-07-21)
+Used only to walk up to a parent process during the **local Power BI Desktop scan**
+(`PowerBIHelper`), a Windows-only scenario. Instead of a runtime `OperatingSystem.IsWindows()`
+guard (which would still link `System.Management` into the cross-platform binary), the scan
+was **inverted behind an abstraction and split by TFM** so the Windows dependencies are
+compiled out of a future plain `net8.0` build entirely:
+- New `IPowerBIInstanceScanner` (portable) + `NullPowerBIInstanceScanner` (portable, returns
+  an empty list — correct off-Windows, where there is no Power BI Desktop).
+- `WindowsPowerBIInstanceScanner` (Windows TFMs only) holds the relocated scan: WMI
+  (`ProcessExtensions.GetParent`), `ManagedIpHelper` (iphlpapi TCP table), `WindowTitle`
+  (user32) and the `WindowsPrincipal` admin check.
+- `PowerBIHelper` keeps only the portable cache/throttle façade and delegates the raw scan to
+  a settable `IPowerBIInstanceScanner Scanner` (also makes the previously-untestable scan
+  testable). The default is chosen at compile time via `PowerBIScannerFactory.Windows.cs`
+  vs `PowerBIScannerFactory.Stub.cs` (`<Compile Remove>` gated) — no `#if` in any source file.
+- `PowerBIInstance`/`EmbeddedSSASIcon` moved to their own portable file; public API unchanged
+  so UI + CLI callers are untouched.
+- `Core.csproj`: `System.Management` PackageReference scoped to `net8.0-windows`; forward-looking
+  `<Compile Remove>` excludes `ProcessExtensions.cs`, `ManagedIpHelper.cs`,
+  `WindowsPowerBIInstanceScanner.cs`, `PowerBIScannerFactory.Windows.cs` from `net8.0` (and
+  the Stub factory from the Windows TFMs).
+- Added `PowerBIHelperTests` (4 cases: delegation/sort, throttle, cache, null-scanner-empty);
+  pass on net472 + net8.0-windows. Whole dscmd chain builds 0 errors on both TFMs.
+- **Note:** the `net8.0` TFM is *not* added to Core yet (still blocked by Caliburn.Micro/WPF,
+  `Screen`, Registry); the gating is forward-looking so that flip becomes a one-line change.
+  `DaxStudio.Common\WindowTitle.cs` (user32) will need analogous gating when Common adds net8.0.
 
 ### 2. `System.Drawing` / `System.Drawing.Common` — RESOLVED (2026-07-21)
 No GDI+ / `System.Drawing.Common` blocker remains in the `dscmd` chain:
