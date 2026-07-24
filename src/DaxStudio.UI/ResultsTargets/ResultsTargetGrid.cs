@@ -187,6 +187,11 @@ namespace DaxStudio.UI.ResultsTargets
 
             var batches = textProvider.QueryInfo?.ScriptBatches;
             var tabs = new System.Collections.Generic.List<ResultTabDescriptor>();
+            // The ordered set of window-activation requests produced by the SHOW commands, in script
+            // order. They are executed after all tabs are built so that the LAST SHOW command decides
+            // which window ends up activated (SHOW DEPENDENCIES/LAST_UPDATED/MAX_UPDATED -> Results pane;
+            // SHOW DIAGRAM -> Model Diagram; SHOW METRICS -> VertiPaq Analyzer; SHOW DELTA -> Delta Analyzer).
+            var showActivations = new System.Collections.Generic.List<ShowActivation>();
             int tableIdx = 1;
             int queryCnt = 1;
             bool anyError = false;
@@ -205,10 +210,40 @@ namespace DaxStudio.UI.ResultsTargets
                         tabs.AddRange(showDescriptors);
                     }
 
-                    // SHOW DEPENDENCIES consumes the batch DAX as its analysis target, so that query is
-                    // not run separately. Every other SHOW variant ignores the DAX, so any query in the
-                    // same batch should still run and produce its own result tab(s) after the SHOW tab(s).
-                    if (showCommands.Any(sc => sc.ShowType == ShowType.Dependencies)) continue;
+                    // Record a window-activation request for every SHOW command, in command order. The
+                    // activations are executed after the batch loop so the last SHOW command wins the
+                    // final focus. DIAGRAM/METRICS/DELTA open a tool window (via a UI event); the tree
+                    // variants activate the Results pane. Their status/warning messages are emitted here
+                    // so they keep their position relative to the batch's query output.
+                    foreach (var sc in showCommands)
+                    {
+                        switch (sc.ShowType)
+                        {
+                            case ShowType.Diagram:
+                                var diagramTables = ResolveDiagramTables(runner, batch);
+                                showActivations.Add(ShowActivation.Diagram(diagramTables));
+                                runner.OutputMessage("--> SHOW DIAGRAM completed");
+                                break;
+                            case ShowType.Metrics:
+                                showActivations.Add(ShowActivation.Simple(ShowActivationKind.Metrics));
+                                runner.OutputMessage("--> SHOW METRICS completed");
+                                break;
+                            case ShowType.Delta:
+                                showActivations.Add(ShowActivation.Simple(ShowActivationKind.Delta));
+                                runner.OutputMessage("--> SHOW DELTA completed");
+                                break;
+                            default:
+                                // DEPENDENCIES / LAST_UPDATED / MAX_UPDATED render into the Results pane.
+                                showActivations.Add(ShowActivation.Simple(ShowActivationKind.Results));
+                                break;
+                        }
+                    }
+
+                    // SHOW DEPENDENCIES and SHOW DIAGRAM consume the batch DAX as their analysis target, so
+                    // that query is not run separately. Every other SHOW variant ignores the DAX, so any
+                    // query in the same batch should still run and produce its own result tab(s) after the
+                    // SHOW tab(s).
+                    if (showCommands.Any(sc => sc.ShowType == ShowType.Dependencies || sc.ShowType == ShowType.Diagram)) continue;
                 }
 
                 var dax = batch.QueryText;
@@ -259,12 +294,119 @@ namespace DaxStudio.UI.ResultsTargets
             // report the row-count of the first data-grid tab (SHOW tabs have no row data)
             var firstDataTab = tabs.FirstOrDefault(t => !t.IsShowTree);
             runner.RowCount = firstDataTab?.Table?.Rows.Count ?? 0;
-            runner.ActivateResults();
+
+            // Activate the target window(s). The SHOW activations are run in script order so that the
+            // LAST SHOW command controls which window ends up focused (earlier tool windows are still
+            // opened, they just don't keep focus). When there were no SHOW commands - or none recorded an
+            // activation - fall back to activating the Results pane as before.
+            await ExecuteShowActivationsAsync(runner, showActivations);
 
             if (anyError)
                 runner.OutputError("Query Batch Completed with errors listed above (you may need to scroll up)", durationMs);
             else
                 runner.OutputMessage("Query Batch Completed", durationMs);
+        }
+
+        // Executes the recorded SHOW window activations in order. Each activation is awaited so the
+        // previous window has finished activating before the next one starts, guaranteeing the last
+        // SHOW command in the script determines the final focus even when an earlier tool-window open
+        // (e.g. the VertiPaq analysis) takes longer to complete.
+        internal async Task ExecuteShowActivationsAsync(IQueryRunner runner, System.Collections.Generic.List<ShowActivation> activations)
+        {
+            if (activations == null || activations.Count == 0)
+            {
+                runner.ActivateResults();
+                return;
+            }
+
+            foreach (var activation in activations)
+            {
+                try
+                {
+                    switch (activation.Kind)
+                    {
+                        case ShowActivationKind.Diagram:
+                            await _eventAggregator.PublishAsync(new DaxStudio.UI.Events.OpenModelDiagramEvent(activation.Tables));
+                            break;
+                        case ShowActivationKind.Metrics:
+                            await _eventAggregator.PublishAsync(new DaxStudio.UI.Events.OpenVertipaqAnalyzerEvent());
+                            break;
+                        case ShowActivationKind.Delta:
+                            await _eventAggregator.PublishAsync(new DaxStudio.UI.Events.OpenDeltaAnalyzerEvent());
+                            break;
+                        case ShowActivationKind.Results:
+                        default:
+                            runner.ActivateResults();
+                            break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "{class} {method} error activating SHOW window {kind}", nameof(ResultsTargetGrid), nameof(ExecuteShowActivationsAsync), activation.Kind);
+                }
+            }
+        }
+
+        // Resolves the tables that a "--> SHOW DIAGRAM" command should filter the Model Diagram to: the
+        // distinct tables the batch's DAX query depends on (via DISCOVER_CALC_DEPENDENCY). Returns null
+        // to indicate the full (unfiltered) diagram should be shown - when there is no query, no live
+        // connection, or the query has no resolvable table dependencies (a warning is emitted for the
+        // last two cases). The actual OpenModelDiagramEvent is published later by ExecuteShowActivationsAsync
+        // so that the last SHOW command in the script controls the final window focus.
+        internal System.Collections.Generic.List<string> ResolveDiagramTables(IQueryRunner runner, ScriptBatch batch)
+        {
+            try
+            {
+                var query = batch?.QueryText;
+                if (string.IsNullOrWhiteSpace(query)) return null;
+
+                if (runner.Connection != null && runner.Connection.IsConnected)
+                {
+                    var tables = runner.Connection.GetQueryDependencyTables(query);
+                    if (tables == null || tables.Count == 0)
+                    {
+                        runner.OutputWarning("--> SHOW DIAGRAM found no table dependencies for the query; showing the full diagram");
+                        return null;
+                    }
+                    return tables;
+                }
+
+                runner.OutputWarning("--> SHOW DIAGRAM requires a live connection to filter by the query's tables; showing the full diagram");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "{class} {method} error resolving SHOW DIAGRAM tables", nameof(ResultsTargetGrid), nameof(ResolveDiagramTables));
+                runner.OutputError($"Error running --> SHOW DIAGRAM: {ex.Message}");
+                return null;
+            }
+        }
+
+        // The kind of window a "--> SHOW" command activates once all result tabs have been built.
+        internal enum ShowActivationKind
+        {
+            Results,
+            Diagram,
+            Metrics,
+            Delta,
+        }
+
+        // A single deferred window-activation request produced by a SHOW command.
+        internal sealed class ShowActivation
+        {
+            private ShowActivation(ShowActivationKind kind, System.Collections.Generic.List<string> tables)
+            {
+                Kind = kind;
+                Tables = tables;
+            }
+
+            public ShowActivationKind Kind { get; }
+
+            // For a Diagram activation, the tables to filter to (null = the whole model). Unused otherwise.
+            public System.Collections.Generic.List<string> Tables { get; }
+
+            public static ShowActivation Simple(ShowActivationKind kind) => new ShowActivation(kind, null);
+            public static ShowActivation Diagram(System.Collections.Generic.List<string> tables) => new ShowActivation(ShowActivationKind.Diagram, tables);
         }
 
         // Returns true if any parsed batch contains a "--> SHOW" command.
@@ -325,6 +467,15 @@ namespace DaxStudio.UI.ResultsTargets
                         // The timestamp trees are built purely from the connection metadata (no DAX),
                         // so they share the same code path used by the metadata-pane context menu.
                         return TryBuildTimestampShowTab(runner, showCommand.ShowType, out descriptor);
+                    case ShowType.Diagram:
+                        // SHOW DIAGRAM opens the Model Diagram tool window instead of producing a result
+                        // tab; it is handled by HandleDiagramShowCommand. Nothing to build here.
+                        return true;
+                    case ShowType.Metrics:
+                    case ShowType.Delta:
+                        // SHOW METRICS / SHOW DELTA open a tool window (via a UI event) instead of
+                        // producing a result tab; they are handled in RunInterspersedBatches. Nothing here.
+                        return true;
                     default:
                         runner.OutputError($"Unknown SHOW command type: {showCommand.ShowType}");
                         return true;

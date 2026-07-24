@@ -171,7 +171,7 @@ namespace DaxStudio.Parsers.Tests.CommentScript
             var batch1 = new ScriptBatch();
             batch1.Commands.Add(new VariableCommand("Dir", "C:\\ci"));
             batch1.Commands.Add(new VariableCommand("Stamp", "$(now:yyyyMMdd)"));
-            batch1.Commands.Add(new MetricsCommand(MetricsAction.Export, "$(Dir)\\m-$(Stamp).vpax"));
+            batch1.Commands.Add(new ExportCommand(ExportTarget.Metrics, "$(Dir)\\m-$(Stamp).vpax"));
 
             // A later batch (after a "--> GO") still sees variables set earlier.
             var batch2 = new ScriptBatch();
@@ -183,7 +183,7 @@ namespace DaxStudio.Parsers.Tests.CommentScript
 
             ScriptVariableExpander.ExpandBatches(new[] { batch1, batch2 }, () => day, () => day);
 
-            var metrics = (MetricsCommand)batch1.Commands[2];
+            var metrics = (ExportCommand)batch1.Commands[2];
             Assert.AreEqual("C:\\ci\\m-20260721.vpax", metrics.FileName);
             Assert.AreEqual("C:\\ci\\baselines\\p.csv", assert.FilePath);
             Assert.AreEqual("C:\\ci", use.DatabaseName);

@@ -1213,6 +1213,38 @@ namespace DaxStudio.Core.Connections
         }
 
         /// <summary>
+        /// Returns the distinct set of tables referenced (directly or indirectly) by the supplied
+        /// query. Reuses <see cref="BuildQueryDependencyTree"/> and flattens the resulting tree,
+        /// collecting every non-blank <see cref="ShowTreeNode.TableName"/>. Used by the
+        /// "--> SHOW DIAGRAM" comment-script command to filter the Model Diagram.
+        /// </summary>
+        public List<string> GetQueryDependencyTables(string query)
+        {
+            var tables = new List<string>();
+            if (string.IsNullOrWhiteSpace(query)) return tables;
+
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var roots = BuildQueryDependencyTree(query);
+            var stack = new Stack<ShowTreeNode>(roots);
+            while (stack.Count > 0)
+            {
+                var node = stack.Pop();
+                if (node == null) continue;
+                if (!string.IsNullOrWhiteSpace(node.TableName) && seen.Add(node.TableName))
+                {
+                    tables.Add(node.TableName);
+                }
+                foreach (var child in node.Children)
+                {
+                    stack.Push(child);
+                }
+            }
+
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(GetQueryDependencyTables), $"end - {tables.Count} table(s)");
+            return tables;
+        }
+
+        /// <summary>
         /// Recursively expands a dependency node by querying the objects it references. Uses the
         /// <paramref name="expanded"/> set (keyed by a stable identity) to guarantee a finite tree:
         /// an object that has already been expanded elsewhere is still added but not re-expanded.

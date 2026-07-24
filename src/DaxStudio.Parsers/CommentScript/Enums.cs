@@ -23,10 +23,9 @@ namespace DaxStudio.Parsers.CommentScript
         AllQueries,
     }
 
-    public enum MetricsAction
+    public enum ExportTarget
     {
-        Export,
-        View,
+        Metrics,
     }
 
     public enum AssertTableMode
@@ -50,6 +49,9 @@ namespace DaxStudio.Parsers.CommentScript
         Dependencies,
         LastUpdated,
         MaxUpdated,
+        Diagram,
+        Metrics,
+        Delta,
     }
 
 }

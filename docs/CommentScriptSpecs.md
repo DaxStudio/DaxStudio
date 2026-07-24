@@ -55,7 +55,7 @@ boundaries so names concatenate safely inside paths:
 ```
 --> SET OutDir = "C:\Reports"
 --> SET Env = prod
---> METRICS EXPORT "$(OutDir)\metrics-$(Env).vpax"
+--> EXPORT METRICS "$(OutDir)\metrics-$(Env).vpax"
 ```
 
 ### Built-in variables
@@ -76,7 +76,7 @@ freezes a captured timestamp so it stays constant for the rest of the run:
 
 ```
 --> SET OutDir = "C:\Report\$(now:yyyy-MM-dd)"
---> METRICS EXPORT "$(OutDir)\model.vpax"
+--> EXPORT METRICS "$(OutDir)\model.vpax"
 EVALUATE ...
 --> GO
 --> ASSERT TABLE CSV "$(OutDir)\baseline.csv"
@@ -88,7 +88,7 @@ is eager, a variable can only reference names defined above it.
 
 ### Semantics and errors
 
-- **Where it applies:** command string arguments — `ASSERT TABLE <file>`, `METRICS EXPORT <path>`,
+- **Where it applies:** command string arguments — `ASSERT TABLE <file>`, `EXPORT METRICS <path>`,
   `CONNECT` targets, and `USE <database>`. The DAX query body is not expanded.
 - **Ordering:** a `SET` is visible only to commands that follow it (including across `--> GO`).
 - **Escaping:** write `$$(` to emit a literal `$(`; every other `$` is literal.
@@ -164,13 +164,16 @@ expanded in the path, which is the intended way to add a timestamp for CI/CD run
 In the `dscmd` command line, a `.dax` target writes the query text and a `.daxx` target writes a
 package that also embeds Server Timings when the script contains `--> TRACE SERVERTIMINGS ON`.
 
-## Metrics
+## Export
+
 ```
---> METRICS EXPORT <filename>
---> METRICS VIEW
+--> EXPORT METRICS <filename>
 ```
 
-This would be the same as clicking view or export metrics in the ribbon. More useful with a command line option.
+Exports the VertiPaq Analyzer metrics for the connected model to a `.vpax` file – the same as
+clicking **Export Metrics** in the ribbon. In the `dscmd` command line this runs headlessly and
+actually writes the file, which is useful for capturing metrics as part of a CI/CD run. The
+`<filename>` may be a quoted string or a bare identifier and supports `$(...)` variable expansion.
 
 ## Show
 
@@ -178,17 +181,25 @@ This would be the same as clicking view or export metrics in the ribbon. More us
 --> SHOW DEPENDENCIES
 --> SHOW LAST_UPDATED
 --> SHOW MAX_UPDATED
+--> SHOW DIAGRAM
+--> SHOW METRICS
+--> SHOW DELTA
 ```
 
-The `SHOW` command renders a tree-grid in the Results pane instead of running the query. It is
-mutually exclusive with the normal results grid for that run and can be dismissed with the *Hide*
-button, revealing the last query results again.
+The `SHOW DEPENDENCIES`, `SHOW LAST_UPDATED` and `SHOW MAX_UPDATED` commands render a tree-grid in the
+Results pane instead of running the query. That tree-grid is mutually exclusive with the normal
+results grid for that run and can be dismissed with the *Hide* button, revealing the last query
+results again. `SHOW DIAGRAM`, `SHOW METRICS` and `SHOW DELTA` instead open their respective tool
+windows (see the table below).
 
 | Sub-command | Behaviour |
 |---|---|
 | `SHOW DEPENDENCIES` | Analyses the DAX query in the batch (**without executing it**) and displays the full recursive dependency tree of every referenced object – measures, columns, tables and functions. Uses `DISCOVER_CALC_DEPENDENCY`. |
 | `SHOW LAST_UPDATED` | Ignores the query and displays the model metadata as a tree that mirrors the Power BI Desktop model view: a single **Semantic model** root with grouping folders (*Calculation groups*, *Cultures*, *Expressions*, *Functions*, *Perspectives*, *Relationships*, *Roles*, *Tables*) and, under each table, *Calendars*, *Columns*, *Hierarchies*, *Measures* and *Partitions*. Each item shows its last schema-modified timestamp, sourced from the `TMSCHEMA_*` DMVs. |
 | `SHOW MAX_UPDATED` | Same metadata source and structure as `LAST_UPDATED`, but pruned to the object(s) carrying the **maximum** modified timestamp (nested inside their enclosing folders / tables) so you can quickly see what was changed most recently. |
+| `SHOW DIAGRAM` | Opens the Model Diagram tool window. When a non-blank DAX query is in the batch (**without executing it**), the query's dependent tables are resolved via `DISCOVER_CALC_DEPENDENCY` and the diagram is filtered to just those tables; on its own it opens the full diagram. |
+| `SHOW METRICS` | Opens the VertiPaq Analyzer (Metrics) view – the same as clicking **View Metrics** in the ribbon. Does not consume the batch query. |
+| `SHOW DELTA` | Opens the Delta Analyzer view (a preview feature that must be enabled in Options; requires a Direct Lake connection). Does not consume the batch query. |
 
 The tree-grid shows an *Object*, *Type* and *Table* column for every variant; the *Last Modified*
 column is shown for `LAST_UPDATED` / `MAX_UPDATED`, and two additional columns are shown for

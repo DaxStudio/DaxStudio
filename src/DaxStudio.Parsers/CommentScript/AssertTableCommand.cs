@@ -74,9 +74,6 @@ namespace DaxStudio.Parsers.CommentScript
         /// </summary>
         public string FilePath { get; set; }
 
-        /// <summary>1-based line of the source "--&gt; ASSERT TABLE" command (0 when unknown).</summary>
-        public int Line { get; set; }
-
         /// <summary>0-based character position of the source "--&gt; ASSERT TABLE" command (0 when unknown).</summary>
         public int Column { get; set; }
 

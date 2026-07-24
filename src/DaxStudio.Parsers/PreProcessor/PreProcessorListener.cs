@@ -284,7 +284,7 @@ namespace DaxStudio.Parsers.Dax
                 doubleValue = double.Parse(context.children[3].GetText());
             }
 
-            var cmd = new AssertCommand(property, comparison, integerValue , doubleValue);
+            var cmd = new AssertCommand(property, comparison, integerValue , doubleValue) { Line = context.Start.Line };
             _currentBatch.Commands.Add(cmd);
             OutputCommand( _currentBatch.Output, context);
             base.ExitAssert(context);
@@ -295,7 +295,7 @@ namespace DaxStudio.Parsers.Dax
             var comparison = context.children[2].GetText();
             var value = int.Parse(context.children[3].GetText());
 
-            var cmd = new AssertRowcountCommand(comparison, value);
+            var cmd = new AssertRowcountCommand(comparison, value) { Line = context.Start.Line };
             _currentBatch.Commands.Add(cmd);
             OutputCommand(_currentBatch.Output, context);
             base.ExitAssert_rowcount(context);
@@ -443,24 +443,15 @@ namespace DaxStudio.Parsers.Dax
             base.ExitTrace(context);
         }
 
-        public override void ExitMetrics([NotNull] MetricsContext context)
+        public override void ExitExport([NotNull] ExportContext context)
         {
-            var subContext = context.children[1];
-
-            if (subContext is Metrics_exportContext exportCtx)
-            {
-                var fileName = exportCtx.children[1].GetText();
-                var cmd = new MetricsCommand(MetricsAction.Export, fileName);
-                _currentBatch.Commands.Add(cmd);
-            }
-            else if (subContext is Metrics_viewContext)
-            {
-                var cmd = new MetricsCommand(MetricsAction.View);
-                _currentBatch.Commands.Add(cmd);
-            }
+            // export: CS_EXPORT CS_METRICS (CS_STRING_LITERAL | CS_IDENTIFIER)
+            var fileName = context.children[2].GetText();
+            var cmd = new ExportCommand(ExportTarget.Metrics, fileName);
+            _currentBatch.Commands.Add(cmd);
 
             OutputCommand(_currentBatch.Output, context);
-            base.ExitMetrics(context);
+            base.ExitExport(context);
         }
 
         public override void ExitShow([NotNull] ShowContext context)
@@ -474,6 +465,15 @@ namespace DaxStudio.Parsers.Dax
                     break;
                 case CS_MAX_UPDATED:
                     showType = ShowType.MaxUpdated;
+                    break;
+                case CS_DIAGRAM:
+                    showType = ShowType.Diagram;
+                    break;
+                case CS_METRICS:
+                    showType = ShowType.Metrics;
+                    break;
+                case CS_DELTA:
+                    showType = ShowType.Delta;
                     break;
                 case CS_DEPENDENCIES:
                 default:

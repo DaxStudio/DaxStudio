@@ -95,12 +95,12 @@ namespace DaxStudio.Parsers.Tests.CommentScript
 
         #endregion
 
-        #region METRICS Tests
+        #region EXPORT METRICS Tests
 
         [TestMethod]
-        public void MetricsExportWithFilename()
+        public void ExportMetricsWithFilename()
         {
-            var input = "--> METRICS EXPORT \"metrics.json\"\n" +
+            var input = "--> EXPORT METRICS \"metrics.vpax\"\n" +
                 "EVALUATE { 1 }\n";
 
             List<Error> errors = new List<Error>();
@@ -116,16 +116,16 @@ namespace DaxStudio.Parsers.Tests.CommentScript
             walker.Walk(listener, tree);
 
             Assert.HasCount(1, batch[0].Commands);
-            var cmd = batch[0].Commands[0] as MetricsCommand;
+            var cmd = batch[0].Commands[0] as ExportCommand;
             Assert.IsNotNull(cmd);
-            Assert.AreEqual(MetricsAction.Export, cmd.Action);
-            Assert.AreEqual("metrics.json", cmd.FileName);
+            Assert.AreEqual(ExportTarget.Metrics, cmd.Target);
+            Assert.AreEqual("metrics.vpax", cmd.FileName);
         }
 
         [TestMethod]
-        public void MetricsExportWithUnquotedFilename()
+        public void ExportMetricsWithUnquotedFilename()
         {
-            var input = "--> METRICS EXPORT myfile\n" +
+            var input = "--> EXPORT METRICS myfile\n" +
                 "EVALUATE { 1 }\n";
 
             List<Error> errors = new List<Error>();
@@ -141,35 +141,10 @@ namespace DaxStudio.Parsers.Tests.CommentScript
             walker.Walk(listener, tree);
 
             Assert.HasCount(1, batch[0].Commands);
-            var cmd = batch[0].Commands[0] as MetricsCommand;
+            var cmd = batch[0].Commands[0] as ExportCommand;
             Assert.IsNotNull(cmd);
-            Assert.AreEqual(MetricsAction.Export, cmd.Action);
+            Assert.AreEqual(ExportTarget.Metrics, cmd.Target);
             Assert.AreEqual("myfile", cmd.FileName);
-        }
-
-        [TestMethod]
-        public void MetricsView()
-        {
-            var input = "--> METRICS VIEW\n" +
-                "EVALUATE { 1 }\n";
-
-            List<Error> errors = new List<Error>();
-            var tree = Helpers.ConfigureLexerAndParser(input, ref errors);
-
-            Assert.IsNull(tree.exception);
-            Assert.IsEmpty(errors, "Should have no errors");
-
-            Dictionary<string, List<string>> arrayParameters = new Dictionary<string, List<string>>();
-            var batch = new List<ScriptBatch>();
-            var listener = new PreProcessorListener(arrayParameters, batch);
-            var walker = new ParseTreeWalker();
-            walker.Walk(listener, tree);
-
-            Assert.HasCount(1, batch[0].Commands);
-            var cmd = batch[0].Commands[0] as MetricsCommand;
-            Assert.IsNotNull(cmd);
-            Assert.AreEqual(MetricsAction.View, cmd.Action);
-            Assert.IsNull(cmd.FileName);
         }
 
         #endregion

@@ -97,7 +97,7 @@ command
 	| assert_table_header
 	| clear_cache
 	| trace
-	| metrics
+	| export
 	| show
 	| results
 	| set_variable
@@ -126,10 +126,8 @@ assert_table_header: CS_ASSERT CS_TABLE (CS_UNORDERED | CS_PARTIAL)? assert_tabl
 assert_table_file:   (CS_CSV | CS_TXT | CS_MD | CS_PARQUET) CS_STRING_LITERAL ;
 clear_cache:       CS_CLEARCACHE;
 trace:             CS_TRACE (CS_SERVERTIMINGS | CS_QUERYPLAN | CS_ALLQUERIES) (CS_ON | CS_OFF);
-metrics:           CS_METRICS (metrics_export | metrics_view);
-metrics_export:    CS_EXPORT (CS_STRING_LITERAL | CS_IDENTIFIER);
-metrics_view:      CS_VIEW;
-show:              CS_SHOW (CS_DEPENDENCIES | CS_LAST_UPDATED | CS_MAX_UPDATED);
+export:            CS_EXPORT CS_METRICS (CS_STRING_LITERAL | CS_IDENTIFIER);
+show:              CS_SHOW (CS_DEPENDENCIES | CS_LAST_UPDATED | CS_MAX_UPDATED | CS_DIAGRAM | CS_METRICS | CS_DELTA);
 results:           CS_RESULTS (CS_ON | CS_OFF);
 set_variable:      CS_SET CS_IDENTIFIER CS_EQUALS ( CS_STRING_LITERAL | CS_INTEGER_LITERAL | CS_REAL_LITERAL | CS_IDENTIFIER );
 saveas:            CS_SAVEAS (CS_STRING_LITERAL | CS_IDENTIFIER);

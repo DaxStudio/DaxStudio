@@ -161,7 +161,7 @@ namespace DaxStudio.Parsers.CommentScript
                         case UseCommand u when u.DatabaseName != null:
                             u.DatabaseName = expander.Expand(u.DatabaseName);
                             break;
-                        case MetricsCommand m when m.FileName != null:
+                        case ExportCommand m when m.FileName != null:
                             m.FileName = expander.Expand(m.FileName);
                             break;
                         case AssertTableCommand a when a.FilePath != null:

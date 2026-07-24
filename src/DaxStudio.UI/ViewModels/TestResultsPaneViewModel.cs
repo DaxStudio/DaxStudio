@@ -227,12 +227,7 @@ namespace DaxStudio.UI.ViewModels
                 if (_gotoLocation == null)
                 {
                     _gotoLocation = new Utils.RelayCommand(
-                        param =>
-                        {
-                            var result = param as TestResult;
-                            if (result == null || result.Line <= 0) return;
-                            _eventAggregator.PublishAsync(new NavigateToLocationEvent(result.Line, 1));
-                        },
+                        param => NavigateToTest(param as TestResult),
                         param =>
                         {
                             var result = param as TestResult;
@@ -241,6 +236,19 @@ namespace DaxStudio.UI.ViewModels
                 }
                 return _gotoLocation;
             }
+        }
+
+        // Caliburn.Micro action invoked when a row in the Test Results list is double-clicked
+        // (see TestResultsPaneView.xaml). Navigates the editor to the assertion's source line.
+        public void RowDoubleClick(TestResult result)
+        {
+            NavigateToTest(result);
+        }
+
+        private void NavigateToTest(TestResult result)
+        {
+            if (result == null || result.Line <= 0) return;
+            _eventAggregator.PublishAsync(new NavigateToLocationEvent(result.Line, 1));
         }
 
         #region ISaveState

@@ -36,8 +36,8 @@ namespace DaxStudio.Parsers.Dax
             ("RESULTS",   "Show or hide the results grid (RESULTS ON|OFF)"),
             ("CLEARCACHE", "Clear the database cache"),
             ("TRACE",     "Turn a trace on or off"),
-            ("METRICS",   "Export or view VertiPaq Analyzer metrics"),
-            ("SHOW",      "Show dependency or last-updated information"),
+            ("EXPORT",    "Export VertiPaq Analyzer metrics to a VPAX file"),
+            ("SHOW",      "Show dependency, last-updated, diagram, metrics or delta information"),
             ("GO",        "Separate the script into batches"),
         };
 
@@ -75,16 +75,18 @@ namespace DaxStudio.Parsers.Dax
                     ("QUERYPLAN",     "Query Plan trace"),
                     ("ALLQUERIES",    "All Queries trace"),
                 },
-                ["METRICS"] = new[]
+                ["EXPORT"] = new[]
                 {
-                    ("EXPORT", "Export metrics to a VPAX file"),
-                    ("VIEW",   "View metrics in the VertiPaq Analyzer pane"),
+                    ("METRICS", "Export VertiPaq Analyzer metrics to a VPAX file"),
                 },
                 ["SHOW"] = new[]
                 {
                     ("DEPENDENCIES", "Show object dependencies"),
                     ("LAST_UPDATED", "Show the last refresh time"),
                     ("MAX_UPDATED",  "Show the most recent refresh time"),
+                    ("DIAGRAM",      "Open the model diagram, filtered to the query's tables"),
+                    ("METRICS",      "Open the VertiPaq Analyzer (Metrics) view"),
+                    ("DELTA",        "Open the Delta Analyzer view"),
                 },
             };
 

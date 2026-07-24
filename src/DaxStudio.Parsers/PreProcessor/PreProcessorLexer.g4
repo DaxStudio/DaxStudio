@@ -246,6 +246,8 @@ CS_SHOW:                  'SHOW';
 CS_DEPENDENCIES:          'DEPENDENCIES';
 CS_LAST_UPDATED:          'LAST_UPDATED';
 CS_MAX_UPDATED:           'MAX_UPDATED';
+CS_DIAGRAM:               'DIAGRAM';
+CS_DELTA:                 'DELTA';
 
 CS_STRING:                'STRING';
 CS_INTEGER:               'INT' | 'INT64';

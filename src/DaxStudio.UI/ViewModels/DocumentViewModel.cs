@@ -2670,7 +2670,37 @@ namespace DaxStudio.UI.ViewModels
             if (commands.OfType<CommentScript.AssertCommand>().Any())
                 await EnsureServerTimingsForPerformanceAssertsAsync();
 
+            // "--> EXPORT METRICS <file>" writes a .vpax file for the connected model. It is a
+            // side-effect command (independent of the batch query), so it runs here alongside the
+            // other pre-query commands.
+            var exportCommands = commands.OfType<CommentScript.ExportCommand>().ToList();
+            if (exportCommands.Count > 0)
+                await ExecuteExportCommandsAsync(exportCommands);
+
             return true;
+        }
+
+        // Executes "--> EXPORT METRICS <file>" commands by exporting a .vpax for each requested path.
+        private async Task ExecuteExportCommandsAsync(System.Collections.Generic.List<CommentScript.ExportCommand> exportCommands)
+        {
+            foreach (var export in exportCommands)
+            {
+                if (export.Target != CommentScript.ExportTarget.Metrics) continue;
+
+                if (string.IsNullOrWhiteSpace(export.FileName))
+                {
+                    OutputError("--> EXPORT METRICS requires a file path");
+                    continue;
+                }
+
+                if (!IsConnected)
+                {
+                    OutputError("--> EXPORT METRICS requires a connection to a data source");
+                    continue;
+                }
+
+                await ExportAnalysisDataAsync(export.FileName, string.Empty, string.Empty);
+            }
         }
 
         // Restarts the debounce timer so test discovery runs a short time after the user stops typing.

@@ -99,6 +99,7 @@
                       x:Name="Results" 
                       HorizontalAlignment="Stretch"  
                       AlternationCount="2"
+                      cal:Message.Attach="[Event MouseDoubleClick] = [Action RowDoubleClick($this.SelectedItem)]"
                       behaviours:GridViewColumnResize.Enabled="True"
                       ItemContainerStyle="{StaticResource alternatingRows}">
                 <ListView.ContextMenu>
@@ -116,11 +117,6 @@
                                   CommandParameter="{Binding SelectedItem, ElementName=Results}" />
                     </ContextMenu>
                 </ListView.ContextMenu>
-                <ListView.InputBindings>
-                    <MouseBinding MouseAction="LeftDoubleClick"
-                                  Command="{Binding GotoLocation}"
-                                  CommandParameter="{Binding SelectedItem, ElementName=Results}" />
-                </ListView.InputBindings>
                 <ListView.View>
                     <GridView>
                         <!-- Icon -->

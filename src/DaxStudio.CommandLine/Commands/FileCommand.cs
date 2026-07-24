@@ -150,6 +150,33 @@ namespace DaxStudio.CommandLine.Commands
                 // is created per file so variables do not leak across files in a folder run.
                 ScriptVariableExpander.ExpandBatches(batches);
 
+                // "--> SHOW DIAGRAM|METRICS|DELTA" open a tool window in the UI; dscmd has no UI so these
+                // are no-ops here. Log an informational message so scripts shared between the UI and dscmd
+                // are clear about what was skipped.
+                var uiOnlyShowCommands = batches?
+                    .SelectMany(b => b.Commands)
+                    .OfType<ShowCommand>()
+                    .Where(c => c.ShowType == ShowType.Diagram
+                             || c.ShowType == ShowType.Metrics
+                             || c.ShowType == ShowType.Delta)
+                    .ToList() ?? new List<ShowCommand>();
+                foreach (var showCmd in uiOnlyShowCommands)
+                {
+                    Log.Information("--> SHOW {showType} is not supported in dscmd (no UI to open the {showType} view) and was ignored", showCmd.ShowType.ToString().ToUpperInvariant(), showCmd.ShowType.ToString().ToUpperInvariant());
+                }
+
+                // "--> EXPORT METRICS <file>" writes a .vpax file for the connected model. Unlike the SHOW
+                // panes this works headlessly, so dscmd performs the export directly.
+                var exportCommands = batches?
+                    .SelectMany(b => b.Commands)
+                    .OfType<ExportCommand>()
+                    .Where(c => c.Target == ExportTarget.Metrics)
+                    .ToList() ?? new List<ExportCommand>();
+                foreach (var export in exportCommands)
+                {
+                    ExecuteExportMetricsCommand(settings, export);
+                }
+
                 // "--> SAVEAS <path>" snapshots the query (and, for a .daxx package, the captured
                 // server timings) to a separate file. Handled before the assert-only early return
                 // below because a script may contain SAVEAS without any assertions.
@@ -261,6 +288,41 @@ namespace DaxStudio.CommandLine.Commands
 
         private static bool IsDaxxPath(string path)
             => !string.IsNullOrEmpty(path) && path.EndsWith(".daxx", StringComparison.OrdinalIgnoreCase);
+
+        // Executes a "--> EXPORT METRICS <file>" command by generating a .vpax for the connected model,
+        // reusing the same ModelAnalyzer.ExportVPAX path as the dedicated "vpax" dscmd command.
+        private static void ExecuteExportMetricsCommand(Settings settings, ExportCommand export)
+        {
+            var path = export.FileName;
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                Log.Warning("--> EXPORT METRICS was ignored because no file path was supplied");
+                AnsiConsole.MarkupLine("[yellow]EXPORT METRICS:[/] no file path supplied - skipped");
+                return;
+            }
+
+            try
+            {
+                EnsureSaveAsDirectory(path);
+                var appVersion = System.Reflection.Assembly.GetEntryAssembly().GetName().Version.ToString();
+                var connStr = settings.FullConnectionString;
+                var statsColumnBatchSize = Dax.Model.Extractor.StatExtractor.DefaultColumnBatchSize;
+
+                Log.Information("--> EXPORT METRICS exporting VPAX to {path}", path);
+                DaxStudio.Core.Vpax.ModelAnalyzer.ExportVPAX(
+                    connStr, path, string.Empty, string.Empty,
+                    true, "DAX Studio Command Line", appVersion, true, "Model",
+                    false, Dax.Metadata.DirectLakeExtractionMode.ResidentOnly, statsColumnBatchSize);
+
+                AnsiConsole.MarkupLine($"[green]EXPORT METRICS:[/] saved {Markup.Escape(path)}");
+                Log.Information("--> EXPORT METRICS wrote VPAX to {path}", path);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "--> EXPORT METRICS failed for {path}", path);
+                AnsiConsole.MarkupLine($"[red]EXPORT METRICS failed for {Markup.Escape(path)}:[/] {Markup.Escape(ex.Message)}");
+            }
+        }
 
         // Executes all "--> SAVEAS <path>" commands. Non-package targets get the query text; a .daxx
         // target gets a package with the query text and (when the script enables a Server Timings

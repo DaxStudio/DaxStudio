@@ -49,5 +49,47 @@ namespace DaxStudio.Parsers.Tests.CommentScript
             var cmd = ParseSingleShowCommand("--> SHOW MAX_UPDATED\nEVALUATE { 1 }\n");
             Assert.AreEqual(ShowType.MaxUpdated, cmd.ShowType);
         }
+
+        [TestMethod]
+        public void ShowDiagram()
+        {
+            var cmd = ParseSingleShowCommand("--> SHOW DIAGRAM\nEVALUATE { 1 }\n");
+            Assert.AreEqual(ShowType.Diagram, cmd.ShowType);
+        }
+
+        [TestMethod]
+        public void ShowDiagramWithoutQuery()
+        {
+            var cmd = ParseSingleShowCommand("--> SHOW DIAGRAM\n");
+            Assert.AreEqual(ShowType.Diagram, cmd.ShowType);
+        }
+
+        [TestMethod]
+        public void ShowMetrics()
+        {
+            var cmd = ParseSingleShowCommand("--> SHOW METRICS\nEVALUATE { 1 }\n");
+            Assert.AreEqual(ShowType.Metrics, cmd.ShowType);
+        }
+
+        [TestMethod]
+        public void ShowMetricsWithoutQuery()
+        {
+            var cmd = ParseSingleShowCommand("--> SHOW METRICS\n");
+            Assert.AreEqual(ShowType.Metrics, cmd.ShowType);
+        }
+
+        [TestMethod]
+        public void ShowDelta()
+        {
+            var cmd = ParseSingleShowCommand("--> SHOW DELTA\nEVALUATE { 1 }\n");
+            Assert.AreEqual(ShowType.Delta, cmd.ShowType);
+        }
+
+        [TestMethod]
+        public void ShowDeltaWithoutQuery()
+        {
+            var cmd = ParseSingleShowCommand("--> SHOW DELTA\n");
+            Assert.AreEqual(ShowType.Delta, cmd.ShowType);
+        }
     }
 }

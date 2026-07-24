@@ -5,6 +5,7 @@ using DaxStudio.Core.Model;
 using DaxStudio.Interfaces;
 using DaxStudio.Parsers.CommentScript;
 using DaxStudio.UI.ResultsTargets;
+using DaxStudio.UI.Events;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 
@@ -98,6 +99,235 @@ namespace DaxStudio.Tests.ResultsTargets
 
             Assert.AreEqual(1, showCommands.Count);
             Assert.AreEqual(ShowType.MaxUpdated, showCommands[0].ShowType);
+        }
+
+        [TestMethod]
+        public void ShowDiagramCommandProducesNoTabDescriptor()
+        {
+            // SHOW DIAGRAM opens the Model Diagram tool window instead of producing a result tab,
+            // so TryHandleShowBatch reports it as handled but adds no descriptor.
+            var provider = BuildProvider("--> SHOW DIAGRAM\nEVALUATE { 1 }");
+            var runner = Substitute.For<IQueryRunner>();
+            var batch = provider.QueryInfo.ScriptBatches.First();
+
+            var handled = ResultsTargetGrid.TryHandleShowBatch(runner, provider, batch, out var descriptors);
+
+            Assert.IsTrue(handled, "A SHOW DIAGRAM command should be treated as handled");
+            Assert.AreEqual(0, descriptors.Count, "SHOW DIAGRAM opens a tool window and produces no result tab");
+        }
+
+        [TestMethod]
+        public void ShowDiagramAndDependenciesParseIntoSameBatch()
+        {
+            // A batch may contain both SHOW DIAGRAM and SHOW DEPENDENCIES; both consume the same query.
+            var provider = BuildProvider("--> SHOW DIAGRAM\n--> SHOW DEPENDENCIES\nEVALUATE { 1 }");
+            var batch = provider.QueryInfo.ScriptBatches.First();
+
+            var showTypes = batch.Commands.OfType<ShowCommand>().Select(c => c.ShowType).ToList();
+
+            CollectionAssert.Contains(showTypes, ShowType.Diagram);
+            CollectionAssert.Contains(showTypes, ShowType.Dependencies);
+        }
+
+        [TestMethod]
+        public void ResolveDiagramTablesWithoutConnectionReturnsNullAndWarns()
+        {
+            // With a query but no live connection we cannot resolve the query's tables, so the full
+            // (unfiltered) diagram is requested (null tables) and a warning is emitted.
+            var gridAgg = Substitute.For<IEventAggregator>();
+            var grid = new ResultsTargetGrid(gridAgg, NewParserOptions());
+            var provider = BuildProvider("--> SHOW DIAGRAM\nEVALUATE { 1 }");
+            var runner = Substitute.For<IQueryRunner>();
+            var batch = provider.QueryInfo.ScriptBatches.First();
+
+            var tables = grid.ResolveDiagramTables(runner, batch);
+
+            Assert.IsNull(tables, "Without a live connection the diagram should be shown unfiltered (null tables)");
+            runner.Received().OutputWarning(Arg.Is<string>(s => s.Contains("live connection")));
+        }
+
+        [TestMethod]
+        public void ResolveDiagramTablesOnItsOwnReturnsNullWithoutWarning()
+        {
+            // "--> SHOW DIAGRAM" on its own (no query) resolves to the full diagram with no table filter
+            // and does not emit a connection warning.
+            var gridAgg = Substitute.For<IEventAggregator>();
+            var grid = new ResultsTargetGrid(gridAgg, NewParserOptions());
+            var provider = BuildProvider("--> SHOW DIAGRAM");
+            var runner = Substitute.For<IQueryRunner>();
+            var batch = provider.QueryInfo.ScriptBatches.First();
+
+            var tables = grid.ResolveDiagramTables(runner, batch);
+
+            Assert.IsNull(tables, "With no query the diagram should be shown unfiltered (null tables)");
+            runner.DidNotReceive().OutputWarning(Arg.Any<string>());
+        }
+
+        [TestMethod]
+        public void ShowMetricsCommandProducesNoTabDescriptor()
+        {
+            // SHOW METRICS opens the VertiPaq Analyzer tool window instead of producing a result tab,
+            // so TryHandleShowBatch reports it as handled but adds no descriptor.
+            var provider = BuildProvider("--> SHOW METRICS\nEVALUATE { 1 }");
+            var runner = Substitute.For<IQueryRunner>();
+            var batch = provider.QueryInfo.ScriptBatches.First();
+
+            var handled = ResultsTargetGrid.TryHandleShowBatch(runner, provider, batch, out var descriptors);
+
+            Assert.IsTrue(handled, "A SHOW METRICS command should be treated as handled");
+            Assert.AreEqual(0, descriptors.Count, "SHOW METRICS opens a tool window and produces no result tab");
+        }
+
+        [TestMethod]
+        public void ShowDeltaCommandProducesNoTabDescriptor()
+        {
+            // SHOW DELTA opens the Delta Analyzer tool window instead of producing a result tab.
+            var provider = BuildProvider("--> SHOW DELTA\nEVALUATE { 1 }");
+            var runner = Substitute.For<IQueryRunner>();
+            var batch = provider.QueryInfo.ScriptBatches.First();
+
+            var handled = ResultsTargetGrid.TryHandleShowBatch(runner, provider, batch, out var descriptors);
+
+            Assert.IsTrue(handled, "A SHOW DELTA command should be treated as handled");
+            Assert.AreEqual(0, descriptors.Count, "SHOW DELTA opens a tool window and produces no result tab");
+        }
+
+        [TestMethod]
+        public void ShowMetricsCommandParsesIntoScriptBatch()
+        {
+            var provider = BuildProvider("--> SHOW METRICS\nEVALUATE { 1 }");
+            var showTypes = provider.QueryInfo.ScriptBatches
+                .SelectMany(b => b.Commands)
+                .OfType<ShowCommand>()
+                .Select(c => c.ShowType)
+                .ToList();
+
+            CollectionAssert.Contains(showTypes, ShowType.Metrics);
+        }
+
+        [TestMethod]
+        public void ShowDeltaCommandParsesIntoScriptBatch()
+        {
+            var provider = BuildProvider("--> SHOW DELTA\nEVALUATE { 1 }");
+            var showTypes = provider.QueryInfo.ScriptBatches
+                .SelectMany(b => b.Commands)
+                .OfType<ShowCommand>()
+                .Select(c => c.ShowType)
+                .ToList();
+
+            CollectionAssert.Contains(showTypes, ShowType.Delta);
+        }
+
+        [TestMethod]
+        public void ExportMetricsCommandParsesIntoScriptBatch()
+        {
+            // "--> EXPORT METRICS <file>" is a side-effect command parsed as an ExportCommand.
+            var provider = BuildProvider("--> EXPORT METRICS \"model.vpax\"\nEVALUATE { 1 }");
+            var exportCommands = provider.QueryInfo.ScriptBatches
+                .SelectMany(b => b.Commands)
+                .OfType<ExportCommand>()
+                .ToList();
+
+            Assert.AreEqual(1, exportCommands.Count);
+            Assert.AreEqual(ExportTarget.Metrics, exportCommands[0].Target);
+            Assert.AreEqual("model.vpax", exportCommands[0].FileName);
+        }
+
+        [TestMethod]
+        public async System.Threading.Tasks.Task ExecuteShowActivations_EmptyList_ActivatesResults()
+        {
+            var gridAgg = Substitute.For<IEventAggregator>();
+            var grid = new ResultsTargetGrid(gridAgg, NewParserOptions());
+            var runner = Substitute.For<IQueryRunner>();
+
+            await grid.ExecuteShowActivationsAsync(runner, new System.Collections.Generic.List<ResultsTargetGrid.ShowActivation>());
+
+            runner.Received(1).ActivateResults();
+        }
+
+        [TestMethod]
+        public async System.Threading.Tasks.Task ExecuteShowActivations_LastPaneWins_DoesNotActivateResults()
+        {
+            // A tree SHOW (Results) followed by SHOW METRICS: both are executed but the LAST command
+            // (METRICS) must be the final activation, so the VertiPaq event is published last and the
+            // Results pane is NOT re-activated afterwards.
+            var gridAgg = Substitute.For<IEventAggregator>();
+            var grid = new ResultsTargetGrid(gridAgg, NewParserOptions());
+            var runner = Substitute.For<IQueryRunner>();
+
+            var activations = new System.Collections.Generic.List<ResultsTargetGrid.ShowActivation>
+            {
+                ResultsTargetGrid.ShowActivation.Simple(ResultsTargetGrid.ShowActivationKind.Results),
+                ResultsTargetGrid.ShowActivation.Simple(ResultsTargetGrid.ShowActivationKind.Metrics),
+            };
+
+            await grid.ExecuteShowActivationsAsync(runner, activations);
+
+            // The earlier Results activation still fires, but the VertiPaq window is opened after it.
+            runner.Received(1).ActivateResults();
+            gridAgg.Received().PublishAsync(
+                Arg.Is<object>(o => o is OpenVertipaqAnalyzerEvent),
+                Arg.Any<System.Func<System.Func<System.Threading.Tasks.Task>, System.Threading.Tasks.Task>>(),
+                Arg.Any<System.Threading.CancellationToken>());
+
+            // The metrics window must be activated after the results pane (last SHOW wins focus).
+            Received.InOrder(() =>
+            {
+                runner.ActivateResults();
+                gridAgg.PublishAsync(
+                    Arg.Is<object>(o => o is OpenVertipaqAnalyzerEvent),
+                    Arg.Any<System.Func<System.Func<System.Threading.Tasks.Task>, System.Threading.Tasks.Task>>(),
+                    Arg.Any<System.Threading.CancellationToken>());
+            });
+        }
+
+        [TestMethod]
+        public async System.Threading.Tasks.Task ExecuteShowActivations_LastTreeWins_ActivatesResultsAfterPane()
+        {
+            // SHOW METRICS followed by a tree SHOW (Results): the VertiPaq window opens first, then the
+            // Results pane is activated last so it keeps focus.
+            var gridAgg = Substitute.For<IEventAggregator>();
+            var grid = new ResultsTargetGrid(gridAgg, NewParserOptions());
+            var runner = Substitute.For<IQueryRunner>();
+
+            var activations = new System.Collections.Generic.List<ResultsTargetGrid.ShowActivation>
+            {
+                ResultsTargetGrid.ShowActivation.Simple(ResultsTargetGrid.ShowActivationKind.Metrics),
+                ResultsTargetGrid.ShowActivation.Simple(ResultsTargetGrid.ShowActivationKind.Results),
+            };
+
+            await grid.ExecuteShowActivationsAsync(runner, activations);
+
+            Received.InOrder(() =>
+            {
+                gridAgg.PublishAsync(
+                    Arg.Is<object>(o => o is OpenVertipaqAnalyzerEvent),
+                    Arg.Any<System.Func<System.Func<System.Threading.Tasks.Task>, System.Threading.Tasks.Task>>(),
+                    Arg.Any<System.Threading.CancellationToken>());
+                runner.ActivateResults();
+            });
+        }
+
+        [TestMethod]
+        public async System.Threading.Tasks.Task ExecuteShowActivations_DiagramPassesTablesThrough()
+        {
+            var gridAgg = Substitute.For<IEventAggregator>();
+            var grid = new ResultsTargetGrid(gridAgg, NewParserOptions());
+            var runner = Substitute.For<IQueryRunner>();
+
+            var tables = new System.Collections.Generic.List<string> { "Sales", "Date" };
+            var activations = new System.Collections.Generic.List<ResultsTargetGrid.ShowActivation>
+            {
+                ResultsTargetGrid.ShowActivation.Diagram(tables),
+            };
+
+            await grid.ExecuteShowActivationsAsync(runner, activations);
+
+            gridAgg.Received().PublishAsync(
+                Arg.Is<object>(o => o is OpenModelDiagramEvent && ((OpenModelDiagramEvent)o).TableNames == tables),
+                Arg.Any<System.Func<System.Func<System.Threading.Tasks.Task>, System.Threading.Tasks.Task>>(),
+                Arg.Any<System.Threading.CancellationToken>());
+            runner.DidNotReceive().ActivateResults();
         }
     }
 }

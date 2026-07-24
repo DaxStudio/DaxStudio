@@ -54,6 +54,16 @@ namespace DaxStudio.Tests
             Assert.IsTrue(result.Passed);
         }
 
+        [TestMethod]
+        public void EvaluateRowCount_CarriesSourceLine()
+        {
+            var cmd = new AssertRowcountCommand("=", 1) { Line = 42 };
+
+            var result = AssertionEngine.EvaluateRowCount(cmd, 1);
+
+            Assert.AreEqual(42, result.Line);
+        }
+
         #endregion
 
         #region Performance
@@ -581,6 +591,22 @@ namespace DaxStudio.Tests
             Assert.AreEqual(0, results[0].BatchIndex);
             Assert.AreEqual(1, results[1].BatchIndex);
             Assert.AreEqual(1, results[2].BatchIndex);
+        }
+
+        [TestMethod]
+        public void DiscoverTests_SetsSourceLinePerAssertion()
+        {
+            // Each discovered (pending) test carries the source line of its assertion command so a
+            // double-click in the Test Results pane can navigate the editor to that line.
+            var batch = BatchWith(
+                new AssertRowcountCommand(">", 1) { Line = 3 },
+                new AssertCommand("DURATION", "<", 200, 0) { Line = 5 });
+
+            var results = AssertionEngine.DiscoverTests(new List<ScriptBatch> { batch });
+
+            Assert.AreEqual(2, results.Count);
+            Assert.AreEqual(3, results[0].Line);
+            Assert.AreEqual(5, results[1].Line);
         }
 
         #endregion

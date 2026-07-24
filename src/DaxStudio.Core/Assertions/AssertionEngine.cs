@@ -37,6 +37,7 @@ namespace DaxStudio.Core.Assertions
                 Description = DescribeRowCount(command),
                 Expected = ExpectedRowCount(command),
                 Actual = actualRowCount.ToString(CultureInfo.InvariantCulture),
+                Line = command.Line,
             };
 
             try
@@ -80,6 +81,7 @@ namespace DaxStudio.Core.Assertions
                 Kind = AssertionKind.Performance,
                 Description = DescribePerformance(command),
                 Expected = ExpectedPerformance(command),
+                Line = command.Line,
             };
 
             try
@@ -140,6 +142,7 @@ namespace DaxStudio.Core.Assertions
                 Description = DescribeTable(command),
                 Expected = ExpectedTable(command),
                 Actual = $"{actual?.Rows.Count ?? 0} row(s)",
+                Line = command.Line,
             };
 
             try
@@ -413,19 +416,19 @@ namespace DaxStudio.Core.Assertions
                 var testName = batch.Commands.OfType<TestCommand>().FirstOrDefault()?.TestName;
 
                 foreach (var cmd in batch.Commands.OfType<AssertRowcountCommand>())
-                    results.Add(CreatePending(AssertionKind.RowCount, DescribeRowCount(cmd), ExpectedRowCount(cmd), testName, batchIndex));
+                    results.Add(CreatePending(AssertionKind.RowCount, DescribeRowCount(cmd), ExpectedRowCount(cmd), testName, batchIndex, cmd.Line));
 
                 foreach (var cmd in batch.Commands.OfType<AssertTableCommand>())
-                    results.Add(CreatePending(AssertionKind.Table, DescribeTable(cmd), ExpectedTable(cmd), testName, batchIndex));
+                    results.Add(CreatePending(AssertionKind.Table, DescribeTable(cmd), ExpectedTable(cmd), testName, batchIndex, cmd.Line));
 
                 foreach (var cmd in batch.Commands.OfType<AssertCommand>())
-                    results.Add(CreatePending(AssertionKind.Performance, DescribePerformance(cmd), ExpectedPerformance(cmd), testName, batchIndex));
+                    results.Add(CreatePending(AssertionKind.Performance, DescribePerformance(cmd), ExpectedPerformance(cmd), testName, batchIndex, cmd.Line));
             }
 
             return results;
         }
 
-        private static TestResult CreatePending(AssertionKind kind, string description, string expected, string testName, int batchIndex)
+        private static TestResult CreatePending(AssertionKind kind, string description, string expected, string testName, int batchIndex, int line)
         {
             return new TestResult
             {
@@ -437,6 +440,7 @@ namespace DaxStudio.Core.Assertions
                 Message = string.Empty,
                 Outcome = TestOutcome.Pending,
                 BatchIndex = batchIndex,
+                Line = line,
             };
         }
 
