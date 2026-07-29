@@ -135,6 +135,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(CanSendTextToEditor));
             NotifyOfPropertyChange(nameof(CanOrderBy));
             NotifyOfPropertyChange(nameof(OrderBy));
+            NotifySortStateChanged();
             AutoGenerateQuery();
         }
 
@@ -154,10 +155,57 @@ namespace DaxStudio.UI.ViewModels
         public ICollectionView OrderBy { get {
                 //Columns.Where(c => c.ObjectType == ADOTabularObjectType.Column || c.ObjectType == ADOTabularObjectType.Level); 
                 ICollectionView view = CollectionViewSource.GetDefaultView(Columns);
-                view.Filter = (c) => { return ((QueryBuilderColumn)c).ObjectType == ADOTabularObjectType.Column || ((QueryBuilderColumn)c).ObjectType == ADOTabularObjectType.Level; };
+                view.Filter = (c) => { return ((QueryBuilderColumn)c).IsSortable(); };
                 return view;
             } 
         }
+
+        #region Bulk Order By operations
+
+        public bool HasSortableColumns => Columns.SortableItems.Any();
+
+        // master switch which turns the Order By on/off for all the columns at once
+        public bool IsAnySortEnabled
+        {
+            get => Columns.IsAnySortEnabled;
+            set
+            {
+                if (value) Columns.RestoreAllSorting();
+                else Columns.DisableAllSorting();
+                NotifySortStateChanged();
+            }
+        }
+
+        private SortDirection _allSortDirection = SortDirection.ASC;
+        public SortDirection AllSortDirection => _allSortDirection;
+
+        public string AllSortDirectionImageResource => _allSortDirection == SortDirection.DESC ? "sort_descDrawingImage" : "sort_ascDrawingImage";
+
+        public string AllSortDirectionDescription => _allSortDirection == SortDirection.DESC
+            ? "All columns are sorted descending\n(Click to sort all columns ascending)"
+            : "All columns are sorted ascending\n(Click to sort all columns descending)";
+
+        public bool CanToggleAllSortDirection => HasSortableColumns;
+
+        // flips the sort direction for all the columns at once
+        public void ToggleAllSortDirection()
+        {
+            _allSortDirection = _allSortDirection == SortDirection.ASC ? SortDirection.DESC : SortDirection.ASC;
+            Columns.SetAllSortDirections(_allSortDirection);
+            NotifySortStateChanged();
+        }
+
+        private void NotifySortStateChanged()
+        {
+            NotifyOfPropertyChange(nameof(HasSortableColumns));
+            NotifyOfPropertyChange(nameof(CanToggleAllSortDirection));
+            NotifyOfPropertyChange(nameof(IsAnySortEnabled));
+            NotifyOfPropertyChange(nameof(AllSortDirection));
+            NotifyOfPropertyChange(nameof(AllSortDirectionImageResource));
+            NotifyOfPropertyChange(nameof(AllSortDirectionDescription));
+        }
+
+        #endregion
 
 
         private bool _isEnabled = true;
@@ -569,6 +617,7 @@ namespace DaxStudio.UI.ViewModels
 
         public Task HandleAsync(QueryBuilderUpdateEvent message, CancellationToken cancellationToken)
         {
+            NotifySortStateChanged();
             AutoGenerateQuery();
             return Task.CompletedTask;
         }
@@ -578,6 +627,7 @@ namespace DaxStudio.UI.ViewModels
             Columns.Items.Clear();
             Filters.Items.Clear();
             NotifyOfPropertyChange(nameof(OrderBy));
+            NotifySortStateChanged();
             AutoGenerateQuery();
         }
 
