@@ -2353,8 +2353,25 @@ namespace DaxStudio.Core.Options
             }
         }
 
-        private bool _blockAllInternetAccess;
-        // this setting is set by the installer writing a non-zero value to HKLM:\Software\DaxStudio\BlockAllInternetAccess
+        private bool _forceSoftwareRendering;
+        [Category("Defaults")]
+        [Subcategory("Rendering")]
+        [DisplayName("Disable Hardware Rendering")]
+        [Description("Forces DAX Studio to render its user interface in software rather than using the graphics card. Only enable this if you are seeing graphical glitches or rendering crashes. Takes effect immediately.")]
+        [DataMember, DefaultValue(false)]
+        public bool ForceSoftwareRendering
+        {
+            get => _forceSoftwareRendering;
+            set
+            {
+                _forceSoftwareRendering = value;
+                _eventAggregator.PublishAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(ForceSoftwareRendering), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => ForceSoftwareRendering);
+            }
+        }
+
+        private bool _blockAllInternetAccess;        // this setting is set by the installer writing a non-zero value to HKLM:\Software\DaxStudio\BlockAllInternetAccess
         [Category("Privacy")]
         [DisplayName("Block All Internet Access")]
         [Description("[NOT RECOMMENDED] Stops DAX Studio from all external access. This option can only be set by an administrator during an 'All Users' install and overrides all the other options below. (and they will show up as disabled when this option has been set)")]

@@ -46,6 +46,7 @@ namespace DaxStudio.Interfaces
         bool EditorShowControlCharacters { get; set; }
         bool EditorWordWrap { get; set; }
         bool ExcludeHeadersWhenCopyingResults { get; set; }
+        bool ForceSoftwareRendering { get; set; }
         DateTime LastVersionCheckUTC { get; set; }
         int PreviewDataRowLimit { get; set; }
         string ProxyAddress { get; set; }
