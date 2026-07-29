@@ -227,6 +227,18 @@
                                                         Binding="{Binding Data.TableName}"
                                                         SortMemberPath="Data.TableName"
                                                         Width="180" MinWidth="100" />
+                                    <DataGridTextColumn Header="Expression"
+                                                        Binding="{Binding Data.Expression}"
+                                                        SortMemberPath="Data.Expression"
+                                                        Width="320" MinWidth="120"
+                                                        Visibility="{Binding Data.ShowTreeExpressionColumn, Source={StaticResource TabProxy}, Converter={StaticResource BoolToVisibilityConverter}}">
+                                        <DataGridTextColumn.ElementStyle>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                                                <Setter Property="ToolTip" Value="{Binding Data.Expression}" />
+                                            </Style>
+                                        </DataGridTextColumn.ElementStyle>
+                                    </DataGridTextColumn>
                                     <DataGridTextColumn Header="Last Modified"
                                                         Binding="{Binding Data.LastModifiedDisplay}"
                                                         SortMemberPath="Data.LastModifiedUtc"

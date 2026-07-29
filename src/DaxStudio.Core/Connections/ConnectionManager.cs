@@ -1183,6 +1183,17 @@ namespace DaxStudio.Core.Connections
             // dedupe roots by their stable identity to avoid repeating the same referenced object
             var rootKeys = new HashSet<string>();
 
+            // lookups used to populate the Expression column and to resolve/expand references found by
+            // parsing query-scoped function bodies (which the DMV cannot see into)
+            var ctx = new DependencyContext
+            {
+                MeasureExpressions = BuildMeasureExpressionLookup(),
+                FunctionExpressions = BuildFunctionExpressionLookup(),
+                ColumnTables = BuildColumnTableLookup(),
+                QueryFunctionExpressions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
+                QueryFunctionReferences = new Dictionary<string, IReadOnlyList<DaxStudio.Parsers.Metadata.DaxObjectReference>>(StringComparer.OrdinalIgnoreCase)
+            };
+
             var dmvQuery = $"SELECT OBJECT_TYPE, OBJECT, REFERENCED_OBJECT_TYPE, REFERENCED_TABLE, REFERENCED_OBJECT\r\nFROM $SYSTEM.DISCOVER_CALC_DEPENDENCY\r\nWHERE QUERY='{query.Replace("'", "''")}'";
             using (var dr = ExecuteReader(dmvQuery, null))
             {
@@ -1197,19 +1208,232 @@ namespace DaxStudio.Core.Connections
                     var refTable = GetStringOrNull(dr, refTableOrd);
                     if (rootKeys.Add(NodeIdentity(refType, refTable, refObject)))
                     {
-                        roots.Add(new ShowTreeNode(refObject, refType, refTable));
+                        var node = new ShowTreeNode(refObject, refType, refTable);
+                        SetNodeExpression(node, ctx.MeasureExpressions, ctx.FunctionExpressions);
+                        roots.Add(node);
                     }
                 }
             }
 
+            // Query-scoped user-defined functions (DEFINE FUNCTION ...) are not reported by the
+            // DISCOVER_CALC_DEPENDENCY DMV, so parse the query itself to surface them (with their body
+            // and the objects they reference).
+            AddQueryScopedFunctions(query, roots, rootKeys, ctx);
+
             var expanded = new HashSet<string>();
             foreach (var root in roots)
             {
-                ExpandDependencyNode(root, expanded);
+                ExpandDependencyNode(root, expanded, ctx);
             }
 
             Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(BuildQueryDependencyTree), $"end - {roots.Count} root(s)");
             return roots;
+        }
+
+        /// <summary>Holds the metadata lookups shared across a single dependency-tree build.</summary>
+        private class DependencyContext
+        {
+            /// <summary>Model measure name -&gt; DAX expression.</summary>
+            public IReadOnlyDictionary<string, string> MeasureExpressions { get; set; }
+            /// <summary>Model user-defined function name -&gt; DAX expression (from TMSCHEMA_FUNCTIONS).</summary>
+            public IReadOnlyDictionary<string, string> FunctionExpressions { get; set; }
+            /// <summary>Column name -&gt; the table(s) that contain a column of that name (for resolving bare refs).</summary>
+            public IReadOnlyDictionary<string, List<string>> ColumnTables { get; set; }
+            /// <summary>Query-scoped function name -&gt; its <c>(params) =&gt; body</c> definition text.</summary>
+            public Dictionary<string, string> QueryFunctionExpressions { get; set; }
+            /// <summary>Query-scoped function name -&gt; the references parsed from its body.</summary>
+            public Dictionary<string, IReadOnlyList<DaxStudio.Parsers.Metadata.DaxObjectReference>> QueryFunctionReferences { get; set; }
+        }
+
+        /// <summary>
+        /// Builds a case-insensitive lookup of measure name to DAX expression from the connected model,
+        /// used to populate the Expression column of the dependency tree. Returns an empty dictionary
+        /// when the measures cannot be read.
+        /// </summary>
+        private Dictionary<string, string> BuildMeasureExpressionLookup()
+        {
+            var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            try
+            {
+                foreach (var m in GetAllMeasures())
+                {
+                    if (!string.IsNullOrEmpty(m.Name) && !dict.ContainsKey(m.Name))
+                        dict.Add(m.Name, m.Expression ?? string.Empty);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(BuildMeasureExpressionLookup), "unable to read model measures - Expression column will be blank for measures");
+            }
+            return dict;
+        }
+
+        /// <summary>
+        /// Builds a case-insensitive lookup of user-defined function name to DAX expression from the
+        /// TMSCHEMA_FUNCTIONS DMV (present only on newer engines). Returns an empty dictionary when the
+        /// DMV is not available or cannot be read.
+        /// </summary>
+        private Dictionary<string, string> BuildFunctionExpressionLookup()
+        {
+            var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var dmvs = DynamicManagementViews;
+            if (dmvs == null || !dmvs.Contains("TMSCHEMA_FUNCTIONS")) return dict;
+            try
+            {
+                using (var dr = ExecuteReader("SELECT * FROM $SYSTEM.TMSCHEMA_FUNCTIONS", null))
+                {
+                    int nameOrd = OrdinalOrMinusOne(dr, "Name");
+                    int exprOrd = OrdinalOrMinusOne(dr, "Expression");
+                    while (dr.Read())
+                    {
+                        var name = GetStringOrNull(dr, nameOrd);
+                        if (string.IsNullOrEmpty(name) || dict.ContainsKey(name)) continue;
+                        dict.Add(name, GetStringOrNull(dr, exprOrd) ?? string.Empty);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(BuildFunctionExpressionLookup), "unable to read TMSCHEMA_FUNCTIONS - Expression column will be blank for functions");
+            }
+            return dict;
+        }
+
+        /// <summary>
+        /// Builds a case-insensitive lookup of column name to the list of table(s) that contain a column
+        /// of that name, used to resolve a bare <c>[Column]</c> reference (which carries no table) found
+        /// while parsing a query-scoped function body. Returns an empty dictionary when the model columns
+        /// cannot be read.
+        /// </summary>
+        private Dictionary<string, List<string>> BuildColumnTableLookup()
+        {
+            var dict = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+            try
+            {
+                var model = _dmvConnection.Database.Models.BaseModel;
+                foreach (var t in model.Tables)
+                {
+                    foreach (var c in t.Columns)
+                    {
+                        if (c.ObjectType != ADOTabularObjectType.Column || string.IsNullOrEmpty(c.Name)) continue;
+                        if (!dict.TryGetValue(c.Name, out var tables))
+                        {
+                            tables = new List<string>();
+                            dict.Add(c.Name, tables);
+                        }
+                        if (!tables.Contains(t.Caption)) tables.Add(t.Caption);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(BuildColumnTableLookup), "unable to read model columns - bare column references in query functions may be skipped");
+            }
+            return dict;
+        }
+
+        /// <summary>
+        /// Sets <see cref="ShowTreeNode.Expression"/> for MEASURE and FUNCTION nodes from the supplied
+        /// lookups. Nodes of other types (columns, tables, ...) are left unchanged.
+        /// </summary>
+        private static void SetNodeExpression(ShowTreeNode node, IReadOnlyDictionary<string, string> measureExpressions, IReadOnlyDictionary<string, string> functionExpressions)
+        {
+            if (node == null || string.IsNullOrEmpty(node.ObjectType) || string.IsNullOrEmpty(node.Name)) return;
+            if (string.Equals(node.ObjectType, "MEASURE", StringComparison.OrdinalIgnoreCase))
+            {
+                if (measureExpressions != null && measureExpressions.TryGetValue(node.Name, out var me)) node.Expression = me;
+            }
+            else if (string.Equals(node.ObjectType, "FUNCTION", StringComparison.OrdinalIgnoreCase))
+            {
+                if (functionExpressions != null && functionExpressions.TryGetValue(node.Name, out var fe)) node.Expression = fe;
+            }
+        }
+
+        /// <summary>
+        /// Parses the supplied query for query-scoped user-defined functions (DEFINE FUNCTION ...) and adds
+        /// each one as a root node with the object type <c>QUERY_FUNCTION</c> and its full definition
+        /// (<c>(params) =&gt; body</c>) in the Expression column. When the DMV already surfaced a function of
+        /// the same name it is re-labelled as a query function (rather than duplicated) and its expression
+        /// is backfilled from the parsed definition. Each function's parsed body references are recorded on
+        /// <paramref name="ctx"/> so the tree can be extended with the objects the function depends on.
+        /// </summary>
+        private void AddQueryScopedFunctions(string query, List<ShowTreeNode> roots, HashSet<string> rootKeys, DependencyContext ctx)
+        {
+            if (string.IsNullOrWhiteSpace(query)) return;
+            try
+            {
+                var parser = new DaxStudio.Parsers.Dax.DaxParserService(null);
+                var definedFunctions = parser.GetDefinedFunctions(query);
+                // function names actually called in the query outside of any DEFINE FUNCTION body -
+                // functions that are declared but never invoked must not appear in the tree.
+                var calledAtTopLevel = parser.GetReferencedFunctionNames(query);
+                // columns/measures/functions referenced in the arguments passed to each function at its
+                // call site(s) - e.g. 'Product'[Color] in queryFunc(VALUES('Product'[Color])).
+                var callSiteReferences = parser.GetFunctionCallArgumentReferences(query);
+                foreach (var fn in definedFunctions)
+                {
+                    if (fn == null || string.IsNullOrEmpty(fn.Name)) continue;
+
+                    // record the definition and the combined references (the function body plus whatever is
+                    // passed to it at its call site) so QUERY_FUNCTION nodes can be expanded whether they are
+                    // added here as a root or later as the child of another function.
+                    ctx.QueryFunctionExpressions[fn.Name] = fn.Expression;
+                    ctx.QueryFunctionReferences[fn.Name] = MergeReferences(fn.References,
+                        callSiteReferences != null && callSiteReferences.TryGetValue(fn.Name, out var args) ? args : null);
+
+                    // only functions actually called from the query itself become roots; ones referenced
+                    // solely by another function are added as that function's children during expansion.
+                    if (calledAtTopLevel == null || !calledAtTopLevel.Contains(fn.Name)) continue;
+
+                    // Reuse an existing root for the same function name (the DMV may report it as a FUNCTION)
+                    // so a query-scoped function is never shown twice.
+                    var existing = roots.FirstOrDefault(r =>
+                        string.Equals(r.Name, fn.Name, StringComparison.OrdinalIgnoreCase)
+                        && (string.Equals(r.ObjectType, "FUNCTION", StringComparison.OrdinalIgnoreCase)
+                            || string.Equals(r.ObjectType, "QUERY_FUNCTION", StringComparison.OrdinalIgnoreCase)));
+                    if (existing != null)
+                    {
+                        existing.ObjectType = "QUERY_FUNCTION";
+                        existing.Expression = fn.Expression;
+                        continue;
+                    }
+
+                    var key = NodeIdentity("QUERY_FUNCTION", null, fn.Name);
+                    if (!rootKeys.Add(key)) continue;
+                    roots.Add(new ShowTreeNode(fn.Name, "QUERY_FUNCTION", null) { Expression = fn.Expression });
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(AddQueryScopedFunctions), "unable to parse query-scoped functions");
+            }
+        }
+
+        /// <summary>
+        /// Combines a query-scoped function's body references with the references passed to it at its call
+        /// site(s), de-duplicated by kind/table/name. Either input may be null.
+        /// </summary>
+        private static IReadOnlyList<DaxStudio.Parsers.Metadata.DaxObjectReference> MergeReferences(
+            IReadOnlyList<DaxStudio.Parsers.Metadata.DaxObjectReference> bodyReferences,
+            IReadOnlyList<DaxStudio.Parsers.Metadata.DaxObjectReference> callSiteReferences)
+        {
+            var merged = new List<DaxStudio.Parsers.Metadata.DaxObjectReference>();
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            void AddRange(IReadOnlyList<DaxStudio.Parsers.Metadata.DaxObjectReference> references)
+            {
+                if (references == null) return;
+                foreach (var r in references)
+                {
+                    if (r == null) continue;
+                    var key = $"{r.Kind}|{r.Table}|{r.Name}";
+                    if (seen.Add(key)) merged.Add(r);
+                }
+            }
+
+            AddRange(bodyReferences);
+            AddRange(callSiteReferences);
+            return merged;
         }
 
         /// <summary>
@@ -1249,11 +1473,19 @@ namespace DaxStudio.Core.Connections
         /// <paramref name="expanded"/> set (keyed by a stable identity) to guarantee a finite tree:
         /// an object that has already been expanded elsewhere is still added but not re-expanded.
         /// </summary>
-        private void ExpandDependencyNode(ShowTreeNode node, HashSet<string> expanded)
+        private void ExpandDependencyNode(ShowTreeNode node, HashSet<string> expanded, DependencyContext ctx)
         {
             var key = NodeIdentity(node.ObjectType, node.TableName, node.Name);
             // if this identity was already fully expanded, keep the node but do not recurse (avoids cycles)
             if (!expanded.Add(key)) return;
+
+            // Query-scoped functions are not in the model, so the DMV knows nothing about them. Expand them
+            // from the references parsed out of their body instead.
+            if (string.Equals(node.ObjectType, "QUERY_FUNCTION", StringComparison.OrdinalIgnoreCase))
+            {
+                ExpandQueryFunctionNode(node, expanded, ctx);
+                return;
+            }
 
             var where = $"[OBJECT]='{node.Name.Replace("'", "''")}'";
             if (!string.IsNullOrEmpty(node.ObjectType)) where += $" AND [OBJECT_TYPE]='{node.ObjectType.Replace("'", "''")}'";
@@ -1276,14 +1508,92 @@ namespace DaxStudio.Core.Connections
                     var refTable = GetStringOrNull(dr, refTableOrd);
                     // skip a direct self-reference
                     if (NodeIdentity(refType, refTable, refObject) == key) continue;
-                    children.Add(new ShowTreeNode(refObject, refType, refTable));
+                    var child = new ShowTreeNode(refObject, refType, refTable);
+                    SetNodeExpression(child, ctx.MeasureExpressions, ctx.FunctionExpressions);
+                    children.Add(child);
                 }
             }
 
             foreach (var child in children)
             {
                 node.Children.Add(child);
-                ExpandDependencyNode(child, expanded);
+                ExpandDependencyNode(child, expanded, ctx);
+            }
+        }
+
+        /// <summary>
+        /// Expands a <c>QUERY_FUNCTION</c> node using the column / measure / function references parsed from
+        /// its body (the DMV cannot see into query-scoped functions). Each reference is resolved against the
+        /// model - bare <c>[Name]</c> references become a MEASURE or COLUMN, function calls become a
+        /// QUERY_FUNCTION (another query-scoped function), a model FUNCTION, or are ignored when they are not
+        /// user-defined objects - and each resolved child is expanded recursively via the normal path.
+        /// </summary>
+        private void ExpandQueryFunctionNode(ShowTreeNode node, HashSet<string> expanded, DependencyContext ctx)
+        {
+            if (ctx.QueryFunctionReferences == null || !ctx.QueryFunctionReferences.TryGetValue(node.Name, out var references) || references == null)
+                return;
+
+            var children = new List<ShowTreeNode>();
+            var childKeys = new HashSet<string>();
+            foreach (var reference in references)
+            {
+                foreach (var child in ResolveReferenceNodes(reference, ctx))
+                {
+                    var childKey = NodeIdentity(child.ObjectType, child.TableName, child.Name);
+                    // skip a direct self-reference and duplicates among this function's own children
+                    if (childKey == NodeIdentity(node.ObjectType, node.TableName, node.Name)) continue;
+                    if (childKeys.Add(childKey)) children.Add(child);
+                }
+            }
+
+            foreach (var child in children)
+            {
+                node.Children.Add(child);
+                ExpandDependencyNode(child, expanded, ctx);
+            }
+        }
+
+        /// <summary>
+        /// Resolves a single parsed reference from a query-function body into zero or more dependency nodes,
+        /// classifying it against the model: a qualified column becomes a COLUMN; a bare reference becomes a
+        /// MEASURE (when it matches a model measure) or a COLUMN for each table that has a column of that
+        /// name; a function call becomes a QUERY_FUNCTION or a model FUNCTION. References that resolve to no
+        /// known object (e.g. built-ins already filtered out, or a local variable) yield nothing.
+        /// </summary>
+        private IEnumerable<ShowTreeNode> ResolveReferenceNodes(DaxStudio.Parsers.Metadata.DaxObjectReference reference, DependencyContext ctx)
+        {
+            switch (reference.Kind)
+            {
+                case DaxStudio.Parsers.Metadata.DaxReferenceKind.Column:
+                    yield return new ShowTreeNode(reference.Name, "COLUMN", reference.Table);
+                    break;
+
+                case DaxStudio.Parsers.Metadata.DaxReferenceKind.ColumnOrMeasure:
+                    if (ctx.MeasureExpressions != null && ctx.MeasureExpressions.ContainsKey(reference.Name))
+                    {
+                        var measure = new ShowTreeNode(reference.Name, "MEASURE", null);
+                        SetNodeExpression(measure, ctx.MeasureExpressions, ctx.FunctionExpressions);
+                        yield return measure;
+                    }
+                    else if (ctx.ColumnTables != null && ctx.ColumnTables.TryGetValue(reference.Name, out var tables))
+                    {
+                        foreach (var table in tables)
+                            yield return new ShowTreeNode(reference.Name, "COLUMN", table);
+                    }
+                    break;
+
+                case DaxStudio.Parsers.Metadata.DaxReferenceKind.Function:
+                    if (ctx.QueryFunctionExpressions != null && ctx.QueryFunctionExpressions.TryGetValue(reference.Name, out var qfExpr))
+                    {
+                        yield return new ShowTreeNode(reference.Name, "QUERY_FUNCTION", null) { Expression = qfExpr };
+                    }
+                    else if (ctx.FunctionExpressions != null && ctx.FunctionExpressions.ContainsKey(reference.Name))
+                    {
+                        var fn = new ShowTreeNode(reference.Name, "FUNCTION", null);
+                        SetNodeExpression(fn, ctx.MeasureExpressions, ctx.FunctionExpressions);
+                        yield return fn;
+                    }
+                    break;
             }
         }
 

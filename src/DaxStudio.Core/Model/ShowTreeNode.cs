@@ -64,6 +64,17 @@ namespace DaxStudio.Core.Model
             set { _lastModifiedUtc = value; OnPropertyChanged(); OnPropertyChanged(nameof(LastModifiedDisplay)); }
         }
 
+        private string _expression;
+        /// <summary>The DAX expression (body) of the object, when available. Populated for MEASURE nodes
+        /// (from the model measures) and FUNCTION nodes (model user-defined functions from the
+        /// TMSCHEMA_FUNCTIONS DMV, or query-scoped DEFINE FUNCTION definitions). Blank for objects that
+        /// carry no expression (columns, tables, folders, ...).</summary>
+        public string Expression
+        {
+            get => _expression;
+            set { _expression = value; OnPropertyChanged(); }
+        }
+
         private bool _isFolder;
         /// <summary>True for the synthetic grouping folders (Measures, Columns, Tables, ...) that mirror
         /// the Power BI Desktop model view. Folders carry no timestamp of their own.</summary>

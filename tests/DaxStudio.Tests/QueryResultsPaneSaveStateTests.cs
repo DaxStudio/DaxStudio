@@ -41,8 +41,8 @@ namespace DaxStudio.Tests
         [TestMethod]
         public void DependenciesTreeRoundTripsThroughJson()
         {
-            // Arrange - a TABLE root with a COLUMN child
-            var column = new ShowTreeNode("Sales Amount", "COLUMN", "Sales");
+            // Arrange - a TABLE root with a MEASURE child that carries an expression
+            var column = new ShowTreeNode("Sales Amount", "MEASURE", "Sales") { Expression = "SUM ( Sales[Amount] )" };
             var table = new ShowTreeNode("Sales", "TABLE");
             table.Children.Add(column);
 
@@ -70,8 +70,12 @@ namespace DaxStudio.Tests
 
             var loadedColumn = loadedTable.Children[0];
             Assert.AreEqual("Sales Amount", loadedColumn.Name);
-            Assert.AreEqual("COLUMN", loadedColumn.ObjectType);
+            Assert.AreEqual("MEASURE", loadedColumn.ObjectType);
             Assert.AreEqual("Sales", loadedColumn.TableName);
+            Assert.AreEqual("SUM ( Sales[Amount] )", loadedColumn.Expression, "The Expression should round-trip through JSON");
+
+            // Dependencies => Expression column shown, no timestamp column
+            Assert.IsTrue(loadedTab.ShowTreeExpressionColumn, "Dependencies should show the Expression column");
 
             // Dependencies => no timestamp column, "Dependencies" title
             Assert.IsFalse(loadedTab.ShowTreeTimestampColumn, "Dependencies should not show the timestamp column");

@@ -29,10 +29,21 @@ namespace DaxStudio.Parsers.Metadata
         public string Name { get; }
         public IReadOnlyList<DefinedFunctionParameter> Parameters { get; }
 
-        public DefinedFunctionInfo(string name, IReadOnlyList<DefinedFunctionParameter> parameters)
+        /// <summary>The function definition text from the parameter list onwards (everything after the
+        /// first <c>=</c>), e.g. <c>(param1) =&gt; param1 + 10</c>, preserving the original source text, or
+        /// an empty string when it could not be captured (e.g. during error recovery).</summary>
+        public string Expression { get; }
+
+        /// <summary>The column / measure / (non-built-in) function references found in the function body,
+        /// so the dependency tree can be extended with the objects the function depends on.</summary>
+        public IReadOnlyList<DaxObjectReference> References { get; }
+
+        public DefinedFunctionInfo(string name, IReadOnlyList<DefinedFunctionParameter> parameters, string expression = null, IReadOnlyList<DaxObjectReference> references = null)
         {
             Name = name;
             Parameters = parameters ?? new List<DefinedFunctionParameter>();
+            Expression = expression ?? string.Empty;
+            References = references ?? new List<DaxObjectReference>();
         }
     }
 }

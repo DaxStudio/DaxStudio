@@ -141,7 +141,8 @@ namespace DaxStudio.UI.Model
 
         /// <summary>
         /// Builds the collapsed-fold title for a run of <c>--&gt;&gt;</c> ASSERT TABLE rows in the
-        /// form <c>TABLE [col1, col2, ...] (rowsxcols)</c>. The column list is truncated after
+        /// form <c> [col1, col2, ...] (rowsxcols)</c>. The leading space lets the title read as a
+        /// continuation of the visible <c>--&gt; ASSERT TABLE</c> header line. The column list is truncated after
         /// <see cref="MaxTitleColumns"/> columns with an ellipsis. Row count excludes separator and
         /// leading DAX-type rows, matching the real parser's counting. Falls back to
         /// <c>"--&gt;&gt; ..."</c> when no header row can be parsed.

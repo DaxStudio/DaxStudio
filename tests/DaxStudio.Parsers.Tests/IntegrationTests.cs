@@ -362,6 +362,74 @@ namespace DaxStudio.Parsers.Tests
             var fn = functions.FirstOrDefault(f => f.Name == "hello");
             Assert.IsNotNull(fn, "Should find the DEFINE FUNCTION named 'hello'");
             CollectionAssert.AreEqual(new[] { "a", "b" }, fn.Parameters.Select(p => p.Name).ToArray());
+            Assert.AreEqual("(a, b) => \"hello \" & a & b", fn.Expression, "Should capture the function definition from the parameter list onwards");
+        }
+
+        [TestMethod]
+        public void Intellisense_GetFunctionCallArgumentReferences_CollectsCallSiteColumns()
+        {
+            var service = new DaxParserService(_metadata);
+            var input =
+                "DEFINE FUNCTION queryFunc = (invalue) => \"Hi \" & invalue\r\n" +
+                "EVALUATE SUMMARIZECOLUMNS ( \"hi\", queryFunc ( VALUES ( 'Product'[Color] ) ) )";
+
+            var callArgs = service.GetFunctionCallArgumentReferences(input);
+
+            Assert.IsTrue(callArgs.ContainsKey("queryFunc"), "Should record call-site arguments for queryFunc");
+            var refs = callArgs["queryFunc"];
+            Assert.IsTrue(refs.Any(r => r.Kind == DaxStudio.Parsers.Metadata.DaxReferenceKind.Column
+                && r.Table == "Product" && r.Name == "Color"),
+                "Should collect the 'Product'[Color] column passed as an argument at the call site");
+        }
+
+        [TestMethod]
+        public void Intellisense_GetReferencedFunctionNames_ExcludesUncalledDefinitions()
+        {
+            var service = new DaxParserService(_metadata);
+            var input =
+                "DEFINE\r\n" +
+                "  FUNCTION usedFn = (a) => a + 1\r\n" +
+                "  FUNCTION unusedFn = (b) => b * 2\r\n" +
+                "  FUNCTION calledByOther = (c) => c - 1\r\n" +
+                "  FUNCTION wrapper = (d) => calledByOther ( d )\r\n" +
+                "EVALUATE { usedFn ( 10 ) + wrapper ( 5 ) }";
+
+            var called = service.GetReferencedFunctionNames(input);
+
+            Assert.IsTrue(called.Contains("usedFn"), "usedFn is called from EVALUATE");
+            Assert.IsTrue(called.Contains("wrapper"), "wrapper is called from EVALUATE");
+            Assert.IsFalse(called.Contains("unusedFn"), "unusedFn is declared but never called");
+            Assert.IsFalse(called.Contains("calledByOther"), "calledByOther is only called from inside another function body, not at the top level");
+        }
+
+        [TestMethod]
+        public void Intellisense_GetDefinedFunctions_CollectsBodyReferences()
+        {
+            var service = new DaxParserService(_metadata);
+            var input =
+                "DEFINE FUNCTION calc = (t) => SUMX ( t, Sales[Amount] ) + [Total Sales] + 'Product'[Color] + otherFunc ( t )\r\n" +
+                "EVALUATE { calc ( Sales ) }";
+
+            var functions = service.GetDefinedFunctions(input);
+
+            var fn = functions.FirstOrDefault(f => f.Name == "calc");
+            Assert.IsNotNull(fn, "Should find the DEFINE FUNCTION named 'calc'");
+
+            // qualified column Sales[Amount]
+            Assert.IsTrue(fn.References.Any(r => r.Kind == DaxStudio.Parsers.Metadata.DaxReferenceKind.Column
+                && r.Table == "Sales" && r.Name == "Amount"), "Should collect qualified column Sales[Amount]");
+            // qualified column 'Product'[Color]
+            Assert.IsTrue(fn.References.Any(r => r.Kind == DaxStudio.Parsers.Metadata.DaxReferenceKind.Column
+                && r.Table == "Product" && r.Name == "Color"), "Should collect quoted-table column 'Product'[Color]");
+            // bare [Total Sales]
+            Assert.IsTrue(fn.References.Any(r => r.Kind == DaxStudio.Parsers.Metadata.DaxReferenceKind.ColumnOrMeasure
+                && r.Name == "Total Sales"), "Should collect bare reference [Total Sales]");
+            // user-defined function call otherFunc(...)
+            Assert.IsTrue(fn.References.Any(r => r.Kind == DaxStudio.Parsers.Metadata.DaxReferenceKind.Function
+                && r.Name == "otherFunc"), "Should collect the non-built-in function call otherFunc");
+            // built-in SUMX must NOT be collected as a function reference
+            Assert.IsFalse(fn.References.Any(r => r.Kind == DaxStudio.Parsers.Metadata.DaxReferenceKind.Function
+                && r.Name.Equals("SUMX", System.StringComparison.OrdinalIgnoreCase)), "Built-in SUMX should not be collected");
         }
 
         [TestMethod]

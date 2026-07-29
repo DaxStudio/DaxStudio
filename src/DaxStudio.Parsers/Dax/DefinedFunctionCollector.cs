@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Antlr4.Runtime.Tree;
 using DaxStudio.Parsers.Grammars.Generated;
 using DaxStudio.Parsers.Metadata;
 
@@ -40,7 +41,26 @@ namespace DaxStudio.Parsers.Dax
                 }
             }
 
-            return new DefinedFunctionInfo(name, parameters);
+            return new DefinedFunctionInfo(name, parameters, GetFunctionBodyText(ctx), DaxReferenceWalker.Collect(ctx.expression()));
+        }
+
+
+        /// <summary>
+        /// Returns the original source text of the function definition from the parameter list onwards -
+        /// i.e. everything after the first <c>=</c>, in the form <c>(param1) =&gt; param1 + 10</c> -
+        /// preserving whitespace and comments. Returns an empty string when it cannot be captured.
+        /// </summary>
+        private static string GetFunctionBodyText(DAXParser.FunctionDefinitionContext ctx)
+        {
+            var exprCtx = ctx?.expression();
+            if (exprCtx?.Stop == null || exprCtx.Start?.InputStream == null) return string.Empty;
+
+            // Start from the opening parenthesis of the parameter list (the text right after the '='),
+            // falling back to the body expression itself if the parenthesis is missing (error recovery).
+            var startToken = ctx.OPEN_PARENS()?.Symbol ?? exprCtx.Start;
+
+            var interval = new Antlr4.Runtime.Misc.Interval(startToken.StartIndex, exprCtx.Stop.StopIndex);
+            return exprCtx.Start.InputStream.GetText(interval);
         }
     }
 }

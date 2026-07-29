@@ -194,14 +194,15 @@ windows (see the table below).
 
 | Sub-command | Behaviour |
 |---|---|
-| `SHOW DEPENDENCIES` | Analyses the DAX query in the batch (**without executing it**) and displays the full recursive dependency tree of every referenced object – measures, columns, tables and functions. Uses `DISCOVER_CALC_DEPENDENCY`. |
+| `SHOW DEPENDENCIES` | Analyses the DAX query in the batch (**without executing it**) and displays the full recursive dependency tree of every referenced object – measures, columns, tables and functions. Uses `DISCOVER_CALC_DEPENDENCY`. Model measures and user-defined functions also show their DAX expression in the *Expression* column (function bodies come from `TMSCHEMA_FUNCTIONS`). Query-scoped functions declared in the query via `DEFINE FUNCTION` are not reported by the DMV, so the query is parsed to add any that are **actually called** (declared-but-unused functions are excluded) with the type `QUERY_FUNCTION` and their full definition (`(params) => body`) in the *Expression* column. Each query function's body is also parsed for the columns, measures and (nested) user-defined functions it references; those are resolved against the model, added as children of the `QUERY_FUNCTION` node and expanded recursively like any other dependency. |
 | `SHOW LAST_UPDATED` | Ignores the query and displays the model metadata as a tree that mirrors the Power BI Desktop model view: a single **Semantic model** root with grouping folders (*Calculation groups*, *Cultures*, *Expressions*, *Functions*, *Perspectives*, *Relationships*, *Roles*, *Tables*) and, under each table, *Calendars*, *Columns*, *Hierarchies*, *Measures* and *Partitions*. Each item shows its last schema-modified timestamp, sourced from the `TMSCHEMA_*` DMVs. |
 | `SHOW MAX_UPDATED` | Same metadata source and structure as `LAST_UPDATED`, but pruned to the object(s) carrying the **maximum** modified timestamp (nested inside their enclosing folders / tables) so you can quickly see what was changed most recently. |
 | `SHOW DIAGRAM` | Opens the Model Diagram tool window. When a non-blank DAX query is in the batch (**without executing it**), the query's dependent tables are resolved via `DISCOVER_CALC_DEPENDENCY` and the diagram is filtered to just those tables; on its own it opens the full diagram. |
 | `SHOW METRICS` | Opens the VertiPaq Analyzer (Metrics) view – the same as clicking **View Metrics** in the ribbon. Does not consume the batch query. |
 | `SHOW DELTA` | Opens the Delta Analyzer view (a preview feature that must be enabled in Options; requires a Direct Lake connection). Does not consume the batch query. |
 
-The tree-grid shows an *Object*, *Type* and *Table* column for every variant; the *Last Modified*
+The tree-grid shows an *Object*, *Type* and *Table* column for every variant. The *Expression* column
+(the DAX body of measures and user-defined functions) is shown for `DEPENDENCIES` only. The *Last Modified*
 column is shown for `LAST_UPDATED` / `MAX_UPDATED`, and two additional columns are shown for
 `LAST_UPDATED` only: *Max Update* (the most-recent change among a row's descendants) and *Days Since
 Change* (whole days since the row's effective most-recent change). Where a DMV exposes both a

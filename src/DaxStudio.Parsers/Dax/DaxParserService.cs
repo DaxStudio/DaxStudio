@@ -103,6 +103,39 @@ namespace DaxStudio.Parsers.Dax
         }
 
         /// <summary>
+        /// Returns the case-insensitive set of non-built-in function names that are actually called in the
+        /// query outside of any <c>DEFINE FUNCTION</c> body (from the EVALUATE statement or DEFINE
+        /// MEASURE/COLUMN/TABLE/VAR expressions). Used to exclude query-scoped functions that are declared
+        /// but never invoked from a dependency tree.
+        /// </summary>
+        public ISet<string> GetReferencedFunctionNames(string input)
+        {
+            var result = Parse(input);
+            if (result.Tree == null) return new HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
+
+            var collector = new ReferencedFunctionCollector();
+            Antlr4.Runtime.Tree.ParseTreeWalker.Default.Walk(collector, result.Tree);
+            return collector.FunctionNames;
+        }
+
+
+        /// <summary>
+        /// Returns, for every non-built-in function call in the query, the columns, measures and functions
+        /// referenced in the arguments passed at that call site, keyed by the called function name. Lets a
+        /// dependency tree list a query-scoped function's call-site arguments (e.g. <c>'Product'[Color]</c>
+        /// in <c>queryFunc(VALUES('Product'[Color]))</c>) as children of the function.
+        /// </summary>
+        public IReadOnlyDictionary<string, List<DaxObjectReference>> GetFunctionCallArgumentReferences(string input)
+        {
+            var result = Parse(input);
+            if (result.Tree == null) return new Dictionary<string, List<DaxObjectReference>>(System.StringComparer.OrdinalIgnoreCase);
+
+            var collector = new FunctionCallArgumentCollector();
+            Antlr4.Runtime.Tree.ParseTreeWalker.Default.Walk(collector, result.Tree);
+            return (IReadOnlyDictionary<string, List<DaxObjectReference>>)collector.References;
+        }
+
+        /// <summary>
         /// Validates variable scoping rules in DAX input.
         /// Returns a list of scope errors (forward references, undefined variables).
         /// </summary>

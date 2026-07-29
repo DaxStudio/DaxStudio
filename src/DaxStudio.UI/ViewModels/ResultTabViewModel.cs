@@ -71,17 +71,20 @@ namespace DaxStudio.UI.ViewModels
                     _title = "Last Updated";
                     ShowTreeTimestampColumn = true;
                     ShowTreeExtraColumns = true;
+                    ShowTreeExpressionColumn = false;
                     break;
                 case ShowType.MaxUpdated:
                     _title = "Most Recently Updated";
                     ShowTreeTimestampColumn = true;
                     ShowTreeExtraColumns = false;
+                    ShowTreeExpressionColumn = false;
                     break;
                 case ShowType.Dependencies:
                 default:
                     _title = "Dependencies";
                     ShowTreeTimestampColumn = false;
                     ShowTreeExtraColumns = false;
+                    ShowTreeExpressionColumn = true;
                     break;
             }
         }
@@ -102,6 +105,9 @@ namespace DaxStudio.UI.ViewModels
 
         /// <summary>The Max Update / Days Since Change columns are only shown for the LAST_UPDATED variant.</summary>
         public bool ShowTreeExtraColumns { get; }
+
+        /// <summary>The Expression column (measure / function body) is only shown for the DEPENDENCIES variant.</summary>
+        public bool ShowTreeExpressionColumn { get; }
 
         private bool _showTreeLines = true;
         /// <summary>

@@ -220,7 +220,10 @@ namespace DaxStudio.CommandLine.UIStubs
             var timestamp = showType == DaxStudio.Parsers.CommentScript.ShowType.Dependencies || string.IsNullOrEmpty(node.LastModifiedDisplay)
                 ? string.Empty
                 : $"  [{node.LastModifiedDisplay}]";
-            Log.Information("{indent}{name} ({objectType}){timestamp}", indent, node.Name, node.ObjectType, timestamp);
+            var expression = showType == DaxStudio.Parsers.CommentScript.ShowType.Dependencies && !string.IsNullOrEmpty(node.Expression)
+                ? $"  = {node.Expression.Replace("\r", " ").Replace("\n", " ")}"
+                : string.Empty;
+            Log.Information("{indent}{name} ({objectType}){timestamp}{expression}", indent, node.Name, node.ObjectType, timestamp, expression);
             foreach (var child in node.Children)
             {
                 LogShowTreeNode(child, depth + 1, showType);

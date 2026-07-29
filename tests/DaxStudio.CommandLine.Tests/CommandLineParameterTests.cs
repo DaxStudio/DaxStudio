@@ -90,7 +90,7 @@ namespace DaxStudio.CommandLine.Tests
             var validationResult = settings.Validate();
             Assert.IsTrue(validationResult.Successful, validationResult.Message);
             Assert.IsNull(validationResult.Message);
-            Assert.AreEqual("Data Source=localhost;User ID=testUser;Password=testPwd", settings.FullConnectionString, "connection strings don't match");
+            Assert.AreEqual("data source=localhost;User ID=testUser;Password=testPwd", settings.FullConnectionString, "connection strings don't match");
         }
 
         [TestMethod]

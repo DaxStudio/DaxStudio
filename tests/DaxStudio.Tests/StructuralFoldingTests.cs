@@ -87,7 +87,7 @@ namespace DaxStudio.Tests
             var foldings = new StructuralFoldingStrategy().CreateNewFoldings(doc).ToList();
 
             Assert.AreEqual(1, foldings.Count, "The run of -->> lines should fold into a single region");
-            Assert.AreEqual("TABLE [A, B] (2x2)", foldings[0].Name);
+            Assert.AreEqual(" [A, B] (2x2)", foldings[0].Name);
             // fold should start at the end of the "--> ASSERT TABLE" header line (line index 1)
             var headerLine = doc.GetLineByNumber(2);
             Assert.AreEqual(headerLine.EndOffset, foldings[0].StartOffset, "Fold should start on the ASSERT TABLE header line");
@@ -103,7 +103,7 @@ namespace DaxStudio.Tests
             var foldings = new StructuralFoldingStrategy().CreateNewFoldings(doc).ToList();
 
             Assert.AreEqual(1, foldings.Count);
-            Assert.AreEqual("TABLE [A, B] (1x2)", foldings[0].Name);
+            Assert.AreEqual(" [A, B] (1x2)", foldings[0].Name);
             var firstRowLine = doc.GetLineByNumber(2);
             Assert.AreEqual(firstRowLine.EndOffset, foldings[0].StartOffset, "Without a header the fold starts on the first -->> line");
         }
@@ -121,7 +121,7 @@ namespace DaxStudio.Tests
             var foldings = new StructuralFoldingStrategy().CreateNewFoldings(doc).ToList();
 
             Assert.AreEqual(1, foldings.Count);
-            Assert.AreEqual("TABLE [A, B] (2x2)", foldings[0].Name, "The |---| separator row must not be counted as data");
+            Assert.AreEqual(" [A, B] (2x2)", foldings[0].Name, "The |---| separator row must not be counted as data");
         }
 
         [TestMethod]
@@ -137,7 +137,7 @@ namespace DaxStudio.Tests
             var foldings = new StructuralFoldingStrategy().CreateNewFoldings(doc).ToList();
 
             Assert.AreEqual(1, foldings.Count);
-            Assert.AreEqual("TABLE [A, B] (2x2)", foldings[0].Name, "The leading DAX type row must not be counted as data");
+            Assert.AreEqual(" [A, B] (2x2)", foldings[0].Name, "The leading DAX type row must not be counted as data");
         }
 
         [TestMethod]
@@ -151,7 +151,7 @@ namespace DaxStudio.Tests
             var foldings = new StructuralFoldingStrategy().CreateNewFoldings(doc).ToList();
 
             Assert.AreEqual(1, foldings.Count);
-            Assert.AreEqual("TABLE [A, B, C, D, \u2026] (1x7)", foldings[0].Name,
+            Assert.AreEqual(" [A, B, C, D, \u2026] (1x7)", foldings[0].Name,
                 "Column list should truncate after 4 columns while the total column count stays 7");
         }
 
