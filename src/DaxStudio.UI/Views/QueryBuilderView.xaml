@@ -614,16 +614,36 @@
                       Visibility="{Binding ElementName=SortOptions, Path=IsChecked, Converter={StaticResource BoolToHiddenConverter}}"
                       Height="5" ResizeBehavior="PreviousAndNext"/>
 
-        <ToggleButton x:Name="SortOptions" 
-                          Grid.Row="4" 
-                          Grid.ColumnSpan="3" 
+        <Grid Grid.Row="4" Grid.ColumnSpan="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <ToggleButton x:Name="SortOptions" 
                           Margin="8 4 8 0" 
                           Padding="3"
+                          HorizontalContentAlignment="Left"
                           Template="{StaticResource ExpanderButtonTemplate}"
                           Background="Transparent" 
                           BorderThickness="0"
                           ToolTip="Click to Expand/Collapse"
                           >Order By</ToggleButton>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0 4 8 0"
+                        Visibility="{Binding HasSortableColumns, Converter={StaticResource BoolToVisibility}}">
+                <ui:ToggleSwitch x:Name="AllSortEnabledSwitch" IsOn="{Binding IsAnySortEnabled, Mode=TwoWay}" 
+                                 OnContent="" OffContent="" Width="40" Margin="0" Padding="0"
+                                 ToolTip="Turns the Order By on/off for all columns"/>
+                <Button x:Name="ToggleAllSortDirection" Padding="4" Margin="4 0 0 0"
+                        Background="{DynamicResource Theme.Brush.MenuBar.Back}"
+                        BorderThickness="0"
+                        ToolTip="{Binding AllSortDirectionDescription}">
+                    <Image Width="16" Height="16" 
+                           attachedProperties:ImageBindingHelper.SourceResourceKey="{Binding AllSortDirectionImageResource}"/>
+                </Button>
+            </StackPanel>
+        </Grid>
 
 
         <!--<Expander Header="Sorting" Grid.Row="4" Grid.ColumnSpan="3" IsExpanded="False">-->

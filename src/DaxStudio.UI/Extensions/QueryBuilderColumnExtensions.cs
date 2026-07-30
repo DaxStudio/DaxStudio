@@ -26,5 +26,12 @@ namespace DaxStudio.UI.Extensions
 
             
         }
+
+        // this must match the filter used by the OrderBy collection view in the QueryBuilderViewModel
+        public static bool IsSortable(this QueryBuilderColumn column)
+        {
+            return column.ObjectType == ADOTabularObjectType.Column
+                || column.ObjectType == ADOTabularObjectType.Level;
+        }
     }
 }

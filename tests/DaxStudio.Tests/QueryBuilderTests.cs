@@ -986,5 +986,118 @@ ORDER BY
             StringAssertion.ShouldEqualWithDiff(expectedQry, qry, DiffStyle.Full);
 
         }
+
+        #region Bulk Order By tests
+
+        private QueryBuilderFieldList CreateFieldListWithColumnsAndMeasure()
+        {
+            var fieldList = new QueryBuilderFieldList(mockEventAggregator);
+            fieldList.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string), ADOTabularObjectType.Column));
+            fieldList.Add(MockColumn.Create("Color", "'Product'[Color]", typeof(string), ADOTabularObjectType.Column));
+            fieldList.Add(MockColumn.Create("Total Sales", "[Total Sales]", typeof(double), ADOTabularObjectType.Measure));
+            return fieldList;
+        }
+
+        [TestMethod]
+        public void TestDisableAllSorting()
+        {
+            var fieldList = CreateFieldListWithColumnsAndMeasure();
+
+            Assert.IsTrue(fieldList.IsAnySortEnabled, "Sorting should be enabled by default");
+
+            fieldList.DisableAllSorting();
+
+            Assert.IsFalse(fieldList.IsAnySortEnabled, "All sorting should be turned off");
+            foreach (var col in fieldList.SortableItems)
+            {
+                Assert.AreEqual(SortDirection.None, col.SortDirection);
+            }
+        }
+
+        [TestMethod]
+        public void TestDisableAllSortingDoesNotAffectMeasures()
+        {
+            var fieldList = CreateFieldListWithColumnsAndMeasure();
+            var measure = fieldList.Items[2];
+
+            fieldList.DisableAllSorting();
+
+            Assert.AreEqual(SortDirection.ASC, measure.SortDirection, "Measures should not be affected by bulk sort changes");
+        }
+
+        [TestMethod]
+        public void TestSetAllSortDirections()
+        {
+            var fieldList = CreateFieldListWithColumnsAndMeasure();
+
+            fieldList.SetAllSortDirections(SortDirection.DESC);
+
+            foreach (var col in fieldList.SortableItems)
+            {
+                Assert.AreEqual(SortDirection.DESC, col.SortDirection);
+            }
+
+            fieldList.SetAllSortDirections(SortDirection.ASC);
+
+            foreach (var col in fieldList.SortableItems)
+            {
+                Assert.AreEqual(SortDirection.ASC, col.SortDirection);
+            }
+        }
+
+        [TestMethod]
+        public void TestRestoreAllSortingRestoresPreviousDirections()
+        {
+            var fieldList = CreateFieldListWithColumnsAndMeasure();
+            fieldList.Items[1].SortDirection = SortDirection.DESC;
+
+            fieldList.DisableAllSorting();
+            Assert.IsFalse(fieldList.IsAnySortEnabled);
+
+            fieldList.RestoreAllSorting();
+
+            Assert.AreEqual(SortDirection.ASC, fieldList.Items[0].SortDirection);
+            Assert.AreEqual(SortDirection.DESC, fieldList.Items[1].SortDirection, "The previous sort direction should be restored");
+        }
+
+        [TestMethod]
+        public void TestBulkSortChangesAreReflectedInTheQuery()
+        {
+            var fieldList = CreateFieldListWithColumnsAndMeasure();
+            var filters = new List<QueryBuilderFilter>();
+
+            fieldList.SetAllSortDirections(SortDirection.DESC);
+
+            var qry = QueryBuilder.BuildQuery(modelCaps, fieldList.Items, filters, false, "Products", DelimiterType.Comma);
+            var expectedQry = @"/* START QUERY BUILDER */
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Product Category'[Category],
+    'Product'[Color],
+    ""Total Sales"", [Total Sales]
+)
+ORDER BY 
+    'Product Category'[Category] DESC,
+    'Product'[Color] DESC
+/* END QUERY BUILDER */".Replace("\r", "");
+
+            StringAssertion.ShouldEqualWithDiff(expectedQry, qry, DiffStyle.Full);
+
+            fieldList.DisableAllSorting();
+
+            var qry2 = QueryBuilder.BuildQuery(modelCaps, fieldList.Items, filters, false, "Products", DelimiterType.Comma);
+            var expectedQry2 = @"/* START QUERY BUILDER */
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Product Category'[Category],
+    'Product'[Color],
+    ""Total Sales"", [Total Sales]
+)
+/* END QUERY BUILDER */".Replace("\r", "");
+
+            StringAssertion.ShouldEqualWithDiff(expectedQry2, qry2, DiffStyle.Full);
+        }
+
+        #endregion
     }
 }

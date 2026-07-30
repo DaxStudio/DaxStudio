@@ -124,17 +124,27 @@ namespace DaxStudio.UI.Model
         }
 
         private SortDirection _sortDirection = SortDirection.ASC;
+        private SortDirection _previousSortDirection = SortDirection.ASC;
         [DataMember]
         public SortDirection SortDirection { get => _sortDirection; 
-            set
-            {
-                _sortDirection = value;
-                NotifyOfPropertyChange();
-                NotifyOfPropertyChange(nameof(SortDescription));
-                NotifyOfPropertyChange(nameof(SortDirectionImageResource));
-                _eventAggregator.PublishAsync(new QueryBuilderUpdateEvent());
-            }
+            set => SetSortDirection(value, true);
         }
+
+        // allows bulk updates to change the sort direction of many columns
+        // while only publishing a single QueryBuilderUpdateEvent
+        internal void SetSortDirection(SortDirection value, bool publishUpdateEvent)
+        {
+            if (_sortDirection != SortDirection.None) _previousSortDirection = _sortDirection;
+            _sortDirection = value;
+            NotifyOfPropertyChange(nameof(SortDirection));
+            NotifyOfPropertyChange(nameof(SortDescription));
+            NotifyOfPropertyChange(nameof(SortDirectionImageResource));
+            NotifyOfPropertyChange(nameof(IsSortDirectionEnabled));
+            if (publishUpdateEvent) _eventAggregator.PublishAsync(new QueryBuilderUpdateEvent());
+        }
+
+        // the last direction this column was sorted by, used when re-enabling sorting
+        internal SortDirection PreviousSortDirection => _previousSortDirection == SortDirection.None ? SortDirection.ASC : _previousSortDirection;
 
         public string SortDirectionImageResource
         {
@@ -153,7 +163,10 @@ namespace DaxStudio.UI.Model
 
         public bool IsSortDirectionEnabled { get => SortDirection != SortDirection.None; 
             set { 
-                if(SortDirection == SortDirection.None) SortDirection = SortDirection.ASC;
+                if (value)
+                {
+                    if (SortDirection == SortDirection.None) SortDirection = PreviousSortDirection;
+                }
                 else SortDirection = SortDirection.None;
             } 
         }

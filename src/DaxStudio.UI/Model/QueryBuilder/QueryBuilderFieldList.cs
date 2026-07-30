@@ -4,6 +4,7 @@ using Caliburn.Micro;
 using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Interfaces;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -178,9 +179,47 @@ namespace DaxStudio.UI.Model
                     column.SortDirection = SortDirection.None;
                     break;
                 default:
-                    column.SortDirection = SortDirection.ASC;
+                    column.SortDirection = column.PreviousSortDirection;
                     break;
             }
+        }
+
+        public IEnumerable<QueryBuilderColumn> SortableItems => Items.Where(c => c.IsSortable());
+
+        public bool IsAnySortEnabled => SortableItems.Any(c => c.SortDirection != SortDirection.None);
+
+        // sets the sort direction for all the sortable columns in the list
+        public void SetAllSortDirections(SortDirection direction)
+        {
+            ApplyToSortableItems(c => direction);
+        }
+
+        // turns off sorting for all the sortable columns in the list
+        public void DisableAllSorting()
+        {
+            ApplyToSortableItems(c => SortDirection.None);
+        }
+
+        // re-enables sorting using each column's previous sort direction
+        public void RestoreAllSorting()
+        {
+            ApplyToSortableItems(c => c.SortDirection == SortDirection.None ? c.PreviousSortDirection : c.SortDirection);
+        }
+
+        private void ApplyToSortableItems(Func<QueryBuilderColumn, SortDirection> getDirection)
+        {
+            var updated = false;
+            foreach (var column in SortableItems)
+            {
+                var newDirection = getDirection(column);
+                if (column.SortDirection == newDirection) continue;
+                column.SetSortDirection(newDirection, false);
+                updated = true;
+            }
+
+            if (!updated) return;
+
+            EventAggregator.PublishAsync(new QueryBuilderUpdateEvent());
         }
 
 
