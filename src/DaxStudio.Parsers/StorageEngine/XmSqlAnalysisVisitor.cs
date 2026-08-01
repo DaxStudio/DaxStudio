@@ -860,8 +860,19 @@ namespace DaxStudio.Parsers.StorageEngine
             if (ctx == null || ctx.PFCAST() != null) return null;
             if (ctx.IDENTIFIER() != null) return ctx.IDENTIFIER().GetText();
             if (ctx.QUOTED_TABLE_NAME() != null) return GetTableName(ctx.QUOTED_TABLE_NAME());
-            if (ctx.BRACKETED_NAME() != null) return GetBracketedContent(ctx.BRACKETED_NAME());
+            if (ctx.BRACKETED_NAME() != null) return StripCallbackArguments(GetBracketedContent(ctx.BRACKETED_NAME()));
             return null;
+        }
+
+        /// <summary>
+        /// Some callbacks are emitted with their DAX expression embedded in the bracketed name,
+        /// e.g. [CallbackDataID(Mod([CustomerKey]],100))]. Returns just the leading function name.
+        /// </summary>
+        private static string StripCallbackArguments(string name)
+        {
+            if (string.IsNullOrEmpty(name)) return name;
+            int paren = name.IndexOf('(');
+            return paren > 0 ? name.Substring(0, paren).Trim() : name;
         }
 
         /// <summary>Finds the first tableColumnRef within a function call's arguments.</summary>

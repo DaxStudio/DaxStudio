@@ -197,6 +197,44 @@ namespace DaxStudio.Parsers.Tests
         }
 
         [TestMethod]
+        public void Formatter_CallbackDataIdWithEscapedBracketsInFilter_IsPreserved()
+        {
+            // The engine escapes ']' as ']]' inside a bracketed callback name, e.g.
+            // [CallbackDataID(Mod([CustomerKey]],100))]. The lexer must not terminate
+            // the name at the escaped bracket or the callback is silently dropped.
+            string xmSql = "SET DC_KIND=\"AUTO\";\r\n"
+                + "WITH\r\n"
+                + "    $Expr0 := (PFCAST( [Sales (19)].[Quantity (87)] AS  INT ) * PFCAST( [Sales (19)].[Net Price (89)] AS  INT ))\r\n"
+                + "SELECT\r\n"
+                + "[Product (16)].[Category Code (78)] AS [Product (16)$Category Code (78)],\r\n"
+                + "SUM(@$Expr0) AS [$Measure0]\r\n"
+                + "FROM [Sales (19)]\r\n"
+                + "    LEFT OUTER JOIN [Customer (10)] ON [Sales (19)].[CustomerKey (84)]=[Customer (10)].[CustomerKey (36)]\r\n"
+                + "WHERE\r\n"
+                + "    COALESCE((COALESCE([CallbackDataID(Mod([CustomerKey]],100))](PFDATAID( [Customer (10)].[CustomerKey (36)] ))) >= COALESCE(50)));\r\n"
+                + "\r\n\r\n"
+                + "[Estimated size (volume, marshalling bytes): 121, 1936]";
+
+            var result = AntlrXmSqlFormatter.Format(
+                xmSql,
+                format: true,
+                simplify: true,
+                out long rows,
+                out long bytes,
+                out bool hasSize);
+
+            Assert.IsNotNull(result, "Formatter should return a non-null result");
+            Assert.IsTrue(result.Contains("CallbackDataID"), "Callback name should be preserved");
+            // The ']]' escape should be rendered as a single ']'
+            Assert.IsTrue(result.Contains("CallbackDataID(Mod([CustomerKey],100))"),
+                "Callback expression should be preserved with unescaped brackets. Actual: " + result);
+            Assert.IsTrue(result.Contains("PFDATAID"), "Should contain PFDATAID function");
+            Assert.IsTrue(hasSize, "Estimated size should be extracted");
+            Assert.AreEqual(121, rows);
+            Assert.AreEqual(1936, bytes);
+        }
+
+        [TestMethod]
         public void Formatter_FormattedOutput_UsesSpacesNotTabs()
         {
             string xmSql = "SET DC_KIND=\"AUTO\";\r\n"
