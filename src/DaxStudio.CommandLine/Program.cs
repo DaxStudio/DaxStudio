@@ -90,34 +90,26 @@ namespace DaxStudio.CommandLine
 
         private static void ConfigureLogging(bool verboseLogging)
         {
-            /*
-            var config = new LoggerConfiguration();
-
-            config.WriteTo.SpectreConsole(minLevel: Serilog.Events.LogEventLevel.Information);
-            _log = config.CreateLogger();
-   
-            Log.Logger = _log;
-            */
             var outputTemplate = "{Timestamp:HH:mm:ss} [{Level:u3}] {Message:lj}{NewLine}";
             LoggingLevelSwitch levelSwitch = new LoggingLevelSwitch();
             levelSwitch.MinimumLevel = verboseLogging ? LogEventLevel.Verbose : LogEventLevel.Information;
             if (verboseLogging) { outputTemplate = "{Timestamp:HH:mm:ss} [{Level:u3}] {Message:lj}{NewLine}{Exception}"; }
 
             Log.Logger = new LoggerConfiguration()
-                        //.WriteTo.Spectre(outputTemplate, restrictedToMinimumLevel: LogEventLevel.Information)
-                        //.WriteTo.Spectre(outputTemplate: outputTemplate, restrictedToMinimumLevel: verboseLogging ? LogEventLevel.Verbose : LogEventLevel.Information)
                         .WriteTo.Console(outputTemplate: outputTemplate, restrictedToMinimumLevel: verboseLogging ? LogEventLevel.Verbose : LogEventLevel.Information, theme: AnsiConsoleTheme.Code)
                         .MinimumLevel.ControlledBy(levelSwitch)
                         .CreateLogger();
-            
-            //Log.Information("Logger Initialized");
+
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1861:Avoid constant arrays as arguments", Justification = "<Pending>")]
         static CommandApp CreateCommands(TypeRegistrar registrar)
         {
             var app = new CommandApp(registrar);
             app.Configure(config =>
             {
+                config.CaseSensitivity(CaseSensitivity.None);
+
                 config.SetExceptionHandler((ex, resolver) =>
                 {
                     Log.Error(ex, "Error: {message}", ex.GetInnerExceptionMessages());
@@ -183,23 +175,6 @@ namespace DaxStudio.CommandLine
             });
             
             return app;
-        }
-
-        private static int OnException(Exception arg)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static string[] FixArgs(string[] asEntered)
-        {
-            List<string> newArgs = new List<string>(asEntered);
-            if ((newArgs[0].ToUpperInvariant() == "--HELP") ||
-                (newArgs[0].ToUpperInvariant() == "-H"))
-            {
-                newArgs.RemoveAt(0);
-                newArgs.Add("--help");
-            }
-            return newArgs.ToArray();
         }
 
     }
