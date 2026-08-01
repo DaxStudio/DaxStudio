@@ -91,6 +91,9 @@ is eager, a variable can only reference names defined above it.
 - **Where it applies:** command string arguments — `ASSERT TABLE <file>`, `EXPORT METRICS <path>`,
   `CONNECT` targets, and `USE <database>`. The DAX query body is not expanded.
 - **Ordering:** a `SET` is visible only to commands that follow it (including across `--> GO`).
+- **Self-reference:** because expansion is eager a variable cannot be defined in terms of itself —
+  `--> SET OutDir = "$(OutDir)\sub"` is a hard error, and the variable being defined is not offered
+  in the code-completion list for its own value.
 - **Escaping:** write `$$(` to emit a literal `$(`; every other `$` is literal.
 - **Undefined variable / unknown namespace / bad date format:** a hard error that fails the run.
 
