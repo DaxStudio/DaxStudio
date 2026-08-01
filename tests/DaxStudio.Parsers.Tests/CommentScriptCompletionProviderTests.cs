@@ -1,5 +1,6 @@
 using DaxStudio.Parsers.Dax;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Linq;
 
 namespace DaxStudio.Parsers.Tests
@@ -91,6 +92,169 @@ namespace DaxStudio.Parsers.Tests
         {
             var items = CommentScriptCompletionProvider.GetCompletions("EVALUATE 'Sales'");
             Assert.AreEqual(0, items.Count);
+        }
+
+        [TestMethod]
+        public void GetCompletions_EmptyMarker_IncludesSetAndSaveAs()
+        {
+            var labels = CommentScriptCompletionProvider.GetCompletions("--> ").Select(i => i.Label).ToList();
+
+            CollectionAssert.Contains(labels, "SET");
+            CollectionAssert.Contains(labels, "SAVEAS");
+        }
+
+        [TestMethod]
+        public void GetCompletions_PartialSet_FiltersToSet()
+        {
+            var labels = CommentScriptCompletionProvider.GetCompletions("--> SE").Select(i => i.Label).ToList();
+
+            CollectionAssert.Contains(labels, "SET");
+            Assert.IsFalse(labels.Contains("CONNECT"));
+        }
+
+        [TestMethod]
+        public void GetDefinedVariables_ReturnsSetNamesInOrder()
+        {
+            var script = "--> SET OutDir = \"C:\\Reports\"\r\n--> SET Env = prod\r\nEVALUATE 'Sales'\r\n";
+
+            var names = CommentScriptCompletionProvider.GetDefinedVariables(script);
+
+            CollectionAssert.AreEqual(new[] { "OutDir", "Env" }, names.ToArray());
+        }
+
+        [TestMethod]
+        public void GetDefinedVariables_IgnoresDuplicatesAndNonSetLines()
+        {
+            var script = "--> SET OutDir = \"a\"\r\n--> SAVEAS \"x.dax\"\r\n-- SET NotACommand = 1\r\n--> SET outdir = \"b\"\r\n";
+
+            var names = CommentScriptCompletionProvider.GetDefinedVariables(script);
+
+            CollectionAssert.AreEqual(new[] { "OutDir" }, names.ToArray());
+        }
+
+        [TestMethod]
+        public void GetCompletions_AfterDollar_ReturnsDefinedVariablesAndBuiltIns()
+        {
+            var script = "--> SET OutDir = \"C:\\Reports\"\r\n--> SAVEAS \"$";
+
+            var items = CommentScriptCompletionProvider.GetCompletions("--> SAVEAS \"$", script);
+            var labels = items.Select(i => i.Label).ToList();
+
+            CollectionAssert.Contains(labels, "$(OutDir)");
+            CollectionAssert.Contains(labels, "$(now:yyyy-MM-dd)");
+            CollectionAssert.Contains(labels, "$(utcnow:yyyy-MM-dd)");
+            CollectionAssert.Contains(labels, "$(env:NAME)");
+            Assert.IsTrue(items.All(i => i.Kind == CompletionItemKind.Variable));
+        }
+
+        [TestMethod]
+        public void GetCompletions_VariableItem_InsertsBareNameForFiltering()
+        {
+            var script = "--> SET OutDir = \"C:\\Reports\"\r\n";
+
+            var item = CommentScriptCompletionProvider.GetCompletions("--> SAVEAS \"$", script)
+                .Single(i => i.Label == "$(OutDir)");
+
+            Assert.AreEqual("OutDir", item.InsertText);
+        }
+
+        [TestMethod]
+        public void GetCompletions_PartialVariableReference_FiltersByPrefix()
+        {
+            var script = "--> SET OutDir = \"a\"\r\n--> SET Env = prod\r\n";
+
+            var labels = CommentScriptCompletionProvider.GetCompletions("--> SAVEAS \"$(Out", script)
+                .Select(i => i.Label).ToList();
+
+            CollectionAssert.Contains(labels, "$(OutDir)");
+            Assert.IsFalse(labels.Contains("$(Env)"));
+            Assert.IsFalse(labels.Contains("$(now:yyyy-MM-dd)"));
+        }
+
+        [TestMethod]
+        public void GetCompletions_NoSetCommands_StillOffersBuiltInVariables()
+        {
+            var labels = CommentScriptCompletionProvider.GetCompletions("--> EXPORT METRICS \"$", null)
+                .Select(i => i.Label).ToList();
+
+            CollectionAssert.Contains(labels, "$(now:yyyy-MM-dd)");
+            Assert.AreEqual(3, labels.Count);
+        }
+
+        [TestMethod]
+        public void GetCompletions_EscapedDollarParen_IsNotAVariableReference()
+        {
+            var items = CommentScriptCompletionProvider.GetCompletions("--> SAVEAS \"$$", "--> SET OutDir = \"a\"\r\n");
+
+            Assert.IsFalse(items.Any(i => i.Kind == CompletionItemKind.Variable));
+        }
+
+        [TestMethod]
+        public void GetCompletions_ClosedVariableReference_ReturnsNoVariables()
+        {
+            var items = CommentScriptCompletionProvider.GetCompletions("--> SAVEAS \"$(OutDir)", "--> SET OutDir = \"a\"\r\n");
+
+            Assert.IsFalse(items.Any(i => i.Kind == CompletionItemKind.Variable));
+        }
+
+        [TestMethod]
+        public void TryGetVariableReferencePrefix_HandlesTheCommonCases()        {
+            Assert.IsTrue(CommentScriptCompletionProvider.TryGetVariableReferencePrefix(" SAVEAS \"$", out var p1));
+            Assert.AreEqual(string.Empty, p1);
+
+            Assert.IsTrue(CommentScriptCompletionProvider.TryGetVariableReferencePrefix(" SAVEAS \"$(", out var p2));
+            Assert.AreEqual(string.Empty, p2);
+
+            Assert.IsTrue(CommentScriptCompletionProvider.TryGetVariableReferencePrefix(" SAVEAS \"$(Out", out var p3));
+            Assert.AreEqual("Out", p3);
+
+            Assert.IsFalse(CommentScriptCompletionProvider.TryGetVariableReferencePrefix(" SAVEAS \"file.dax\"", out _));
+            Assert.IsFalse(CommentScriptCompletionProvider.TryGetVariableReferencePrefix(" SAVEAS \"$(Out Dir", out _));
+        }
+
+        [TestMethod]
+        public void GetCompletions_OnSetLine_ExcludesTheVariableBeingDefined()
+        {
+            // A SET value is expanded eagerly so it cannot reference itself - "myFile" must not be offered
+            // while defining "myFile", but the earlier "myPath" still is.
+            var script = "--> SET myPath = \"C:\\temp\\\"\r\n--> SET myFile = \"$";
+
+            var labels = CommentScriptCompletionProvider.GetCompletions("--> SET myFile = \"$", script)
+                .Select(i => i.Label).ToList();
+
+            CollectionAssert.DoesNotContain(labels, "$(myFile)");
+            CollectionAssert.Contains(labels, "$(myPath)");
+            CollectionAssert.Contains(labels, "$(now:yyyy-MM-dd)");
+        }
+
+        [TestMethod]
+        public void GetCompletions_OnSetLine_ExclusionIsCaseInsensitive()
+        {
+            var script = "--> SET MyFile = \"a\"\r\n--> SET myfile = \"$";
+
+            var labels = CommentScriptCompletionProvider.GetCompletions("--> SET myfile = \"$", script)
+                .Select(i => i.Label).ToList();
+
+            Assert.IsFalse(labels.Any(l => l.StartsWith("$(myfile", StringComparison.OrdinalIgnoreCase)));
+        }
+
+        [TestMethod]
+        public void GetCompletions_OnNonSetLine_StillOffersEveryVariable()
+        {
+            var script = "--> SET myFile = \"a\"\r\n--> SAVEAS \"$";
+
+            var labels = CommentScriptCompletionProvider.GetCompletions("--> SAVEAS \"$", script)
+                .Select(i => i.Label).ToList();
+
+            CollectionAssert.Contains(labels, "$(myFile)");
+        }
+
+        [TestMethod]
+        public void GetVariableBeingDefined_ReturnsNameOnlyForSetLines()
+        {
+            Assert.AreEqual("myFile", CommentScriptCompletionProvider.GetVariableBeingDefined(" SET myFile = \"$"));
+            Assert.IsNull(CommentScriptCompletionProvider.GetVariableBeingDefined(" SAVEAS \"$"));
+            Assert.IsNull(CommentScriptCompletionProvider.GetVariableBeingDefined(" SET myFile"));
         }
     }
 }

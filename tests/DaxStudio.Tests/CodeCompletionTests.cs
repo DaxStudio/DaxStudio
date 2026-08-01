@@ -122,6 +122,61 @@ namespace DaxStudio.Tests
         }
 
         [TestMethod]
+        public void TestCommentScriptVariableInsert_AfterDollar()
+        {
+            // Typing "$" in a comment-script path argument then picking a "--> SET" variable must insert
+            // the full "$(name)" syntax over the "$" only - the opening quote must be preserved.
+            var doc = new TextDocument("--> SAVEAS \"$");
+            var mockIp = Substitute.For<IInsightProvider>();
+            var item = new DaxStudio.Parsers.Dax.CompletionItem(
+                "$(OutDir)", DaxStudio.Parsers.Dax.CompletionItemKind.Variable, "", "OutDir");
+            var compData = new DaxCompletionData(mockIp, item, true);
+
+            var seg = new TextSegment { StartOffset = doc.TextLength, Length = 0 };
+            var e = new TextCompositionEventArgs(Keyboard.PrimaryDevice, new TextComposition(null, null, "\t"));
+
+            compData.CompleteInternal(doc, seg, e);
+
+            Assert.AreEqual("--> SAVEAS \"$(OutDir)", doc.Text);
+        }
+
+        [TestMethod]
+        public void TestCommentScriptVariableInsert_OverPartialReference()
+        {
+            // A partially typed reference is replaced back to (and including) the "$" that opened it.
+            var doc = new TextDocument("--> EXPORT METRICS \"$(Out");
+            var mockIp = Substitute.For<IInsightProvider>();
+            var item = new DaxStudio.Parsers.Dax.CompletionItem(
+                "$(OutDir)", DaxStudio.Parsers.Dax.CompletionItemKind.Variable, "", "OutDir");
+            var compData = new DaxCompletionData(mockIp, item, true);
+
+            var seg = new TextSegment { StartOffset = doc.TextLength, Length = 0 };
+            var e = new TextCompositionEventArgs(Keyboard.PrimaryDevice, new TextComposition(null, null, "\t"));
+
+            compData.CompleteInternal(doc, seg, e);
+
+            Assert.AreEqual("--> EXPORT METRICS \"$(OutDir)", doc.Text);
+        }
+
+        [TestMethod]
+        public void TestCommentScriptKeywordInsert_IsUnaffectedByVariableHandling()
+        {
+            // A normal comment-script keyword completion still replaces just the partial word.
+            var doc = new TextDocument("--> SE");
+            var mockIp = Substitute.For<IInsightProvider>();
+            var item = new DaxStudio.Parsers.Dax.CompletionItem(
+                "SET", DaxStudio.Parsers.Dax.CompletionItemKind.Keyword, "");
+            var compData = new DaxCompletionData(mockIp, item, true);
+
+            var seg = new TextSegment { StartOffset = doc.TextLength, Length = 0 };
+            var e = new TextCompositionEventArgs(Keyboard.PrimaryDevice, new TextComposition(null, null, "\t"));
+
+            compData.CompleteInternal(doc, seg, e);
+
+            Assert.AreEqual("--> SET", doc.Text);
+        }
+
+        [TestMethod]
         public void TestCodeCompletionWithUnderscoresInName()
         {
             var testLine = "EVALUATE DIM_D";

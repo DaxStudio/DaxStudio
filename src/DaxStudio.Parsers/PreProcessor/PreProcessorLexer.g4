@@ -240,7 +240,6 @@ CS_RESULTS:               'RESULTS';
 
 CS_METRICS:               'METRICS';
 CS_EXPORT:                'EXPORT';
-CS_VIEW:                  'VIEW';
 
 CS_SHOW:                  'SHOW';
 CS_DEPENDENCIES:          'DEPENDENCIES';

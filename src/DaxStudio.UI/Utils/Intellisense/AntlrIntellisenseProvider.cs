@@ -107,6 +107,36 @@ namespace DaxStudio.UI.Utils.Intellisense
                     return;
                 }
 
+                // A '$' on a comment-script line starts a $(...) script-variable reference. It is handled
+                // explicitly (rather than via the generic trigger handling below) so the completion list
+                // can be anchored immediately after the '$' - the items are the bare variable names, so
+                // that anchor is what lets the list filter on the name as the user keeps typing.
+                if ((e.Text == "$" || (e.Text == "(" && IsPrecededByVariableDollar()))
+                    && CommentScriptCompletionProvider.IsCommentScriptLine(GetCurrentLine()))
+                {
+                    CloseCompletionWindow();
+
+                    completionWindow = CreateCompletionWindow(sender);
+                    completionWindow.StartOffset = _editor.CaretOffset;
+                    IList<ICompletionData> variableData = completionWindow.CompletionList.CompletionData;
+                    PopulateCompletionData(variableData, true);
+
+                    if (variableData.Count > 0)
+                    {
+                        if (_editor.InsightWindow != null && _editor.InsightWindow.IsVisible)
+                        {
+                            _editor.InsightWindow.Visibility = Visibility.Collapsed;
+                        }
+                        completionWindow.Show();
+                    }
+                    else
+                    {
+                        CloseCompletionWindow();
+                        completionWindow = null;
+                    }
+                    return;
+                }
+
                 // A space typed after a DAX keyword (DEFINE, EVALUATE, ORDER BY, etc.) should open the
                 // completion list showing what can validly follow. Space is not a normal trigger
                 // character, so - like the comment-script case above - this is handled explicitly before
@@ -315,7 +345,7 @@ namespace DaxStudio.UI.Utils.Intellisense
 
             if (isCommentScript)
             {
-                items = CommentScriptCompletionProvider.GetCompletions(GetCurrentLine());
+                items = CommentScriptCompletionProvider.GetCompletions(GetCurrentLine(), GetTextBeforeCaret());
             }
             else
             {
@@ -988,6 +1018,28 @@ namespace DaxStudio.UI.Utils.Intellisense
             if (docLine.Length == 0) return "";
             string line = _editor.DocumentGetText(docLine.Offset, loc.Column);
             return line;
+        }
+
+        // The script text preceding the caret. Used by the comment-script completions to find the
+        // "--> SET" variables that are in scope at the caret (a SET is only visible to the commands
+        // that follow it).
+        private string GetTextBeforeCaret()
+        {
+            var caret = _editor.CaretOffset;
+            if (caret <= 0) return string.Empty;
+            return _editor.DocumentGetText(0, caret);
+        }
+
+        // True when the '(' just typed completes the "$(" that opens a script-variable reference (and is
+        // not the "$$(" escape sequence for a literal "$(" ).
+        private bool IsPrecededByVariableDollar()
+        {
+            var caret = _editor.CaretOffset;
+            if (caret < 2) return false;
+            var before = _editor.DocumentGetText(caret - 2, 1);
+            if (before != "$") return false;
+            if (caret >= 3 && _editor.DocumentGetText(caret - 3, 1) == "$") return false;
+            return true;
         }
         #endregion
 

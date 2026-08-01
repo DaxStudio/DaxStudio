@@ -18,8 +18,9 @@ namespace DaxStudio.Parsers.CommentScript
     /// rest of the run.
     /// </para>
     /// <para>
-    /// An undefined variable, an unknown built-in namespace, a bad date format, or a reference cycle
-    /// all raise <see cref="CommentScriptCommandException"/> so the run fails (the CI-safe default).
+    /// An undefined variable, an unknown built-in namespace, a bad date format, a self-reference
+    /// (<c>--&gt; SET x = $(x)</c>), or a reference cycle all raise
+    /// <see cref="CommentScriptCommandException"/> so the run fails (the CI-safe default).
     /// A literal <c>$(</c> is written as <c>$$(</c>.
     /// </para>
     /// </remarks>
@@ -47,7 +48,32 @@ namespace DaxStudio.Parsers.CommentScript
         public void SetVariable(string name, string rawValue)
         {
             if (name == null) throw new ArgumentNullException(nameof(name));
+            ThrowIfSelfReferencing(name, rawValue);
             _vars[name] = Expand(rawValue);
+        }
+
+        /// <summary>
+        /// Rejects a <c>SET</c> whose value references the variable it is defining. Values are expanded
+        /// eagerly, so a self-reference is either undefined (first definition) or would silently reuse the
+        /// previous value (a redefinition) - neither is meaningful, so both are a hard error.
+        /// </summary>
+        private static void ThrowIfSelfReferencing(string name, string rawValue)
+        {
+            if (string.IsNullOrEmpty(rawValue)) return;
+            if (rawValue.IndexOf("$(", StringComparison.Ordinal) < 0) return;
+
+            var protectedInput = rawValue.Replace("$$(", EscapePlaceholder);
+            foreach (Match match in RefRegex.Matches(protectedInput))
+            {
+                var reference = match.Groups["ref"].Value;
+                // Built-in namespace references (now:/utcnow:/env:) can never be a self-reference.
+                if (reference.IndexOf(':') >= 0) continue;
+                if (string.Equals(reference, name, StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new CommentScriptCommandException(
+                        $"The script variable '{name}' cannot reference itself. '--> SET {name} = ...' is expanded at the point it executes, so its value can only use variables that are already defined.");
+                }
+            }
         }
 
         /// <summary>Removes all defined variables (used to reset state between CLI files).</summary>

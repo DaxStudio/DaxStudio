@@ -22,6 +22,7 @@ namespace DaxStudio.UI.Utils
         private IInsightProvider _insightProvider;
         private readonly bool _isCommentScript;
         private readonly bool _isFromResults;
+        private readonly bool _isVariableRef;
 
         /*
 public DaxCompletionData(IInsightProvider insightProvider, string text, string content, string description, ImageSource image )
@@ -99,6 +100,10 @@ _insightProvider = insightProvider;
             // sentinel would never match), and flag it so Complete inserts the generated block instead.
             _isFromResults = isCommentScript
                 && string.Equals(item.InsertText, DaxStudio.Parsers.Dax.CommentScriptCompletionProvider.FromResultsInsertText, StringComparison.Ordinal);
+            // A comment-script $(...) variable reference. Its InsertText is the bare name (so the
+            // completion list filters on what is typed after the '$') and the full "$(name)" syntax is
+            // rebuilt when the item is inserted.
+            _isVariableRef = isCommentScript && item.Kind == DaxStudio.Parsers.Dax.CompletionItemKind.Variable;
             _text = _isFromResults
                 ? item.Label
                 : (string.IsNullOrEmpty(item.InsertText) ? item.Label : item.InsertText);
@@ -183,6 +188,28 @@ _insightProvider = insightProvider;
                         }
                         document.Replace(fromStart, fromEnd - fromStart, block);
                         return;
+                    }
+
+                    // A script-variable reference: replace everything back to (and including) the '$'
+                    // that opened it with the full "$(name)" syntax. The generic word-boundary walk
+                    // below would also swallow the preceding quote of a path argument (e.g. "$).
+                    if (_isVariableRef)
+                    {
+                        int varEnd = completionSegment.EndOffset;
+                        int varStart = varEnd;
+                        bool foundDollar = false;
+                        while (varStart > 0)
+                        {
+                            var prev = document.GetCharAt(varStart - 1);
+                            if (char.IsWhiteSpace(prev) || prev == '>') break;
+                            varStart--;
+                            if (prev == '$') { foundDollar = true; break; }
+                        }
+                        if (foundDollar)
+                        {
+                            document.Replace(varStart, varEnd - varStart, $"$({insertionText})");
+                            return;
+                        }
                     }
 
                     // Comment-script command lines are not DAX, so the DAX-aware word-boundary logic

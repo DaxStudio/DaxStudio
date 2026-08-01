@@ -146,6 +146,41 @@ namespace DaxStudio.Parsers.Tests.CommentScript
         }
 
         [TestMethod]
+        public void SetVariable_SelfReference_Throws()
+        {
+            // A SET value is expanded at the point it executes, so it can never reference the variable
+            // it is defining - not even when that name was defined earlier in the script.
+            var e = new ScriptVariableExpander();
+            Assert.Throws<CommentScriptCommandException>(() => e.SetVariable("myFile", "$(myFile).csv"));
+
+            e.SetVariable("Out", "C:\\a");
+            Assert.Throws<CommentScriptCommandException>(() => e.SetVariable("Out", "$(Out)\\sub"));
+            Assert.Throws<CommentScriptCommandException>(() => e.SetVariable("Out", "$(OUT)\\sub"));
+
+            // the previous value is left untouched by the rejected SET
+            Assert.AreEqual("C:\\a", e.Expand("$(Out)"));
+        }
+
+        [TestMethod]
+        public void SetVariable_EscapedSelfReference_IsAllowed()
+        {
+            // "$$(" is the escape for a literal "$(" so it is not a reference and must not be rejected as
+            // a self-reference. (Re-expanding the stored literal is a separate, pre-existing behaviour.)
+            var e = new ScriptVariableExpander();
+            e.SetVariable("myFile", "$$(myFile)");
+            Assert.IsTrue(e.ContainsVariable("myFile"));
+        }
+
+        [TestMethod]
+        public void SetVariable_BuiltInWithMatchingName_IsAllowed()
+        {
+            // A built-in namespace reference is never a self-reference, even from a variable of that name.
+            var e = new ScriptVariableExpander(() => new DateTime(2024, 1, 15), () => new DateTime(2024, 1, 15));
+            e.SetVariable("now", "$(now:yyyy-MM-dd)");
+            Assert.AreEqual("2024-01-15", e.Expand("$(now)"));
+        }
+
+        [TestMethod]
         public void Expand_NoReferences_ReturnsInputUnchanged()
         {
             var e = new ScriptVariableExpander();
