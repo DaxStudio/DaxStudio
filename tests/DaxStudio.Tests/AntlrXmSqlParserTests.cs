@@ -311,8 +311,26 @@ FROM 'Sales';";
         }
 
         [TestMethod]
-        public void Antlr_ParseQueryWithRoundValueCallbackFunction()
+        public void Antlr_ParseQueryWithEscapedBracketsInCallbackName()
         {
+            // The engine escapes ']' as ']]' inside the bracketed callback name.
+            string xmSql = @"SELECT
+    SUM ( 'Sales'[Qty] )
+FROM 'Sales'
+    LEFT OUTER JOIN [Customer (10)] ON [Sales (19)].[CustomerKey (84)]=[Customer (10)].[CustomerKey (36)]
+WHERE
+    COALESCE((COALESCE([CallbackDataID(Mod([CustomerKey]],100))](PFDATAID( [Customer (10)].[CustomerKey (36)] ))) >= COALESCE(50)));";
+
+            var analysis = new XmSqlAnalysis();
+            _parser.ParseQuery(xmSql, analysis);
+
+            var custKeyCol = analysis.Tables["Customer (10)"].Columns["CustomerKey (36)"];
+            Assert.IsTrue(custKeyCol.HasCallback, "CustomerKey should be flagged as having a callback");
+            Assert.AreEqual("CallbackDataID", custKeyCol.CallbackType);
+        }
+
+        [TestMethod]
+        public void Antlr_ParseQueryWithRoundValueCallbackFunction()        {
             string xmSql = @"SELECT
     'RoundValueCallback' ( 'Sales'[Price] ),
     COUNT ( )

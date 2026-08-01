@@ -112,6 +112,7 @@ namespace DaxStudio.Parsers
             // Strip surrounding brackets
             if (raw.Length >= 2 && raw[0] == '[' && raw[raw.Length - 1] == ']')
                 raw = raw.Substring(1, raw.Length - 2);
+            raw = UnescapeBrackets(raw);
 
             if (_simplify)
             {
@@ -140,6 +141,17 @@ namespace DaxStudio.Parsers
         private string RemoveGuids(string text)
         {
             return GuidPattern.Replace(text, "");
+        }
+
+        /// <summary>
+        /// Converts the DAX ']]' escape sequence back to a single ']'.
+        /// The engine escapes ']' inside bracketed names (e.g. callback expressions
+        /// like [CallbackDataID(Mod([CustomerKey]],100))]).
+        /// </summary>
+        private static string UnescapeBrackets(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return text;
+            return text.IndexOf("]]", StringComparison.Ordinal) >= 0 ? text.Replace("]]", "]") : text;
         }
 
         /// <summary>
@@ -1134,7 +1146,7 @@ namespace DaxStudio.Parsers
                         if (bracketed != null)
                         {
                             var name = bracketed.GetText();
-                            _sb.Append(name.Substring(1, name.Length - 2));
+                            _sb.Append(UnescapeBrackets(name.Substring(1, name.Length - 2)));
                         }
                     }
                 }
