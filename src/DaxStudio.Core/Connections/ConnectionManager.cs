@@ -165,6 +165,7 @@ namespace DaxStudio.Core.Connections
 
         public void Close(bool closeSession)
         {
+            ClearSupportedTraceEventClasses();
             if (_connection != null)
             {
                 if (_connection.State != ConnectionState.Closed && _connection.State != ConnectionState.Broken)
@@ -1189,6 +1190,10 @@ namespace DaxStudio.Core.Connections
         internal async Task ConnectAsync(ConnectEvent message, Guid uniqueId)
         {
             IsConnecting = true;
+            // the supported trace events/columns, the DMV list and the function list are all engine
+            // version specific so any cached copies must be discarded before we connect to a
+            // (potentially different) server
+            ClearConnectionCaches();
             Log.Verbose(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(ConnectAsync), $"ConnectionString: {message.ConnectionString}/n  ServerType: {message.ServerType}");
             await _eventAggregator.PublishAsync(new ConnectionOpenedEvent(this));
 
@@ -1220,6 +1225,9 @@ namespace DaxStudio.Core.Connections
             _dmvConnection = new ADOTabular.ADOTabularConnection(string.Empty, ADOTabular.Enums.AdomdType.AnalysisServices);
             _dmvConnection.ServerType = ServerType.Offline;
             _dmvConnection.Visitor = new MetadataVisitorVpax(_connection, vpaContent.DaxModel, vpaContent.TomDatabase);
+            // clear the caches again in case anything re-populated them from the previous connection
+            // while we were publishing the ConnectionOpenedEvent
+            ClearConnectionCaches();
 
             ServerType = message.ServerType;
             FileName = message.FileName??String.Empty;
@@ -1236,6 +1244,9 @@ namespace DaxStudio.Core.Connections
             var connectionString = UpdateApplicationName(message.ConnectionString, uniqueId);
             _connection = new ADOTabularConnection(connectionString, AdomdType.AnalysisServices);
             _dmvConnection = new ADOTabularConnection(connectionString, AdomdType.AnalysisServices);
+            // clear the caches again in case anything re-populated them from the previous connection
+            // while we were publishing the ConnectionOpenedEvent
+            ClearConnectionCaches();
 
             
             if (message.AccessToken.IsNotNull())
@@ -1401,6 +1412,29 @@ namespace DaxStudio.Core.Connections
                 return _supportedTraceEventClasses;
 
             }
+        }
+
+        // The set of trace events and the columns that each event supports varies between engine
+        // versions (eg. SSAS 2025 removed the ApplicationName column from the VertiPaqSEQuery* events)
+        // so the cached values must be discarded whenever we connect to a different server, otherwise
+        // we can request columns which are not valid for the current engine.
+        public void ClearSupportedTraceEventClasses()
+        {
+            lock (_supportedTraceEventClassesLock)
+            {
+                _supportedTraceEventClasses = null;
+            }
+        }
+
+        // Discards all the metadata that is cached for the lifetime of this ConnectionManager, but which
+        // is specific to the server that we are connected to. A ConnectionManager is created once per
+        // document and is re-used every time that document connects to a different server.
+        private void ClearConnectionCaches()
+        {
+            ClearSupportedTraceEventClasses();
+            // these are built from _dmvConnection which gets replaced when we connect
+            _dynamicManagementViews = null;
+            _functionGroups = null;
         }
 
         private Dictionary<DaxStudioTraceEventClass,HashSet<TOM.TraceColumn>> PopulateSupportedTraceEventClasses()
