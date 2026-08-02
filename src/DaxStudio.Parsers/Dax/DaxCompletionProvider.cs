@@ -90,13 +90,15 @@ namespace DaxStudio.Parsers.Dax
             {
                 if (cleanPartial == null || table.Name.StartsWith(cleanPartial, StringComparison.OrdinalIgnoreCase))
                 {
-                    // Use the pre-computed DaxName (unquoted when the name doesn't require quoting) so a
-                    // table that doesn't need quotes is offered - and inserted - without them. The opening
-                    // quote the user typed to trigger the list is removed when a non-quoted name is chosen.
+                    // The list shows the plain (display) name, while the text inserted into the editor
+                    // uses the pre-computed DaxName - unquoted when the name doesn't require quoting. The
+                    // opening quote the user typed to trigger the list is removed when a non-quoted name
+                    // is chosen.
                     items.Add(new CompletionItem(
-                        FormatTableName(table),
+                        table.Name,
                         CompletionItemKind.Table,
-                        table.Description));
+                        table.Description,
+                        FormatTableName(table)));
                 }
             }
 
@@ -109,9 +111,10 @@ namespace DaxStudio.Parsers.Dax
                     if (cleanPartial == null || c.Name.StartsWith(cleanPartial, StringComparison.OrdinalIgnoreCase))
                     {
                         items.Add(new CompletionItem(
-                            $"'{c.Name}'",
+                            c.Name,
                             CompletionItemKind.Calendar,
-                            $"Calendar from {c.TableName}"));
+                            $"Calendar from {c.TableName}",
+                            $"'{c.Name}'"));
                     }
                 }
             }
@@ -129,9 +132,10 @@ namespace DaxStudio.Parsers.Dax
             foreach (var col in columns)
             {
                 items.Add(new CompletionItem(
-                    $"[{col.Name}]",
+                    col.Name,
                     CompletionItemKind.Column,
-                    $"{col.DataType} - {col.Description}"));
+                    $"{col.DataType} - {col.Description}",
+                    $"[{col.Name}]"));
             }
             return items;
         }
@@ -152,9 +156,10 @@ namespace DaxStudio.Parsers.Dax
                     if (cleanPartial == null || col.Name.StartsWith(cleanPartial, StringComparison.OrdinalIgnoreCase))
                     {
                         items.Add(new CompletionItem(
-                            $"[{col.Name}]",
+                            col.Name,
                             CompletionItemKind.Column,
-                            $"{col.DataType} - {col.Description}"));
+                            $"{col.DataType} - {col.Description}",
+                            $"[{col.Name}]"));
                     }
                 }
                 return items;
@@ -167,9 +172,10 @@ namespace DaxStudio.Parsers.Dax
                 if (cleanPartial == null || m.Name.StartsWith(cleanPartial, StringComparison.OrdinalIgnoreCase))
                 {
                     items.Add(new CompletionItem(
-                        $"[{m.Name}]",
+                        m.Name,
                         CompletionItemKind.Measure,
-                        m.Description));
+                        m.Description,
+                        $"[{m.Name}]"));
                 }
             }
 
@@ -198,14 +204,14 @@ namespace DaxStudio.Parsers.Dax
             var tables = _metadata.GetTables();
             foreach (var t in tables)
             {
-                items.Add(new CompletionItem(FormatTableName(t), CompletionItemKind.Table, t.Description));
+                items.Add(new CompletionItem(t.Name, CompletionItemKind.Table, t.Description, FormatTableName(t)));
             }
 
             // Measures
             var measures = _metadata.GetMeasures();
             foreach (var m in measures)
             {
-                items.Add(new CompletionItem($"[{m.Name}]", CompletionItemKind.Measure, m.Description));
+                items.Add(new CompletionItem(m.Name, CompletionItemKind.Measure, m.Description, $"[{m.Name}]"));
             }
 
             // In-scope variables
@@ -222,7 +228,7 @@ namespace DaxStudio.Parsers.Dax
             {
                 foreach (var m in state.DefinedMeasures)
                 {
-                    items.Add(new CompletionItem($"[{m}]", CompletionItemKind.Measure, "Defined measure"));
+                    items.Add(new CompletionItem(m, CompletionItemKind.Measure, "Defined measure", $"[{m}]"));
                 }
             }
 
@@ -263,7 +269,7 @@ namespace DaxStudio.Parsers.Dax
             var tables = _metadata.GetTables();
             foreach (var t in tables)
             {
-                items.Add(new CompletionItem(FormatTableName(t), CompletionItemKind.Table, t.Description));
+                items.Add(new CompletionItem(t.Name, CompletionItemKind.Table, t.Description, FormatTableName(t)));
             }
 
             // DEFINE FUNCTION user-defined functions declared in the current query (may return a table)
@@ -334,9 +340,10 @@ namespace DaxStudio.Parsers.Dax
             foreach (var c in calendars)
             {
                 items.Add(new CompletionItem(
-                    $"'{c.Name}'",
+                    c.Name,
                     CompletionItemKind.Calendar,
-                    $"Calendar from {c.TableName}"));
+                    $"Calendar from {c.TableName}",
+                    $"'{c.Name}'"));
             }
             return items;
         }
@@ -351,9 +358,10 @@ namespace DaxStudio.Parsers.Dax
                 foreach (var col in columns)
                 {
                     items.Add(new CompletionItem(
-                        $"{FormatTableName(table)}[{col.Name}]",
+                        $"{table.Name}[{col.Name}]",
                         CompletionItemKind.Column,
-                        col.Description));
+                        col.Description,
+                        $"{FormatTableName(table)}[{col.Name}]"));
                 }
             }
             return items;
@@ -424,7 +432,9 @@ namespace DaxStudio.Parsers.Dax
     }
 
     /// <summary>
-    /// Represents a single completion suggestion.
+    /// Represents a single completion suggestion. <see cref="Label"/> is the display name shown in the
+    /// completion list (unquoted/unbracketed), while <see cref="InsertText"/> is the DAX syntax that is
+    /// inserted into the editor (e.g. <c>'Product Category'</c> or <c>[Sales Amount]</c>).
     /// </summary>
     public class CompletionItem
     {

@@ -263,6 +263,47 @@ namespace DaxStudio.Tests
             Assert.AreEqual("EVALUATE Dim1Date", doc.Text);
         }
 
+        // Regression: choosing an item from the completion list when the caret sits immediately after a
+        // separator must not consume that separator. Previously "EVALUATE |" + 'Time Intelligence'
+        // produced "EVALUATE'Time Intelligence'" which is invalid DAX.
+        [DataTestMethod]
+        [DataRow("EVALUATE ", "'Time Intelligence'", "EVALUATE 'Time Intelligence'", DisplayName = "space before a quoted table")]
+        [DataRow("EVALUATE ", "Sales", "EVALUATE Sales", DisplayName = "space before an unquoted table")]
+        [DataRow("EVALUATE FILTER(", "Sales", "EVALUATE FILTER(Sales", DisplayName = "open paren before a table")]
+        [DataRow("EVALUATE FILTER(Sales, ", "Sales", "EVALUATE FILTER(Sales, Sales", DisplayName = "comma and space before a table")]
+        public void CompletionAfterSeparator_DoesNotRemoveTheSeparator(string testLine, string completionText, string expected)
+        {
+            var mockIp = Substitute.For<IInsightProvider>();
+            var compData = new DaxCompletionData(mockIp, completionText, 1.0);
+
+            var mockDocLine = Substitute.For<IDocumentLine>();
+            mockDocLine.Length.Returns(testLine.Length);
+
+            var mockDoc = Substitute.For<IDocument>();
+            var documentText = testLine;
+            mockDoc.Text.Returns(_ => documentText);
+            mockDoc.GetLineByOffset(testLine.Length - 1).Returns(mockDocLine);
+            mockDoc.GetLocation(testLine.Length - 1).Returns(new TextLocation(0, testLine.Length));
+            mockDoc.GetText(0, testLine.Length).Returns(testLine);
+            mockDoc.TextLength.Returns(testLine.Length);
+            mockDoc.When(x => x.Replace(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string>()))
+                .Do(callInfo =>
+                {
+                    int offset = callInfo.ArgAt<int>(0);
+                    int length = callInfo.ArgAt<int>(1);
+                    documentText = documentText.Substring(0, offset)
+                        + callInfo.ArgAt<string>(2)
+                        + documentText.Substring(offset + length);
+                });
+
+            var mockSegment = Substitute.For<ISegment>();
+            mockSegment.EndOffset.Returns(testLine.Length);
+
+            compData.CompleteInternal(mockDoc, mockSegment, null);
+
+            Assert.AreEqual(expected, mockDoc.Text);
+        }
+
         [TestMethod]
         public void TestFunctionCompletion() {
             var line = "CALCULATE FILVALUES([MyColumn])";

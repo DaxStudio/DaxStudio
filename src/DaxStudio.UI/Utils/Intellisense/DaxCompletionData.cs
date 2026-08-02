@@ -282,7 +282,38 @@ _insightProvider = insightProvider;
             Log.Verbose("{class} {method} {message}", "DaxCompletionData", "GetPreceedingWordSegment", "line: " + line);
             var daxState = DaxLineParser.ParseLine(line, loc.Column, 0);
             //TODO - look ahead to see if we have a table/column/function end character that we should replace upto
-            return DaxLineParser.GetPreceedingWordSegment(docLine.Offset, loc.Column, line, daxState);
+            var segment = DaxLineParser.GetPreceedingWordSegment(docLine.Offset, loc.Column, line, daxState);
+
+            // The line parser anchors the start of the current "word" on the character that ended the
+            // previous token, so when the caret sits immediately after a separator (e.g. "EVALUATE |" or
+            // "FILTER(|") the returned segment covers that separator. Replacing it would delete the
+            // space/bracket and produce invalid syntax, so any leading non-identifier characters are
+            // skipped. Quoted/bracketed references are excluded from this as their segment deliberately
+            // starts on the opening ' or [ which the inserted text includes again.
+            switch (daxState.LineState)
+            {
+                case LineState.String:
+                case LineState.Table:
+                case LineState.TableClosed:
+                case LineState.Column:
+                case LineState.ColumnClosed:
+                case LineState.Measure:
+                case LineState.MeasureClosed:
+                case LineState.Dmv:
+                    break;
+                default:
+                    while (segment.Length > 0)
+                    {
+                        var idx = segment.Offset - docLine.Offset;
+                        if (idx < 0 || idx >= line.Length) break;
+                        if (IsIdentifierChar(line[idx])) break;
+                        segment.Offset++;
+                        segment.Length--;
+                    }
+                    break;
+            }
+
+            return segment;
 
         }
 

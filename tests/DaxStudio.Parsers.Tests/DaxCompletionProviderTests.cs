@@ -72,49 +72,63 @@ namespace DaxStudio.Parsers.Tests
         public void SimpleTableName_IsNotQuoted()
         {
             var state = new DaxState(EditState.ExpressionStart);
-            var labels = _provider.GetCompletions(state)
+            var inserts = _provider.GetCompletions(state)
                 .Where(c => c.Kind == CompletionItemKind.Table)
-                .Select(c => c.Label)
+                .Select(c => c.InsertText)
                 .ToList();
 
-            Assert.Contains("Sales", labels, "A simple table name should not be quoted");
-            CollectionAssert.DoesNotContain(labels, "'Sales'");
+            Assert.Contains("Sales", inserts, "A simple table name should not be quoted");
+            CollectionAssert.DoesNotContain(inserts, "'Sales'");
         }
 
         [TestMethod]
         public void TableNameWithSpace_IsQuoted()
         {
             var state = new DaxState(EditState.ExpressionStart);
+            var inserts = _provider.GetCompletions(state)
+                .Where(c => c.Kind == CompletionItemKind.Table)
+                .Select(c => c.InsertText)
+                .ToList();
+
+            Assert.Contains("'Product Category'", inserts, "A table name with a space should be quoted");
+        }
+
+        [TestMethod]
+        public void TableNameWithSpace_LabelIsNotQuoted()
+        {
+            // The list must show the display name - the quoting is only applied to the inserted text
+            var state = new DaxState(EditState.ExpressionStart);
             var labels = _provider.GetCompletions(state)
                 .Where(c => c.Kind == CompletionItemKind.Table)
                 .Select(c => c.Label)
                 .ToList();
 
-            Assert.Contains("'Product Category'", labels, "A table name with a space should be quoted");
+            Assert.Contains("Product Category", labels, "The label should be the unquoted display name");
+            CollectionAssert.DoesNotContain(labels, "'Product Category'");
         }
 
         [TestMethod]
         public void TableNameStartingWithDigit_IsQuoted()
         {
             var state = new DaxState(EditState.ExpressionStart);
-            var labels = _provider.GetCompletions(state)
+            var inserts = _provider.GetCompletions(state)
                 .Where(c => c.Kind == CompletionItemKind.Table)
-                .Select(c => c.Label)
+                .Select(c => c.InsertText)
                 .ToList();
 
-            Assert.Contains("'1Fact'", labels, "A table name starting with a digit should be quoted");
+            Assert.Contains("'1Fact'", inserts, "A table name starting with a digit should be quoted");
         }
 
         [TestMethod]
         public void TableName_UsesProvidedDaxName()
         {
             var state = new DaxState(EditState.ExpressionStart);
-            var labels = _provider.GetCompletions(state)
+            var inserts = _provider.GetCompletions(state)
                 .Where(c => c.Kind == CompletionItemKind.Table)
-                .Select(c => c.Label)
+                .Select(c => c.InsertText)
                 .ToList();
 
-            Assert.Contains("'Date'", labels, "When a DaxName is supplied it should be used verbatim");
+            Assert.Contains("'Date'", inserts, "When a DaxName is supplied it should be used verbatim");
         }
 
         [TestMethod]
@@ -125,14 +139,28 @@ namespace DaxStudio.Parsers.Tests
             // only quote-requiring tables (and, once more characters were typed, functions).
             var state = new DaxState(EditState.PartialTable, partialText: "'");
             var completions = _provider.GetCompletions(state);
-            var labels = completions.Select(c => c.Label).ToList();
+            var inserts = completions.Select(c => c.InsertText).ToList();
 
             Assert.IsTrue(completions.All(c => c.Kind == CompletionItemKind.Table || c.Kind == CompletionItemKind.Calendar),
                 "A partial table reference must only offer tables/calendars, never functions");
-            Assert.Contains("Sales", labels, "A table that doesn't need quotes should be offered without them");
-            Assert.Contains("'Product Category'", labels);
-            Assert.Contains("'1Fact'", labels);
-            Assert.Contains("'Date'", labels);
+            Assert.Contains("Sales", inserts, "A table that doesn't need quotes should be offered without them");
+            Assert.Contains("'Product Category'", inserts);
+            Assert.Contains("'1Fact'", inserts);
+            Assert.Contains("'Date'", inserts);
+        }
+
+        [TestMethod]
+        public void PartialTable_LabelsAreDisplayNames()
+        {
+            // Regression: the completion list showed the quoted DAX name rather than the display name
+            var state = new DaxState(EditState.PartialTable, partialText: "'");
+            var labels = _provider.GetCompletions(state).Select(c => c.Label).ToList();
+
+            Assert.Contains("Sales", labels);
+            Assert.Contains("Product Category", labels);
+            Assert.Contains("1Fact", labels);
+            Assert.Contains("Date", labels);
+            Assert.IsFalse(labels.Any(l => l.StartsWith("'")), "No label should include the quoting characters");
         }
 
         [TestMethod]
@@ -140,11 +168,11 @@ namespace DaxStudio.Parsers.Tests
         {
             // 'Sa| -> only tables whose name starts with "Sa"
             var state = new DaxState(EditState.PartialTable, partialText: "'Sa");
-            var labels = _provider.GetCompletions(state).Select(c => c.Label).ToList();
+            var inserts = _provider.GetCompletions(state).Select(c => c.InsertText).ToList();
 
-            Assert.Contains("Sales", labels);
-            CollectionAssert.DoesNotContain(labels, "'Date'");
-            CollectionAssert.DoesNotContain(labels, "'1Fact'");
+            Assert.Contains("Sales", inserts);
+            CollectionAssert.DoesNotContain(inserts, "'Date'");
+            CollectionAssert.DoesNotContain(inserts, "'1Fact'");
         }
 
         [TestMethod]
@@ -156,7 +184,7 @@ namespace DaxStudio.Parsers.Tests
 
             Assert.IsTrue(completions.All(c => c.Kind == CompletionItemKind.Column),
                 "A qualified table reference should only return columns");
-            Assert.Contains(c => c.Label == "[Amount]", completions);
+            Assert.Contains(c => c.InsertText == "[Amount]" && c.Label == "Amount", completions);
             Assert.IsFalse(completions.Any(c => c.Kind == CompletionItemKind.Measure),
                 "A qualified table reference should not return measures");
         }
@@ -181,7 +209,7 @@ namespace DaxStudio.Parsers.Tests
             var state = new DaxState(EditState.PartialColumn, partialText: "[");
             var completions = _provider.GetCompletions(state);
 
-            Assert.Contains(c => c.Kind == CompletionItemKind.Measure && c.Label == "[Total Sales]", completions);
+            Assert.Contains(c => c.Kind == CompletionItemKind.Measure && c.InsertText == "[Total Sales]" && c.Label == "Total Sales", completions);
         }
     }
 }
