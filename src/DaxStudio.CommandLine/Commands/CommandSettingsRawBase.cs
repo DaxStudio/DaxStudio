@@ -128,6 +128,9 @@ namespace DaxStudio.CommandLine.Commands
                 .SpinnerStyle(Style.Parse("green bold"))
                 .Start("Scanning for running instances of Power BI Desktop...", ctx =>
                 {
+                    // Spectre's CommandSettings.Validate() is synchronous, so we use the blocking
+                    // overload here. That is safe in the CLI host - a console app has no
+                    // SynchronizationContext to deadlock against.
                     var instances = PowerBIHelper.GetLocalInstances(false, true);
                 
                     foreach (var instance in instances)

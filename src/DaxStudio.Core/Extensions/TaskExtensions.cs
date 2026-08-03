@@ -92,12 +92,18 @@ namespace DaxStudio.Core.Extensions
         }
         public static async Task ParallelForEachAsync<T>(this IEnumerable<T> source, Func<T, Task> asyncAction, int maxDegreeOfParallelism)
         {
+            await source.ParallelForEachAsync(asyncAction, maxDegreeOfParallelism, CancellationToken.None).ConfigureAwait(false);
+        }
+
+        public static async Task ParallelForEachAsync<T>(this IEnumerable<T> source, Func<T, Task> asyncAction, int maxDegreeOfParallelism, CancellationToken cancellationToken)
+        {
             var throttler = new SemaphoreSlim(initialCount: maxDegreeOfParallelism);
             var tasks = source.Select(async item =>
             {
-                await throttler.WaitAsync();
+                await throttler.WaitAsync(cancellationToken).ConfigureAwait(false);
                 try
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
                     await asyncAction(item).ConfigureAwait(false);
                 }
                 finally
@@ -105,7 +111,10 @@ namespace DaxStudio.Core.Extensions
                     throttler.Release();
                 }
             });
-            await TaskExtensions.WhenAll(tasks.ToArray());
+            // Task.WhenAll rather than the TaskExtensions.WhenAll helper: that helper reads
+            // allTasks.Exception, which is null when the tasks were *cancelled* rather than
+            // faulted, so cancellation would surface as a meaningless generic Exception.
+            await Task.WhenAll(tasks.ToArray()).ConfigureAwait(false);
         }
     }
 }

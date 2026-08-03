@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Serilog;
 
 namespace DaxStudio.Core.Utils
@@ -14,6 +16,12 @@ namespace DaxStudio.Core.Utils
         {
             Log.Debug("{class} {method} local Power BI Desktop scan is not supported on this platform", nameof(NullPowerBIInstanceScanner), nameof(Scan));
             return new List<PowerBIInstance>();
+        }
+
+        public Task<List<PowerBIInstance>> ScanAsync(bool includePBIRS, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult(Scan(includePBIRS));
         }
     }
 }

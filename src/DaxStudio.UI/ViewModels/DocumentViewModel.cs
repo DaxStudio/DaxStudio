@@ -3380,17 +3380,11 @@ namespace DaxStudio.UI.ViewModels
         }
 
         // Finds a running local Analysis Services instance (Power BI Desktop / SSDT) whose title-bar
-        // name matches the requested instance name. The scan (PowerBIHelper.GetLocalInstances) blocks
-        // internally on async work, so it MUST run off the UI thread (via Task.Run) - otherwise the
-        // synchronous .Wait() it performs deadlocks against the captured UI SynchronizationContext.
-        // This mirrors how the connection dialog calls GetLocalInstances inside a Task.Run.
+        // name matches the requested instance name.
         private static async Task<PowerBIInstance> FindLocalInstanceAsync(string instanceName, bool refresh)
         {
-            return await Task.Run(() =>
-            {
-                var instances = PowerBIHelper.GetLocalInstances(includePBIRS: true, refreshList: refresh);
-                return instances.FirstOrDefault(i => string.Equals(i.Name, instanceName, StringComparison.OrdinalIgnoreCase));
-            });
+            var instances = await PowerBIHelper.GetLocalInstancesAsync(includePBIRS: true, refreshList: refresh, CancellationToken.None);
+            return instances.FirstOrDefault(i => string.Equals(i.Name, instanceName, StringComparison.OrdinalIgnoreCase));
         }
 
         // Launches the specified .pbix file and polls until its local Analysis Services engine
@@ -4622,7 +4616,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     await Task.Run(async () =>
                         {
-                            if (message.RefreshDatabases) RefreshConnectionFilename(message);
+                            if (message.RefreshDatabases) await RefreshConnectionFilenameAsync(message);
 
                             await SetupConnectionAsync(message);
 
@@ -4668,7 +4662,7 @@ namespace DaxStudio.UI.ViewModels
             return Task.CompletedTask;
         }
 
-        private void RefreshConnectionFilename(ConnectEvent message)
+        private async Task RefreshConnectionFilenameAsync(ConnectEvent message)
         {
             try
             {
@@ -4688,13 +4682,13 @@ namespace DaxStudio.UI.ViewModels
                     message.FileName = String.Empty;
                     return;
                 }
-                var instances = PowerBIHelper.GetLocalInstances(false,false);
+                var instances = await PowerBIHelper.GetLocalInstancesAsync(false, false, CancellationToken.None);
                 var selectedInstance = instances.FirstOrDefault(i => i.Port == port);
-                message.FileName = selectedInstance.Name;
+                message.FileName = selectedInstance?.Name ?? String.Empty;
             }
             catch (Exception ex)
             {
-                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RefreshConnectionFilename), $"Error getting Power BI Filename: {ex.Message}");
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RefreshConnectionFilenameAsync), $"Error getting Power BI Filename: {ex.Message}");
                 OutputWarning($"An error occurred while trying to get the Power BI Desktop filename:\n{ex.Message}");
             }
         }
