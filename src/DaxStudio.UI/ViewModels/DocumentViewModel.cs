@@ -3736,23 +3736,11 @@ namespace DaxStudio.UI.ViewModels
                 var sw = Stopwatch.StartNew();
                 _currentQueryDetails = CreateQueryHistoryEvent(string.Empty, string.Empty);
 
-                Connection.ClearCache();
                 OutputMessage(string.Format("Evaluating Calculation Script for Database: {0}", Connection.DatabaseName));
 
-
-                string refreshQuery;
-                if (Options.DefaultSeparator == DelimiterType.SemiColon)
-                {
-                    // switch the default delimiter on the refresh query to the semi-colon style
-                    var dsm = new DelimiterStateMachine(DelimiterType.SemiColon);
-                    refreshQuery = dsm.ProcessString(Constants.RefreshSessionQuery);
-                }
-                else
-                {
-                    refreshQuery = Constants.RefreshSessionQuery;
-                }
-
-                await ExecuteDataTableQueryAsync(refreshQuery);
+                // ClearCacheAsync also runs the session refresh query which re-evaluates
+                // the calculation script so that the global scopes are re-populated
+                await Connection.ClearCacheAsync();
 
                 sw.Stop();
                 var duration = sw.ElapsedMilliseconds;

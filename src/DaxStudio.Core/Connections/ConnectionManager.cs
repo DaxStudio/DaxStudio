@@ -794,6 +794,22 @@ namespace DaxStudio.Core.Connections
                 var db = _connection.Database;
                 db.ClearCache();
             }
+
+            RefreshSession();
+        }
+
+        public async Task ClearCacheAsync()
+        {
+            await Task.Run(() => ClearCache()).ConfigureAwait(false);
+        }
+
+        // Re-evaluates the calculation script so that the global scopes are re-populated
+        // after the cache has been cleared. This always runs against the primary connection
+        // so that any RLS context (Roles/EffectiveUserName) is applied to the session
+        private void RefreshSession()
+        {
+            Log.Verbose(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(RefreshSession), "Evaluating the calculation script to re-populate the global scopes");
+            ExecuteDaxQueryDataTable(Common.Constants.RefreshSessionQuery);
         }
         public ADOTabularModel SelectedModel { get; set; }
 
