@@ -131,7 +131,7 @@ namespace DaxStudio.UI.ViewModels
                         case DaxStudioTraceEventClass.QueryEnd:
 
                             // if this is the blank query after a "clear cache and run" then skip it
-                            if (newEvent.Query == Constants.RefreshSessionQuery) return;
+                            if (newEvent.Query?.Contains(Constants.InternalQueryHeader) ?? false) return;
 
                             // look for any cached rewrite events
                             if (traceEvent.RequestID != null && _rewriteEventCache.ContainsKey(traceEvent.RequestID))
@@ -212,7 +212,7 @@ namespace DaxStudio.UI.ViewModels
                             if (traceEvent.RequestID == null) return;
 
                             // if this is a session refresh query then skip it
-                            if (newEvent.Query == Constants.RefreshSessionQuery) return;
+                            if (newEvent.Query?.Contains(Constants.InternalQueryHeader) ?? false) return;
 
                             // cache rewrite events
                             if (_queryBeginCache.ContainsKey(traceEvent.RequestID))

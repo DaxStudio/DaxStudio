@@ -118,20 +118,16 @@ namespace DaxStudio.CommandLine.Commands
 
             // Connect — same pattern as CustomTraceCommand (lines 98-110)
             // Roles/EffectiveUserName are added to the query connection for RLS testing.
-            // ClearCache requires admin privileges, so it uses the base connection
-            // (without role impersonation) via a separate ConnectionManager.
-            string baseConnectionString = settings.FullConnectionString;
-            string queryConnectionString = baseConnectionString;
-            bool hasImpersonation = false;
+            // ClearCache requires admin privileges, so ConnectionManager internally
+            // clones a connection without the RLS parameters to clear the cache.
+            string queryConnectionString = settings.FullConnectionString;
             if (!string.IsNullOrWhiteSpace(settings.Role))
             {
                 queryConnectionString += $";Roles={settings.Role}";
-                hasImpersonation = true;
             }
             if (!string.IsNullOrWhiteSpace(settings.EffectiveUser))
             {
                 queryConnectionString += $";EffectiveUserName={settings.EffectiveUser}";
-                hasImpersonation = true;
             }
 
             var connMgr = new ConnectionManager(EventAggregator);
@@ -194,32 +190,10 @@ namespace DaxStudio.CommandLine.Commands
                     AnsiConsole.MarkupLine("[yellow]Trace unavailable[/] — wall-clock timing only");
             }
 
-            // For cache clearing with RLS impersonation: use a separate admin
-            // connection without Roles/EffectiveUserName, since ClearCache
-            // requires server admin privileges that the impersonated role lacks.
-            ConnectionManager adminConnMgr = null;
-            if (hasImpersonation && settings.ColdRuns > 0)
-            {
-                try
-                {
-                    adminConnMgr = new ConnectionManager(new Caliburn.Micro.EventAggregator());
-                    var adminEvent = new UIStubs.ConnectEvent()
-                    {
-                        ConnectionString = baseConnectionString,
-                        ApplicationName = "DAX Studio Command Line (admin)",
-                        DatabaseName = settings.Database,
-                        PowerBIFileName = settings.PowerBIFileName ?? ""
-                    };
-                    adminConnMgr.Connect(adminEvent);
-                    adminConnMgr.SelectedModel = adminConnMgr.Database.Models.BaseModel;
-                    if (!silent) AnsiConsole.MarkupLine("[dim]Admin connection for cache clear established[/]");
-                }
-                catch (Exception ex)
-                {
-                    Log.Warning("Could not create admin connection for cache clear: {message}", ex.Message);
-                    adminConnMgr = null;
-                }
-            }
+            // Cache clearing is handled by ConnectionManager.ClearCache() which
+            // internally clones the connection without Roles/EffectiveUserName when
+            // RLS impersonation is active (ClearCache requires server admin privileges)
+            // and then runs the session refresh query on the query connection.
 
             // Run benchmark
             int totalRuns = settings.ColdRuns + settings.WarmRuns;
@@ -233,8 +207,9 @@ namespace DaxStudio.CommandLine.Commands
 
                 try
                 {
-                    var clearConn = adminConnMgr ?? connMgr;
-                    clearConn.Database.ClearCache();
+                    // this also runs the session refresh query so that the calculation
+                    // script evaluation is not charged to the timed query below
+                    connMgr.ClearCache();
                 }
                 catch (Exception ex) { Log.Warning("Cache clear failed: {message}", ex.Message); }
 
@@ -268,7 +243,6 @@ namespace DaxStudio.CommandLine.Commands
             // Stop trace and close
             try { await serverTimes.StopTraceAsync(); } catch { }
             connMgr.Close();
-            adminConnMgr?.Close();
 
             if (details.Count == 0)
             {
