@@ -59,6 +59,12 @@ namespace DaxStudio.UI.ViewModels
     /// columns (child). Metrics that don't apply at a given level are left null so they render as blank
     /// cells, keeping the grid clean (e.g. columns have no file/row/V-Order/clustering information).
     /// </summary>
+    /// <remarks>
+    /// The explicit <see cref="JsonObjectAttribute"/> is required: the base <see cref="PropertyChangedBase"/>
+    /// is marked <c>[DataContract]</c> and Json.NET walks the base type chain looking for that attribute, so
+    /// without this the type would be treated as opt-in and every row would serialize as an empty "{}".
+    /// </remarks>
+    [JsonObject(MemberSerialization.OptOut)]
     public class DeltaTreeRow : PropertyChangedBase
     {
         public string Name { get; set; }
@@ -156,6 +162,18 @@ namespace DaxStudio.UI.ViewModels
 
         /// <summary>Child column rows (empty for column-level rows). Bound as the tree ChildrenBindingPath.</summary>
         public List<DeltaTreeRow> Children { get; } = new List<DeltaTreeRow>();
+
+        /// <summary>
+        /// Re-declared purely so the inherited Caliburn.Micro notification flag can be excluded from the
+        /// persisted state. Json.NET resolves <c>[JsonIgnore]</c> / <c>ShouldSerialize*</c> against the
+        /// declaring type, so the attribute has to sit on an override rather than on the base property.
+        /// </summary>
+        [JsonIgnore]
+        public override bool IsNotifying
+        {
+            get => base.IsNotifying;
+            set => base.IsNotifying = value;
+        }
 
         // Display strings - blank when the underlying value is not applicable at this level.
         [JsonIgnore] public string FileCountDisplay => FileCount?.ToString("N0") ?? string.Empty;
@@ -1509,16 +1527,40 @@ namespace DaxStudio.UI.ViewModels
 
         public string GetJson()
         {
-            var state = new DeltaAnalyzerState
+            var rows = TreeRows.ToList();
+
+            // The "Show row group details" toggle physically removes the row group node from Children, so if
+            // details are currently hidden the row group detail would be dropped from the saved file entirely
+            // (and the toggle would do nothing when the file is re-opened). Temporarily re-attach the nodes so
+            // the snapshot is complete - LoadJson re-extracts them from Children and re-applies the toggle.
+            // Children is a plain List<T>, so this raises no change notifications and the UI is unaffected.
+            var reattached = new List<DeltaTreeRow>();
+            foreach (var r in rows)
             {
-                Rows = TreeRows.ToList(),
-                SummaryText = SummaryText,
-                OverridePath = OverridePath,
-                ReadParquetFooters = ReadParquetFooters,
-                ReadColumnStats = ReadColumnStats,
-                ShowRowGroupDetails = ShowRowGroupDetails
-            };
-            return JsonConvert.SerializeObject(state, Formatting.Indented);
+                if (r.RowGroupNode != null && !r.Children.Contains(r.RowGroupNode))
+                {
+                    r.Children.Add(r.RowGroupNode);
+                    reattached.Add(r);
+                }
+            }
+
+            try
+            {
+                var state = new DeltaAnalyzerState
+                {
+                    Rows = rows,
+                    SummaryText = SummaryText,
+                    OverridePath = OverridePath,
+                    ReadParquetFooters = ReadParquetFooters,
+                    ReadColumnStats = ReadColumnStats,
+                    ShowRowGroupDetails = ShowRowGroupDetails
+                };
+                return JsonConvert.SerializeObject(state, Formatting.Indented);
+            }
+            finally
+            {
+                foreach (var r in reattached) r.Children.Remove(r.RowGroupNode);
+            }
         }
 
         public void LoadJson(string json)

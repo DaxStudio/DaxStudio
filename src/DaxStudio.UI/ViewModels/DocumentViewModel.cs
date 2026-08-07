@@ -343,7 +343,13 @@ namespace DaxStudio.UI.ViewModels
                 base.OnViewLoaded(view);
                 _editor = GetEditor();
 
-                await _eventAggregator.PublishAsync(new LoadQueryHistoryAsyncEvent());
+                // Kick off the query history load without awaiting it. The history is only needed by the
+                // Query History pane, but awaiting it here delayed the initial connection by the full load
+                // time (several seconds with a full history folder) when a server was passed on the command
+                // line. Any load failure is already logged and reported by the handler itself.
+                _ = _eventAggregator.PublishAsync(new LoadQueryHistoryAsyncEvent())
+                        .ContinueWith(t => Log.Error(t.Exception, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnViewLoaded), "Error loading the query history"),
+                                      TaskContinuationOptions.OnlyOnFaulted);
 
                 IntellisenseProvider.Editor = _editor;
                 UpdateSettings();
