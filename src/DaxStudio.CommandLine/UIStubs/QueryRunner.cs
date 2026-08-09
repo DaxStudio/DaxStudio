@@ -34,9 +34,12 @@ namespace DaxStudio.CommandLine.UIStubs
             ConnectionStringWithInitialCatalog = settings.FullConnectionString;
             _settingProvider = SettingsProviderFactory.GetSettingProvider();
             Options = new OptionsModel(EventAggregator, _settingProvider);
-            // this supports interactive Entra Auth if needed
+            Options.Initialize();
             if (AccessTokenHelper.IsAccessTokenNeeded(ConnectionStringWithInitialCatalog)) {
-            AccessToken = AccessTokenHelper.GetAccessToken(ConnectionStringWithInitialCatalog);
+                AccessToken = AccessTokenHelper.GetAccessToken(
+                    ConnectionStringWithInitialCatalog,
+                    !settings.NonInteractive,
+                    Options);
             }
         }
 

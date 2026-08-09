@@ -4,6 +4,6 @@ namespace DaxStudio.CommandLine.UIStubs
 {
     internal class HaveLastUsedUPNStub : IHaveLastUsedUPN
     {
-        public string LastUsedUPN { get; set; } = "<always prompt for a user>";
+        public string LastUsedUPN { get; set; } = string.Empty;
     }
 }

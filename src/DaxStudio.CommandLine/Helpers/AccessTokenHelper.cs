@@ -1,6 +1,7 @@
 ﻿using DaxStudio.CommandLine.UIStubs;
 using DaxStudio.Common;
 using DaxStudio.Common.Extensions;
+using DaxStudio.Common.Interfaces;
 using Microsoft.AnalysisServices.AdomdClient;
 #if NET8_0_OR_GREATER
 using AccessToken = Microsoft.AnalysisServices.AccessToken;
@@ -22,12 +23,20 @@ namespace DaxStudio.CommandLine.Helpers
 
             return true;
         }
-        public static AccessToken GetAccessToken(string connStr)
+        public static AccessToken GetAccessToken(
+            string connStr,
+            bool allowInteractive = true,
+            IHaveLastUsedUPN options = null)
         {
             GetScopeFromConnectionString(connStr, out var tokenScope,out var serverName );
             var hwnd = NativeMethods.GetConsoleWindow();
             var dataSource = new OleDbConnectionStringBuilder(connStr).DataSource;
-            var (authResult, context) = EntraIdHelper.PromptForAccountAsync(hwnd, new HaveLastUsedUPNStub(), tokenScope, dataSource).Result;
+            var (authResult, context) = EntraIdHelper.AcquireTokenForConnectionAsync(
+                hwnd,
+                options ?? new HaveLastUsedUPNStub(),
+                tokenScope,
+                dataSource,
+                allowInteractive).GetAwaiter().GetResult();
             var token = EntraIdHelper.CreateAccessToken(authResult.AccessToken, authResult.ExpiresOn, context);
             return token;
         }

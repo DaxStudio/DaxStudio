@@ -1,5 +1,6 @@
 ﻿using DaxStudio.Common;
 using DaxStudio.Common.Extensions;
+using DaxStudio.Common.Authentication;
 using DaxStudio.Common.Interfaces;
 using Microsoft.AnalysisServices.AdomdClient;
 using Microsoft.Identity.Client;
@@ -90,65 +91,46 @@ namespace DaxStudio.Common
             return Process.GetCurrentProcess().MainWindowHandle;
         }
 
-        public static async Task<AuthenticationResult> AcquireTokenAsync(IntPtr? hwnd, IHaveLastUsedUPN options, AccessTokenScope tokenScope,AccessTokenContext context)
+        public static async Task<AuthenticationResult> AcquireTokenAsync(
+            IntPtr? hwnd,
+            IHaveLastUsedUPN options,
+            AccessTokenScope tokenScope,
+            AccessTokenContext context,
+            bool allowInteractive = true)
         {
-
-            AuthenticationResult authResult = null;
-            var app = await GetPublicClientAppAsync(context);
-            IAccount firstAccount = null;
-            var accounts = await app.GetAccountsAsync();
-
-            // if the user signed-in before, try to get that account info from the cache
-            if (!string.IsNullOrEmpty(options.LastUsedUPN))
-            {
-                firstAccount = accounts.FirstOrDefault(acct => string.Equals(acct.Username, options.LastUsedUPN, StringComparison.OrdinalIgnoreCase));
-            }
-
-            // try to get the first account from the cache
-            if (firstAccount == null && string.IsNullOrEmpty(options.LastUsedUPN))
-            {
-                firstAccount = accounts.FirstOrDefault();
-            }
-
-            // otherwise, try with the Windows account
-            if (firstAccount == null)
-            {
-                firstAccount = PublicClientApplication.OperatingSystemAccount;
-            }
-            var scope = GetScope(tokenScope);
             try
             {
-                authResult = await app.AcquireTokenSilent(scope, firstAccount).ExecuteAsync();
-                options.LastUsedUPN = authResult.Account.Username;
-            }
-            catch (MsalUiRequiredException)
-            {
-                // A MsalUiRequiredException happened on AcquireTokenSilent. 
-                // This indicates you need to call AcquireTokenInteractive to acquire a token
-                Log.Warning(Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(AcquireTokenAsync), "User not found in cache, prompting user to sign-in interactively");
-
-                try
-                {
-                    authResult = await app.AcquireTokenInteractive(scope)
-                        .WithAccount(firstAccount)
-                        .WithParentActivityOrWindow(GetOwnerWindowHandle(hwnd)) // owner for the WAM sign-in dialog so it stays in front of the DAX Studio window
-                        .WithExtraQueryParameters(MicrosoftAccountOnlyQueryParameters)
-                        .WithPrompt(Prompt.SelectAccount)
-                        .ExecuteAsync();
-                    options.LastUsedUPN = authResult.Account.Username;
-                }
-                catch (MsalException msalex)
-                {
-                    Log.Error(msalex, Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(AcquireTokenAsync), "Error Acquiring Token Interactively");
-                }
+                return await AcquireTokenCoreAsync(
+                        hwnd, options, tokenScope, context, allowInteractive)
+                    .ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                Log.Error(ex, Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(AcquireTokenAsync), "Error Acquiring Token Silently");
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(EntraIdHelper),
+                    nameof(AcquireTokenAsync), "Error acquiring user token");
+                return null;
             }
+        }
 
-
-            return authResult;
+        private static async Task<AuthenticationResult> AcquireTokenCoreAsync(
+            IntPtr? hwnd,
+            IHaveLastUsedUPN options,
+            AccessTokenScope tokenScope,
+            AccessTokenContext context,
+            bool allowInteractive)
+        {
+            var app = await GetPublicClientAppAsync(context);
+            var tokenClient = new MsalEntraTokenClient(app, MicrosoftAccountOnlyQueryParameters);
+            var tokenResult = await new EntraTokenAcquirer(tokenClient)
+                .AcquireTokenAsync(
+                    options,
+                    context.Scope ?? GetScope(tokenScope),
+                    GetOwnerWindowHandle(hwnd),
+                    allowInteractive)
+                .ConfigureAwait(false);
+            context.Username = tokenResult.Username;
+            context.AccountIdentifier = tokenResult.AccountIdentifier;
+            return tokenResult.AuthenticationResult;
         }
 
         /// <summary>
@@ -317,28 +299,41 @@ namespace DaxStudio.Common
                 Scope = scope
             };
 
-            if (Log.IsEnabled(Serilog.Events.LogEventLevel.Debug))
-                Log.Debug("{class} {method} Prompting user to sign-in interactively. Authority: {authority}, ClientId: {applicationId}, DomainPostfix: {domainPostfix}, TenantId: {tenantId} Scope: {@scope}",
-                            nameof(EntraIdHelper), nameof(PromptForAccountAsync), authInfo.Authority, authInfo.ApplicationId, authInfo.DomainPostfix, tenantId, scope);
-
             var app = await GetPublicClientAppAsync(context);
+            var tokenClient = new MsalEntraTokenClient(app, MicrosoftAccountOnlyQueryParameters);
+            var tokenResult = await tokenClient
+                .AcquireTokenInteractiveAsync(scope, null, GetOwnerWindowHandle(hwnd))
+                .ConfigureAwait(false);
+            options.LastUsedUPN = tokenResult.Username;
+            context.Username = tokenResult.Username;
+            context.AccountIdentifier = tokenResult.AccountIdentifier;
+            return (tokenResult.AuthenticationResult, context);
+        }
 
-            try
+        public static async Task<(AuthenticationResult, AccessTokenContext)> AcquireTokenForConnectionAsync(
+            IntPtr? hwnd,
+            IHaveLastUsedUPN options,
+            AccessTokenScope tokenScope,
+            string serverName,
+            bool allowInteractive)
+        {
+            IEnumerable<string> scope = GetScope(tokenScope);
+            var tenantId = GetTenantIdFromServerName(serverName);
+            var authInfo = GetAuthenticationInformationFromUri(new Uri(serverName));
+            if (!string.IsNullOrEmpty(authInfo.ResourceId))
+                scope = authInfo.GetDefaultScopes();
+
+            var context = new AccessTokenContext
             {
-                var authResult = await app.AcquireTokenInteractive(scope)
-                            .WithParentActivityOrWindow(GetOwnerWindowHandle(hwnd)) // owner for the WAM sign-in dialog so it stays in front of the DAX Studio window
-                            .WithExtraQueryParameters(MicrosoftAccountOnlyQueryParameters)
-                            .WithPrompt(Prompt.SelectAccount)
-                            .ExecuteAsync();
-                options.LastUsedUPN = authResult.Account.Username;
-                context.Username = authResult.Account.Username;
-                return (authResult, context);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(PromptForAccountAsync), "Error getting user token interactively");
-                throw;
-            }
+                TokenScope = tokenScope,
+                TenantId = tenantId,
+                DomainPostfix = authInfo.DomainPostfix,
+                Scope = scope
+            };
+            var authResult = await AcquireTokenCoreAsync(
+                    hwnd, options, tokenScope, context, allowInteractive)
+                .ConfigureAwait(false);
+            return (authResult, context);
         }
 
         internal static AuthenticationInformationRecord GetAuthenticationInformationFromUri(Uri serverName)
@@ -604,51 +599,16 @@ namespace DaxStudio.Common
         {
             var lastUpn = (token.UserContext?.Username) ?? string.Empty;
 
-            AuthenticationResult authResult = null;
             var app = await GetPublicClientAppAsync(token.UserContext);
-            IAccount firstAccount = null;
-            var accounts = await app.GetAccountsAsync();
-
-            // if the user signed-in before, try to get that account info from the cache
-            if (!string.IsNullOrEmpty(lastUpn))
-            {
-                firstAccount = accounts.FirstOrDefault(acct => string.Equals(acct.Username, lastUpn, StringComparison.OrdinalIgnoreCase));
-            }
-
             var scope = token.UserContext.Scope;
-
-            try
-            {
-                if (firstAccount == null) throw new MsalUiRequiredException("UserNotFoundInCache", "User not found in cache");
-                authResult = await app.AcquireTokenSilent(scope, firstAccount).ExecuteAsync().ConfigureAwait(false);
-
-            }
-            catch (MsalUiRequiredException)
-            {
-                Log.Warning(Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(RefreshTokenInternalAsync), "User not found in cache, prompting user to sign-in interactively");
-
-                try
-                {
-                    authResult = await app.AcquireTokenInteractive(scope)
-                        .WithAccount(firstAccount)
-                        .WithParentActivityOrWindow(GetOwnerWindowHandle(null)) // owner for the WAM sign-in dialog so it stays in front of the DAX Studio window
-                        .WithExtraQueryParameters(MicrosoftAccountOnlyQueryParameters)
-                        .WithPrompt(Prompt.SelectAccount)
-                        .ExecuteAsync().ConfigureAwait(false);
-
-                }
-                catch (MsalException msalex)
-                {
-                    Log.Error(msalex, Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(RefreshTokenInternalAsync), "Error Acquiring Token Interactively");
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(RefreshTokenInternalAsync), "Error Acquiring Token Silently");
-            }
-
-            // TODO - not sure if this is the correct way to refresh the token
-            return authResult;
+            var tokenClient = new MsalEntraTokenClient(app, MicrosoftAccountOnlyQueryParameters);
+            var tokenResult = await new EntraTokenAcquirer(tokenClient)
+                .RefreshTokenAsync(
+                    lastUpn,
+                    token.UserContext.AccountIdentifier,
+                    scope)
+                .ConfigureAwait(false);
+            return tokenResult.AuthenticationResult;
         }
 
         private static string[] GetScope(TokenDetails tokenDetails)

@@ -38,7 +38,7 @@ namespace DaxStudio.CommandLine
             // A type registrar is an adapter for a DI framework.
             var registrations = new ServiceCollection();
             registrations.AddSingleton<IEventAggregator, EventAggregator>();
-            registrations.AddSingleton<IGlobalOptions, OptionsModel>();
+            registrations.AddSingleton<IGlobalOptions>(Options);
             registrations.AddSingleton<ISettingProvider>(settingProvider);
             var registrar = new TypeRegistrar(registrations);
             var verboseLogging = IsVerbose(args);

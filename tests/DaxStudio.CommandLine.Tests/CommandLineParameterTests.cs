@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DaxStudio.CommandLine.Commands;
+using DaxStudio.CommandLine.Interfaces;
 using Spectre.Console.Cli;
 using System.Data.OleDb;
 
@@ -103,6 +104,17 @@ namespace DaxStudio.CommandLine.Tests
             var validationResult = settings.Validate();
             Assert.IsTrue(validationResult.Successful, validationResult.Message);
             Assert.IsNull(validationResult.Message);
+        }
+
+        [TestMethod]
+        public void Non_interactive_option_is_exposed_to_authentication_callers()
+        {
+            ISettingsConnection settings = new BenchmarkCommand.Settings
+            {
+                NonInteractive = true
+            };
+
+            Assert.IsTrue(settings.NonInteractive);
         }
 
         [TestMethod]
@@ -244,5 +256,4 @@ namespace DaxStudio.CommandLine.Tests
 
     }
 }
-
 
