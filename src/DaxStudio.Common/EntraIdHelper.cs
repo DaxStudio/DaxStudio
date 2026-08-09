@@ -36,6 +36,11 @@ namespace DaxStudio.Common
 {
     public static class EntraIdHelper
     {
+        private const string BootstrapInteractionRequiredMessage =
+            "Authentication requires user interaction. Run once without --non-interactive to bootstrap the cached sign-in.";
+        private const string RenewalInteractionRequiredMessage =
+            "Access-token renewal requires user interaction and cannot continue unattended.";
+
         internal interface ISilentTokenClient
         {
             IAccount OperatingSystemAccount { get; }
@@ -435,27 +440,35 @@ namespace DaxStudio.Common
             AccessTokenContext context,
             ISilentTokenClient client)
         {
-            var accounts = (await client.GetAccountsAsync().ConfigureAwait(false)).ToArray();
-            IAccount account;
-            if (!string.IsNullOrEmpty(options?.LastUsedUPN))
-            {
-                account = accounts.FirstOrDefault(candidate =>
-                    string.Equals(
-                        candidate.Username,
-                        options.LastUsedUPN,
-                        StringComparison.OrdinalIgnoreCase));
-                if (account == null)
-                    throw CreateInteractionRequiredException(
-                        "Authentication requires user interaction. Run once without --non-interactive to bootstrap the cached sign-in.");
-            }
-            else
-            {
-                account = accounts.FirstOrDefault() ?? client.OperatingSystemAccount;
-            }
+            var authResult = await AcquireTokenSilentOnlyAsync(
+                    options?.LastUsedUPN,
+                    null,
+                    scope,
+                    context,
+                    client,
+                    BootstrapInteractionRequiredMessage)
+                .ConfigureAwait(false);
+            if (options != null)
+                options.LastUsedUPN = context.Username;
+            return authResult;
+        }
 
+        private static async Task<AuthenticationResult> AcquireTokenSilentOnlyAsync(
+            string username,
+            string accountIdentifier,
+            IEnumerable<string> scope,
+            AccessTokenContext context,
+            ISilentTokenClient client,
+            string interactionRequiredMessage)
+        {
+            var accounts = (await client.GetAccountsAsync().ConfigureAwait(false)).ToArray();
+            var account = SelectAccount(
+                accounts,
+                username,
+                accountIdentifier,
+                client.OperatingSystemAccount);
             if (account == null)
-                throw CreateInteractionRequiredException(
-                    "Authentication requires user interaction. Run once without --non-interactive to bootstrap the cached sign-in.");
+                throw new InvalidOperationException(interactionRequiredMessage);
 
             try
             {
@@ -465,23 +478,41 @@ namespace DaxStudio.Common
                 context.AccountIdentifier =
                     authResult.Account?.HomeAccountId?.Identifier
                     ?? account.HomeAccountId?.Identifier;
-                if (options != null)
-                    options.LastUsedUPN = context.Username;
                 return authResult;
             }
             catch (MsalUiRequiredException exception)
             {
-                throw CreateInteractionRequiredException(
-                    "Authentication requires user interaction. Run once without --non-interactive to bootstrap the cached sign-in.",
+                throw new InvalidOperationException(
+                    interactionRequiredMessage,
                     exception);
             }
         }
 
-        private static InvalidOperationException CreateInteractionRequiredException(
-            string message,
-            Exception innerException = null)
+        private static IAccount SelectAccount(
+            IEnumerable<IAccount> accounts,
+            string username,
+            string accountIdentifier,
+            IAccount defaultAccount)
         {
-            return new InvalidOperationException(message, innerException);
+            if (!string.IsNullOrEmpty(accountIdentifier))
+            {
+                return accounts.FirstOrDefault(candidate =>
+                    string.Equals(
+                        candidate.HomeAccountId?.Identifier,
+                        accountIdentifier,
+                        StringComparison.Ordinal));
+            }
+
+            if (!string.IsNullOrEmpty(username))
+            {
+                return accounts.FirstOrDefault(candidate =>
+                    string.Equals(
+                        candidate.Username,
+                        username,
+                        StringComparison.OrdinalIgnoreCase));
+            }
+
+            return accounts.FirstOrDefault() ?? defaultAccount;
         }
 
         internal static AuthenticationInformationRecord GetAuthenticationInformationFromUri(Uri serverName)
@@ -807,43 +838,17 @@ namespace DaxStudio.Common
             return context?.RenewalMode == EntraTokenAcquisitionMode.SilentOnly;
         }
 
-        internal static async Task<AuthenticationResult> RefreshTokenSilentOnlyAsync(
+        internal static Task<AuthenticationResult> RefreshTokenSilentOnlyAsync(
             AccessTokenContext context,
             ISilentTokenClient client)
         {
-            var accounts = (await client.GetAccountsAsync().ConfigureAwait(false)).ToArray();
-            var account = !string.IsNullOrEmpty(context.AccountIdentifier)
-                ? accounts.FirstOrDefault(candidate =>
-                    string.Equals(
-                        candidate.HomeAccountId?.Identifier,
-                        context.AccountIdentifier,
-                        StringComparison.Ordinal))
-                : accounts.FirstOrDefault(candidate =>
-                    string.Equals(
-                        candidate.Username,
-                        context.Username,
-                        StringComparison.OrdinalIgnoreCase));
-
-            if (account == null)
-                throw CreateInteractionRequiredException(
-                    "Access-token renewal requires user interaction and cannot continue unattended.");
-
-            try
-            {
-                var authResult = await client.AcquireTokenSilentAsync(context.Scope, account)
-                    .ConfigureAwait(false);
-                context.Username = authResult.Account?.Username ?? account.Username;
-                context.AccountIdentifier =
-                    authResult.Account?.HomeAccountId?.Identifier
-                    ?? account.HomeAccountId?.Identifier;
-                return authResult;
-            }
-            catch (MsalUiRequiredException exception)
-            {
-                throw CreateInteractionRequiredException(
-                    "Access-token renewal requires user interaction and cannot continue unattended.",
-                    exception);
-            }
+            return AcquireTokenSilentOnlyAsync(
+                context.Username,
+                context.AccountIdentifier,
+                context.Scope,
+                context,
+                client,
+                RenewalInteractionRequiredMessage);
         }
 
         private static string[] GetScope(TokenDetails tokenDetails)
