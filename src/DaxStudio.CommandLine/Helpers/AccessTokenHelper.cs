@@ -27,22 +27,35 @@ namespace DaxStudio.CommandLine.Helpers
             string connStr,
             IHaveLastUsedUPN options = null)
         {
-            GetScopeFromConnectionString(connStr, out var tokenScope,out var serverName );
+            return GetAccessToken(
+                connStr,
+                EntraTokenAcquisitionMode.SilentThenInteractive,
+                options);
+        }
+
+        internal static AccessToken GetAccessToken(
+            string connStr,
+            EntraTokenAcquisitionMode interactionMode,
+            IHaveLastUsedUPN options = null)
+        {
+            GetScopeFromConnectionString(connStr, out var tokenScope);
             var hwnd = NativeMethods.GetConsoleWindow();
             var dataSource = new OleDbConnectionStringBuilder(connStr).DataSource;
             var (authResult, context) = EntraIdHelper.AcquireTokenForConnectionAsync(
                 hwnd,
                 options ?? new HaveLastUsedUPNStub(),
                 tokenScope,
-                dataSource).GetAwaiter().GetResult();
-            var token = EntraIdHelper.CreateAccessToken(authResult.AccessToken, authResult.ExpiresOn, context);
-            return token;
+                dataSource,
+                interactionMode).GetAwaiter().GetResult();
+            return EntraIdHelper.CreateAccessToken(
+                authResult.AccessToken,
+                authResult.ExpiresOn,
+                context);
         }
 
-        private static void GetScopeFromConnectionString(string connStr, out AccessTokenScope tokenScope, out string serverName)
+        private static void GetScopeFromConnectionString(string connStr, out AccessTokenScope tokenScope)
         {
             var builder = new OleDbConnectionStringBuilder(connStr);
-            serverName = builder.DataSource;
             if (builder.DataSource.IsAsAzure())
             {
                 tokenScope = AccessTokenScope.AsAzure;

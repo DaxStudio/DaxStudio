@@ -15,11 +15,19 @@ namespace DaxStudio.Common
         Storage = 2,
     }
 
+    internal enum EntraTokenAcquisitionMode
+    {
+        SilentThenInteractive = 0,
+        SilentOnly = 1,
+    }
+
     public class AccessTokenContext
     {
         public string Username { get; set; }
+        internal string AccountIdentifier { get; set; }
         [JsonConverter(typeof(StringEnumConverter))]
         public AccessTokenScope TokenScope { get; set; }
+        internal EntraTokenAcquisitionMode RenewalMode { get; set; }
         public string TenantId { get; set; }
         public string DomainPostfix { get; set; }
         public IEnumerable<string> Scope { get; set; }

@@ -2,6 +2,7 @@ using Caliburn.Micro;
 using DaxStudio.CommandLine.Helpers;
 using DaxStudio.CommandLine.UIStubs;
 using DaxStudio.CommandLine.ViewModel;
+using DaxStudio.Common;
 using DaxStudio.Interfaces;
 using DaxStudio.QueryTrace;
 using DaxStudio.QueryTrace.Interfaces;
@@ -130,6 +131,9 @@ namespace DaxStudio.CommandLine.Commands
             {
                 accessToken = AccessTokenHelper.GetAccessToken(
                     baseConnectionString,
+                    settings.NonInteractive
+                        ? EntraTokenAcquisitionMode.SilentOnly
+                        : EntraTokenAcquisitionMode.SilentThenInteractive,
                     Options);
             }
 

@@ -36,6 +36,37 @@ namespace DaxStudio.Common
 {
     public static class EntraIdHelper
     {
+        internal interface ISilentTokenClient
+        {
+            IAccount OperatingSystemAccount { get; }
+            Task<IEnumerable<IAccount>> GetAccountsAsync();
+            Task<AuthenticationResult> AcquireTokenSilentAsync(
+                IEnumerable<string> scope, IAccount account);
+        }
+
+        private sealed class MsalSilentTokenClient : ISilentTokenClient
+        {
+            private readonly IPublicClientApplication _application;
+
+            public MsalSilentTokenClient(IPublicClientApplication application)
+            {
+                _application = application;
+            }
+
+            public IAccount OperatingSystemAccount => PublicClientApplication.OperatingSystemAccount;
+
+            public Task<IEnumerable<IAccount>> GetAccountsAsync()
+            {
+                return _application.GetAccountsAsync();
+            }
+
+            public Task<AuthenticationResult> AcquireTokenSilentAsync(
+                IEnumerable<string> scope, IAccount account)
+            {
+                return _application.AcquireTokenSilent(scope, account)
+                    .ExecuteAsync();
+            }
+        }
 
         // Dictionary form required by the non-obsolete MSAL WithExtraQueryParameters overload.
         // The bool indicates whether the parameter should be included in the token cache key.
@@ -341,11 +372,26 @@ namespace DaxStudio.Common
             }
         }
 
-        public static async Task<(AuthenticationResult, AccessTokenContext)> AcquireTokenForConnectionAsync(
+        public static Task<(AuthenticationResult, AccessTokenContext)> AcquireTokenForConnectionAsync(
             IntPtr? hwnd,
             IHaveLastUsedUPN options,
             AccessTokenScope tokenScope,
             string serverName)
+        {
+            return AcquireTokenForConnectionAsync(
+                hwnd,
+                options,
+                tokenScope,
+                serverName,
+                EntraTokenAcquisitionMode.SilentThenInteractive);
+        }
+
+        internal static async Task<(AuthenticationResult, AccessTokenContext)> AcquireTokenForConnectionAsync(
+            IntPtr? hwnd,
+            IHaveLastUsedUPN options,
+            AccessTokenScope tokenScope,
+            string serverName,
+            EntraTokenAcquisitionMode acquisitionMode)
         {
             IEnumerable<string> scope = GetScope(tokenScope);
             var tenantId = GetTenantIdFromServerName(serverName);
@@ -358,13 +404,84 @@ namespace DaxStudio.Common
                 TokenScope = tokenScope,
                 TenantId = tenantId,
                 DomainPostfix = authInfo.DomainPostfix,
-                Scope = scope
+                Scope = scope,
+                RenewalMode = acquisitionMode
             };
-            var authResult = await AcquireTokenAsync(
-                    hwnd, options, tokenScope, context)
-                .ConfigureAwait(false);
+            AuthenticationResult authResult;
+            if (acquisitionMode == EntraTokenAcquisitionMode.SilentOnly)
+            {
+                var app = await GetPublicClientAppAsync(context).ConfigureAwait(false);
+                authResult = await AcquireTokenSilentOnlyAsync(
+                        options,
+                        scope,
+                        context,
+                        new MsalSilentTokenClient(app))
+                    .ConfigureAwait(false);
+            }
+            else
+            {
+                authResult = await AcquireTokenAsync(
+                        hwnd, options, tokenScope, context)
+                    .ConfigureAwait(false);
+            }
+
             context.Username = authResult?.Account?.Username ?? options.LastUsedUPN;
             return (authResult, context);
+        }
+
+        internal static async Task<AuthenticationResult> AcquireTokenSilentOnlyAsync(
+            IHaveLastUsedUPN options,
+            IEnumerable<string> scope,
+            AccessTokenContext context,
+            ISilentTokenClient client)
+        {
+            var accounts = (await client.GetAccountsAsync().ConfigureAwait(false)).ToArray();
+            IAccount account;
+            if (!string.IsNullOrEmpty(options?.LastUsedUPN))
+            {
+                account = accounts.FirstOrDefault(candidate =>
+                    string.Equals(
+                        candidate.Username,
+                        options.LastUsedUPN,
+                        StringComparison.OrdinalIgnoreCase));
+                if (account == null)
+                    throw CreateInteractionRequiredException(
+                        "Authentication requires user interaction. Run once without --non-interactive to bootstrap the cached sign-in.");
+            }
+            else
+            {
+                account = accounts.FirstOrDefault() ?? client.OperatingSystemAccount;
+            }
+
+            if (account == null)
+                throw CreateInteractionRequiredException(
+                    "Authentication requires user interaction. Run once without --non-interactive to bootstrap the cached sign-in.");
+
+            try
+            {
+                var authResult = await client.AcquireTokenSilentAsync(scope, account)
+                    .ConfigureAwait(false);
+                context.Username = authResult.Account?.Username ?? account.Username;
+                context.AccountIdentifier =
+                    authResult.Account?.HomeAccountId?.Identifier
+                    ?? account.HomeAccountId?.Identifier;
+                if (options != null)
+                    options.LastUsedUPN = context.Username;
+                return authResult;
+            }
+            catch (MsalUiRequiredException exception)
+            {
+                throw CreateInteractionRequiredException(
+                    "Authentication requires user interaction. Run once without --non-interactive to bootstrap the cached sign-in.",
+                    exception);
+            }
+        }
+
+        private static InvalidOperationException CreateInteractionRequiredException(
+            string message,
+            Exception innerException = null)
+        {
+            return new InvalidOperationException(message, innerException);
         }
 
         internal static AuthenticationInformationRecord GetAuthenticationInformationFromUri(Uri serverName)
@@ -632,6 +749,14 @@ namespace DaxStudio.Common
 
             AuthenticationResult authResult = null;
             var app = await GetPublicClientAppAsync(token.UserContext);
+            if (IsSilentOnlyRenewal(token.UserContext))
+            {
+                return await RefreshTokenSilentOnlyAsync(
+                        token.UserContext,
+                        new MsalSilentTokenClient(app))
+                    .ConfigureAwait(false);
+            }
+
             IAccount firstAccount = null;
             var accounts = await app.GetAccountsAsync();
 
@@ -675,6 +800,50 @@ namespace DaxStudio.Common
 
             // TODO - not sure if this is the correct way to refresh the token
             return authResult;
+        }
+
+        internal static bool IsSilentOnlyRenewal(AccessTokenContext context)
+        {
+            return context?.RenewalMode == EntraTokenAcquisitionMode.SilentOnly;
+        }
+
+        internal static async Task<AuthenticationResult> RefreshTokenSilentOnlyAsync(
+            AccessTokenContext context,
+            ISilentTokenClient client)
+        {
+            var accounts = (await client.GetAccountsAsync().ConfigureAwait(false)).ToArray();
+            var account = !string.IsNullOrEmpty(context.AccountIdentifier)
+                ? accounts.FirstOrDefault(candidate =>
+                    string.Equals(
+                        candidate.HomeAccountId?.Identifier,
+                        context.AccountIdentifier,
+                        StringComparison.Ordinal))
+                : accounts.FirstOrDefault(candidate =>
+                    string.Equals(
+                        candidate.Username,
+                        context.Username,
+                        StringComparison.OrdinalIgnoreCase));
+
+            if (account == null)
+                throw CreateInteractionRequiredException(
+                    "Access-token renewal requires user interaction and cannot continue unattended.");
+
+            try
+            {
+                var authResult = await client.AcquireTokenSilentAsync(context.Scope, account)
+                    .ConfigureAwait(false);
+                context.Username = authResult.Account?.Username ?? account.Username;
+                context.AccountIdentifier =
+                    authResult.Account?.HomeAccountId?.Identifier
+                    ?? account.HomeAccountId?.Identifier;
+                return authResult;
+            }
+            catch (MsalUiRequiredException exception)
+            {
+                throw CreateInteractionRequiredException(
+                    "Access-token renewal requires user interaction and cannot continue unattended.",
+                    exception);
+            }
         }
 
         private static string[] GetScope(TokenDetails tokenDetails)

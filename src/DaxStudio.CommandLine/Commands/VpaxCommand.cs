@@ -9,6 +9,7 @@ using DaxStudio.CommandLine.Infrastructure;
 using Dax.Metadata;
 using DaxStudio.CommandLine.Attributes;
 using DaxStudio.CommandLine.Helpers;
+using DaxStudio.Common;
 using DaxStudio.Interfaces;
 using System.Threading;
 
@@ -103,6 +104,9 @@ namespace DaxStudio.CommandLine.Commands
                     if (AccessTokenHelper.IsAccessTokenNeeded(connStr)) {
                         var token = AccessTokenHelper.GetAccessToken(
                             connStr,
+                            settings.NonInteractive
+                                ? EntraTokenAcquisitionMode.SilentOnly
+                                : EntraTokenAcquisitionMode.SilentThenInteractive,
                             Options);
                         connStr = $"{connStr};Password={token.Token}";
                     }

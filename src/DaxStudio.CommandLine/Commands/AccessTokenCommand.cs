@@ -1,4 +1,5 @@
 ﻿using DaxStudio.CommandLine.Helpers;
+using DaxStudio.Common;
 using DaxStudio.Interfaces;
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -30,6 +31,9 @@ namespace DaxStudio.CommandLine.Commands
         {            
             var accessToken = AccessTokenHelper.GetAccessToken(
                 settings.FullConnectionString,
+                settings.NonInteractive
+                    ? EntraTokenAcquisitionMode.SilentOnly
+                    : EntraTokenAcquisitionMode.SilentThenInteractive,
                 _options);
             Console.Write(accessToken.Token);
             return 0;
