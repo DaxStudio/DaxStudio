@@ -29,14 +29,21 @@ namespace DaxStudio.CommandLine.UIStubs
         private ISettingProvider _settingProvider;
 
         public QueryRunner(ISettingsConnection settings)
+            : this(settings, SettingsProviderFactory.GetSettingProvider())
+        {
+        }
+
+        internal QueryRunner(ISettingsConnection settings, ISettingProvider settingProvider)
         {
 
             ConnectionStringWithInitialCatalog = settings.FullConnectionString;
-            _settingProvider = SettingsProviderFactory.GetSettingProvider();
+            _settingProvider = settingProvider;
             Options = new OptionsModel(EventAggregator, _settingProvider);
-            // this supports interactive Entra Auth if needed
+            Options.Initialize();
             if (AccessTokenHelper.IsAccessTokenNeeded(ConnectionStringWithInitialCatalog)) {
-            AccessToken = AccessTokenHelper.GetAccessToken(ConnectionStringWithInitialCatalog);
+                AccessToken = AccessTokenHelper.GetAccessToken(
+                    ConnectionStringWithInitialCatalog,
+                    Options);
             }
         }
 

@@ -32,5 +32,20 @@ namespace DaxStudio.Tests
                 Assert.AreEqual(testCase.Value.Item2, record.ApplicationId,"ApplicationId mismatch");
             }
         }
+
+        [TestMethod]
+        public void StorageScopeIgnoresConnectionSpecificContextScope()
+        {
+            var context = new AccessTokenContext
+            {
+                Scope = new[] { "https://analysis.windows.net/powerbi/api/.default" }
+            };
+
+            var scope = EntraIdHelper.GetScope(AccessTokenScope.Storage, context).ToArray();
+
+            CollectionAssert.AreEqual(
+                new[] { "https://storage.azure.com/.default" },
+                scope);
+        }
     }
 }

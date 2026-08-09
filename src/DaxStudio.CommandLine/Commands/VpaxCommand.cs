@@ -9,6 +9,7 @@ using DaxStudio.CommandLine.Infrastructure;
 using Dax.Metadata;
 using DaxStudio.CommandLine.Attributes;
 using DaxStudio.CommandLine.Helpers;
+using DaxStudio.Interfaces;
 using System.Threading;
 
 
@@ -17,6 +18,7 @@ namespace DaxStudio.CommandLine.Commands
     internal class VpaxCommand : Command<VpaxCommand.Settings>
     {
         public IEventAggregator EventAggregator { get; }
+        public IGlobalOptions Options { get; }
 
         // todo - cannot pass in connectionstring as vpax library does not support it
         internal class Settings : CommandSettingsFileBase
@@ -71,9 +73,10 @@ namespace DaxStudio.CommandLine.Commands
 
         }
         
-        public VpaxCommand(IEventAggregator eventAggregator)
+        public VpaxCommand(IEventAggregator eventAggregator, IGlobalOptions options = null)
         {
             EventAggregator = eventAggregator;
+            Options = options;
         }
 
         public ValidationResult Validate(CommandContext context, CommandSettings settings)
@@ -98,7 +101,9 @@ namespace DaxStudio.CommandLine.Commands
 
                     // if requires Entra Auth add the AccessToken to the connection string
                     if (AccessTokenHelper.IsAccessTokenNeeded(connStr)) {
-                        var token = AccessTokenHelper.GetAccessToken(connStr);
+                        var token = AccessTokenHelper.GetAccessToken(
+                            connStr,
+                            Options);
                         connStr = $"{connStr};Password={token.Token}";
                     }
 

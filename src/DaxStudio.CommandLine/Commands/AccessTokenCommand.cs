@@ -1,4 +1,5 @@
 ﻿using DaxStudio.CommandLine.Helpers;
+using DaxStudio.Interfaces;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using System;
@@ -8,9 +9,16 @@ namespace DaxStudio.CommandLine.Commands
 {
     internal class AccessTokenCommand : Command<AccessTokenCommand.Settings>
     {
+        private readonly IGlobalOptions _options;
+
         internal class Settings : CommandSettingsRawBase
         {
             // No specific settings for this command
+        }
+
+        public AccessTokenCommand(IGlobalOptions options = null)
+        {
+            _options = options;
         }
 
         protected override ValidationResult Validate(CommandContext context, Settings settings)
@@ -20,7 +28,9 @@ namespace DaxStudio.CommandLine.Commands
         }
         protected override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
         {            
-            var accessToken = AccessTokenHelper.GetAccessToken(settings.FullConnectionString);
+            var accessToken = AccessTokenHelper.GetAccessToken(
+                settings.FullConnectionString,
+                _options);
             Console.Write(accessToken.Token);
             return 0;
         }

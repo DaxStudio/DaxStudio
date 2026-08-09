@@ -1,5 +1,8 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DaxStudio.CommandLine.Commands;
+using DaxStudio.CommandLine.UIStubs;
+using DaxStudio.Interfaces;
+using NSubstitute;
 using Spectre.Console.Cli;
 using System.Data.OleDb;
 
@@ -103,6 +106,36 @@ namespace DaxStudio.CommandLine.Tests
             var validationResult = settings.Validate();
             Assert.IsTrue(validationResult.Successful, validationResult.Message);
             Assert.IsNull(validationResult.Message);
+        }
+
+        [TestMethod]
+        public void Cli_account_selection_does_not_force_an_interactive_prompt()
+        {
+            var options = new HaveLastUsedUPNStub();
+
+            Assert.AreEqual(string.Empty, options.LastUsedUPN);
+        }
+
+        [TestMethod]
+        public void Query_runner_initializes_and_persists_cli_account_selection()
+        {
+            var settings = new FileCommand.Settings
+            {
+                Server = "localhost",
+                Database = "Model"
+            };
+            var settingProvider = Substitute.For<ISettingProvider>();
+
+            var runner = new QueryRunner(settings, settingProvider);
+            runner.Options.LastUsedUPN = "selected@example.com";
+
+            settingProvider.Received(1).Initialize(runner.Options);
+            settingProvider.Received(1).SetValue(
+                nameof(runner.Options.LastUsedUPN),
+                "selected@example.com",
+                false,
+                runner.Options,
+                nameof(runner.Options.LastUsedUPN));
         }
 
         [TestMethod]
@@ -244,5 +277,3 @@ namespace DaxStudio.CommandLine.Tests
 
     }
 }
-
-

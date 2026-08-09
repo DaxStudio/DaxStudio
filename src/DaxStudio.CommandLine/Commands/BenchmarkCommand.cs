@@ -1,4 +1,5 @@
 using Caliburn.Micro;
+using DaxStudio.CommandLine.Helpers;
 using DaxStudio.CommandLine.UIStubs;
 using DaxStudio.CommandLine.ViewModel;
 using DaxStudio.Interfaces;
@@ -21,7 +22,9 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using DaxStudio.Core.Interfaces;
+#if NET8_0_OR_GREATER
+using AccessToken = Microsoft.AnalysisServices.AccessToken;
+#endif
 
 namespace DaxStudio.CommandLine.Commands
 {
@@ -122,6 +125,14 @@ namespace DaxStudio.CommandLine.Commands
             // (without role impersonation) via a separate ConnectionManager.
             string baseConnectionString = settings.FullConnectionString;
             string queryConnectionString = baseConnectionString;
+            var accessToken = default(AccessToken);
+            if (AccessTokenHelper.IsAccessTokenNeeded(baseConnectionString))
+            {
+                accessToken = AccessTokenHelper.GetAccessToken(
+                    baseConnectionString,
+                    Options);
+            }
+
             bool hasImpersonation = false;
             if (!string.IsNullOrWhiteSpace(settings.Role))
             {
@@ -135,13 +146,8 @@ namespace DaxStudio.CommandLine.Commands
             }
 
             var connMgr = new ConnectionManager(EventAggregator);
-            var connEvent = new UIStubs.ConnectEvent()
-            {
-                ConnectionString = queryConnectionString,
-                ApplicationName = "DAX Studio Command Line",
-                DatabaseName = settings.Database,
-                PowerBIFileName = settings.PowerBIFileName ?? ""
-            };
+            var connEvent = CreateConnectEvent(
+                settings, queryConnectionString, "DAX Studio Command Line", accessToken);
 
             try
             {
@@ -203,13 +209,8 @@ namespace DaxStudio.CommandLine.Commands
                 try
                 {
                     adminConnMgr = new ConnectionManager(new Caliburn.Micro.EventAggregator());
-                    var adminEvent = new UIStubs.ConnectEvent()
-                    {
-                        ConnectionString = baseConnectionString,
-                        ApplicationName = "DAX Studio Command Line (admin)",
-                        DatabaseName = settings.Database,
-                        PowerBIFileName = settings.PowerBIFileName ?? ""
-                    };
+                    var adminEvent = CreateConnectEvent(
+                        settings, baseConnectionString, "DAX Studio Command Line (admin)", accessToken);
                     adminConnMgr.Connect(adminEvent);
                     adminConnMgr.SelectedModel = adminConnMgr.Database.Models.BaseModel;
                     if (!silent) AnsiConsole.MarkupLine("[dim]Admin connection for cache clear established[/]");
@@ -283,6 +284,19 @@ namespace DaxStudio.CommandLine.Commands
 
             Log.Information("Finished Benchmark command");
             return 0;
+        }
+
+        internal static UIStubs.ConnectEvent CreateConnectEvent(
+            Settings settings, string connectionString, string applicationName, AccessToken accessToken)
+        {
+            return new UIStubs.ConnectEvent
+            {
+                ConnectionString = connectionString,
+                ApplicationName = applicationName,
+                DatabaseName = settings.Database,
+                PowerBIFileName = settings.PowerBIFileName ?? string.Empty,
+                AccessToken = accessToken
+            };
         }
 
         private static BenchmarkResult ExecuteTimedQuery(
