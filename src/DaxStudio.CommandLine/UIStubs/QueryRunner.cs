@@ -38,7 +38,6 @@ namespace DaxStudio.CommandLine.UIStubs
             if (AccessTokenHelper.IsAccessTokenNeeded(ConnectionStringWithInitialCatalog)) {
                 AccessToken = AccessTokenHelper.GetAccessToken(
                     ConnectionStringWithInitialCatalog,
-                    !settings.NonInteractive,
                     Options);
             }
         }

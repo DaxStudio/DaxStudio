@@ -20,28 +20,15 @@ namespace DaxStudio.Tests
         {
             var account = CreateAccount("user@example.com");
             var client = CreateClient(account);
-            var calls = new List<string>();
-            client.AcquireTokenSilentAsync(Arg.Any<IEnumerable<string>>(), account)
-                .Returns(_ =>
-                {
-                    calls.Add("silent");
-                    return Task.FromResult(CreateResult(account.Username));
-                });
-            client.AcquireTokenInteractiveAsync(
-                    Arg.Any<IEnumerable<string>>(), Arg.Any<IAccount>(), Arg.Any<IntPtr>())
-                .Returns(_ =>
-                {
-                    calls.Add("interactive");
-                    return Task.FromResult(CreateResult(account.Username));
-                });
+            client.SilentResult = (_, __) => Task.FromResult(CreateResult(account.Username));
+            client.InteractiveResult = (_, __, ___) => Task.FromResult(CreateResult(account.Username));
 
-            var options = Substitute.For<IHaveLastUsedUPN>();
-            options.LastUsedUPN.Returns(account.Username);
+            var options = new LastUsedUpnOptions { LastUsedUPN = account.Username };
             var result = await new EntraTokenAcquirer(client).AcquireTokenAsync(
-                options, Scopes, IntPtr.Zero, allowInteractive: true);
+                options, Scopes, IntPtr.Zero);
 
             Assert.AreEqual(account.Username, result.Username);
-            CollectionAssert.AreEqual(new[] { "silent" }, calls);
+            CollectionAssert.AreEqual(new[] { "silent" }, client.Calls);
         }
 
         [TestMethod]
@@ -49,44 +36,16 @@ namespace DaxStudio.Tests
         {
             var account = CreateAccount("user@example.com");
             var client = CreateClient(account);
-            var calls = new List<string>();
-            client.AcquireTokenSilentAsync(Arg.Any<IEnumerable<string>>(), account)
-                .Returns(Task.FromException<EntraTokenResult>(
-                    new MsalUiRequiredException("cache_miss", "No cached token is available.")));
-            client.When(candidate => candidate.AcquireTokenSilentAsync(
-                    Arg.Any<IEnumerable<string>>(), account))
-                .Do(_ => calls.Add("silent"));
-            client.AcquireTokenInteractiveAsync(
-                    Arg.Any<IEnumerable<string>>(), account, Arg.Any<IntPtr>())
-                .Returns(_ =>
-                {
-                    calls.Add("interactive");
-                    return Task.FromResult(CreateResult(account.Username));
-                });
+            client.SilentResult = (_, __) => Task.FromException<EntraTokenResult>(
+                new MsalUiRequiredException("cache_miss", "No cached token is available."));
+            client.InteractiveResult = (_, __, ___) =>
+                Task.FromResult(CreateResult(account.Username));
 
             var result = await new EntraTokenAcquirer(client).AcquireTokenAsync(
-                Substitute.For<IHaveLastUsedUPN>(), Scopes, IntPtr.Zero, allowInteractive: true);
+                new LastUsedUpnOptions(), Scopes, IntPtr.Zero);
 
             Assert.AreEqual(account.Username, result.Username);
-            CollectionAssert.AreEqual(new[] { "silent", "interactive" }, calls);
-        }
-
-        [TestMethod]
-        public async Task AcquireToken_non_interactive_cache_miss_fails_without_opening_ui()
-        {
-            var account = CreateAccount("user@example.com");
-            var client = CreateClient(account);
-            client.AcquireTokenSilentAsync(Arg.Any<IEnumerable<string>>(), account)
-                .Returns<Task<EntraTokenResult>>(_ =>
-                    throw new MsalUiRequiredException("cache_miss", "No cached token is available."));
-
-            var exception = await AssertThrowsAsync<EntraInteractionRequiredException>(
-                () => new EntraTokenAcquirer(client).AcquireTokenAsync(
-                    Substitute.For<IHaveLastUsedUPN>(), Scopes, IntPtr.Zero, allowInteractive: false));
-
-            StringAssert.Contains(exception.Message, "Run once without --non-interactive");
-            await client.DidNotReceive().AcquireTokenInteractiveAsync(
-                Arg.Any<IEnumerable<string>>(), Arg.Any<IAccount>(), Arg.Any<IntPtr>());
+            CollectionAssert.AreEqual(new[] { "silent", "interactive" }, client.Calls);
         }
 
         [TestMethod]
@@ -96,131 +55,73 @@ namespace DaxStudio.Tests
             var selectedAccount = CreateAccount("selected@example.com");
             var selectedUsername = selectedAccount.Username;
             var client = CreateClient(otherAccount, selectedAccount);
-            client.AcquireTokenSilentAsync(Arg.Any<IEnumerable<string>>(), selectedAccount)
-                .Returns(Task.FromResult(CreateResult(selectedUsername)));
-            var options = Substitute.For<IHaveLastUsedUPN>();
-            options.LastUsedUPN.Returns(selectedUsername);
+            client.SilentResult = (_, __) => Task.FromResult(CreateResult(selectedUsername));
+            var options = new LastUsedUpnOptions { LastUsedUPN = selectedUsername };
 
             await new EntraTokenAcquirer(client).AcquireTokenAsync(
-                options, Scopes, IntPtr.Zero, allowInteractive: false);
+                options, Scopes, IntPtr.Zero);
 
-            await client.Received(1).AcquireTokenSilentAsync(
-                Arg.Any<IEnumerable<string>>(), selectedAccount);
+            Assert.AreSame(selectedAccount, client.SilentAccounts.Single());
+            Assert.AreEqual(selectedUsername, options.LastUsedUPN);
         }
 
-        [TestMethod]
-        public async Task AcquireToken_non_interactive_does_not_switch_to_another_cached_account()
+        private static FakeEntraTokenClient CreateClient(params IAccount[] accounts)
         {
-            var otherAccount = CreateAccount("other@example.com");
-            var otherUsername = otherAccount.Username;
-            var client = CreateClient(otherAccount);
-            client.AcquireTokenSilentAsync(Arg.Any<IEnumerable<string>>(), otherAccount)
-                .Returns(Task.FromResult(CreateResult(otherUsername)));
-            var options = Substitute.For<IHaveLastUsedUPN>();
-            options.LastUsedUPN.Returns("missing@example.com");
-
-            await AssertThrowsAsync<EntraInteractionRequiredException>(
-                () => new EntraTokenAcquirer(client).AcquireTokenAsync(
-                    options, Scopes, IntPtr.Zero, allowInteractive: false));
-
-            await client.DidNotReceive().AcquireTokenSilentAsync(
-                Arg.Any<IEnumerable<string>>(), otherAccount);
+            return new FakeEntraTokenClient(accounts);
         }
 
-        [TestMethod]
-        public async Task RefreshToken_cache_miss_fails_without_opening_ui()
-        {
-            var account = CreateAccount("user@example.com");
-            var client = CreateClient(account);
-            client.AcquireTokenSilentAsync(Arg.Any<IEnumerable<string>>(), account)
-                .Returns<Task<EntraTokenResult>>(_ =>
-                    throw new MsalUiRequiredException("cache_miss", "No cached token is available."));
-
-            var exception = await AssertThrowsAsync<EntraInteractionRequiredException>(
-                () => new EntraTokenAcquirer(client).RefreshTokenAsync(
-                    account.Username, account.HomeAccountId.Identifier, Scopes));
-
-            StringAssert.Contains(exception.Message, "renewal requires user interaction");
-            await client.DidNotReceive().AcquireTokenInteractiveAsync(
-                Arg.Any<IEnumerable<string>>(), Arg.Any<IAccount>(), Arg.Any<IntPtr>());
-        }
-
-        [TestMethod]
-        public async Task RefreshToken_does_not_switch_to_another_cached_account()
-        {
-            var otherAccount = CreateAccount("other@example.com");
-            var otherUsername = otherAccount.Username;
-            var client = CreateClient(otherAccount);
-            client.AcquireTokenSilentAsync(Arg.Any<IEnumerable<string>>(), otherAccount)
-                .Returns(Task.FromResult(CreateResult(otherUsername)));
-
-            await AssertThrowsAsync<EntraInteractionRequiredException>(
-                () => new EntraTokenAcquirer(client).RefreshTokenAsync(
-                    "missing@example.com", "missing-account-id", Scopes));
-
-            await client.DidNotReceive().AcquireTokenSilentAsync(
-                Arg.Any<IEnumerable<string>>(), otherAccount);
-        }
-
-        [TestMethod]
-        public async Task RefreshToken_selects_the_exact_home_account_identifier()
-        {
-            var firstAccount = CreateAccount("shared@example.com", "account-1");
-            var selectedAccount = CreateAccount("shared@example.com", "account-2");
-            var selectedUsername = selectedAccount.Username;
-            var selectedAccountIdentifier = selectedAccount.HomeAccountId.Identifier;
-            var client = CreateClient(firstAccount, selectedAccount);
-            client.AcquireTokenSilentAsync(Arg.Any<IEnumerable<string>>(), selectedAccount)
-                .Returns(Task.FromResult(CreateResult(
-                    selectedUsername, selectedAccountIdentifier)));
-
-            await new EntraTokenAcquirer(client).RefreshTokenAsync(
-                selectedUsername,
-                selectedAccountIdentifier,
-                Scopes);
-
-            await client.Received(1).AcquireTokenSilentAsync(
-                Arg.Any<IEnumerable<string>>(), selectedAccount);
-            await client.DidNotReceive().AcquireTokenSilentAsync(
-                Arg.Any<IEnumerable<string>>(), firstAccount);
-        }
-
-        private static IEntraTokenClient CreateClient(params IAccount[] accounts)
-        {
-            var client = Substitute.For<IEntraTokenClient>();
-            client.GetAccountsAsync().Returns(Task.FromResult(accounts.AsEnumerable()));
-            client.OperatingSystemAccount.Returns(accounts.FirstOrDefault());
-            return client;
-        }
-
-        private static IAccount CreateAccount(string username, string accountIdentifier = null)
+        private static IAccount CreateAccount(string username)
         {
             var account = Substitute.For<IAccount>();
             account.Username.Returns(username);
-            account.HomeAccountId.Returns(new AccountId(accountIdentifier ?? username));
             return account;
         }
 
-        private static EntraTokenResult CreateResult(
-            string username, string accountIdentifier = null)
+        private static EntraTokenResult CreateResult(string username)
         {
-            return new EntraTokenResult(null, username, accountIdentifier);
+            return new EntraTokenResult(null, username);
         }
 
-        private static async Task<TException> AssertThrowsAsync<TException>(Func<Task> action)
-            where TException : Exception
+        private sealed class LastUsedUpnOptions : IHaveLastUsedUPN
         {
-            try
+            public string LastUsedUPN { get; set; }
+        }
+
+        private sealed class FakeEntraTokenClient : IEntraTokenClient
+        {
+            private readonly IEnumerable<IAccount> _accounts;
+
+            public FakeEntraTokenClient(IEnumerable<IAccount> accounts)
             {
-                await action();
-            }
-            catch (TException exception)
-            {
-                return exception;
+                _accounts = accounts;
+                OperatingSystemAccount = accounts.FirstOrDefault();
             }
 
-            Assert.Fail($"Expected exception of type {typeof(TException).Name}.");
-            return null;
+            public IAccount OperatingSystemAccount { get; }
+            public List<string> Calls { get; } = new List<string>();
+            public List<IAccount> SilentAccounts { get; } = new List<IAccount>();
+            public Func<IEnumerable<string>, IAccount, Task<EntraTokenResult>> SilentResult { get; set; }
+            public Func<IEnumerable<string>, IAccount, IntPtr, Task<EntraTokenResult>> InteractiveResult { get; set; }
+
+            public Task<IEnumerable<IAccount>> GetAccountsAsync()
+            {
+                return Task.FromResult(_accounts);
+            }
+
+            public Task<EntraTokenResult> AcquireTokenSilentAsync(
+                IEnumerable<string> scopes, IAccount account)
+            {
+                Calls.Add("silent");
+                SilentAccounts.Add(account);
+                return SilentResult(scopes, account);
+            }
+
+            public Task<EntraTokenResult> AcquireTokenInteractiveAsync(
+                IEnumerable<string> scopes, IAccount account, IntPtr ownerWindow)
+            {
+                Calls.Add("interactive");
+                return InteractiveResult(scopes, account, ownerWindow);
+            }
         }
     }
 }

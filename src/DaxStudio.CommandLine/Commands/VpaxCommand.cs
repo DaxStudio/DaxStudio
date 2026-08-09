@@ -103,7 +103,6 @@ namespace DaxStudio.CommandLine.Commands
                     if (AccessTokenHelper.IsAccessTokenNeeded(connStr)) {
                         var token = AccessTokenHelper.GetAccessToken(
                             connStr,
-                            !settings.NonInteractive,
                             Options);
                         connStr = $"{connStr};Password={token.Token}";
                     }

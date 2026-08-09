@@ -25,7 +25,6 @@ namespace DaxStudio.CommandLine.Helpers
         }
         public static AccessToken GetAccessToken(
             string connStr,
-            bool allowInteractive = true,
             IHaveLastUsedUPN options = null)
         {
             GetScopeFromConnectionString(connStr, out var tokenScope,out var serverName );
@@ -35,8 +34,7 @@ namespace DaxStudio.CommandLine.Helpers
                 hwnd,
                 options ?? new HaveLastUsedUPNStub(),
                 tokenScope,
-                dataSource,
-                allowInteractive).GetAwaiter().GetResult();
+                dataSource).GetAwaiter().GetResult();
             var token = EntraIdHelper.CreateAccessToken(authResult.AccessToken, authResult.ExpiresOn, context);
             return token;
         }

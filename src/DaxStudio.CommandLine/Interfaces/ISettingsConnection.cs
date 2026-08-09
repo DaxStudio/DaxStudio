@@ -3,6 +3,5 @@
     internal interface ISettingsConnection
     {
         string FullConnectionString { get; }
-        bool NonInteractive { get; }
     }
 }

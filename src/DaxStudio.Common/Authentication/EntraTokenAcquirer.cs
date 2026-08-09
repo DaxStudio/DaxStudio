@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace DaxStudio.Common.Authentication
 {
-    public interface IEntraTokenClient
+    internal interface IEntraTokenClient
     {
         IAccount OperatingSystemAccount { get; }
         Task<IEnumerable<IAccount>> GetAccountsAsync();
@@ -16,32 +16,21 @@ namespace DaxStudio.Common.Authentication
             IEnumerable<string> scopes, IAccount account, IntPtr ownerWindow);
     }
 
-    public sealed class EntraTokenResult
+    internal sealed class EntraTokenResult
     {
         public EntraTokenResult(
             AuthenticationResult authenticationResult,
-            string username,
-            string accountIdentifier)
+            string username)
         {
             AuthenticationResult = authenticationResult;
             Username = username;
-            AccountIdentifier = accountIdentifier;
         }
 
         public AuthenticationResult AuthenticationResult { get; }
         public string Username { get; }
-        public string AccountIdentifier { get; }
     }
 
-    public sealed class EntraInteractionRequiredException : InvalidOperationException
-    {
-        public EntraInteractionRequiredException(string message, Exception innerException)
-            : base(message, innerException)
-        {
-        }
-    }
-
-    public sealed class EntraTokenAcquirer
+    internal sealed class EntraTokenAcquirer
     {
         private readonly IEntraTokenClient _client;
 
@@ -53,19 +42,12 @@ namespace DaxStudio.Common.Authentication
         public async Task<EntraTokenResult> AcquireTokenAsync(
             IHaveLastUsedUPN options,
             IEnumerable<string> scopes,
-            IntPtr ownerWindow,
-            bool allowInteractive)
+            IntPtr ownerWindow)
         {
-            var account = await SelectAccountAsync(options?.LastUsedUPN, null).ConfigureAwait(false);
+            var account = await SelectAccountAsync(options?.LastUsedUPN).ConfigureAwait(false);
             EntraTokenResult result;
             if (account == null)
             {
-                var exception = new MsalUiRequiredException(
-                    "remembered_account_not_found",
-                    "The remembered account is not available in the token cache.");
-                if (!allowInteractive)
-                    throw CreateBootstrapRequiredException(exception);
-
                 result = await _client.AcquireTokenInteractiveAsync(scopes, null, ownerWindow)
                     .ConfigureAwait(false);
             }
@@ -76,11 +58,8 @@ namespace DaxStudio.Common.Authentication
                     result = await _client.AcquireTokenSilentAsync(scopes, account)
                         .ConfigureAwait(false);
                 }
-                catch (MsalUiRequiredException exception)
+                catch (MsalUiRequiredException)
                 {
-                    if (!allowInteractive)
-                        throw CreateBootstrapRequiredException(exception);
-
                     result = await _client.AcquireTokenInteractiveAsync(scopes, account, ownerWindow)
                         .ConfigureAwait(false);
                 }
@@ -91,43 +70,9 @@ namespace DaxStudio.Common.Authentication
             return result;
         }
 
-        public async Task<EntraTokenResult> RefreshTokenAsync(
-            string username,
-            string accountIdentifier,
-            IEnumerable<string> scopes)
-        {
-            var account = await SelectAccountAsync(username, accountIdentifier).ConfigureAwait(false);
-            if (account == null)
-            {
-                throw CreateRenewalInteractionRequiredException(
-                    new MsalUiRequiredException(
-                        "token_account_not_found",
-                        "The token account is not available in the token cache."));
-            }
-
-            try
-            {
-                return await _client.AcquireTokenSilentAsync(scopes, account).ConfigureAwait(false);
-            }
-            catch (MsalUiRequiredException exception)
-            {
-                throw CreateRenewalInteractionRequiredException(exception);
-            }
-        }
-
-        private async Task<IAccount> SelectAccountAsync(
-            string username, string accountIdentifier)
+        private async Task<IAccount> SelectAccountAsync(string username)
         {
             var accounts = (await _client.GetAccountsAsync().ConfigureAwait(false)).ToArray();
-            if (!string.IsNullOrEmpty(accountIdentifier))
-            {
-                return accounts.FirstOrDefault(candidate =>
-                    string.Equals(
-                        candidate.HomeAccountId?.Identifier,
-                        accountIdentifier,
-                        StringComparison.Ordinal));
-            }
-
             if (!string.IsNullOrEmpty(username))
             {
                 return accounts.FirstOrDefault(candidate =>
@@ -136,22 +81,6 @@ namespace DaxStudio.Common.Authentication
 
             var account = accounts.FirstOrDefault();
             return account ?? _client.OperatingSystemAccount;
-        }
-
-        private static EntraInteractionRequiredException CreateBootstrapRequiredException(
-            MsalUiRequiredException innerException)
-        {
-            return new EntraInteractionRequiredException(
-                "Authentication requires user interaction. Run once without --non-interactive to bootstrap the cached sign-in.",
-                innerException);
-        }
-
-        private static EntraInteractionRequiredException CreateRenewalInteractionRequiredException(
-            MsalUiRequiredException innerException)
-        {
-            return new EntraInteractionRequiredException(
-                "Access-token renewal requires user interaction and cannot continue unattended.",
-                innerException);
         }
     }
 
@@ -183,8 +112,7 @@ namespace DaxStudio.Common.Authentication
                 .ConfigureAwait(false);
             return new EntraTokenResult(
                 result,
-                result.Account?.Username,
-                result.Account?.HomeAccountId?.Identifier);
+                result.Account?.Username);
         }
 
         public async Task<EntraTokenResult> AcquireTokenInteractiveAsync(
@@ -199,8 +127,7 @@ namespace DaxStudio.Common.Authentication
                 .ConfigureAwait(false);
             return new EntraTokenResult(
                 result,
-                result.Account?.Username,
-                result.Account?.HomeAccountId?.Identifier);
+                result.Account?.Username);
         }
     }
 }

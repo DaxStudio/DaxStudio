@@ -130,7 +130,6 @@ namespace DaxStudio.CommandLine.Commands
             {
                 accessToken = AccessTokenHelper.GetAccessToken(
                     baseConnectionString,
-                    !settings.NonInteractive,
                     Options);
             }
 
