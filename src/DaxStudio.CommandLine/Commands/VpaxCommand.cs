@@ -104,9 +104,7 @@ namespace DaxStudio.CommandLine.Commands
                     if (AccessTokenHelper.IsAccessTokenNeeded(connStr)) {
                         var token = AccessTokenHelper.GetAccessToken(
                             connStr,
-                            settings.NonInteractive
-                                ? EntraTokenAcquisitionMode.SilentOnly
-                                : EntraTokenAcquisitionMode.SilentThenInteractive,
+                            AccessTokenHelper.GetAcquisitionMode(settings),
                             Options);
                         connStr = $"{connStr};Password={token.Token}";
                     }

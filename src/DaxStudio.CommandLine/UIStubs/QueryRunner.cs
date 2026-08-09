@@ -40,14 +40,10 @@ namespace DaxStudio.CommandLine.UIStubs
             _settingProvider = settingProvider;
             Options = new OptionsModel(EventAggregator, _settingProvider);
             Options.Initialize();
-            if (AccessTokenHelper.IsAccessTokenNeeded(ConnectionStringWithInitialCatalog)) {
-                AccessToken = AccessTokenHelper.GetAccessToken(
+            AccessToken = AccessTokenHelper.GetAccessTokenIfNeeded(
                     ConnectionStringWithInitialCatalog,
-                    settings.NonInteractive
-                        ? EntraTokenAcquisitionMode.SilentOnly
-                        : EntraTokenAcquisitionMode.SilentThenInteractive,
+                    settings,
                     Options);
-            }
         }
 
 

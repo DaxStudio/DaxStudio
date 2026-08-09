@@ -1,4 +1,5 @@
 ﻿using DaxStudio.CommandLine.UIStubs;
+using DaxStudio.CommandLine.Interfaces;
 using DaxStudio.Common;
 using DaxStudio.Common.Extensions;
 using DaxStudio.Common.Interfaces;
@@ -55,12 +56,26 @@ namespace DaxStudio.CommandLine.Helpers
 
         internal static AccessToken GetAccessTokenIfNeeded(
             string connStr,
-            EntraTokenAcquisitionMode interactionMode,
+            ISettingsConnection settings,
             IHaveLastUsedUPN options = null)
         {
             return IsAccessTokenNeeded(connStr)
-                ? GetAccessToken(connStr, interactionMode, options)
+                ? GetAccessToken(connStr, GetAcquisitionMode(settings), options)
                 : default;
+        }
+
+        internal static EntraTokenAcquisitionMode GetAcquisitionMode(
+            ISettingsConnection settings)
+        {
+            return UsesSilentOnlyAuthentication(settings)
+                ? EntraTokenAcquisitionMode.SilentOnly
+                : EntraTokenAcquisitionMode.SilentThenInteractive;
+        }
+
+        internal static bool UsesSilentOnlyAuthentication(
+            ISettingsConnection settings)
+        {
+            return settings.NonInteractive;
         }
 
         private static void GetScopeFromConnectionString(string connStr, out AccessTokenScope tokenScope)

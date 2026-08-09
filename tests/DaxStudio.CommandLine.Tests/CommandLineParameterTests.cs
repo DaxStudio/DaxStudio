@@ -1,6 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DaxStudio.CommandLine.Commands;
-using DaxStudio.CommandLine.Interfaces;
+using DaxStudio.CommandLine.Helpers;
 using DaxStudio.CommandLine.UIStubs;
 using DaxStudio.Interfaces;
 using NSubstitute;
@@ -110,14 +110,52 @@ namespace DaxStudio.CommandLine.Tests
         }
 
         [TestMethod]
-        public void Non_interactive_option_is_exposed_to_authentication_callers()
+        public void Non_interactive_routes_all_registered_commands_to_silent_only_authentication()
         {
-            ISettingsConnection settings = new BenchmarkCommand.Settings
+            var settings = new CommandSettingsRawBase[]
             {
-                NonInteractive = true
+                new ExportSqlCommand.Settings(),
+                new ExportCsvCommand.Settings(),
+                new ExportParquetCommand.Settings(),
+                new FileCommand.Settings(),
+                new XlsxCommand.Settings(),
+                new VpaxCommand.Settings(),
+                new AccessTokenCommand.Settings(),
+                new BenchmarkCommand.Settings(),
+                new CustomTraceCommand.Settings(),
             };
 
-            Assert.IsTrue(settings.NonInteractive);
+            foreach (var commandSettings in settings)
+            {
+                commandSettings.NonInteractive = true;
+                Assert.IsTrue(
+                    AccessTokenHelper.UsesSilentOnlyAuthentication(commandSettings),
+                    commandSettings.GetType().Name);
+            }
+        }
+
+        [TestMethod]
+        public void Default_routes_all_registered_commands_to_interactive_fallback_authentication()
+        {
+            var settings = new CommandSettingsRawBase[]
+            {
+                new ExportSqlCommand.Settings(),
+                new ExportCsvCommand.Settings(),
+                new ExportParquetCommand.Settings(),
+                new FileCommand.Settings(),
+                new XlsxCommand.Settings(),
+                new VpaxCommand.Settings(),
+                new AccessTokenCommand.Settings(),
+                new BenchmarkCommand.Settings(),
+                new CustomTraceCommand.Settings(),
+            };
+
+            foreach (var commandSettings in settings)
+            {
+                Assert.IsFalse(
+                    AccessTokenHelper.UsesSilentOnlyAuthentication(commandSettings),
+                    commandSettings.GetType().Name);
+            }
         }
 
         [TestMethod]

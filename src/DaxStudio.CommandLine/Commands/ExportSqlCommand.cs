@@ -97,9 +97,7 @@ namespace DaxStudio.CommandLine.Commands
                             DatabaseName = settings.Database,
                             AccessToken = AccessTokenHelper.GetAccessTokenIfNeeded(
                                 settings.FullConnectionString,
-                                settings.NonInteractive
-                                    ? EntraTokenAcquisitionMode.SilentOnly
-                                    : EntraTokenAcquisitionMode.SilentThenInteractive,
+                                settings,
                                 Options)
                         };
                         connMgr.Connect(connEvent);

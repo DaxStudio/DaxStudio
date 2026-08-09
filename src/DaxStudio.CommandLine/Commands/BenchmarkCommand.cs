@@ -131,9 +131,7 @@ namespace DaxStudio.CommandLine.Commands
             {
                 accessToken = AccessTokenHelper.GetAccessToken(
                     baseConnectionString,
-                    settings.NonInteractive
-                        ? EntraTokenAcquisitionMode.SilentOnly
-                        : EntraTokenAcquisitionMode.SilentThenInteractive,
+                    AccessTokenHelper.GetAcquisitionMode(settings),
                     Options);
             }
 

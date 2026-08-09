@@ -31,9 +31,7 @@ namespace DaxStudio.CommandLine.Commands
         {            
             var accessToken = AccessTokenHelper.GetAccessToken(
                 settings.FullConnectionString,
-                settings.NonInteractive
-                    ? EntraTokenAcquisitionMode.SilentOnly
-                    : EntraTokenAcquisitionMode.SilentThenInteractive,
+                AccessTokenHelper.GetAcquisitionMode(settings),
                 _options);
             Console.Write(accessToken.Token);
             return 0;
