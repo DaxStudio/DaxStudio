@@ -53,6 +53,16 @@ namespace DaxStudio.CommandLine.Helpers
                 context);
         }
 
+        internal static AccessToken GetAccessTokenIfNeeded(
+            string connStr,
+            EntraTokenAcquisitionMode interactionMode,
+            IHaveLastUsedUPN options = null)
+        {
+            return IsAccessTokenNeeded(connStr)
+                ? GetAccessToken(connStr, interactionMode, options)
+                : default;
+        }
+
         private static void GetScopeFromConnectionString(string connStr, out AccessTokenScope tokenScope)
         {
             var builder = new OleDbConnectionStringBuilder(connStr);
