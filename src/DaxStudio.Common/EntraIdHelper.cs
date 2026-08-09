@@ -1,6 +1,5 @@
 ﻿using DaxStudio.Common;
 using DaxStudio.Common.Extensions;
-using DaxStudio.Common.Authentication;
 using DaxStudio.Common.Interfaces;
 using Microsoft.AnalysisServices.AdomdClient;
 using Microsoft.Identity.Client;
@@ -116,7 +115,7 @@ namespace DaxStudio.Common
             {
                 firstAccount = PublicClientApplication.OperatingSystemAccount;
             }
-            var scope = GetScope(tokenScope);
+            var scope = GetScope(tokenScope, context);
             try
             {
                 authResult = await app.AcquireTokenSilent(scope, firstAccount).ExecuteAsync();
@@ -150,24 +149,6 @@ namespace DaxStudio.Common
 
 
             return authResult;
-        }
-
-        private static async Task<AuthenticationResult> AcquireTokenCoreAsync(
-            IntPtr? hwnd,
-            IHaveLastUsedUPN options,
-            AccessTokenScope tokenScope,
-            AccessTokenContext context)
-        {
-            var app = await GetPublicClientAppAsync(context);
-            var tokenClient = new MsalEntraTokenClient(app, MicrosoftAccountOnlyQueryParameters);
-            var tokenResult = await new EntraTokenAcquirer(tokenClient)
-                .AcquireTokenAsync(
-                    options,
-                    context.Scope ?? GetScope(tokenScope),
-                    GetOwnerWindowHandle(hwnd))
-                .ConfigureAwait(false);
-            context.Username = tokenResult.Username;
-            return tokenResult.AuthenticationResult;
         }
 
         /// <summary>
@@ -379,9 +360,10 @@ namespace DaxStudio.Common
                 DomainPostfix = authInfo.DomainPostfix,
                 Scope = scope
             };
-            var authResult = await AcquireTokenCoreAsync(
+            var authResult = await AcquireTokenAsync(
                     hwnd, options, tokenScope, context)
                 .ConfigureAwait(false);
+            context.Username = authResult?.Account?.Username ?? options.LastUsedUPN;
             return (authResult, context);
         }
 
@@ -698,6 +680,16 @@ namespace DaxStudio.Common
         private static string[] GetScope(TokenDetails tokenDetails)
         {
             return GetScope(tokenDetails.UserContext.TokenScope);
+        }
+
+        internal static IEnumerable<string> GetScope(
+            AccessTokenScope tokenScope,
+            AccessTokenContext context)
+        {
+            if (tokenScope == AccessTokenScope.Storage)
+                return GetScope(tokenScope);
+
+            return context?.Scope ?? GetScope(tokenScope);
         }
 
         private static string[] GetScope(AccessTokenScope scope)
