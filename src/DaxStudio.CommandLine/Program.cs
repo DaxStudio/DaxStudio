@@ -113,7 +113,7 @@ namespace DaxStudio.CommandLine
             //Log.Information("Logger Initialized");
         }
 
-        static CommandApp CreateCommands(TypeRegistrar registrar)
+        internal static CommandApp CreateCommands(TypeRegistrar registrar)
         {
             var app = new CommandApp(registrar);
             app.Configure(config =>
@@ -166,6 +166,12 @@ namespace DaxStudio.CommandLine
                             .WithDescription("Returns an access token that can be used to run other commands without repeated authentication prompts")
                             .WithExample(new[] { "accesstoken", "-s", "asazure://australiasoutheast.asazure.windows.net/myserver", "-d", "\"Adventure Works\"" })
                             .WithExample(new[] { "accesstoken", "-c", "\"Data Source=asazure://australiasoutheast.asazure.windows.net/myserver;Initial Catalog=Adventure Works\"" });
+
+            config.AddCommand<AuthCommand>("auth")
+                .WithDescription("Prepares or verifies the cached delegated sign-in used by unattended commands")
+                .WithExample(new[] { "auth", "-s", "powerbi://api.powerbi.com/v1.0/myorg/workspace" })
+                .WithExample(new[] { "auth", "-s", "powerbi://api.powerbi.com/v1.0/myorg/workspace", "--non-interactive" })
+                .WithExample(new[] { "auth", "-c", "\"Data Source=powerbi://api.powerbi.com/v1.0/myorg/workspace\"" });
 
             config.AddCommand<BenchmarkCommand>("benchmark")
                 .WithDescription("Runs a DAX query benchmark with cold and warm cache timings")
