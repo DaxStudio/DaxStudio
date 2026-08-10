@@ -5069,35 +5069,6 @@ namespace DaxStudio.UI.ViewModels
         private async Task ClearCacheCoreAsync()
         {
             Connection.ClearCache();
-            OutputMessage(string.Format("Evaluating Calculation Script for Database: {0}", Connection.DatabaseName));
-
-            string refreshQuery;
-            if (Options.DefaultSeparator == DelimiterType.SemiColon)
-            {
-                // switch the default delimiter on the refresh query to the semi-colon style
-                var dsm = new DelimiterStateMachine(DelimiterType.SemiColon);
-                refreshQuery = dsm.ProcessString(Constants.RefreshSessionQuery);
-            }
-            else
-            {
-                refreshQuery = Constants.RefreshSessionQuery;
-            }
-
-            // ExecuteDataTableQueryAsync replaces (and then stops) _queryStopWatch as part of its normal
-            // timing bookkeeping. That is harmless when the cache is cleared before a run starts, but a
-            // per-batch "--> CLEARCACHE" runs *during* a run - after StartTimer() - where it would leave
-            // the run's stopwatch stopped, freezing the status-bar timer and recording the refresh
-            // query's duration as the query's client duration in Query History. Preserve it around the
-            // internal refresh query.
-            var runStopWatch = _queryStopWatch;
-            try
-            {
-                await ExecuteDataTableQueryAsync(refreshQuery);
-            }
-            finally
-            {
-                _queryStopWatch = runStopWatch;
-            }
         }
         public async Task HandleAsync(CancelConnectEvent message, CancellationToken cancellationToken)
         {

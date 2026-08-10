@@ -1,31 +1,32 @@
 using ADOTabular;
 using ADOTabular.AdomdClientWrappers;
 using ADOTabular.Enums;
+using ADOTabular.Extensions;
+using ADOTabular.Interfaces;
 using ADOTabular.MetadataInfo;
+using ADOTabular.Utils;
 using Caliburn.Micro;
-using DaxStudio.Interfaces;
+using DaxStudio.Common;
+using DaxStudio.Common.Enums;
 using DaxStudio.Core.Events;
+using DaxStudio.Core.Extensions;
 using DaxStudio.Core.Model;
+using DaxStudio.Interfaces;
+//using Microsoft.AspNet.SignalR.Client;
 using Polly;
 using Polly.Retry;
 using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using DaxStudio.Common.Enums;
-using System.Xml.XPath;
-using System.IO;
-using ADOTabular.Utils;
-using TOM = Microsoft.AnalysisServices;
-using System.Xml;
-using ADOTabular.Interfaces;
-using DaxStudio.Common;
-using ADOTabular.Extensions;
-using DaxStudio.Core.Extensions;
 using System.Threading;
+using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.XPath;
+using TOM = Microsoft.AnalysisServices;
 
 namespace DaxStudio.Core.Connections
 {
@@ -810,6 +811,7 @@ namespace DaxStudio.Core.Connections
         private void RefreshSession()
         {
             Log.Verbose(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(RefreshSession), "Evaluating the calculation script to re-populate the global scopes");
+            _eventAggregator.PublishAsync(new OutputMessage(MessageType.Information, "Re-evaluating the calculation script to re-populate the global scopes")).ConfigureAwait(false);
             ExecuteDaxQueryDataTable(Common.Constants.RefreshSessionQuery);
         }
         public ADOTabularModel SelectedModel { get; set; }
