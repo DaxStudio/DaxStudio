@@ -26,6 +26,19 @@ namespace DaxStudio.Parsers.Dax
         /// <summary>The label shown for the "insert from current results" table-assertion helper.</summary>
         public const string FromResultsLabel = "<from Results>";
 
+        /// <summary>The keyword that introduces a baseline operand in an ASSERT command.</summary>
+        private const string BaselineKeyword = "BASELINE";
+
+        /// <summary>The keyword that references the previous query batch as a baseline.</summary>
+        private const string PreviousKeyword = "PREVIOUS";
+
+        /// <summary>The operands that may follow a comparison operator in place of a literal value.</summary>
+        private static readonly (string Keyword, string Description)[] BaselineOperands =
+        {
+            (BaselineKeyword, "Compare against a baseline captured by an earlier --> BASELINE"),
+            (PreviousKeyword, "Compare against the previous batch that runs a query"),
+        };
+
         private static readonly (string Keyword, string Description)[] TopLevelCommands =
         {
             ("CONNECT",   "Connect to a server, Power BI Desktop (DESKTOP) or SSDT instance"),
@@ -34,6 +47,7 @@ namespace DaxStudio.Parsers.Dax
             ("SET",       "Define a script variable (SET name = value) for use as $(name) in later commands"),
             ("OUTPUT",    "Send query results to a CSV, XLSX or JSON file"),
             ("TEST",      "Group the following asserts into a named test (TEST \"name\")"),
+            ("BASELINE",  "Capture this batch's results and timings as a baseline (BASELINE \"name\")"),
             ("ASSERT",    "Assert a condition on the results or timings"),
             ("RESULTS",   "Show or hide the results grid (RESULTS ON|OFF)"),
             ("CLEARCACHE", "Clear the database cache"),
@@ -59,6 +73,15 @@ namespace DaxStudio.Parsers.Dax
         private static readonly Regex CurrentSetLineRegex = new Regex(
             @"^\s*SET\s+(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*=",
             RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+        /// <summary>
+        /// Matches a <c>--&gt; BASELINE ["name"]</c> command line so the baselines already captured in the
+        /// script can be offered as the operand of a later <c>ASSERT ... BASELINE</c>. The name is
+        /// optional (the unnamed baseline) and may be quoted or a bare identifier.
+        /// </summary>
+        private static readonly Regex BaselineCommandRegex = new Regex(
+            @"^\s*-->\s*BASELINE(?:\s+(?:""(?<quoted>[^""]*)""|(?<bare>[A-Za-z0-9_]+)))?",
+            RegexOptions.IgnoreCase | RegexOptions.Multiline | RegexOptions.Compiled);
 
         /// <summary>
         /// The built-in <c>$(...)</c> namespaces. The values are offered with a sample argument which
@@ -193,6 +216,7 @@ namespace DaxStudio.Parsers.Dax
 
             // "<from Results>" helper offered at the point where ASSERT TABLE rows begin -
             // i.e. right after "--> ASSERT TABLE " or after an optional UNORDERED/PARTIAL modifier.
+            // A BASELINE reference is valid in the same position, so it is offered alongside.
             if (string.Equals(command, "ASSERT", StringComparison.OrdinalIgnoreCase)
                 && tokens.Length >= 2
                 && string.Equals(tokens[1], "TABLE", StringComparison.OrdinalIgnoreCase))
@@ -207,12 +231,98 @@ namespace DaxStudio.Parsers.Dax
                     {
                         new CompletionItem(FromResultsLabel, CompletionItemKind.Keyword,
                             "Insert an assertion table built from the current query results",
-                            FromResultsInsertText)
+                            FromResultsInsertText),
+                        new CompletionItem(BaselineKeyword, CompletionItemKind.Keyword,
+                            "Compare the results against a baseline captured by an earlier --> BASELINE"),
+                        new CompletionItem(PreviousKeyword, CompletionItemKind.Keyword,
+                            "Compare the results against the previous batch that runs a query"),
                     };
                 }
             }
 
+            // The name of a previously captured baseline, offered right after the BASELINE keyword in
+            // "--> ASSERT ... BASELINE " (mirroring how "$(" offers the defined SET variables).
+            if (IsAfterBaselineKeyword(tokens, endsWithSpace, out var namePrefix))
+            {
+                return GetBaselineNameCompletions(scriptTextBeforeCaret, namePrefix);
+            }
+
+            // A BASELINE / PREVIOUS operand is valid immediately after a comparison operator in a
+            // performance or row-count assertion, e.g. "--> ASSERT DURATION <= ".
+            if (string.Equals(command, "ASSERT", StringComparison.OrdinalIgnoreCase)
+                && tokens.Length >= 3
+                && IsComparisonOperator(tokens[2])
+                && (tokens.Length == 3 && endsWithSpace || tokens.Length == 4 && !endsWithSpace))
+            {
+                var prefix = tokens.Length == 4 ? tokens[3] : string.Empty;
+                return Filter(BaselineOperands, prefix);
+            }
+
             return new List<CompletionItem>();
+        }
+
+        private static bool IsComparisonOperator(string token) =>
+            token == "=" || token == ">" || token == "<" || token == ">=" || token == "<=";
+
+        /// <summary>
+        /// Returns true when the caret sits where a baseline <b>name</b> belongs - immediately after the
+        /// <c>BASELINE</c> keyword on an <c>ASSERT</c> line - and yields the partial name typed so far.
+        /// </summary>
+        private static bool IsAfterBaselineKeyword(string[] tokens, bool endsWithSpace, out string prefix)
+        {
+            prefix = string.Empty;
+            if (tokens.Length < 2) return false;
+            if (!string.Equals(tokens[0], "ASSERT", StringComparison.OrdinalIgnoreCase)) return false;
+
+            var lastIndex = tokens.Length - 1;
+            if (endsWithSpace)
+            {
+                return string.Equals(tokens[lastIndex], BaselineKeyword, StringComparison.OrdinalIgnoreCase);
+            }
+
+            // The user has started typing the name, so the BASELINE keyword is the token before it.
+            if (lastIndex < 1) return false;
+            if (!string.Equals(tokens[lastIndex - 1], BaselineKeyword, StringComparison.OrdinalIgnoreCase)) return false;
+            prefix = tokens[lastIndex].Trim('"');
+            return true;
+        }
+
+        /// <summary>
+        /// Builds the completion list of baselines captured by <c>--&gt; BASELINE</c> commands above the
+        /// caret. Names are inserted quoted, matching the form the parser expects for a name containing
+        /// spaces. The unnamed baseline is not offered - it is referenced by omitting the name entirely.
+        /// </summary>
+        public static IReadOnlyList<CompletionItem> GetBaselineNameCompletions(string scriptTextBeforeCaret, string prefix = "")
+        {
+            return GetDefinedBaselines(scriptTextBeforeCaret)
+                .Where(name => string.IsNullOrEmpty(prefix)
+                               || name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                .Select(name => new CompletionItem(
+                    $"\"{name}\"",
+                    CompletionItemKind.Variable,
+                    "Baseline captured by --> BASELINE",
+                    $"\"{name}\""))
+                .ToList();
+        }
+
+        /// <summary>
+        /// Returns the names of the baselines captured by <c>--&gt; BASELINE "name"</c> commands in
+        /// <paramref name="scriptTextBeforeCaret"/>, in the order they appear. The unnamed
+        /// <c>--&gt; BASELINE</c> form is skipped because it has no name to offer.
+        /// </summary>
+        internal static IReadOnlyList<string> GetDefinedBaselines(string scriptTextBeforeCaret)
+        {
+            var names = new List<string>();
+            if (string.IsNullOrEmpty(scriptTextBeforeCaret)) return names;
+
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (Match match in BaselineCommandRegex.Matches(scriptTextBeforeCaret))
+            {
+                var name = match.Groups["quoted"].Success ? match.Groups["quoted"].Value : match.Groups["bare"].Value;
+                if (string.IsNullOrEmpty(name)) continue;
+                if (seen.Add(name)) names.Add(name);
+            }
+            return names;
         }
 
         private static IReadOnlyList<CompletionItem> Filter((string Keyword, string Description)[] source, string prefix)

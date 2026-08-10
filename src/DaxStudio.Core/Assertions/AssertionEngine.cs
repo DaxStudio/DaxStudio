@@ -26,7 +26,7 @@ namespace DaxStudio.Core.Assertions
         /// Evaluates a <c>--&gt; ASSERT ROWCOUNT &lt;op&gt; &lt;value&gt;</c> command against the number of
         /// rows returned by the query.
         /// </summary>
-        public static TestResult EvaluateRowCount(AssertRowcountCommand command, long actualRowCount, string testName = null)
+        public static TestResult EvaluateRowCount(AssertRowcountCommand command, long actualRowCount, string testName = null, BaselineStore baselines = null)
         {
             if (command == null) throw new ArgumentNullException(nameof(command));
 
@@ -42,11 +42,25 @@ namespace DaxStudio.Core.Assertions
 
             try
             {
-                var passed = Compare(actualRowCount, command.Comparison, command.Value);
+                double expectedValue;
+                if (command.Baseline != null)
+                {
+                    if (!TryResolveBaseline(command.Baseline, baselines, result, out var baseline)) return result;
+
+                    expectedValue = baseline.RowCount * command.Baseline.Factor;
+                    result.Expected = $"{command.Comparison} {FormatNumber(expectedValue)}";
+                    result.Actual = FormatWithDelta(actualRowCount, baseline.RowCount);
+                }
+                else
+                {
+                    expectedValue = command.Value;
+                }
+
+                var passed = Compare(actualRowCount, command.Comparison, expectedValue);
                 result.Outcome = passed ? TestOutcome.Passed : TestOutcome.Failed;
                 result.Message = passed
                     ? string.Empty
-                    : $"Expected row count {command.Comparison} {command.Value} but got {actualRowCount}";
+                    : $"Expected row count {command.Comparison} {FormatNumber(expectedValue)} but got {actualRowCount}";
             }
             catch (Exception ex)
             {
@@ -67,14 +81,20 @@ namespace DaxStudio.Core.Assertions
         /// <see cref="AssertCommand.Property"/> must be present in <paramref name="metrics"/>;
         /// when it is missing the result is an error (the required trace was not running).
         /// </summary>
+        /// <remarks>
+        /// When the command's operand is a <see cref="BaselineReference"/>
+        /// (<c>--&gt; ASSERT DURATION &lt;= BASELINE "v1" * 1.1</c>) the expected value is the same metric
+        /// captured for that baseline, multiplied by the reference's factor. A factor above 1 allows the
+        /// candidate to be worse (timing noise); a factor below 1 demands an improvement.
+        /// </remarks>
         public static TestResult EvaluatePerformance(
             AssertCommand command,
             IReadOnlyDictionary<PerformanceProperty, double> metrics,
-            string testName = null)
+            string testName = null,
+            BaselineStore baselines = null)
         {
             if (command == null) throw new ArgumentNullException(nameof(command));
 
-            var expectedValue = GetExpectedValue(command);
             var result = new TestResult
             {
                 TestName = testName,
@@ -86,6 +106,30 @@ namespace DaxStudio.Core.Assertions
 
             try
             {
+                double expectedValue;
+                double? baselineValue = null;
+
+                if (command.Baseline != null)
+                {
+                    if (!TryResolveBaseline(command.Baseline, baselines, result, out var baseline)) return result;
+
+                    if (!baseline.Metrics.TryGetValue(command.Property, out var captured))
+                    {
+                        result.Outcome = TestOutcome.Error;
+                        result.Actual = "n/a";
+                        result.Message = $"The baseline {DescribeBaselineName(command.Baseline)} captured no '{command.Property}' metric - was the Server Timings trace running for the baseline batch?";
+                        return result;
+                    }
+
+                    baselineValue = captured;
+                    expectedValue = captured * command.Baseline.Factor;
+                    result.Expected = $"{command.Comparison} {FormatNumber(expectedValue)}";
+                }
+                else
+                {
+                    expectedValue = GetExpectedValue(command);
+                }
+
                 if (metrics == null || !metrics.TryGetValue(command.Property, out var actual))
                 {
                     result.Outcome = TestOutcome.Error;
@@ -94,7 +138,10 @@ namespace DaxStudio.Core.Assertions
                     return result;
                 }
 
-                result.Actual = FormatNumber(actual);
+                result.Actual = baselineValue.HasValue
+                    ? FormatWithDelta(actual, baselineValue.Value)
+                    : FormatNumber(actual);
+
                 var passed = Compare(actual, command.Comparison, expectedValue);
                 result.Outcome = passed ? TestOutcome.Passed : TestOutcome.Failed;
                 result.Message = passed
@@ -131,7 +178,14 @@ namespace DaxStudio.Core.Assertions
         /// contain extra rows and extra columns); order is ignored.</item>
         /// </list>
         /// </summary>
-        public static TestResult EvaluateTable(AssertTableCommand command, DataTable actual, string testName = null, string baseDirectory = null)
+        /// <remarks>
+        /// When the command carries a <see cref="BaselineReference"/>
+        /// (<c>--&gt; ASSERT TABLE BASELINE "v1"</c>) the expected table is the result set captured for
+        /// that baseline rather than inline <c>--&gt;&gt;</c> rows or a file. The comparison itself is
+        /// unchanged, so the mode modifiers apply to a baseline comparison exactly as they do to an
+        /// inline one.
+        /// </remarks>
+        public static TestResult EvaluateTable(AssertTableCommand command, DataTable actual, string testName = null, string baseDirectory = null, BaselineStore baselines = null)
         {
             if (command == null) throw new ArgumentNullException(nameof(command));
 
@@ -147,15 +201,33 @@ namespace DaxStudio.Core.Assertions
 
             try
             {
-                // For file-based ASSERT TABLE the expected rows are loaded lazily here so that
-                // missing-file / bad-format errors surface as an assertion error alongside the query.
-                if (command.Format != AssertTableFormat.Inline)
+                DataTable expected;
+                if (command.Baseline != null)
                 {
-                    AssertTableFileLoader.LoadInto(command, baseDirectory);
-                    result.Expected = ExpectedTable(command);
+                    if (!TryResolveBaseline(command.Baseline, baselines, result, out var baseline)) return result;
+
+                    expected = baseline.Results;
+                    if (expected == null)
+                    {
+                        result.Outcome = TestOutcome.Error;
+                        result.Message = $"The baseline {DescribeBaselineName(command.Baseline)} captured no result table to compare against.";
+                        return result;
+                    }
+                    result.Expected = $"{expected.Rows.Count} row(s)";
+                }
+                else
+                {
+                    // For file-based ASSERT TABLE the expected rows are loaded lazily here so that
+                    // missing-file / bad-format errors surface as an assertion error alongside the query.
+                    if (command.Format != AssertTableFormat.Inline)
+                    {
+                        AssertTableFileLoader.LoadInto(command, baseDirectory);
+                        result.Expected = ExpectedTable(command);
+                    }
+
+                    expected = command.Data;
                 }
 
-                var expected = command.Data;
                 if (expected == null)
                 {
                     result.Outcome = TestOutcome.Error;
@@ -445,15 +517,67 @@ namespace DaxStudio.Core.Assertions
         }
 
         // Description / expected-value formatting shared by the Evaluate* methods and DiscoverTests so
-        // a discovered (pending) row and the row that later replaces it have identical text.
-        private static string DescribeRowCount(AssertRowcountCommand c) => $"ROWCOUNT {c.Comparison} {c.Value}";
-        private static string ExpectedRowCount(AssertRowcountCommand c) => $"{c.Comparison} {c.Value}";
+        // a discovered (pending) row and the row that later replaces it have identical text. Baseline
+        // operands render as the reference itself (e.g. 'BASELINE "v1" * 1.1') because the captured
+        // value is not known until the baseline batch has run; the Evaluate* methods overwrite
+        // TestResult.Expected with the resolved number once it is.
+        private static string DescribeRowCount(AssertRowcountCommand c) => $"ROWCOUNT {c.Comparison} {DescribeOperand(c.Baseline, c.Value)}";
+        private static string ExpectedRowCount(AssertRowcountCommand c) => $"{c.Comparison} {DescribeOperand(c.Baseline, c.Value)}";
 
-        private static string DescribePerformance(AssertCommand c) => $"{c.Property} {c.Comparison} {FormatNumber(GetExpectedValue(c))}";
-        private static string ExpectedPerformance(AssertCommand c) => $"{c.Comparison} {FormatNumber(GetExpectedValue(c))}";
+        private static string DescribePerformance(AssertCommand c) => $"{c.Property} {c.Comparison} {DescribeOperand(c.Baseline, GetExpectedValue(c))}";
+        private static string ExpectedPerformance(AssertCommand c) => $"{c.Comparison} {DescribeOperand(c.Baseline, GetExpectedValue(c))}";
 
-        private static string DescribeTable(AssertTableCommand c) => $"TABLE {c.Mode}";
-        private static string ExpectedTable(AssertTableCommand c) => $"{c.Data?.Rows.Count ?? 0} row(s)";
+        private static string DescribeTable(AssertTableCommand c) =>
+            c.Baseline != null ? $"TABLE {c.Mode} vs {c.Baseline}" : $"TABLE {c.Mode}";
+        private static string ExpectedTable(AssertTableCommand c) =>
+            c.Baseline != null ? c.Baseline.ToString() : $"{c.Data?.Rows.Count ?? 0} row(s)";
+
+        private static string DescribeOperand(BaselineReference baseline, double literal)
+            => baseline != null ? baseline.ToString() : FormatNumber(literal);
+
+        #endregion
+
+        #region Baselines
+
+        /// <summary>
+        /// Looks up the baseline a <c>BASELINE</c> operand refers to, stamping <paramref name="result"/>
+        /// with an error when it has not been captured. The parser rejects a reference to a baseline that
+        /// is not defined earlier in the script, so reaching this error normally means the baseline batch
+        /// itself failed to run.
+        /// </summary>
+        private static bool TryResolveBaseline(BaselineReference reference, BaselineStore baselines, TestResult result, out CapturedBaseline baseline)
+        {
+            baseline = null;
+            if (baselines != null && baselines.TryGet(reference.Name, out baseline)) return true;
+
+            result.Outcome = TestOutcome.Error;
+            result.Actual = "n/a";
+            result.Message = reference.IsPrevious
+                ? "The previous batch was not captured as a baseline - did it run successfully?"
+                : $"The baseline {DescribeBaselineName(reference)} was not captured - did the '--> BASELINE' batch run successfully?";
+            return false;
+        }
+
+        private static string DescribeBaselineName(BaselineReference reference)
+        {
+            if (reference.IsPrevious) return "for the previous batch";
+            return reference.IsDefault ? "(unnamed)" : $"'{reference.Name}'";
+        }
+
+        /// <summary>
+        /// Formats an actual value alongside its percentage change from the baseline value, e.g.
+        /// <c>980 (-21%)</c>, so the Test Results pane shows the size of the improvement or regression
+        /// rather than just a pass/fail. The delta is omitted when the baseline value is zero.
+        /// </summary>
+        private static string FormatWithDelta(double actual, double baselineValue)
+        {
+            var formatted = FormatNumber(actual);
+            if (Math.Abs(baselineValue) <= Epsilon) return formatted;
+
+            var percent = (actual - baselineValue) / baselineValue * 100.0;
+            var rounded = Math.Round(percent, percent != 0 && Math.Abs(percent) < 1 ? 1 : 0, MidpointRounding.AwayFromZero);
+            return $"{formatted} ({(rounded >= 0 ? "+" : string.Empty)}{rounded.ToString("0.#", CultureInfo.InvariantCulture)}%)";
+        }
 
         #endregion
 

@@ -1293,6 +1293,17 @@ namespace DaxStudio.UI.ViewModels
         // finished aggregating, so the batch's performance assertions read metrics captured in isolation.
         private TaskCompletionSource<bool> _perBatchServerTimingsTcs;
 
+        // True when the cache has been cleared and no query has run since. Lets a per-batch
+        // "--> CLEARCACHE" skip a redundant clear (because the whole-script pre-query pass, or an
+        // earlier batch, already left the cache cold) without ever skipping a clear that is genuinely
+        // needed. Reset at the start of every run.
+        private bool _cacheClearedSinceLastQuery;
+
+        // The result sets and Server Timings metrics captured by "--> BASELINE" batches in the current
+        // run, so a later batch's "ASSERT ... BASELINE" can compare against them. Cleared at the start
+        // of every run so a baseline never leaks from one execution into the next.
+        private readonly DaxStudio.Core.Assertions.BaselineStore _baselineStore = new DaxStudio.Core.Assertions.BaselineStore();
+
         private Model.IFoldingStrategy foldingStrategy;
         private FoldingManager foldingManager;
         private void UpdateFoldings()
@@ -2449,6 +2460,8 @@ namespace DaxStudio.UI.ViewModels
                         _currentRunBatches = message.QueryProvider?.QueryInfo?.ScriptBatches;
                         _evaluatedBatches.Clear();
                         _perBatchServerTimingsTcs = null;
+                        _baselineStore.Clear();
+                        _cacheClearedSinceLastQuery = false;
 
                         // Process any comment-script commands that must run before the query (e.g.
                         // "--> CONNECT", "--> CLEARCACHE"). If a CONNECT command was present but the
@@ -2661,8 +2674,14 @@ namespace DaxStudio.UI.ViewModels
             }
 
             // "--> CLEARCACHE" runs against the (possibly just-changed) connection before the query.
+            // This up-front pass clears the cache once for the whole script (unchanged behaviour);
+            // batches that need their own clear before their query are handled by
+            // ProcessBatchPreQueryCommandsAsync, which uses the flag set here to avoid a redundant clear.
             if (commands.OfType<CommentScript.ClearCacheCommand>().Any())
+            {
                 await ExecuteClearCacheCommandAsync();
+                _cacheClearedSinceLastQuery = true;
+            }
 
             // "--> TRACE <type> [ON|OFF]" toggles trace watchers. Started last so the trace is fresh
             // and only captures the query (not the CLEARCACHE above).
@@ -2674,7 +2693,8 @@ namespace DaxStudio.UI.ViewModels
             // against the Server Timings trace, so auto-start it (if an explicit TRACE command or a
             // previous run has not already) before the query runs - otherwise the trace would miss
             // this query's events and every performance assertion would report "metric not captured".
-            if (commands.OfType<CommentScript.AssertCommand>().Any())
+            // "--> BASELINE" does the same because it always snapshots its timings.
+            if (commands.Any(c => c is CommentScript.AssertCommand || c is CommentScript.BaselineCommand))
                 await EnsureServerTimingsForPerformanceAssertsAsync();
 
             // "--> EXPORT METRICS <file>" writes a .vpax file for the connected model. It is a
@@ -2770,19 +2790,26 @@ namespace DaxStudio.UI.ViewModels
 
         // At the start of a run, if the script contains test assertions, resets the Test Results pane
         // to show every discovered test in a pending (clock) state - clearing any Passed/Failed/Error
-        // results from a previous run - and reveals the pane. Returns true when the script has
-        // assertions so the caller knows to transition the tests to "running" once the query starts and
-        // to clean up any left "running" if the run is aborted.
+        // results from a previous run - and reveals the pane. Returns true when the run needs the
+        // per-batch assertion hooks, so the caller knows to transition the tests to "running" once the
+        // query starts and to clean up any left "running" if the run is aborted.
+        //
+        // A "--> BASELINE" batch also needs the hooks (it has to snapshot its results and timings) even
+        // though it is not itself an assertion, so it makes this return true without adding a pending
+        // row to the pane.
         private bool ResetTestResultsForRun(IQueryTextProvider queryProvider)
         {
             if (TestResultsPane == null) return false;
             var batches = queryProvider?.QueryInfo?.ScriptBatches;
             if (batches == null || batches.Count == 0) return false;
-            if (!batches.Any(BatchHasAsserts)) return false;
+            if (!batches.Any(BatchNeedsAssertionHooks)) return false;
 
-            var discovered = DaxStudio.Core.Assertions.AssertionEngine.DiscoverTests(batches);
-            TestResultsPane.SetPendingForRun(discovered);
-            TestResultsPane.IsVisible = true;
+            if (batches.Any(BatchHasAsserts))
+            {
+                var discovered = DaxStudio.Core.Assertions.AssertionEngine.DiscoverTests(batches);
+                TestResultsPane.SetPendingForRun(discovered);
+                TestResultsPane.IsVisible = true;
+            }
             return true;
         }
 
@@ -2791,6 +2818,15 @@ namespace DaxStudio.UI.ViewModels
             b.Commands.OfType<CommentScript.AssertCommand>().Any()
             || b.Commands.OfType<CommentScript.AssertRowcountCommand>().Any()
             || b.Commands.OfType<CommentScript.AssertTableCommand>().Any();
+
+        // True when a batch is a "--> BASELINE" capture.
+        private static bool BatchIsBaseline(CommentScript.ScriptBatch b) =>
+            b.Commands.OfType<CommentScript.BaselineCommand>().Any();
+
+        // True when the per-batch hooks must run for a batch - either to evaluate its assertions or to
+        // capture it as a baseline.
+        private static bool BatchNeedsAssertionHooks(CommentScript.ScriptBatch b) =>
+            BatchHasAsserts(b) || BatchIsBaseline(b);
 
         // Runs the comment-script assertion commands ("--> ASSERT [ROWCOUNT|TABLE|...]") after the
         // query has produced its results and populates the Test Results pane. Batches are normally
@@ -2830,8 +2866,8 @@ namespace DaxStudio.UI.ViewModels
             var uncoveredHasPerf = false;
             for (int i = 0; i < batches.Count; i++)
             {
-                if (BatchHasAsserts(batches[i]) && !_evaluatedBatches.Contains(i)
-                    && batches[i].Commands.OfType<CommentScript.AssertCommand>().Any())
+                if (BatchNeedsAssertionHooks(batches[i]) && !_evaluatedBatches.Contains(i)
+                    && (BatchIsBaseline(batches[i]) || batches[i].Commands.OfType<CommentScript.AssertCommand>().Any()))
                 {
                     uncoveredHasPerf = true;
                     break;
@@ -2840,21 +2876,39 @@ namespace DaxStudio.UI.ViewModels
             if (uncoveredHasPerf) await WaitForServerTimingsAssertionDataAsync();
 
             var perfMetrics = BuildPerformanceMetrics();
+
+            System.Data.DataTable TableForBatch(int index)
+            {
+                var tables = ResultsDataSet?.Tables;
+                if (tables == null || tables.Count == 0) return null;
+                return index < tables.Count ? tables[index] : tables[0];
+            }
+
+            // Capture any baseline batch the per-batch hook did not reach before evaluating the
+            // assertions that reference it, so batch order is still honoured on the fallback path.
+            // Performance metrics are deliberately NOT captured here - see CaptureBatchBaselines.
+            for (int i = 0; i < batches.Count; i++)
+            {
+                if (!BatchIsBaseline(batches[i]) || _evaluatedBatches.Contains(i)) continue;
+
+                var baselineTable = TableForBatch(i);
+                CaptureBatchBaselines(batches[i], baselineTable != null
+                    ? new List<System.Data.DataTable> { baselineTable }
+                    : new List<System.Data.DataTable>(), perfMetrics, capturePerformanceMetrics: false);
+            }
+
             for (int i = 0; i < batches.Count; i++)
             {
                 var batch = batches[i];
                 if (!BatchHasAsserts(batch) || _evaluatedBatches.Contains(i)) continue;
 
-                System.Data.DataTable dataTable = null;
-                var tables = ResultsDataSet?.Tables;
-                if (tables != null && tables.Count > 0)
-                    dataTable = i < tables.Count ? tables[i] : tables[0];
+                var dataTable = TableForBatch(i);
 
                 var batchTables = dataTable != null
                     ? new List<System.Data.DataTable> { dataTable }
                     : new List<System.Data.DataTable>();
 
-                var batchResults = EvaluateBatchAssertions(i, batch, batchTables, perfMetrics, AssertionBaseDirectory);
+                var batchResults = EvaluateBatchAssertions(i, batch, batchTables, perfMetrics, AssertionBaseDirectory, _baselineStore);
                 _evaluatedBatches.Add(i);
                 TestResultsPane.SetBatchResults(i, batchResults);
             }
@@ -2891,12 +2945,16 @@ namespace DaxStudio.UI.ViewModels
             return metrics;
         }
 
-        // True when the script contains a performance assertion ("--> ASSERT DURATION|SE_CPU|SE_QUERIES ...").
+        // True when the script contains a performance assertion ("--> ASSERT DURATION|SE_CPU|SE_QUERIES ...")
+        // or a "--> BASELINE" capture. A baseline always snapshots its Server Timings metrics (so that
+        // adding a performance assertion in a later batch never requires re-running the baseline), which
+        // means it needs the trace running just like a performance assertion does.
         private static bool ScriptHasPerformanceAsserts(IQueryTextProvider queryProvider)
         {
             var batches = queryProvider?.QueryInfo?.ScriptBatches;
             if (batches == null) return false;
-            return batches.SelectMany(b => b.Commands).OfType<CommentScript.AssertCommand>().Any();
+            return batches.SelectMany(b => b.Commands)
+                .Any(c => c is CommentScript.AssertCommand || c is CommentScript.BaselineCommand);
         }
 
         // True when the script contains a "--> SAVEAS <file>.daxx" command. A .daxx package embeds
@@ -2959,11 +3017,39 @@ namespace DaxStudio.UI.ViewModels
                 OutputWarning("--> ASSERT: timed out waiting for the Server Timings trace to complete; performance assertions may report metrics as not captured");
         }
 
+        // Called (and awaited) by the results-target batch loop before a batch's query runs, ahead of
+        // PrepareBatchAssertions. Runs the comment-script commands that must take effect per batch
+        // rather than once per script.
+        //
+        // Today that is just "--> CLEARCACHE": the whole-script pre-query pass clears the cache only
+        // once, which is not enough for a baseline comparison where the baseline batch and the candidate
+        // batch each need the same cold start (otherwise the candidate runs against a cache the baseline
+        // query just warmed, and "ASSERT DURATION <= BASELINE" is biased towards passing).
+        //
+        // The clear is skipped only when the cache is already cold - i.e. nothing has run since the last
+        // clear - so a batch never clears twice in a row, and never misses a clear it needs regardless of
+        // which batch is the first to execute.
+        public async Task ProcessBatchPreQueryCommandsAsync(int batchIndex)
+        {
+            var batches = _currentRunBatches;
+            if (batches == null || batchIndex < 0 || batchIndex >= batches.Count) return;
+
+            if (batches[batchIndex].Commands.OfType<CommentScript.ClearCacheCommand>().Any()
+                && !_cacheClearedSinceLastQuery)
+            {
+                await ExecuteClearCacheCommandAsync();
+            }
+
+            // This batch's query runs next and will warm the cache again.
+            _cacheClearedSinceLastQuery = false;
+        }
+
         // Called synchronously by the results-target batch loop before a batch's query runs. When the
-        // batch has performance assertions and the Server Timings trace is active, resets that trace and
-        // arms a fresh completion signal so the batch's metrics are captured in isolation (mirrors the
-        // benchmark's per-iteration OnReset - ServerTimesModel.ProcessResults early-returns while the
-        // previous results are still present, so only the first batch would otherwise be captured).
+        // batch has performance assertions or is a "--> BASELINE" capture, and the Server Timings trace
+        // is active, resets that trace and arms a fresh completion signal so the batch's metrics are
+        // captured in isolation (mirrors the benchmark's per-iteration OnReset - ServerTimesModel
+        // .ProcessResults early-returns while the previous results are still present, so only the first
+        // batch would otherwise be captured).
         public void PrepareBatchAssertions(int batchIndex)
         {
             if (!_hasTestAsserts) return;
@@ -2971,10 +3057,12 @@ namespace DaxStudio.UI.ViewModels
             if (batches == null || batchIndex < 0 || batchIndex >= batches.Count) return;
 
             var batch = batches[batchIndex];
-            var hasPerfAsserts = batch.Commands.OfType<CommentScript.AssertCommand>().Any();
+            // A baseline batch always captures its timings, so it needs its own isolated trace slice
+            // exactly like a batch that asserts on them.
+            var needsTimings = batch.Commands.OfType<CommentScript.AssertCommand>().Any() || BatchIsBaseline(batch);
             var serverTimings = TraceWatchers.OfType<ServerTimesViewModel>().FirstOrDefault();
 
-            if (hasPerfAsserts && (serverTimings?.IsChecked ?? false))
+            if (needsTimings && (serverTimings?.IsChecked ?? false))
             {
                 _perBatchServerTimingsTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
                 Execute.OnUIThread(() => serverTimings.OnReset());
@@ -2986,10 +3074,11 @@ namespace DaxStudio.UI.ViewModels
         }
 
         // Called (and awaited) by the results-target batch loop after a batch's query has produced its
-        // result tables, before the next batch starts. Evaluates just this batch's assertions - waiting
-        // for and capturing this batch's Server Timings slice for any performance assertions - and
-        // updates the Test Results pane for this batch only, so a completed batch shows its outcome while
-        // later batches remain pending. A no-op when the script has no assertions.
+        // result tables, before the next batch starts. Captures the batch as a baseline when it carries a
+        // "--> BASELINE" command, and evaluates just this batch's assertions - waiting for and capturing
+        // this batch's Server Timings slice for any performance assertions - and updates the Test Results
+        // pane for this batch only, so a completed batch shows its outcome while later batches remain
+        // pending. A no-op when the script has no assertions or baselines.
         public async Task ProcessBatchAssertionsAsync(int batchIndex, IReadOnlyList<System.Data.DataTable> batchTables)
         {
             if (!_hasTestAsserts) return;
@@ -2997,14 +3086,22 @@ namespace DaxStudio.UI.ViewModels
             if (batches == null || batchIndex < 0 || batchIndex >= batches.Count) return;
 
             var batch = batches[batchIndex];
-            if (!BatchHasAsserts(batch)) { _evaluatedBatches.Add(batchIndex); return; }
+            var isBaseline = BatchIsBaseline(batch);
+            if (!BatchHasAsserts(batch) && !isBaseline) { _evaluatedBatches.Add(batchIndex); return; }
 
-            // For performance assertions, wait for THIS batch's trace slice to finish aggregating.
-            if (batch.Commands.OfType<CommentScript.AssertCommand>().Any() && _perBatchServerTimingsTcs != null)
+            // For performance assertions and baseline captures, wait for THIS batch's trace slice to
+            // finish aggregating.
+            if ((isBaseline || batch.Commands.OfType<CommentScript.AssertCommand>().Any()) && _perBatchServerTimingsTcs != null)
                 await WaitForServerTimingsAssertionDataAsync(_perBatchServerTimingsTcs);
 
             var perfMetrics = BuildPerformanceMetrics();
-            var results = EvaluateBatchAssertions(batchIndex, batch, batchTables, perfMetrics, AssertionBaseDirectory);
+
+            if (isBaseline)
+                CaptureBatchBaselines(batch, batchTables, perfMetrics);
+
+            if (!BatchHasAsserts(batch)) { _evaluatedBatches.Add(batchIndex); return; }
+
+            var results = EvaluateBatchAssertions(batchIndex, batch, batchTables, perfMetrics, AssertionBaseDirectory, _baselineStore);
             _evaluatedBatches.Add(batchIndex);
 
             await Execute.OnUIThreadAsync(() =>
@@ -3015,6 +3112,42 @@ namespace DaxStudio.UI.ViewModels
             });
         }
 
+        // Snapshots a "--> BASELINE" batch's result set and Server Timings metrics so later batches can
+        // assert against them. The result table is copied by the store because the live results DataSet
+        // is reused and cleared as subsequent batches run.
+        //
+        // capturePerformanceMetrics is false on the end-of-run fallback path, where the only metrics
+        // available are whole-run totals rather than this batch's isolated slice. Capturing those would
+        // make the baseline and the candidate read the SAME numbers, so every performance assertion
+        // would pass unconditionally - a false green. Capturing no metrics instead makes those
+        // assertions report an error, which is the honest outcome.
+        private void CaptureBatchBaselines(
+            CommentScript.ScriptBatch batch,
+            IReadOnlyList<System.Data.DataTable> batchTables,
+            IReadOnlyDictionary<CommentScript.PerformanceProperty, double> perfMetrics,
+            bool capturePerformanceMetrics = true)
+        {
+            var dataTable = (batchTables != null && batchTables.Count > 0) ? batchTables[0] : null;
+            var metrics = capturePerformanceMetrics ? perfMetrics : null;
+
+            foreach (var cmd in batch.Commands.OfType<CommentScript.BaselineCommand>())
+            {
+                _baselineStore.Capture(cmd.Name, dataTable, metrics, cmd.Runs);
+
+                // A synthesised capture (created to satisfy an "ASSERT ... PREVIOUS" in a later batch)
+                // has a generated name the user never wrote, so describe it by what it is instead.
+                var described = cmd.IsSynthesised
+                    ? " (previous batch)"
+                    : cmd.IsDefault ? string.Empty : $" \"{cmd.Name}\"";
+                OutputMessage($"--> BASELINE{described} captured: {dataTable?.Rows.Count ?? 0} row(s)");
+
+                if (!capturePerformanceMetrics)
+                    OutputWarning($"--> BASELINE{described}: per-batch Server Timings were not captured for this output target, so performance assertions against it will report an error. Use the Grid output target to compare timings.");
+                else if (metrics == null || metrics.Count == 0)
+                    OutputWarning($"--> BASELINE{described}: no Server Timings metrics were captured - performance assertions against it will report an error.");
+            }
+        }
+
         // Evaluates every assertion command in a single batch against that batch's result tables and
         // performance metrics, stamping each result with the batch index. Shared by the per-batch hook
         // and the end-of-run fallback so both produce identical results.
@@ -3022,7 +3155,8 @@ namespace DaxStudio.UI.ViewModels
             int batchIndex, CommentScript.ScriptBatch batch,
             IReadOnlyList<System.Data.DataTable> batchTables,
             IReadOnlyDictionary<CommentScript.PerformanceProperty, double> perfMetrics,
-            string baseDirectory)
+            string baseDirectory,
+            DaxStudio.Core.Assertions.BaselineStore baselines)
         {
             var results = new List<DaxStudio.Core.Assertions.TestResult>();
             var testName = batch.Commands.OfType<CommentScript.TestCommand>().FirstOrDefault()?.TestName;
@@ -3031,13 +3165,13 @@ namespace DaxStudio.UI.ViewModels
             var rowCount = dataTable?.Rows.Count ?? 0;
 
             foreach (var cmd in batch.Commands.OfType<CommentScript.AssertRowcountCommand>())
-                results.Add(DaxStudio.Core.Assertions.AssertionEngine.EvaluateRowCount(cmd, rowCount, testName));
+                results.Add(DaxStudio.Core.Assertions.AssertionEngine.EvaluateRowCount(cmd, rowCount, testName, baselines));
 
             foreach (var cmd in batch.Commands.OfType<CommentScript.AssertTableCommand>())
-                results.Add(DaxStudio.Core.Assertions.AssertionEngine.EvaluateTable(cmd, dataTable, testName, baseDirectory));
+                results.Add(DaxStudio.Core.Assertions.AssertionEngine.EvaluateTable(cmd, dataTable, testName, baseDirectory, baselines));
 
             foreach (var cmd in batch.Commands.OfType<CommentScript.AssertCommand>())
-                results.Add(DaxStudio.Core.Assertions.AssertionEngine.EvaluatePerformance(cmd, perfMetrics, testName));
+                results.Add(DaxStudio.Core.Assertions.AssertionEngine.EvaluatePerformance(cmd, perfMetrics, testName, baselines));
 
             foreach (var r in results) r.BatchIndex = batchIndex;
             return results;
@@ -3290,8 +3424,7 @@ namespace DaxStudio.UI.ViewModels
                 await ClearCacheCoreAsync();
                 sw.Stop();
                 OutputMessage($"--> CLEARCACHE: cache cleared for database '{Connection.DatabaseName}'", sw.ElapsedMilliseconds);
-            }
-            catch (Exception ex)
+            }            catch (Exception ex)
             {
                 Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(ExecuteClearCacheCommandAsync), ex.Message);
                 OutputError($"--> CLEARCACHE failed: {ex.Message}");
@@ -4950,7 +5083,21 @@ namespace DaxStudio.UI.ViewModels
                 refreshQuery = Constants.RefreshSessionQuery;
             }
 
-            await ExecuteDataTableQueryAsync(refreshQuery);
+            // ExecuteDataTableQueryAsync replaces (and then stops) _queryStopWatch as part of its normal
+            // timing bookkeeping. That is harmless when the cache is cleared before a run starts, but a
+            // per-batch "--> CLEARCACHE" runs *during* a run - after StartTimer() - where it would leave
+            // the run's stopwatch stopped, freezing the status-bar timer and recording the refresh
+            // query's duration as the query's client duration in Query History. Preserve it around the
+            // internal refresh query.
+            var runStopWatch = _queryStopWatch;
+            try
+            {
+                await ExecuteDataTableQueryAsync(refreshQuery);
+            }
+            finally
+            {
+                _queryStopWatch = runStopWatch;
+            }
         }
         public async Task HandleAsync(CancelConnectEvent message, CancellationToken cancellationToken)
         {

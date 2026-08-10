@@ -92,6 +92,7 @@ command
 	| use
 	| script_parameter
 	| test
+	| baseline
 	| assert
 	| assert_rowcount
 	| assert_table_header
@@ -120,9 +121,31 @@ use:               CS_USE (CS_STRING_LITERAL | unquoted_value);
 script_parameter:  CS_SET_PARAMETER (CS_STRING|CS_INTEGER|CS_DATETIME|CS_BOOLEAN|CS_DOUBLE)? CS_PARAMETER CS_EQUALS ( parameter_array_values | parameter_scalar_values );
 output:            CS_OUTPUT (CS_CSV | CS_XLSX | CS_JSON) (CS_STRING_LITERAL | CS_IDENTIFIER);
 test:              CS_TEST (CS_STRING_LITERAL | unquoted_value);
-assert:            CS_ASSERT (CS_DURATION | CS_SE_CPU | CS_SE_QUERIES )  (CS_EQUALS | CS_GREATERTHAN | CS_LESSTHAN | CS_GREATER_OR_EQUAL | CS_LESS_OR_EQUAL ) (CS_INTEGER_LITERAL | CS_REAL_LITERAL);
-assert_rowcount:   CS_ASSERT CS_ROWCOUNT (CS_EQUALS | CS_GREATERTHAN | CS_LESSTHAN | CS_GREATER_OR_EQUAL | CS_LESS_OR_EQUAL ) CS_INTEGER_LITERAL;
-assert_table_header: CS_ASSERT CS_TABLE (CS_UNORDERED | CS_PARTIAL)? assert_table_file? ;
+
+// "--> BASELINE ["name"] [RUNS n]" captures the batch's result set and Server Timings metrics so a
+// later batch can assert against them with "ASSERT <property> <op> BASELINE ["name"]".
+// The RUNS clause is reserved for a later repeat-and-aggregate feature; it parses today but the
+// listener rejects a value other than 1 so the syntax can be added without a breaking change.
+baseline:          CS_BASELINE baseline_name? runs_clause?;
+baseline_name:     CS_STRING_LITERAL | CS_IDENTIFIER;
+runs_clause:       CS_RUNS CS_INTEGER_LITERAL;
+
+// A reference to a previously captured baseline, used as the right-hand operand of an ASSERT.
+// The optional factor multiplies the captured value, so "<= BASELINE "v1" * 1.1" allows a 10%
+// regression and "<= BASELINE "v1" * 0.9" demands a 10% improvement.
+// PREVIOUS is sugar for "the previous batch that runs a query" - that batch is captured as a
+// baseline automatically, so no "--> BASELINE" command (and no name) is needed.
+baseline_ref:      (CS_BASELINE baseline_name? | CS_PREVIOUS) baseline_factor?;
+baseline_factor:   CS_STAR numeric_literal;
+
+comparison_op:     CS_EQUALS | CS_GREATERTHAN | CS_LESSTHAN | CS_GREATER_OR_EQUAL | CS_LESS_OR_EQUAL;
+numeric_literal:   CS_INTEGER_LITERAL | CS_REAL_LITERAL;
+
+assert:            CS_ASSERT (CS_DURATION | CS_SE_CPU | CS_SE_QUERIES ) comparison_op assert_operand;
+assert_operand:    numeric_literal | baseline_ref;
+assert_rowcount:   CS_ASSERT CS_ROWCOUNT comparison_op assert_rowcount_operand;
+assert_rowcount_operand: CS_INTEGER_LITERAL | baseline_ref;
+assert_table_header: CS_ASSERT CS_TABLE (CS_UNORDERED | CS_PARTIAL)? (assert_table_file | baseline_ref)? ;
 assert_table_file:   (CS_CSV | CS_TXT | CS_MD | CS_PARQUET) CS_STRING_LITERAL ;
 clear_cache:       CS_CLEARCACHE;
 trace:             CS_TRACE (CS_SERVERTIMINGS | CS_QUERYPLAN | CS_ALLQUERIES) (CS_ON | CS_OFF);

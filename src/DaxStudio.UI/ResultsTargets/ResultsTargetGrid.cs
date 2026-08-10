@@ -113,6 +113,10 @@ namespace DaxStudio.UI.ResultsTargets
                 // Comment-script commands that change the document state (e.g. "--> CONNECT")
                 // are dispatched in DocumentViewModel.RunQueryInternalAsync before we get here.
                 // Future per-batch commands (CLEAR CACHE, TRACE, USE, ...) would hook in here.
+                // Run any per-batch comment-script commands (e.g. "--> CLEARCACHE") before the query, and
+                // ahead of PrepareBatchAssertions so the trace reset below is not polluted by the clear.
+                await runner.ProcessBatchPreQueryCommandsAsync(batchIndex);
+
                 // Let the runner arm any per-batch assertion state (e.g. reset the Server Timings
                 // trace) BEFORE the query runs so this batch's metrics are captured in isolation.
                 runner.PrepareBatchAssertions(batchIndex);
@@ -242,12 +246,16 @@ namespace DaxStudio.UI.ResultsTargets
                     // SHOW DEPENDENCIES and SHOW DIAGRAM consume the batch DAX as their analysis target, so
                     // that query is not run separately. Every other SHOW variant ignores the DAX, so any
                     // query in the same batch should still run and produce its own result tab(s) after the
-                    // SHOW tab(s).
-                    if (showCommands.Any(sc => sc.ShowType == ShowType.Dependencies || sc.ShowType == ShowType.Diagram)) continue;
+                    // SHOW tab(s). This rule is shared with the "--> ASSERT ... PREVIOUS" resolver, which
+                    // must agree about which batches produce results/timings - see ScriptBatch.
+                    if (batch.ConsumesQueryAsAnalysisTarget) continue;
                 }
 
                 var dax = batch.QueryText;
                 if (string.IsNullOrWhiteSpace(dax)) continue; // comment-only batch (e.g. "--> CONNECT")
+
+                // Run any per-batch comment-script commands (e.g. "--> CLEARCACHE") before the query.
+                await runner.ProcessBatchPreQueryCommandsAsync(batchIndex);
 
                 // Let the runner arm any per-batch assertion state before the query runs.
                 runner.PrepareBatchAssertions(batchIndex);

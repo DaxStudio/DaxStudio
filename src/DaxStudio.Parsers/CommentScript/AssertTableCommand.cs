@@ -74,16 +74,24 @@ namespace DaxStudio.Parsers.CommentScript
         /// </summary>
         public string FilePath { get; set; }
 
+        /// <summary>
+        /// The baseline whose captured result set is the expected table
+        /// (<c>--&gt; ASSERT TABLE BASELINE "v1"</c>), or <c>null</c> when the expected rows come from
+        /// inline <c>--&gt;&gt;</c> rows or a file. Mutually exclusive with both of those.
+        /// </summary>
+        public BaselineReference Baseline { get; set; }
+
         /// <summary>0-based character position of the source "--&gt; ASSERT TABLE" command (0 when unknown).</summary>
         public int Column { get; set; }
 
         /// <summary>
         /// True once the assertion has a defined expected table: either at least one inline table row
         /// ("--&gt;&gt;") has defined the columns, or the command loads its rows from a file
-        /// (<see cref="Format"/> is not <see cref="AssertTableFormat.Inline"/>).
-        /// An ASSERT TABLE with no following table rows and no file clause leaves this false.
+        /// (<see cref="Format"/> is not <see cref="AssertTableFormat.Inline"/>), or it compares against
+        /// a captured baseline (<see cref="Baseline"/>).
+        /// An ASSERT TABLE with no following table rows, no file clause and no baseline leaves this false.
         /// </summary>
-        public bool HasTableDefinition => Data.Columns.Count > 0 || Format != AssertTableFormat.Inline;
+        public bool HasTableDefinition => Data.Columns.Count > 0 || Format != AssertTableFormat.Inline || Baseline != null;
 
         /// <summary>
         /// Populates this assertion's expected table from externally-loaded rows (e.g. a

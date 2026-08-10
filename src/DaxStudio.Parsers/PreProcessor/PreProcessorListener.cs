@@ -4,6 +4,7 @@ using Antlr4.Runtime.Tree;
 using DaxStudio.Parsers.CommentScript;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using static DaxStudio.Parsers.Grammars.Generated.PreProcessorParser;
@@ -18,6 +19,13 @@ namespace DaxStudio.Parsers.Dax
         private Dictionary<string, List<string>> _arrayParameters;
         private ScriptBatch _currentBatch;
         private List<ScriptBatch> _scriptBatches;
+
+        // The baselines captured by "--> BASELINE" commands seen so far, in script order. Used to
+        // reject a duplicate capture and to reject an "ASSERT ... BASELINE" that references a baseline
+        // which has not been defined in an earlier batch (batches run in order, so a forward reference
+        // could never have any data by the time the assertion runs).
+        private readonly HashSet<string> _capturedBaselines = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
         public PreProcessorListener( Dictionary<string,List<string>> arrayParameters, List<ScriptBatch> scriptBatchs)
         {
             
@@ -264,27 +272,82 @@ namespace DaxStudio.Parsers.Dax
             base.ExitTest(context);
         }
 
+        public override void ExitBaseline([NotNull] BaselineContext context)
+        {
+            var name = GetBaselineName(context.baseline_name());
+
+            var runsCtx = context.runs_clause();
+            var runs = 1;
+            if (runsCtx != null)
+            {
+                // ANTLR error-recovers over a missing integer by inserting a token whose text is
+                // "<missing CS_INTEGER_LITERAL>", so parse defensively - an unhandled FormatException
+                // would abort the whole tree walk and silently drop every command in the script.
+                if (!TryParseInt(runsCtx.CS_INTEGER_LITERAL(), out runs))
+                    throw new CommentScriptCommandException(
+                        "'--> BASELINE ... RUNS' requires a whole number, e.g. '--> BASELINE \"v1\" RUNS 1'.",
+                        context.Start.Line, context.Start.Column);
+
+                if (runs != 1)
+                    throw new CommentScriptCommandException(
+                        "'--> BASELINE ... RUNS n' is reserved for a future release; only 'RUNS 1' is supported today.",
+                        context.Start.Line, context.Start.Column);
+            }
+
+            // Each baseline name may only be captured once per script - a second capture would silently
+            // change what earlier-written asserts compare against.
+            if (_capturedBaselines.Contains(name))
+            {
+                var described = string.Equals(name, BaselineReference.DefaultName, StringComparison.OrdinalIgnoreCase)
+                    ? "The unnamed baseline is"
+                    : $"The baseline '{name}' is";
+                throw new CommentScriptCommandException(
+                    $"{described} already defined earlier in this script. Give each '--> BASELINE' a unique name.",
+                    context.Start.Line, context.Start.Column);
+            }
+            _capturedBaselines.Add(name);
+
+            var cmd = new BaselineCommand(name, runs) { Line = context.Start.Line };
+            _currentBatch.Commands.Add(cmd);
+            OutputCommand(_currentBatch.Output, context);
+            base.ExitBaseline(context);
+        }
+
         public override void ExitAssert([NotNull] AssertContext context)
         {
             int integerValue = 0;
             double doubleValue = 0.0;
-            var property = string.Empty;
-            var comparison = string.Empty;
 
-            var valueNode = context.children[3] as ITerminalNode;
+            var property = context.children[1].GetText();
+            var comparison = context.comparison_op()?.GetText();
 
-            property = context.children[1].GetText();
-            comparison = context.children[2].GetText();
+            // A malformed command (e.g. "--> ASSERT DURATION <=" with no value) error-recovers into a
+            // tree with missing sub-rules. Report that as a command error rather than letting a
+            // NullReferenceException abort the walk and silently drop every command in the script.
+            var operand = context.assert_operand();
+            if (comparison == null || operand == null)
+                throw new CommentScriptCommandException(
+                    "Invalid ASSERT command. Expected '--> ASSERT <DURATION|SE_CPU|SE_QUERIES> <=|<|>=|>|= <value|BASELINE [\"name\"] [* factor]>'.",
+                    context.Start.Line, context.Start.Column);
 
-            if (valueNode.Symbol.Type == CS_INTEGER_LITERAL) { 
-                integerValue = int.Parse(context.children[3].GetText());
-            }
-            if (valueNode.Symbol.Type == CS_REAL_LITERAL)
+            var baseline = BuildBaselineReference(operand.baseline_ref());
+
+            AssertCommand cmd;
+            if (baseline != null)
             {
-                doubleValue = double.Parse(context.children[3].GetText());
+                cmd = new AssertCommand(property, comparison, baseline);
+            }
+            else
+            {
+                if (!TryParseNumeric(operand.numeric_literal(), out integerValue, out doubleValue))
+                    throw new CommentScriptCommandException(
+                        "The value in an ASSERT command must be a number, e.g. '--> ASSERT DURATION < 500'.",
+                        context.Start.Line, context.Start.Column);
+
+                cmd = new AssertCommand(property, comparison, integerValue, doubleValue);
             }
 
-            var cmd = new AssertCommand(property, comparison, integerValue , doubleValue) { Line = context.Start.Line };
+            cmd.Line = context.Start.Line;
             _currentBatch.Commands.Add(cmd);
             OutputCommand( _currentBatch.Output, context);
             base.ExitAssert(context);
@@ -292,10 +355,30 @@ namespace DaxStudio.Parsers.Dax
 
         public override void ExitAssert_rowcount([NotNull] Assert_rowcountContext context)
         {
-            var comparison = context.children[2].GetText();
-            var value = int.Parse(context.children[3].GetText());
+            var comparison = context.comparison_op()?.GetText();
+            var operand = context.assert_rowcount_operand();
+            if (comparison == null || operand == null)
+                throw new CommentScriptCommandException(
+                    "Invalid ASSERT ROWCOUNT command. Expected '--> ASSERT ROWCOUNT <=|<|>=|>|= <value|BASELINE [\"name\"]>'.",
+                    context.Start.Line, context.Start.Column);
 
-            var cmd = new AssertRowcountCommand(comparison, value) { Line = context.Start.Line };
+            var baseline = BuildBaselineReference(operand.baseline_ref());
+
+            AssertRowcountCommand cmd;
+            if (baseline != null)
+            {
+                cmd = new AssertRowcountCommand(comparison, baseline);
+            }
+            else
+            {
+                if (!TryParseInt(operand.CS_INTEGER_LITERAL(), out var value))
+                    throw new CommentScriptCommandException(
+                        "The value in an ASSERT ROWCOUNT command must be a whole number, e.g. '--> ASSERT ROWCOUNT >= 10'.",
+                        context.Start.Line, context.Start.Column);
+                cmd = new AssertRowcountCommand(comparison, value);
+            }
+            cmd.Line = context.Start.Line;
+
             _currentBatch.Commands.Add(cmd);
             OutputCommand(_currentBatch.Output, context);
             base.ExitAssert_rowcount(context);
@@ -325,9 +408,134 @@ namespace DaxStudio.Parsers.Dax
                 cmd.FilePath = fileCtx.CS_STRING_LITERAL().GetText();
             }
 
+            cmd.Baseline = BuildBaselineReference(context.baseline_ref());
+
             _currentBatch.Commands.Add(cmd);
             OutputCommand(_currentBatch.Output, context);
             base.ExitAssert_table_header(context);
+        }
+
+        /// <summary>
+        /// Builds the <see cref="BaselineReference"/> for an <c>ASSERT ... BASELINE ["name"] [* factor]</c>
+        /// or <c>ASSERT ... PREVIOUS [* factor]</c> operand. Returns null when the operand is not a
+        /// baseline reference.
+        /// </summary>
+        /// <remarks>
+        /// A <c>BASELINE</c> reference must resolve to a baseline defined <b>earlier in the script</b>:
+        /// batches run in order, so a forward reference could never have captured any data by the time the
+        /// assertion is evaluated. Catching it at parse time gives a clear message instead of a run-time error.
+        /// <para>
+        /// A <c>PREVIOUS</c> reference is returned <b>unresolved</b>: which batch it refers to depends on
+        /// which batches actually run a query, and <see cref="ScriptBatch.QueryText"/> is not assigned until
+        /// after this tree walk completes. <c>PreviousReferenceResolver</c> resolves it afterwards, so the
+        /// two validations below (both of which need a resolved target) are skipped here.
+        /// </para>
+        /// </remarks>
+        private BaselineReference BuildBaselineReference(Baseline_refContext context)
+        {
+            if (context == null) return null;
+
+            var isPrevious = context.CS_PREVIOUS() != null;
+            var name = isPrevious ? BaselineReference.PreviousName : GetBaselineName(context.baseline_name());
+
+            var factor = 1.0;
+            var factorCtx = context.baseline_factor();
+            if (factorCtx != null)
+            {
+                if (!TryParseDouble(factorCtx.numeric_literal(), out factor))
+                    throw new CommentScriptCommandException(
+                        "The baseline factor must be a number, e.g. '--> ASSERT DURATION <= BASELINE * 1.1'.",
+                        context.Start.Line, context.Start.Column);
+
+                if (factor <= 0)
+                    throw new CommentScriptCommandException(
+                        $"The baseline factor must be greater than zero, but was {factorCtx.numeric_literal().GetText()}.",
+                        context.Start.Line, context.Start.Column);
+            }
+
+            if (isPrevious) return new BaselineReference(name, factor, isPrevious: true);
+
+            if (!_capturedBaselines.Contains(name))
+            {
+                var described = string.Equals(name, BaselineReference.DefaultName, StringComparison.OrdinalIgnoreCase)
+                    ? "No unnamed baseline has been defined"
+                    : $"The baseline '{name}' has not been defined";
+                throw new CommentScriptCommandException(
+                    $"{described} earlier in this script. Add a '--> BASELINE{(string.Equals(name, BaselineReference.DefaultName, StringComparison.OrdinalIgnoreCase) ? string.Empty : $" \"{name}\"")}' command to an earlier batch (batches are separated by '--> GO').",
+                    context.Start.Line, context.Start.Column);
+            }
+
+            // A batch captures its own results/timings, so comparing it to a baseline it defines itself
+            // would always trivially pass. This is always a mistake - the candidate belongs in a later batch.
+            if (_currentBatch.Commands.OfType<BaselineCommand>().Any(b => string.Equals(b.Name, name, StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new CommentScriptCommandException(
+                    "A batch cannot assert against a baseline it defines itself. Put the '--> BASELINE' capture and the assertions in separate batches, separated by '--> GO'.",
+                    context.Start.Line, context.Start.Column);
+            }
+
+            return new BaselineReference(name, factor);
+        }
+
+        /// <summary>
+        /// Resolves a baseline name, returning <see cref="BaselineReference.DefaultName"/> for the
+        /// unnamed form. CS_STRING_LITERAL is already unquoted/unescaped by the lexer action, so a user
+        /// can write a name that collides with one DAX Studio generates internally - those are rejected.
+        /// </summary>
+        private static string GetBaselineName(Baseline_nameContext context)
+        {
+            if (context == null) return BaselineReference.DefaultName;
+
+            var name = context.GetText();
+
+            // A quoted name may be blank ('--> BASELINE ""'). BaselineCommand and BaselineStore both
+            // normalise blank to the unnamed baseline, so normalise here too - otherwise the
+            // duplicate-name guard would compare "" against "(default)", let both through, and the two
+            // captures would silently collide on the same store key.
+            if (string.IsNullOrWhiteSpace(name)) return BaselineReference.DefaultName;
+
+            if (BaselineReference.IsReservedName(name))
+                throw new CommentScriptCommandException(
+                    $"'{name}' is reserved for internal use and cannot be used as a baseline name. Choose a different name.",
+                    context.Start.Line, context.Start.Column);
+
+            return name;
+        }
+
+        /// <summary>
+        /// Parses a numeric literal terminal defensively. ANTLR error-recovers over a missing token by
+        /// inserting one whose text is "&lt;missing ...&gt;", so a bare <c>int.Parse</c> would throw a
+        /// <see cref="FormatException"/> that escapes the tree walk and silently drops every command in
+        /// the script. Returns false so the caller can raise a proper command error instead.
+        /// </summary>
+        private static bool TryParseInt(ITerminalNode node, out int value)
+        {
+            value = 0;
+            return node != null && int.TryParse(node.GetText(), NumberStyles.Integer, CultureInfo.InvariantCulture, out value);
+        }
+
+        private static bool TryParseDouble(Numeric_literalContext context, out double value)
+        {
+            value = 0;
+            return context != null
+                && double.TryParse(context.GetText(), NumberStyles.Float | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out value);
+        }
+
+        /// <summary>
+        /// Parses an ASSERT value into either <paramref name="integerValue"/> or
+        /// <paramref name="doubleValue"/>, depending on which literal the grammar matched, leaving the
+        /// other at zero (the shape <see cref="AssertCommand"/> expects).
+        /// </summary>
+        private static bool TryParseNumeric(Numeric_literalContext context, out int integerValue, out double doubleValue)
+        {
+            integerValue = 0;
+            doubleValue = 0.0;
+            if (context == null) return false;
+
+            if (context.CS_INTEGER_LITERAL() != null)
+                return TryParseInt(context.CS_INTEGER_LITERAL(), out integerValue);
+
+            return TryParseDouble(context, out doubleValue);
         }
 
         private static AssertTableFormat MapAssertTableFormat(Assert_table_fileContext fileCtx)
@@ -348,6 +556,15 @@ namespace DaxStudio.Parsers.Dax
             {
                 throw new CommentScriptCommandException(
                     "'--> ASSERT TABLE' cannot combine inline '-->>' rows with a file (CSV/TXT/MD/PARQUET). Use one or the other.",
+                    context.Start.Line, context.Start.Column);
+            }
+
+            // The expected table comes from the captured baseline, so inline rows would be silently
+            // ignored - flag the contradiction instead.
+            if (assertTableCmd.Baseline != null)
+            {
+                throw new CommentScriptCommandException(
+                    "'--> ASSERT TABLE' cannot combine inline '-->>' rows with a BASELINE. Use one or the other.",
                     context.Start.Line, context.Start.Column);
             }
 

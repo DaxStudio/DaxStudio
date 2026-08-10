@@ -59,6 +59,16 @@ namespace DaxStudio.Core.Interfaces
         void PrepareBatchAssertions(int batchIndex);
 
         /// <summary>
+        /// Called (and awaited) by the results-target batch loop immediately BEFORE a batch's query is
+        /// executed, ahead of <see cref="PrepareBatchAssertions"/>. Runs the comment-script commands that
+        /// must take effect per batch rather than once per script - currently just
+        /// <c>--&gt; CLEARCACHE</c>, so that a script comparing a baseline batch to a candidate batch can
+        /// give each batch the same cold-cache starting point. Batch 0's commands are already handled by
+        /// the whole-script pre-query pass, so this is a no-op for the first batch.
+        /// </summary>
+        Task ProcessBatchPreQueryCommandsAsync(int batchIndex);
+
+        /// <summary>
         /// Called (and awaited) by the results-target batch loop immediately AFTER a batch's query has
         /// produced its result tables, before the next batch starts. Evaluates just this batch's
         /// assertions - waiting for and capturing this batch's Server Timings slice for any performance

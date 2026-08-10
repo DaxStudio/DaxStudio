@@ -117,6 +117,11 @@ namespace DaxStudio.Parsers.PreProcessor
             // CS_GO). This aligns one text segment per batch produced by the listener.
             AssignBatchQueryText(queryText, result.Batches);
 
+            // Resolve any "ASSERT ... PREVIOUS" operands now that QueryText is known - PREVIOUS means
+            // the previous batch that actually RUNS A QUERY, which cannot be determined during the
+            // tree walk above.
+            PreviousReferenceResolver.Resolve(result.Batches, result.CommandErrors);
+
             return result;
         }
 

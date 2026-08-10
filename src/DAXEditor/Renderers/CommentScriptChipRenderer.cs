@@ -30,7 +30,7 @@ namespace DAXEditorControl.Renderers
             new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
                 "CONNECT", "USE", "OPEN", "PARAMETER", "SET", "OUTPUT", "TRACE",
-                "CLEARCACHE", "SAVEAS", "METRICS", "SHOW", "ASSERT", "TEST", "RESULTS", "GO"
+                "CLEARCACHE", "SAVEAS", "METRICS", "SHOW", "ASSERT", "BASELINE", "TEST", "RESULTS", "GO"
             };
 
         private const double HorizontalPadding = 3.0;

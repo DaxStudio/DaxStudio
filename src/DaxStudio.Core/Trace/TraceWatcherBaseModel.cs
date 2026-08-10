@@ -72,6 +72,16 @@ namespace DaxStudio.Core.Trace
         // This is where you can do any processing of the events before displaying them to the UI
         protected abstract void ProcessResults();
 
+        /// <summary>
+        /// Set by <see cref="ProcessResults"/> when the events seen so far do not yet make up a
+        /// complete result (e.g. the only QueryEnd belonged to a DAX Studio internal query such as the
+        /// session-refresh run after clearing the cache). When true <see cref="ProcessAllEvents"/>
+        /// suppresses the <see cref="QueryTraceCompletedEvent"/> so consumers waiting on the trace -
+        /// notably the comment-script performance assertions - keep waiting for the user's real query
+        /// instead of reading empty or partial metrics.
+        /// </summary>
+        protected bool ResultsIncomplete { get; set; }
+
         protected virtual void ProcessSingleEvent(DaxStudioTraceEventArgs singleEvent)
         {
             // by default do nothing with individual events
@@ -82,7 +92,17 @@ namespace DaxStudio.Core.Trace
             ResetTimeout();
 
             Log.Verbose("{class} {method} {message}", GetSubclassName(), nameof(ProcessAllEvents), "starting ProcessResults");
+            ResultsIncomplete = false;
             if (!IsPaused) ProcessResults();
+
+            // The events seen so far were not a complete result (see ResultsIncomplete) - stay busy and
+            // do not signal completion, so anything awaiting the trace waits for the user's real query.
+            if (ResultsIncomplete)
+            {
+                Log.Verbose("{class} {method} {message}", GetSubclassName(), nameof(ProcessAllEvents), "results incomplete, not raising QueryTraceCompletedEvent");
+                return;
+            }
+
             IsBusy = false;
             _eventAggregator.PublishAsync(new QueryTraceCompletedEvent(this));
         }

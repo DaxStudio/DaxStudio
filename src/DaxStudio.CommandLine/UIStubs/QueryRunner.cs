@@ -192,6 +192,10 @@ namespace DaxStudio.CommandLine.UIStubs
         public System.Threading.Tasks.Task ProcessBatchAssertionsAsync(int batchIndex, System.Collections.Generic.IReadOnlyList<System.Data.DataTable> batchTables)
             => System.Threading.Tasks.Task.CompletedTask;
 
+        // Per-batch "--> CLEARCACHE" is an interactive-run concern; the CLI runs its own batch loop.
+        public System.Threading.Tasks.Task ProcessBatchPreQueryCommandsAsync(int batchIndex)
+            => System.Threading.Tasks.Task.CompletedTask;
+
         public void SetResultTabs(System.Collections.Generic.IList<DaxStudio.Core.Model.ResultTabDescriptor> tabs)
         {
             if (tabs == null) return;

@@ -97,6 +97,8 @@
 	      <Word>METRICS</Word>
 	      <Word>SHOW</Word>
 	      <Word>ASSERT</Word>
+	      <Word>BASELINE</Word>
+	      <Word>PREVIOUS</Word>
 	      <Word>TEST</Word>
 	      <Word>RESULTS</Word>
 	      <Word>CSV</Word>

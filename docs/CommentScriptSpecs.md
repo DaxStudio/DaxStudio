@@ -190,10 +190,14 @@ actually writes the file, which is useful for capturing metrics as part of a CI/
 ```
 
 The `SHOW DEPENDENCIES`, `SHOW LAST_UPDATED` and `SHOW MAX_UPDATED` commands render a tree-grid in the
-Results pane instead of running the query. That tree-grid is mutually exclusive with the normal
-results grid for that run and can be dismissed with the *Hide* button, revealing the last query
-results again. `SHOW DIAGRAM`, `SHOW METRICS` and `SHOW DELTA` instead open their respective tool
-windows (see the table below).
+Results pane. That tree-grid is mutually exclusive with the normal results grid for that run and can
+be dismissed with the *Hide* button, revealing the last query results again. `SHOW DIAGRAM`,
+`SHOW METRICS` and `SHOW DELTA` instead open their respective tool windows (see the table below).
+
+Only `SHOW DEPENDENCIES` and `SHOW DIAGRAM` **consume** the batch's DAX — they analyse it as their
+target and never execute it. Every other `SHOW` variant ignores the DAX, so a query in the same batch
+still runs and produces its own results. (This matters for `--> ASSERT ... PREVIOUS`, which only ever
+refers to a batch that actually runs its query.)
 
 | Sub-command | Behaviour |
 |---|---|
@@ -231,6 +235,16 @@ rows returned (`ROWCOUNT`) or a Server Timings metric (`DURATION`, `SE_CPU`, `SE
 the actual result set — including a single value or a single column — use `ASSERT TABLE` (see below),
 which compares the query output against inline expected rows or a baseline `CSV/TXT/MD/PARQUET` file.
 Assertions are especially useful in a command-line scenario where batches of these can be run.
+
+Instead of a literal, the right-hand side may be a **baseline** captured earlier in the script — which
+is how you assert that an optimised query is *no slower* than the original rather than faster than a
+hard-coded number. See [Baseline](#baseline) below, or [`PREVIOUS`](#previous) for the shorthand that
+compares against the preceding query without naming anything.
+
+The performance metrics come from the Server Timings trace. Both DAX Studio and `dscmd` start that
+trace automatically when a script contains a performance assertion, so no explicit
+`--> TRACE SERVERTIMINGS ON` is required. If the trace cannot be started, each performance assertion
+reports an **error** ("metric not captured") rather than silently passing.
 
 ## Assert Table
 ```
@@ -313,6 +327,204 @@ Recognized type names: `STRING` (or `TEXT`), `INT64` (or `INTEGER`, `INT`), `DOU
 ```
 
 This is particularly useful for distinguishing `DOUBLE` from `CURRENCY` (both look like decimal numbers), or ensuring a column of numbers is kept as `STRING`.
+
+## Baseline
+
+```
+--> BASELINE ["<name>"]
+```
+
+`BASELINE` marks its batch as a **baseline capture**: after the batch's query runs, both its result
+set and its Server Timings metrics are snapshotted so that a later batch can compare against them.
+This is how you prove an optimisation is *correct and faster* in one script — the result set must be
+unchanged, and the timings must not regress — without hard-coding any numbers.
+
+A later batch then references the capture with the `BASELINE` operand:
+
+```
+--> ASSERT TABLE [UNORDERED|PARTIAL] BASELINE ["<name>"]
+--> ASSERT ROWCOUNT   [>|>=|<|<=|=] BASELINE ["<name>"] [* <factor>]
+--> ASSERT DURATION   [>|>=|<|<=|=] BASELINE ["<name>"] [* <factor>]
+--> ASSERT SE_CPU     [>|>=|<|<=|=] BASELINE ["<name>"] [* <factor>]
+--> ASSERT SE_QUERIES [>|>=|<|<=|=] BASELINE ["<name>"] [* <factor>]
+```
+
+The name is optional — omit it on both the capture and the reference to use the single unnamed
+baseline. Name your baselines when a script compares more than two variants. The name may be quoted
+(`"original"`) or a bare identifier (`original`).
+
+> **Tip:** for the common "is this version faster than the one before it?" case you can skip the
+> `--> BASELINE` command entirely and use [`PREVIOUS`](#previous) instead.
+
+**Example — is my optimisation correct *and* faster?**
+
+```
+--> TEST "Sales YTD optimisation"
+
+--> BASELINE "original"
+--> CLEARCACHE
+EVALUATE
+SUMMARIZECOLUMNS (
+    'Date'[Year],
+    "Sales", CALCULATE ( [Sales], DATESYTD ( 'Date'[Date] ) )
+)
+ORDER BY 'Date'[Year]
+
+--> GO
+
+--> CLEARCACHE
+--> ASSERT TABLE      BASELINE "original"            // identical result set
+--> ASSERT DURATION   <= BASELINE "original" * 1.1   // allow 10% timing noise
+--> ASSERT SE_QUERIES <= BASELINE "original"         // no extra storage engine queries
+EVALUATE
+SUMMARIZECOLUMNS (
+    'Date'[Year],
+    "Sales", [Sales YTD]
+)
+ORDER BY 'Date'[Year]
+```
+
+### The factor
+
+The optional `* <factor>` multiplies the captured value before the comparison. One mechanism covers
+both a tolerance and an improvement target:
+
+| Written | Passes when | Reads as |
+|---|---|---|
+| `<= BASELINE` | `actual <= baseline` | no slower than before |
+| `<= BASELINE * 1.1` | `actual <= baseline * 1.1` | **allow up to 10% slower** (absorbs timing noise) |
+| `<= BASELINE * 0.9` | `actual <= baseline * 0.9` | **require at least 10% faster** |
+
+The factor must be greater than zero.
+
+### Comparing the result set
+
+`ASSERT TABLE BASELINE` reuses the ordinary `ASSERT TABLE` comparison, so the `UNORDERED` and
+`PARTIAL` modifiers behave exactly as they do for inline rows, and the default is **ordered**:
+
+```
+--> ASSERT TABLE BASELINE "original"            // same rows, same order
+--> ASSERT TABLE UNORDERED BASELINE "original"  // same rows, any order
+--> ASSERT TABLE PARTIAL BASELINE "original"    // baseline rows must all be present
+```
+
+Use `UNORDERED` when the two queries may return rows in a different order — add an `ORDER BY` to both
+queries if you want the stricter ordered check.
+
+### Semantics and errors
+
+- **Server Timings is started automatically.** A `--> BASELINE` batch *always* captures its timings as
+  well as its results, so the trace is auto-started for it (just as it is for a batch containing
+  `--> ASSERT DURATION`). This means adding a performance assertion later never requires re-running the
+  baseline. Each batch gets its own isolated trace slice.
+- **Ordering:** the baseline must be captured in an **earlier** batch than the assertion that
+  references it — batches run in order, so a forward reference could never hold any data. A reference
+  to an undefined or later baseline is a hard error reported before the query runs.
+- **One capture per name:** defining the same baseline name (or the unnamed baseline) twice is a hard
+  error, because it would silently change what an earlier-written assertion compares against.
+- **Separate batches:** a batch cannot assert against a baseline it defines itself; that comparison
+  would trivially pass. Put the capture and the assertions either side of a `--> GO`.
+- **Cache state:** duration is dominated by cache state, so put a `--> CLEARCACHE` in **both** the
+  baseline batch and the candidate batch (as in the example above) — otherwise you are comparing a
+  cold run to a warm one. `--> CLEARCACHE` is applied per batch, so each batch gets the same cold
+  start.
+- **Timing noise:** a bare `<= BASELINE` on `DURATION` can fail intermittently on a busy machine. Use a
+  factor such as `* 1.1` for slack, and prefer `SE_QUERIES` / `SE_CPU` where you can — they are far
+  more stable indicators that an optimisation genuinely reduced work.
+- **Output target:** per-batch timings (and per-batch `CLEARCACHE`) are captured by the **Grid** output
+  target. With another output target the result-set comparisons still work, but a baseline captures no
+  timings and any performance assertion against it reports an error rather than a misleading pass.
+- **Scope:** a baseline lives for a single run and is cleared at the start of the next one.
+- **In `dscmd`:** supported. When a script contains a performance assertion the command line starts a
+  Server Timings trace and runs the script's batches **in order on a single connection**, giving each
+  batch its own timing slice, so `--> BASELINE` captures and baseline-relative assertions behave as
+  they do in the UI. `--> CLEARCACHE` is honoured there too, before whichever batch it appears in.
+  `--> BASELINE "v1" RUNS <n>` is reserved for a future release; only `RUNS 1` is accepted today.
+
+## Previous
+
+```
+--> ASSERT TABLE [UNORDERED|PARTIAL] PREVIOUS
+--> ASSERT ROWCOUNT   [>|>=|<|<=|=] PREVIOUS [* <factor>]
+--> ASSERT DURATION   [>|>=|<|<=|=] PREVIOUS [* <factor>]
+--> ASSERT SE_CPU     [>|>=|<|<=|=] PREVIOUS [* <factor>]
+--> ASSERT SE_QUERIES [>|>=|<|<=|=] PREVIOUS [* <factor>]
+```
+
+`PREVIOUS` is shorthand for **the previous batch that runs a query**. That batch is captured as a
+baseline automatically, so there is no `--> BASELINE` command and no name to invent — which makes the
+common "is this version faster than the one before it?" check almost free to write, and makes a
+**chain** of progressive optimisations read naturally:
+
+```
+--> TEST "Sales YTD optimisation"
+
+--> CLEARCACHE
+EVALUATE
+SUMMARIZECOLUMNS ( 'Date'[Year], "Sales", CALCULATE ( [Sales], DATESYTD ( 'Date'[Date] ) ) )
+ORDER BY 'Date'[Year]
+
+--> GO
+
+--> CLEARCACHE
+--> ASSERT TABLE      PREVIOUS            // same results as the version above
+--> ASSERT DURATION   <= PREVIOUS         // and no slower
+EVALUATE
+SUMMARIZECOLUMNS ( 'Date'[Year], "Sales", [Sales YTD] )
+ORDER BY 'Date'[Year]
+
+--> GO
+
+--> CLEARCACHE
+--> ASSERT TABLE      PREVIOUS            // same results as version 2
+--> ASSERT DURATION   <= PREVIOUS * 0.9   // and 10% faster again
+EVALUATE
+SUMMARIZECOLUMNS ( 'Date'[Year], "Sales", [Sales YTD Optimised] )
+ORDER BY 'Date'[Year]
+```
+
+The middle batch is *both* a baseline (for the batch after it) and an asserter (against the batch
+before it), which is exactly what a step-by-step tuning session looks like.
+
+### `PREVIOUS` or a named `BASELINE`?
+
+They answer **different questions**, so pick deliberately:
+
+| Use | When |
+|---|---|
+| `PREVIOUS` | Each version is compared to **the one immediately before it**. Best for iterating: "did this change make it better than my last attempt?" |
+| `BASELINE "name"` | Several candidates are all compared to **one fixed original**. Best for evaluating alternatives: "which of these three rewrites beats the original?" |
+
+Chaining `PREVIOUS` down a long script does **not** tell you the last version beat the *first* one —
+only that each step beat the step before it. To assert against the original, name it:
+
+```
+--> BASELINE "original"
+EVALUATE ...v1...
+--> GO
+--> ASSERT DURATION <= BASELINE "original"     // v2 vs the original
+EVALUATE ...v2...
+--> GO
+--> ASSERT DURATION <= BASELINE "original"     // v3 vs the original (not vs v2)
+EVALUATE ...v3...
+```
+
+### Semantics and errors
+
+- **"Previous" means the previous batch that runs a query.** Batches that contain only comment-script
+  commands — a leading `--> CONNECT` / `--> USE`, or an interposed `--> SHOW METRICS` — are skipped
+  over, so `PREVIOUS` always means "the query before this one".
+- The batch `PREVIOUS` refers to is captured exactly like an explicit `--> BASELINE`: it snapshots
+  both its result set and its Server Timings metrics, and **starts the Server Timings trace
+  automatically**.
+- The optional `* <factor>` works exactly as it does for `BASELINE` (`* 1.1` allows a 10% regression,
+  `* 0.9` demands a 10% improvement).
+- `PREVIOUS` and named baselines can be mixed freely in the same script.
+- **No earlier query:** a `PREVIOUS` in the first batch that runs a query (or with only comment-only
+  batches before it) is a hard error reported before the query runs.
+- Same cache-state guidance as `BASELINE`: put a `--> CLEARCACHE` in **every** batch being compared,
+  or you are comparing a cold run to a warm one.
+- Like `BASELINE`, `PREVIOUS` works in `dscmd` as well as the UI.
 
 ## Other ideas:
 •	Passing a folder on the command line could be an easy way to run a batch of these

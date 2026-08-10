@@ -200,6 +200,9 @@ CS_GO:					  'GO';
 CS_OUTPUT:                'OUTPUT';
 CS_TEST:                  'TEST';
 CS_ASSERT:                'ASSERT';
+CS_BASELINE:              'BASELINE';
+CS_PREVIOUS:              'PREVIOUS';
+CS_RUNS:                  'RUNS';
 CS_CLEARCACHE:            'CLEARCACHE';
 CS_SAVEAS:                'SAVEAS';
 CS_PARAMETER:             '@' IdentifierOrKeyword;
@@ -209,6 +212,10 @@ CS_LESSTHAN:               '<' ;
 CS_GREATER_OR_EQUAL:       '>=';
 CS_LESS_OR_EQUAL:          '<='; 
 CS_COMMA:                  ',';
+// The multiplier in a baseline factor, e.g. "--> ASSERT DURATION <= BASELINE "v1" * 1.1".
+// Only ever appears after a BASELINE reference, so it cannot be confused with anything else in
+// this mode (CS_IDENTIFIER does not include '*', and CONNECT/USE unquoted values do not contain one).
+CS_STAR:                   '*';
 
 CS_CSV:                   'CSV';
 CS_XLSX:                  'XLSX';

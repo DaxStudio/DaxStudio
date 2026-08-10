@@ -64,19 +64,130 @@ namespace DaxStudio.Parsers.Tests
         public void GetCompletions_AfterAssertTable_OffersFromResults()
         {
             var items = CommentScriptCompletionProvider.GetCompletions("--> ASSERT TABLE ");
-            var item = items.Single();
-            Assert.AreEqual(CommentScriptCompletionProvider.FromResultsLabel, item.Label);
+            var item = items.First(i => i.Label == CommentScriptCompletionProvider.FromResultsLabel);
             Assert.AreEqual(CommentScriptCompletionProvider.FromResultsInsertText, item.InsertText);
         }
 
         [TestMethod]
         public void GetCompletions_AfterAssertTableModifier_OffersFromResults()
         {
-            var unordered = CommentScriptCompletionProvider.GetCompletions("--> ASSERT TABLE UNORDERED ");
-            Assert.AreEqual(CommentScriptCompletionProvider.FromResultsLabel, unordered.Single().Label);
+            var unordered = CommentScriptCompletionProvider.GetCompletions("--> ASSERT TABLE UNORDERED ").Select(i => i.Label).ToList();
+            CollectionAssert.Contains(unordered, CommentScriptCompletionProvider.FromResultsLabel);
 
-            var partial = CommentScriptCompletionProvider.GetCompletions("--> ASSERT TABLE PARTIAL ");
-            Assert.AreEqual(CommentScriptCompletionProvider.FromResultsLabel, partial.Single().Label);
+            var partial = CommentScriptCompletionProvider.GetCompletions("--> ASSERT TABLE PARTIAL ").Select(i => i.Label).ToList();
+            CollectionAssert.Contains(partial, CommentScriptCompletionProvider.FromResultsLabel);
+        }
+
+        [TestMethod]
+        public void GetCompletions_EmptyMarker_IncludesBaseline()
+        {
+            var labels = CommentScriptCompletionProvider.GetCompletions("--> ").Select(i => i.Label).ToList();
+            CollectionAssert.Contains(labels, "BASELINE");
+        }
+
+        [TestMethod]
+        public void GetCompletions_AfterAssertTable_AlsoOffersBaseline()
+        {
+            var labels = CommentScriptCompletionProvider.GetCompletions("--> ASSERT TABLE ").Select(i => i.Label).ToList();
+            CollectionAssert.Contains(labels, "BASELINE");
+
+            var unordered = CommentScriptCompletionProvider.GetCompletions("--> ASSERT TABLE UNORDERED ").Select(i => i.Label).ToList();
+            CollectionAssert.Contains(unordered, "BASELINE");
+        }
+
+        [TestMethod]
+        public void GetCompletions_AfterComparisonOperator_OffersBaseline()
+        {
+            foreach (var op in new[] { "<=", "<", ">=", ">", "=" })
+            {
+                var labels = CommentScriptCompletionProvider.GetCompletions($"--> ASSERT DURATION {op} ").Select(i => i.Label).ToList();
+                CollectionAssert.Contains(labels, "BASELINE", $"operator '{op}'");
+            }
+
+            var rowcount = CommentScriptCompletionProvider.GetCompletions("--> ASSERT ROWCOUNT = ").Select(i => i.Label).ToList();
+            CollectionAssert.Contains(rowcount, "BASELINE");
+        }
+
+        [TestMethod]
+        public void GetCompletions_AfterComparisonOperator_AlsoOffersPrevious()
+        {
+            var labels = CommentScriptCompletionProvider.GetCompletions("--> ASSERT DURATION <= ").Select(i => i.Label).ToList();
+            CollectionAssert.Contains(labels, "PREVIOUS");
+
+            var rowcount = CommentScriptCompletionProvider.GetCompletions("--> ASSERT ROWCOUNT = ").Select(i => i.Label).ToList();
+            CollectionAssert.Contains(rowcount, "PREVIOUS");
+        }
+
+        [TestMethod]
+        public void GetCompletions_AfterAssertTable_AlsoOffersPrevious()
+        {
+            var labels = CommentScriptCompletionProvider.GetCompletions("--> ASSERT TABLE ").Select(i => i.Label).ToList();
+            CollectionAssert.Contains(labels, "PREVIOUS");
+
+            var unordered = CommentScriptCompletionProvider.GetCompletions("--> ASSERT TABLE UNORDERED ").Select(i => i.Label).ToList();
+            CollectionAssert.Contains(unordered, "PREVIOUS");
+        }
+
+        [TestMethod]
+        public void GetCompletions_TypingPreviousAfterOperator_FiltersByPrefix()
+        {
+            var labels = CommentScriptCompletionProvider.GetCompletions("--> ASSERT DURATION <= PRE").Select(i => i.Label).ToList();
+            CollectionAssert.Contains(labels, "PREVIOUS");
+            CollectionAssert.DoesNotContain(labels, "BASELINE");
+        }
+
+        [TestMethod]
+        public void GetCompletions_TypingBaselineAfterOperator_FiltersByPrefix()
+        {
+            var labels = CommentScriptCompletionProvider.GetCompletions("--> ASSERT DURATION <= BAS").Select(i => i.Label).ToList();
+            CollectionAssert.Contains(labels, "BASELINE");
+        }
+
+        [TestMethod]
+        public void GetCompletions_AfterBaselineKeyword_OffersCapturedBaselineNames()
+        {
+            const string script = "--> BASELINE \"original\"\nEVALUATE { 1 }\n--> GO\n";
+
+            var labels = CommentScriptCompletionProvider
+                .GetCompletions("--> ASSERT DURATION <= BASELINE ", script)
+                .Select(i => i.Label).ToList();
+
+            CollectionAssert.Contains(labels, "\"original\"");
+        }
+
+        [TestMethod]
+        public void GetCompletions_AfterBaselineKeywordOnAssertTable_OffersCapturedBaselineNames()
+        {
+            const string script = "--> BASELINE \"original\"\nEVALUATE { 1 }\n--> GO\n";
+
+            var labels = CommentScriptCompletionProvider
+                .GetCompletions("--> ASSERT TABLE UNORDERED BASELINE ", script)
+                .Select(i => i.Label).ToList();
+
+            CollectionAssert.Contains(labels, "\"original\"");
+        }
+
+        [TestMethod]
+        public void GetCompletions_TypingBaselineName_FiltersByPrefix()
+        {
+            const string script = "--> BASELINE \"original\"\n--> GO\n--> BASELINE \"tuned\"\n--> GO\n";
+
+            var labels = CommentScriptCompletionProvider
+                .GetCompletions("--> ASSERT DURATION <= BASELINE \"or", script)
+                .Select(i => i.Label).ToList();
+
+            CollectionAssert.Contains(labels, "\"original\"");
+            CollectionAssert.DoesNotContain(labels, "\"tuned\"");
+        }
+
+        [TestMethod]
+        public void GetDefinedBaselines_SkipsTheUnnamedForm()
+        {
+            const string script = "--> BASELINE\n--> GO\n--> BASELINE bare\n--> GO\n--> BASELINE \"quoted\"\n";
+
+            var names = CommentScriptCompletionProvider.GetDefinedBaselines(script).ToList();
+
+            CollectionAssert.AreEqual(new[] { "bare", "quoted" }, names);
         }
 
         [TestMethod]

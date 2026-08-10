@@ -1,4 +1,4 @@
-﻿using Serilog;
+using Serilog;
 using Spectre.Console.Cli;
 using System.ComponentModel;
 using Spectre.Console;
@@ -189,54 +189,18 @@ namespace DaxStudio.CommandLine.Commands
                     await ExecuteSaveAsCommandsAsync(runner, settings, batches, saveAsCommands, cancellationToken);
                 }
 
-                bool HasAsserts(ScriptBatch b) =>
-                    b.Commands.Any(c => c is AssertRowcountCommand || c is AssertTableCommand || c is AssertCommand);
-
-                var assertBatches = batches?.Where(HasAsserts).ToList() ?? new List<ScriptBatch>();
+                var assertBatches = batches?.Where(BatchHasAsserts).ToList() ?? new List<ScriptBatch>();
                 if (assertBatches.Count == 0)
                 {
                     return 0;
                 }
 
-                var results = new List<TestResult>();
-                var warnedPerf = false;
                 var assertBaseDir = !string.IsNullOrEmpty(settings.File)
                     ? Path.GetDirectoryName(Path.GetFullPath(settings.File))
                     : null;
 
-                foreach (var batch in assertBatches)
-                {
-                    var testName = batch.Commands.OfType<TestCommand>().FirstOrDefault()?.TestName;
-
-                    DataTable dt = null;
-                    if (!string.IsNullOrWhiteSpace(batch.QueryText))
-                    {
-                        using (var reader = runner.ExecuteDataReaderQuery(batch.QueryText, settings.ParameterCollection))
-                        {
-                            dt = new DataTable();
-                            dt.Load(reader);
-                        }
-                    }
-                    var rowCount = dt?.Rows.Count ?? 0;
-
-                    foreach (var cmd in batch.Commands.OfType<AssertRowcountCommand>())
-                    {
-                        results.Add(AssertionEngine.EvaluateRowCount(cmd, rowCount, testName));
-                    }
-                    foreach (var cmd in batch.Commands.OfType<AssertTableCommand>())
-                    {
-                        results.Add(AssertionEngine.EvaluateTable(cmd, dt, testName, assertBaseDir));
-                    }
-                    foreach (var cmd in batch.Commands.OfType<AssertCommand>())
-                    {
-                        if (!warnedPerf)
-                        {
-                            Log.Warning("Performance assertions are not yet supported in dscmd and will be reported as errors");
-                            warnedPerf = true;
-                        }
-                        results.Add(AssertionEngine.EvaluatePerformance(cmd, new Dictionary<PerformanceProperty, double>(), testName));
-                    }
-                }
+                var results = await EvaluateAssertionsAsync(
+                    runner, settings, batches, assertBaseDir, cancellationToken);
 
                 var passed = results.Count(r => r.Outcome == TestOutcome.Passed);
                 var failed = results.Count(r => r.Outcome == TestOutcome.Failed);
@@ -288,6 +252,392 @@ namespace DaxStudio.CommandLine.Commands
 
         private static bool IsDaxxPath(string path)
             => !string.IsNullOrEmpty(path) && path.EndsWith(".daxx", StringComparison.OrdinalIgnoreCase);
+
+        #region Assertions
+
+        internal static bool BatchHasAsserts(ScriptBatch b) =>
+            b.Commands.Any(c => c is AssertRowcountCommand || c is AssertTableCommand || c is AssertCommand);
+
+        internal static bool BatchIsBaseline(ScriptBatch b) => b.Commands.OfType<BaselineCommand>().Any();
+
+        /// <summary>
+        /// True when the script must be run <b>in order on a single traced connection</b> rather than by
+        /// the cheap "run just the asserting batches" path: it captures a baseline (so batch order and
+        /// snapshotting matter) and/or asserts on a performance metric (so each batch needs its own
+        /// Server Timings slice).
+        /// </summary>
+        internal static bool RequiresSequencedRun(IReadOnlyList<ScriptBatch> batches, out bool needsTrace)
+        {
+            var allCommands = batches?.SelectMany(b => b.Commands).ToList() ?? new List<ScriptCommand>();
+            var hasBaselines = allCommands.OfType<BaselineCommand>().Any();
+
+            // Only a performance assertion consumes the captured metrics, so that alone decides whether
+            // the (comparatively expensive) trace is worth starting.
+            needsTrace = allCommands.OfType<AssertCommand>().Any();
+
+            return hasBaselines || needsTrace;
+        }
+
+        /// <summary>
+        /// Runs the script's comment-script assertions and returns one <see cref="TestResult"/> per
+        /// assertion.
+        /// </summary>
+        /// <remarks>
+        /// Two execution strategies, chosen by what the script actually needs:
+        /// <list type="bullet">
+        /// <item><b>Simple</b> - no performance assertions and no baselines. Only the batches that carry
+        /// assertions are run, on the shared query runner. This is the cheap path and is what nearly
+        /// every result-only script takes.</item>
+        /// <item><b>Sequenced</b> - the script has <c>--&gt; BASELINE</c> (so batches must run in order and
+        /// be snapshotted) and/or performance assertions (so each batch needs its own isolated Server
+        /// Timings slice). Runs on a dedicated traced connection, mirroring what the UI does.</item>
+        /// </list>
+        /// </remarks>
+        private async Task<List<TestResult>> EvaluateAssertionsAsync(
+            QueryRunner runner, Settings settings, IReadOnlyList<ScriptBatch> batches,
+            string assertBaseDir, CancellationToken cancellationToken)
+        {
+            if (!RequiresSequencedRun(batches, out var needsTrace))
+                return EvaluateAssertionsSimple(runner, settings, batches, assertBaseDir);
+
+            return await EvaluateAssertionsSequencedAsync(
+                runner, settings, batches, assertBaseDir, needsTrace, cancellationToken);
+        }
+
+        /// <summary>
+        /// The cheap path: run each asserting batch on the shared runner and evaluate. No trace, no
+        /// baseline store - neither is reachable here, because a baseline reference can only be parsed
+        /// when a <c>--&gt; BASELINE</c> capture exists somewhere in the script.
+        /// </summary>
+        private static List<TestResult> EvaluateAssertionsSimple(
+            QueryRunner runner, Settings settings, IReadOnlyList<ScriptBatch> batches, string assertBaseDir)
+        {
+            var results = new List<TestResult>();
+
+            foreach (var batch in batches.Where(BatchHasAsserts))
+            {
+                // A batch with no query has nothing to assert about - report it rather than evaluating
+                // against a null table, where "ASSERT ROWCOUNT = 0" would otherwise pass.
+                if (!batch.RunsItsQuery)
+                {
+                    results.AddRange(BatchNotEvaluated(batch));
+                    continue;
+                }
+
+                DataTable dt;
+                using (var reader = runner.ExecuteDataReaderQuery(batch.QueryText, settings.ParameterCollection))
+                {
+                    dt = new DataTable();
+                    dt.Load(reader);
+                }
+
+                results.AddRange(EvaluateBatchAssertions(batch, dt, NoMetrics, null, assertBaseDir));
+            }
+
+            return results;
+        }
+
+        /// <summary>
+        /// Runs every batch that executes a query, in script order, on a dedicated connection so that
+        /// <c>--&gt; BASELINE</c> captures happen before the batches that compare against them, and each
+        /// batch gets its own Server Timings slice.
+        /// </summary>
+        /// <remarks>
+        /// The trace is only started when the script has a performance assertion, since that is the only
+        /// thing that consumes the metrics - a baseline captured without them is never read. The queries
+        /// must run on the traced connection itself because the trace filters for its own session.
+        /// </remarks>
+        private async Task<List<TestResult>> EvaluateAssertionsSequencedAsync(
+            QueryRunner runner, Settings settings, IReadOnlyList<ScriptBatch> batches, string assertBaseDir,
+            bool startTrace, CancellationToken cancellationToken)
+        {
+            var results = new List<TestResult>();
+            var baselines = new BaselineStore();
+
+            var eventAggregator = new EventAggregator();
+            var connMgr = new ConnectionManager(eventAggregator);
+            try
+            {
+                var connectEvent = new UIStubs.ConnectEvent()
+                {
+                    ConnectionString = settings.FullConnectionString,
+                    ApplicationName = "DAX Studio Command Line",
+                    DatabaseName = settings.Database,
+                    PowerBIFileName = settings.PowerBIFileName ?? ""
+                };
+
+                // The assertion run needs its own connection (the trace filters for its own session), so
+                // it must acquire an access token the same way QueryRunner does - otherwise a
+                // token-authenticated model (Power BI / Fabric) would fail to connect here even though
+                // the rest of the command works.
+                if (Helpers.AccessTokenHelper.IsAccessTokenNeeded(settings.FullConnectionString))
+                    connectEvent.AccessToken = Helpers.AccessTokenHelper.GetAccessToken(settings.FullConnectionString);
+
+                connMgr.Connect(connectEvent);
+                connMgr.SelectedModel = connMgr.Database.Models.BaseModel;
+                connMgr.SelectedModelName = connMgr.SelectedModel.Name;
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Assertions: could not connect to run the script: {message}", ex.Message);
+                try { connMgr.Close(); } catch { }
+                throw;
+            }
+
+            CmdServerTimesViewModel serverTimes = null;
+            ManualResetEventSlim timingReady = null;
+            var traceActive = false;
+
+            // Held for the whole run: Caliburn's EventAggregator keeps subscribers via a WeakReference,
+            // so an unrooted handler would be collected part-way through the batch loop, the
+            // QueryTraceCompletedEvent would stop being delivered, and every later batch would stall
+            // until its wait timed out. See the GC.KeepAlive in the finally below.
+            TraceCompletedHandler traceCompletedHandler = null;
+
+            try
+            {
+                if (startTrace)
+                {
+                    var doc = new CmdLineDocument(connMgr, new CmdLineMetadataPane());
+                    serverTimes = new CmdServerTimesViewModel(
+                        eventAggregator, new ServerTimingDetailsViewModel(), runner.Options, null);
+                    serverTimes.Document = doc;
+
+                    timingReady = new ManualResetEventSlim(false);
+                    traceCompletedHandler = new TraceCompletedHandler(serverTimes, () => timingReady.Set());
+                    eventAggregator.SubscribeOnPublishedThread(traceCompletedHandler);
+
+                    serverTimes.IsChecked = true;
+
+                    var waitMs = 0;
+                    while (serverTimes.TraceStatus != QueryTraceStatus.Started && waitMs < 30000)
+                    {
+                        Thread.Sleep(500);
+                        waitMs += 500;
+                    }
+
+                    traceActive = serverTimes.TraceStatus == QueryTraceStatus.Started;
+                    if (!traceActive)
+                    {
+                        // Not fatal: the assertions still run, and each performance assertion reports a
+                        // clear "metric not captured" error rather than silently passing.
+                        Log.Warning("Assertions: the Server Timings trace did not start; performance assertions will report their metrics as not captured");
+                    }
+                }
+
+                var evaluated = new HashSet<int>();
+
+                for (int i = 0; i < batches.Count; i++)
+                {
+                    if (cancellationToken.IsCancellationRequested) break;
+                    var batch = batches[i];
+
+                    // "--> CLEARCACHE" applies per batch so a baseline batch and the batch comparing
+                    // against it can start from the same cold cache. Checked BEFORE the RunsItsQuery
+                    // skip below, because a CLEARCACHE may sit in its own comment-only batch - skipping
+                    // it there would leave the next batch running warm and bias its timings.
+                    if (batch.Commands.OfType<ClearCacheCommand>().Any())
+                    {
+                        try
+                        {
+                            connMgr.ClearCache();
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Warning("--> CLEARCACHE failed: {message}", ex.Message);
+                        }
+                    }
+
+                    // Skip batches that never send DAX to the server (comment-only batches, and the
+                    // SHOW variants that consume the query as an analysis target). Any assertions they
+                    // carry are reported as errors by the sweep after the loop.
+                    if (!batch.RunsItsQuery) continue;
+
+                    if (traceActive)
+                    {
+                        serverTimes.OnReset();
+                        timingReady.Reset();
+                    }
+
+                    var sw = System.Diagnostics.Stopwatch.StartNew();
+                    DataTable dt = null;
+                    try
+                    {
+                        using (var reader = connMgr.ExecuteReader(batch.QueryText, settings.ParameterCollection))
+                        {
+                            dt = new DataTable();
+                            dt.Load(reader);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error("Assertions: query failed: {message}", ex.Message);
+                        results.AddRange(BatchQueryFailed(batch, ex));
+                        evaluated.Add(i);
+                        continue;
+                    }
+                    finally
+                    {
+                        sw.Stop();
+                    }
+
+                    // Wait for this batch's trace slice to finish aggregating before reading the metrics,
+                    // exactly as the UI and the benchmark do.
+                    //
+                    // The metrics are read ONLY when that wait succeeds. Mid-query the model already
+                    // reports HasData (TotalDuration is updated in real time) while StorageEngineCpu and
+                    // StorageEngineQueryCount are still 0, because those are only assigned once
+                    // ProcessResults has aggregated. Reading it early would hand the engine a dictionary
+                    // of zeros, and "ASSERT SE_QUERIES <= n" would pass on data that was never captured.
+                    var timingsCaptured = false;
+                    if (traceActive)
+                    {
+                        var timeoutMs = Math.Max(15000, (int)sw.ElapsedMilliseconds * 3);
+                        timingsCaptured = timingReady.Wait(timeoutMs);
+                        if (!timingsCaptured)
+                            Log.Warning("Assertions: timed out waiting for the Server Timings trace; this batch's performance assertions will report their metrics as not captured");
+                    }
+
+                    var metrics = BuildPerformanceMetrics(timingsCaptured ? serverTimes : null);
+
+                    if (BatchIsBaseline(batch))
+                        CaptureBatchBaselines(batch, dt, metrics, baselines);
+
+                    if (BatchHasAsserts(batch))
+                    {
+                        results.AddRange(EvaluateBatchAssertions(batch, dt, metrics, baselines, assertBaseDir));
+                        evaluated.Add(i);
+                    }
+                }
+
+                // Every assertion in the script must produce exactly one result, otherwise a script whose
+                // assertions were all skipped would print "0 passed, 0 failed, 0 errors" and exit 0.
+                // Anything not reached above (a batch with no query to assert against, or a run cut short
+                // by cancellation) is reported as an error.
+                for (int i = 0; i < batches.Count; i++)
+                {
+                    if (!BatchHasAsserts(batches[i]) || evaluated.Contains(i)) continue;
+                    results.AddRange(BatchNotEvaluated(batches[i]));
+                }
+            }
+            finally
+            {
+                if (serverTimes != null)
+                {
+                    try { await serverTimes.StopTraceAsync(); } catch { }
+                }
+                // Keeps the weakly-referenced trace handler alive for the whole run (see its declaration).
+                GC.KeepAlive(traceCompletedHandler);
+                timingReady?.Dispose();
+                try { connMgr.Close(); } catch { }
+            }
+
+            return results;
+        }
+
+        private static readonly IReadOnlyDictionary<PerformanceProperty, double> NoMetrics =
+            new Dictionary<PerformanceProperty, double>();
+
+        /// <summary>
+        /// Builds the metric dictionary the assertion engine consumes. Returns an empty dictionary when
+        /// the trace is inactive or captured nothing, which the engine turns into a clear
+        /// "metric not captured" error rather than a silent pass. Kept identical to the UI's
+        /// <c>DocumentViewModel.BuildPerformanceMetrics</c> so both hosts assert on the same values.
+        /// </summary>
+        internal static IReadOnlyDictionary<PerformanceProperty, double> BuildPerformanceMetrics(CmdServerTimesViewModel serverTimes)
+        {
+            var metrics = new Dictionary<PerformanceProperty, double>();
+            if (serverTimes != null && serverTimes.HasData)
+            {
+                metrics[PerformanceProperty.Duration] = serverTimes.TotalDuration;
+                metrics[PerformanceProperty.SE_CPU] = serverTimes.StorageEngineCpu;
+                metrics[PerformanceProperty.SE_QUERIES] = serverTimes.StorageEngineQueryCount;
+            }
+            return metrics;
+        }
+
+        /// <summary>Snapshots a "--&gt; BASELINE" batch's results and metrics for later batches.</summary>
+        internal static void CaptureBatchBaselines(
+            ScriptBatch batch, DataTable dt,
+            IReadOnlyDictionary<PerformanceProperty, double> metrics, BaselineStore baselines)
+        {
+            foreach (var cmd in batch.Commands.OfType<BaselineCommand>())
+            {
+                baselines.Capture(cmd.Name, dt, metrics, cmd.Runs);
+                var described = cmd.IsSynthesised
+                    ? " (previous batch)"
+                    : cmd.IsDefault ? string.Empty : $" \"{cmd.Name}\"";
+                Log.Information("--> BASELINE{described} captured: {rows} row(s)", described, dt?.Rows.Count ?? 0);
+            }
+        }
+
+        /// <summary>
+        /// Evaluates every assertion in a batch. The order (row count, table, then performance) matches
+        /// the UI so the two hosts report the same rows in the same sequence.
+        /// </summary>
+        internal static List<TestResult> EvaluateBatchAssertions(
+            ScriptBatch batch, DataTable dt,
+            IReadOnlyDictionary<PerformanceProperty, double> metrics,
+            BaselineStore baselines, string assertBaseDir)
+        {
+            var results = new List<TestResult>();
+            var testName = batch.Commands.OfType<TestCommand>().FirstOrDefault()?.TestName;
+            var rowCount = dt?.Rows.Count ?? 0;
+
+            foreach (var cmd in batch.Commands.OfType<AssertRowcountCommand>())
+                results.Add(AssertionEngine.EvaluateRowCount(cmd, rowCount, testName, baselines));
+
+            foreach (var cmd in batch.Commands.OfType<AssertTableCommand>())
+                results.Add(AssertionEngine.EvaluateTable(cmd, dt, testName, assertBaseDir, baselines));
+
+            foreach (var cmd in batch.Commands.OfType<AssertCommand>())
+                results.Add(AssertionEngine.EvaluatePerformance(cmd, metrics, testName, baselines));
+
+            return results;
+        }
+
+        /// <summary>
+        /// Turns a failed batch query into an error result per assertion, so a query that could not run
+        /// is reported as a test error rather than silently producing no rows (which an
+        /// <c>ASSERT ROWCOUNT = 0</c> would otherwise pass).
+        /// </summary>
+        internal static List<TestResult> BatchQueryFailed(ScriptBatch batch, Exception ex)
+            => AssertionErrors(batch, "query failed", ex.Message);
+
+        /// <summary>
+        /// Turns a batch whose assertions were never evaluated into an error per assertion. A batch that
+        /// runs no query has nothing to assert against, and a run cut short by cancellation never reached
+        /// its later batches - in both cases the assertions must still be reported, or the run would
+        /// summarise as "0 passed, 0 failed, 0 errors" and exit successfully.
+        /// </summary>
+        internal static List<TestResult> BatchNotEvaluated(ScriptBatch batch)
+            => AssertionErrors(batch, "not evaluated",
+                "This batch did not run a query, so there was nothing to assert against. Add a query to the batch, or remove the assertion.");
+
+        private static List<TestResult> AssertionErrors(ScriptBatch batch, string description, string message)
+        {
+            var testName = batch.Commands.OfType<TestCommand>().FirstOrDefault()?.TestName;
+            var results = new List<TestResult>();
+
+            foreach (var cmd in batch.Commands.Where(c =>
+                c is AssertRowcountCommand || c is AssertTableCommand || c is AssertCommand))
+            {
+                results.Add(new TestResult
+                {
+                    TestName = testName,
+                    Outcome = TestOutcome.Error,
+                    Description = description,
+                    Expected = string.Empty,
+                    Actual = "n/a",
+                    Message = message,
+                    Line = cmd.Line,
+                });
+            }
+
+            return results;
+        }
+
+        #endregion
 
         // Executes a "--> EXPORT METRICS <file>" command by generating a .vpax for the connected model,
         // reusing the same ModelAnalyzer.ExportVPAX path as the dedicated "vpax" dscmd command.
@@ -387,8 +737,12 @@ namespace DaxStudio.CommandLine.Commands
             serverTimes.Document = doc;
 
             var timingReady = new ManualResetEventSlim(false);
-            eventAggregator.SubscribeOnPublishedThread(
-                new SaveAsTraceCompletedHandler(serverTimes, () => timingReady.Set()));
+            // Rooted for the whole capture: Caliburn's EventAggregator holds subscribers via a
+            // WeakReference, so an unrooted handler can be collected part-way through the loop below,
+            // after which the QueryTraceCompletedEvent stops being delivered and every remaining batch
+            // stalls for the full timeout. See the GC.KeepAlive before the return.
+            var traceCompletedHandler = new TraceCompletedHandler(serverTimes, () => timingReady.Set());
+            eventAggregator.SubscribeOnPublishedThread(traceCompletedHandler);
 
             serverTimes.IsChecked = true;
 
@@ -402,6 +756,8 @@ namespace DaxStudio.CommandLine.Commands
             {
                 Log.Warning("SAVEAS: server timings trace did not start; package will not include timings");
                 try { connMgr.Close(); } catch { }
+                GC.KeepAlive(traceCompletedHandler);
+                timingReady.Dispose();
                 return null;
             }
 
@@ -427,6 +783,9 @@ namespace DaxStudio.CommandLine.Commands
 
             try { await serverTimes.StopTraceAsync(); } catch { }
             try { connMgr.Close(); } catch { }
+            // Keeps the weakly-referenced trace handler alive for the whole capture (see its declaration).
+            GC.KeepAlive(traceCompletedHandler);
+            timingReady.Dispose();
             return serverTimes;
         }
 
@@ -481,12 +840,12 @@ namespace DaxStudio.CommandLine.Commands
         }
 
         // Signals when the Server Timings trace has finished aggregating for the current query,
-        // mirroring BenchmarkCommand's handler.
-        private class SaveAsTraceCompletedHandler : IHandle<QueryTraceCompletedEvent>
+        // mirroring BenchmarkCommand's handler. Shared by the SAVEAS capture and the assertion run.
+        private class TraceCompletedHandler : IHandle<QueryTraceCompletedEvent>
         {
             private readonly ITraceWatcher _traceWatcher;
             private readonly System.Action _callback;
-            public SaveAsTraceCompletedHandler(ITraceWatcher traceWatcher, System.Action callback)
+            public TraceCompletedHandler(ITraceWatcher traceWatcher, System.Action callback)
             {
                 _traceWatcher = traceWatcher;
                 _callback = callback;

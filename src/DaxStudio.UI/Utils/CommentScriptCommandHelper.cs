@@ -103,8 +103,9 @@ namespace DaxStudio.UI.Utils
         /// <list type="number">
         /// <item>An explicit <c>--&gt; RESULTS</c> directive wins (the last one in the script when
         /// several are present).</item>
-        /// <item>Otherwise, if the script contains any <c>--&gt; ASSERT*</c> command the grid
-        /// defaults to hidden (so "run the tests" does not also render the results).</item>
+        /// <item>Otherwise, if the script contains any <c>--&gt; ASSERT*</c> or <c>--&gt; BASELINE</c>
+        /// command the grid defaults to hidden (so "run the tests" does not also render the
+        /// results).</item>
         /// <item>Otherwise the grid is shown (the normal behavior for a plain query).</item>
         /// </list>
         /// </summary>
@@ -118,7 +119,7 @@ namespace DaxStudio.UI.Utils
             if (explicitResults != null) return explicitResults.Enabled;
 
             var hasAsserts = commands.Any(c =>
-                c is AssertCommand || c is AssertRowcountCommand || c is AssertTableCommand);
+                c is AssertCommand || c is AssertRowcountCommand || c is AssertTableCommand || c is BaselineCommand);
 
             return !hasAsserts;
         }
