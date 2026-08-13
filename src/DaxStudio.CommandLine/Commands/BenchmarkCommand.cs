@@ -232,7 +232,7 @@ namespace DaxStudio.CommandLine.Commands
                 {
                     // this also runs the session refresh query so that the calculation
                     // script evaluation is not charged to the timed query below
-                    if (adminConnMgr != null) adminConnMgr.ClearCache()
+                    if (adminConnMgr != null) adminConnMgr.ClearCache();
                     else connMgr.ClearCache();
                 }
                 catch (Exception ex) { Log.Warning("Cache clear failed: {message}", ex.Message); }
