@@ -705,6 +705,33 @@ namespace DaxStudio.UI.ViewModels
             return _metadataProvider.FindDependentMeasures(measureName);
         }
 
+        private DependentObjects FindDependentObjects(string measureName)
+        {
+            return _metadataProvider.FindDependentObjects(measureName);
+        }
+
+        private void DefineFunctionsOnEditor(IEnumerable<ADOTabularUserDefinedFunction> functions)
+        {
+            foreach (var function in functions)
+            {
+                EventAggregator.PublishAsync(new DefineFunctionOnEditor(function));
+            }
+        }
+
+        // publishes the definitions of any user defined functions that the specified measure
+        // (or any of the measures it depends on) references
+        private void DefineDependentFunctions(string measureName)
+        {
+            try
+            {
+                DefineFunctionsOnEditor(FindDependentObjects(measureName).Functions);
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), nameof(DefineDependentFunctions), $"Unable to find the user defined functions that '{measureName}' depends on");
+            }
+        }
+
         // mrusso: create a list of all the measures that have to be included in the query 
         //         in order to have all the dependencies local to the query (it's easier to debug)
         //         potential issue: we'll create multiple copies of the same measures if the user executes
@@ -732,8 +759,11 @@ namespace DaxStudio.UI.ViewModels
                     column = (ADOTabularColumn)item.Column;
                 }
 
-                var dependentMeasures = FindDependentMeasures(column.Name);
-                foreach (var measure in dependentMeasures)
+                var dependentObjects = FindDependentObjects(column.Name);
+
+                DefineFunctionsOnEditor(dependentObjects.Functions);
+
+                foreach (var measure in dependentObjects.Measures)
                 {
                     EventAggregator.PublishAsync(new DefineMeasureOnEditor(measure));
                 }
@@ -865,10 +895,14 @@ namespace DaxStudio.UI.ViewModels
                         string msg = ex.Message + "\nThis may lead to incorrect results in cases where the column is referenced without explicitly specifying the table name.\n\nDo you want to continue with the expansion anyway?";
                         if (MessageBox.Show(msg, "Expand Measure Error", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) == MessageBoxResult.Yes)
                         {
-                            ExpandDependentMeasure(column, true);
+                            measureExpression = ExpandDependentMeasure(column, true);
                         }
                         else return;
                     }
+
+                    // expanding a measure only inlines the dependent measures, so we still need to
+                    // define any user defined functions that the expanded expression calls
+                    DefineDependentFunctions(column.Name);
                 }
 
                 if (string.IsNullOrEmpty(measureExpression))

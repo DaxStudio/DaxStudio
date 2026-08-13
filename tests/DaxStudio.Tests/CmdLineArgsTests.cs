@@ -95,6 +95,57 @@ namespace DaxStudio.Tests
         }
 
         [TestMethod]
+        public void Parse_FileSingleDashLongForm_SetsFileName()
+        {
+            // legacy syntax supported prior to the Spectre.Console.Cli migration
+            var args = NewArgs();
+            args.Parse(new[] { "-file", "myfile.dax" });
+            Assert.AreEqual("myfile.dax", args.FileName);
+        }
+
+        [TestMethod]
+        [DataRow("-file")]
+        [DataRow("-FILE")]
+        [DataRow("--file")]
+        [DataRow("/file")]
+        [DataRow("-f")]
+        public void Parse_FileVariants_PreserveFilePathCasing(string token)
+        {
+            var args = NewArgs();
+            args.Parse(new[] { token, @"C:\Temp\My File.DAX" });
+            Assert.AreEqual(@"C:\Temp\My File.DAX", args.FileName, $"FileName was not set for token '{token}'");
+        }
+
+        [TestMethod]
+        public void Parse_FileSingleDashLongFormWithEquals_PreservesPathCasing()
+        {
+            var args = NewArgs();
+            args.Parse(new[] { @"-file=C:\Temp\My File.DAX" });
+            Assert.AreEqual(@"C:\Temp\My File.DAX", args.FileName);
+        }
+
+        [TestMethod]
+        public void Parse_ServerSingleDashLongForm_SetsServer()
+        {
+            var args = NewArgs();
+            args.Parse(new[] { "-server", "localhost" });
+            Assert.AreEqual("localhost", args.Server);
+        }
+
+        [TestMethod]
+        public void Parse_UriWithEquals_PreservesBase64Casing()
+        {
+            var args = NewArgs();
+            const string dax = "EVALUATE Customer";
+            var encoded = dax.Base64Encode();
+
+            args.Parse(new[] { $"--uri=daxstudio://launch/?Query={Uri.EscapeDataString(encoded)}" });
+
+            Assert.IsTrue(args.FromUri);
+            Assert.AreEqual(dax, args.Query);
+        }
+
+        [TestMethod]
         public void Parse_ServerShortForm_SetsServer()
         {
             var args = NewArgs();

@@ -69,65 +69,71 @@ namespace DaxStudio.UI.Model
                 _isLoaded = true;
             }
 
-            var result = await LoadHistoryFilesFromDiskAsync();
+            var result = await LoadHistoryFilesFromDiskAsync().ConfigureAwait(false);
             QueryHistory.AddRange(result.History);
 
-            if (result.ErrorCount > 0) { await _eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, $"Not all Query History records could be loaded, {result.ErrorCount} error{(result.ErrorCount == 1 ? " has" : "s have")} been written to the log file")); }
+            if (result.ErrorCount > 0) { await _eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, $"Not all Query History records could be loaded, {result.ErrorCount} error{(result.ErrorCount == 1 ? " has" : "s have")} been written to the log file")).ConfigureAwait(false); }
             Log.Debug("{class} {method} {message}", "GlobalQueryHistory", "LoadHistoryFilesAsync", "End Load (" + result.FileCount + " files)");
         }
 
         private async Task<LoadHistoryResult> LoadHistoryFilesFromDiskAsync()
         {
-            int errorCnt = 0;
-            FileInfo[] fileList = null;
-            var tempHist = new List<QueryHistoryEvent>(_globalOptions.QueryHistoryMaxItems);
-
             Log.Debug("{class} {method} {message}", "GlobalQueryHistory", "LoadHistoryFilesAsync", "Start Load");
-                                                 
-            try
+
+            // The whole scan/read/deserialize runs as a single background work item. Reading the files
+            // individually with async I/O previously queued one thread-pool continuation per file, which
+            // is very slow during startup while the thread pool is still ramping up. The per-file cost is
+            // dominated by opening the handle (filter drivers / AV), so the reads are done in parallel.
+            return await Task.Run(() =>
             {
-                fileList = await Task.Run(() =>
-                {
-                    DirectoryInfo d = new DirectoryInfo(_queryHistoryPath);
-                    return d.GetFiles("*-query-history.json", SearchOption.TopDirectoryOnly);
-                }).ConfigureAwait(false);
+                int errorCnt = 0;
+                FileInfo[] fileList = null;
+                QueryHistoryEvent[] loaded = null;
 
-                Log.Debug(Constants.LogMessageTemplate, nameof(GlobalQueryHistory), nameof(LoadHistoryFilesAsync), $"Starting load of {fileList.Length} history files");
-
-                foreach (var fileInfo in fileList)
+                try
                 {
-                    try
+                    var d = new DirectoryInfo(_queryHistoryPath);
+                    fileList = d.GetFiles("*-query-history.json", SearchOption.TopDirectoryOnly);
+
+                    Log.Debug(Constants.LogMessageTemplate, nameof(GlobalQueryHistory), nameof(LoadHistoryFilesAsync), $"Starting load of {fileList.Length} history files");
+
+                    // Writing into a pre-sized array by index keeps the original (filename/chronological)
+                    // ordering regardless of the order the parallel reads complete in.
+                    loaded = new QueryHistoryEvent[fileList.Length];
+                    Parallel.For(0, fileList.Length, i =>
                     {
-                        var queryHistory = await LoadHistoryFileAsync(fileInfo.FullName).ConfigureAwait(false);
-                        tempHist.Add(queryHistory);
-                    }
-                    catch (Exception ex)
+                        try
+                        {
+                            loaded[i] = JsonConvert.DeserializeObject<QueryHistoryEvent>(File.ReadAllText(fileList[i].FullName));
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Error(ex, "{class} {method} {message}", nameof(GlobalQueryHistory), nameof(LoadHistoryFilesAsync), $"Error loading History file: {fileList[i].FullName}, Message: {ex.Message}");
+                            Interlocked.Increment(ref errorCnt);
+                        }
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "{class} {method} {message}", nameof(GlobalQueryHistory), nameof(LoadHistoryFilesAsync), $"Error loading query history files: {ex.Message}");
+                }
+                finally
+                {
+                    _isLoaded = true;
+                }
+
+                var tempHist = new List<QueryHistoryEvent>(fileList?.Length ?? 0);
+                if (loaded != null)
+                {
+                    // Slots for files that failed to load stay null and are skipped.
+                    foreach (var item in loaded)
                     {
-                        Log.Error(ex, "{class} {method} {message}", nameof(GlobalQueryHistory), nameof(LoadHistoryFilesAsync), $"Error loading History file: {fileInfo.FullName}, Message: {ex.Message}");
-                        errorCnt++;
+                        if (item != null) tempHist.Add(item);
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "{class} {method} {message}", nameof(GlobalQueryHistory), nameof(LoadHistoryFilesAsync), $"Error loading query history files: {ex.Message}");
-            }
-            finally
-            {
-                _isLoaded = true;
-            }
 
-            return new LoadHistoryResult(tempHist, errorCnt, fileList?.Length ?? 0);
-        }
-
-        private async Task<QueryHistoryEvent> LoadHistoryFileAsync(string filePath)
-        {
-            using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true))
-            using (var reader = new StreamReader(stream))
-            {
-                var json = await reader.ReadToEndAsync().ConfigureAwait(false);
-                return JsonConvert.DeserializeObject<QueryHistoryEvent>(json);
-            }
+                return new LoadHistoryResult(tempHist, errorCnt, fileList?.Length ?? 0);
+            }).ConfigureAwait(false);
         }
 
 
@@ -202,8 +208,12 @@ namespace DaxStudio.UI.Model
 
         public async Task LoadQueryHistoryAsync()
         {
-            await EnsureQueryHistoryFolderExistsAsync();
-            await LoadHistoryFilesAsync();
+            // ConfigureAwait(false) keeps the load off the UI dispatcher queue. The handler is invoked on
+            // the UI thread, so without this the continuations get queued behind the rest of the startup
+            // work (window placement, opening the first document) before the load even begins.
+            // QueryHistory is a BindableCollection, whose AddRange marshals back to the UI thread itself.
+            await EnsureQueryHistoryFolderExistsAsync().ConfigureAwait(false);
+            await LoadHistoryFilesAsync().ConfigureAwait(false);
         }
 
         public BindableCollection<QueryHistoryEvent> QueryHistory { get; }

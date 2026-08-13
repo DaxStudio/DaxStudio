@@ -135,12 +135,10 @@ namespace DaxStudio.CommandLine.Commands
             if (!string.IsNullOrWhiteSpace(settings.Role))
             {
                 queryConnectionString += $";Roles={settings.Role}";
-                hasImpersonation = true;
             }
             if (!string.IsNullOrWhiteSpace(settings.EffectiveUser))
             {
                 queryConnectionString += $";EffectiveUserName={settings.EffectiveUser}";
-                hasImpersonation = true;
             }
 
             var connMgr = new ConnectionManager(EventAggregator);
@@ -232,8 +230,10 @@ namespace DaxStudio.CommandLine.Commands
 
                 try
                 {
-                    var clearConn = adminConnMgr ?? connMgr;
-                    clearConn.Database.ClearCache();
+                    // this also runs the session refresh query so that the calculation
+                    // script evaluation is not charged to the timed query below
+                    if (adminConnMgr != null) adminConnMgr.ClearCache()
+                    else connMgr.ClearCache();
                 }
                 catch (Exception ex) { Log.Warning("Cache clear failed: {message}", ex.Message); }
 
@@ -267,7 +267,6 @@ namespace DaxStudio.CommandLine.Commands
             // Stop trace and close
             try { await serverTimes.StopTraceAsync(); } catch { }
             connMgr.Close();
-            adminConnMgr?.Close();
 
             if (details.Count == 0)
             {

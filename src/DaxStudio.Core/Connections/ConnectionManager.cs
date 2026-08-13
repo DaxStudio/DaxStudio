@@ -165,6 +165,7 @@ namespace DaxStudio.Core.Connections
 
         public void Close(bool closeSession)
         {
+            ClearSupportedTraceEventClasses();
             if (_connection != null)
             {
                 if (_connection.State != ConnectionState.Closed && _connection.State != ConnectionState.Broken)
@@ -793,6 +794,22 @@ namespace DaxStudio.Core.Connections
                 var db = _connection.Database;
                 db.ClearCache();
             }
+
+            RefreshSession();
+        }
+
+        public async Task ClearCacheAsync()
+        {
+            await Task.Run(() => ClearCache()).ConfigureAwait(false);
+        }
+
+        // Re-evaluates the calculation script so that the global scopes are re-populated
+        // after the cache has been cleared. This always runs against the primary connection
+        // so that any RLS context (Roles/EffectiveUserName) is applied to the session
+        private void RefreshSession()
+        {
+            Log.Verbose(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(RefreshSession), "Evaluating the calculation script to re-populate the global scopes");
+            ExecuteDaxQueryDataTable(Common.Constants.RefreshSessionQuery);
         }
         public ADOTabularModel SelectedModel { get; set; }
 
@@ -896,6 +913,60 @@ namespace DaxStudio.Core.Connections
             return modelMeasures;
         }
 
+        private Dictionary<string, ADOTabularUserDefinedFunction> _userDefinedFunctions;
+        private string _userDefinedFunctionsDatabase;
+
+        /// <summary>
+        /// Returns all the DAX user defined functions (UDFs) in the current model keyed by their name.
+        /// UDFs are only available on servers with a compatibility level of 1702 or greater so this
+        /// returns an empty collection if the TMSCHEMA_FUNCTIONS DMV is not available.
+        /// </summary>
+        public IReadOnlyDictionary<string, ADOTabularUserDefinedFunction> GetUserDefinedFunctions()
+        {
+            if (_userDefinedFunctions != null && _userDefinedFunctionsDatabase == DatabaseName) return _userDefinedFunctions;
+
+            var functions = new Dictionary<string, ADOTabularUserDefinedFunction>(StringComparer.OrdinalIgnoreCase);
+            _userDefinedFunctions = functions;
+            _userDefinedFunctionsDatabase = DatabaseName;
+
+            if (!IsConnected || IsPowerPivot || !IsAdminConnection) return functions;
+            if (!(DynamicManagementViews?.Any(dmv => dmv.Name == "TMSCHEMA_FUNCTIONS") ?? false)) return functions;
+
+            try
+            {
+                var functionQuery = "select [Name], [Expression], [Description] from $SYSTEM.TMSCHEMA_FUNCTIONS";
+                var functionTable = ExecuteMetadataDaxQueryDataTable(functionQuery);
+                foreach (DataRow row in functionTable.Rows)
+                {
+                    var name = row["Name"]?.ToString();
+                    if (string.IsNullOrEmpty(name)) continue;
+                    functions[name] = new ADOTabularUserDefinedFunction(
+                        name,
+                        CleanFunctionExpression(row["Expression"]?.ToString()),
+                        row["Description"]?.ToString());
+                }
+            }
+            catch (Exception ex)
+            {
+                // if we cannot read the user defined functions we log the issue and carry on
+                // with an empty collection rather than breaking the whole define measure operation
+                Log.Warning(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(GetUserDefinedFunctions), "Unable to read user defined functions from $SYSTEM.TMSCHEMA_FUNCTIONS");
+            }
+
+            return functions;
+        }
+
+        private static readonly Regex defineFunctionPrefixRegex = new Regex(@"^\s*(DEFINE\s+)?FUNCTION\s+.*?=\s*", RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline);
+
+        // TMSCHEMA_FUNCTIONS should return just the body of the function (eg. "(x: INT) => x * 2")
+        // but we strip off any "[DEFINE] FUNCTION <name> =" prefix in case a given engine version
+        // returns the full definition
+        private static string CleanFunctionExpression(string expression)
+        {
+            if (string.IsNullOrEmpty(expression)) return expression;
+            return defineFunctionPrefixRegex.Replace(expression, string.Empty);
+        }
+
         // TODO get roles on dmv connection
         public List<string> GetRoles()
         {
@@ -988,6 +1059,14 @@ namespace DaxStudio.Core.Connections
 
         public List<ADOTabularMeasure> FindDependentMeasures(string measureName)
         {
+            return FindDependentObjects(measureName).Measures;
+        }
+
+        /// <summary>
+        /// Finds all the measures and user defined functions that the specified measure depends on
+        /// </summary>
+        public DependentObjects FindDependentObjects(string measureName)
+        {
             if (!IsConnected)
             {
                 // We do not support offline analysis of dependent measures
@@ -997,94 +1076,49 @@ namespace DaxStudio.Core.Connections
             }
 
             // New algorithm using DEPENDENCY view
-            // 
-            // TODO we could pass a query or a string as a parameter,
-            // so that if the entire query is used as a parameter we generate all the measures
             var modelMeasures = GetAllMeasures();
-            
-            var dependentMeasures = new List<ADOTabularMeasure>();
+
+            var result = new DependentObjects();
 
             Queue<ADOTabularMeasure> scanMeasures = new Queue<ADOTabularMeasure>();
             scanMeasures.Enqueue(modelMeasures.First(m => m.Name == measureName));
 
-            // Track user-defined functions to process separately
-            Queue<string> scanFunctions = new Queue<string>();
-            HashSet<string> processedFunctions = new HashSet<string>();
+            var functionScanner = new FunctionScanState();
 
-            while (scanMeasures.Count > 0 || scanFunctions.Count > 0)
+            while (scanMeasures.Count > 0 || functionScanner.ScanQueue.Count > 0)
             {
                 // Process measures
                 if (scanMeasures.Count > 0)
                 {
                     var measure = scanMeasures.Dequeue();
-                    if (dependentMeasures.Where(item => item.Name == measure.Name).Any()) continue;
-                    dependentMeasures.Add(measure);
+                    if (result.Measures.Any(item => item.Name == measure.Name)) continue;
+                    result.Measures.Add(measure);
 
-                    // Query for both MEASURE and FUNCTION dependencies
-                    var dmvDependency = $"SELECT REFERENCED_OBJECT_TYPE, REFERENCED_TABLE, REFERENCED_OBJECT\r\nFROM $SYSTEM.DISCOVER_CALC_DEPENDENCY\r\nWHERE OBJECT='{measure.Name.Replace("'", "''")}' AND (REFERENCED_OBJECT_TYPE = 'MEASURE' OR REFERENCED_OBJECT_TYPE = 'FUNCTION')";
-
-                    using (var dr = ExecuteReader(dmvDependency, null))
-                    {
-                        while (dr.Read())
-                        {
-                            var referencedObjectType = dr.GetString(0);
-                            var referencedObjectName = dr.GetString(2);
-
-                            if (referencedObjectType == "MEASURE")
-                            {
-                                if (!dependentMeasures.Where(item => item.Name == referencedObjectName).Any())
-                                {
-                                    var dependentMeasure = modelMeasures.First(m => m.Name == referencedObjectName);
-                                    scanMeasures.Enqueue(dependentMeasure);
-                                }
-                            }
-                            else if (referencedObjectType == "FUNCTION" && !processedFunctions.Contains(referencedObjectName))
-                            {
-                                // Add user-defined functions to be processed recursively
-                                scanFunctions.Enqueue(referencedObjectName);
-                                processedFunctions.Add(referencedObjectName);
-                            }
-                        }
-                    }
+                    ScanObjectDependencies(measure.Name, null, modelMeasures, result.Measures, scanMeasures, functionScanner);
                 }
 
                 // Process user-defined functions
-                if (scanFunctions.Count > 0)
+                if (functionScanner.ScanQueue.Count > 0)
                 {
-                    var functionName = scanFunctions.Dequeue();
-
-                    // Query dependencies of the user-defined function
-                    var dmvFunctionDependency = $"SELECT REFERENCED_OBJECT_TYPE, REFERENCED_TABLE, REFERENCED_OBJECT\r\nFROM $SYSTEM.DISCOVER_CALC_DEPENDENCY\r\nWHERE OBJECT='{functionName.Replace("'", "''")}' AND (REFERENCED_OBJECT_TYPE = 'MEASURE' OR REFERENCED_OBJECT_TYPE = 'FUNCTION')";
-
-                    using (var dr = ExecuteReader(dmvFunctionDependency, null))
-                    {
-                        while (dr.Read())
-                        {
-                            var referencedObjectType = dr.GetString(0);
-                            var referencedObjectName = dr.GetString(2);
-
-                            if (referencedObjectType == "MEASURE")
-                            {
-                                if (!dependentMeasures.Where(item => item.Name == referencedObjectName).Any())
-                                {
-                                    var dependentMeasure = modelMeasures.First(m => m.Name == referencedObjectName);
-                                    scanMeasures.Enqueue(dependentMeasure);
-                                }
-                            }
-                            else if (referencedObjectType == "FUNCTION" && !processedFunctions.Contains(referencedObjectName))
-                            {
-                                // Recursively process nested user-defined functions
-                                scanFunctions.Enqueue(referencedObjectName);
-                                processedFunctions.Add(referencedObjectName);
-                            }
-                        }
-                    }
+                    var functionName = functionScanner.ScanQueue.Dequeue();
+                    ScanObjectDependencies(functionName, functionName, modelMeasures, result.Measures, scanMeasures, functionScanner);
                 }
             }
-            return dependentMeasures;
+
+            result.Functions.AddRange(ResolveUserDefinedFunctions(functionScanner));
+
+            return result;
         }
 
         public List<ADOTabularMeasure> FindDependentMeasuresForQuery(string query, bool recursive)
+        {
+            return FindDependentObjectsForQuery(query, recursive).Measures;
+        }
+
+        /// <summary>
+        /// Finds all the measures and user defined functions that the specified query depends on
+        /// </summary>
+        public DependentObjects FindDependentObjectsForQuery(string query, bool recursive)
         {
             if (!IsConnected)
             {
@@ -1096,22 +1130,30 @@ namespace DaxStudio.Core.Connections
 
             var modelMeasures = GetAllMeasures();
 
-            var dependentMeasures = new List<ADOTabularMeasure>();
+            var result = new DependentObjects();
             Queue<ADOTabularMeasure> scanMeasures = new Queue<ADOTabularMeasure>();
+            var functionScanner = new FunctionScanState();
 
-            // get all the measures referenced in the query
+            // get all the measures and functions referenced in the query
             var dmvQuery = $"SELECT REFERENCED_OBJECT_TYPE, REFERENCED_TABLE, REFERENCED_OBJECT\r\nFROM $SYSTEM.DISCOVER_CALC_DEPENDENCY\r\nWHERE QUERY='{query.Replace("'", "''")}'";
             using (var dr = ExecuteReader(dmvQuery, null))
             {
                 while (dr.Read())
                 {
                     var referencedObjectType = dr.GetString(0);
-                    if (referencedObjectType != "MEASURE") continue;
-                    var referencedMeasureName = dr.GetString(2);
-                    if (!dependentMeasures.Where(item => item.Name == referencedMeasureName).Any())
+                    var referencedObjectName = dr.GetString(2);
+
+                    if (referencedObjectType == "MEASURE")
                     {
-                        var dependentMeasure = modelMeasures.First(m => m.Name == referencedMeasureName);
-                        scanMeasures.Enqueue(dependentMeasure);
+                        if (!scanMeasures.Any(item => item.Name == referencedObjectName))
+                        {
+                            var dependentMeasure = modelMeasures.FirstOrDefault(m => m.Name == referencedObjectName);
+                            if (dependentMeasure != null) scanMeasures.Enqueue(dependentMeasure);
+                        }
+                    }
+                    else if (referencedObjectType == "FUNCTION")
+                    {
+                        functionScanner.Enqueue(referencedObjectName);
                     }
                 }
             }
@@ -1121,37 +1163,132 @@ namespace DaxStudio.Core.Connections
                 while (scanMeasures.Count > 0)
                 {
                     var m = scanMeasures.Dequeue();
-                    dependentMeasures.Add(m);
+                    result.Measures.Add(m);
                 }
-                return dependentMeasures;
+                // we still need to emit the definitions of any functions referenced directly by
+                // the query, otherwise the generated query will not run
+                result.Functions.AddRange(ResolveUserDefinedFunctions(functionScanner));
+                return result;
             }
 
-            // recursively get all the measures that the measures referenced in the query depend on
-            while (scanMeasures.Count > 0)
+            // recursively get all the measures and functions that the objects referenced in the query depend on
+            while (scanMeasures.Count > 0 || functionScanner.ScanQueue.Count > 0)
             {
-                var measure = scanMeasures.Dequeue();
-                if (dependentMeasures.Where(item => item.Name == measure.Name).Any()) continue;
-                dependentMeasures.Add(measure);
-
-                var dmvDependency = $"SELECT REFERENCED_OBJECT_TYPE, REFERENCED_TABLE, REFERENCED_OBJECT\r\nFROM $SYSTEM.DISCOVER_CALC_DEPENDENCY\r\nWHERE OBJECT='{measure.Name.Replace("'", "''")}' AND REFERENCED_OBJECT_TYPE = 'MEASURE'";
-
-                using (var dr = ExecuteReader(dmvDependency, null))
+                if (scanMeasures.Count > 0)
                 {
-                    while (dr.Read())
+                    var measure = scanMeasures.Dequeue();
+                    if (result.Measures.Any(item => item.Name == measure.Name)) continue;
+                    result.Measures.Add(measure);
+
+                    ScanObjectDependencies(measure.Name, null, modelMeasures, result.Measures, scanMeasures, functionScanner);
+                }
+
+                if (functionScanner.ScanQueue.Count > 0)
+                {
+                    var functionName = functionScanner.ScanQueue.Dequeue();
+                    ScanObjectDependencies(functionName, functionName, modelMeasures, result.Measures, scanMeasures, functionScanner);
+                }
+            }
+
+            result.Functions.AddRange(ResolveUserDefinedFunctions(functionScanner));
+
+            return result;
+        }
+
+        // tracks the user defined functions that have been discovered while walking the dependency
+        // tree along with the references between those functions so that they can be output in
+        // dependency order
+        private class FunctionScanState
+        {
+            public Queue<string> ScanQueue { get; } = new Queue<string>();
+            public List<string> DiscoveredFunctions { get; } = new List<string>();
+            public Dictionary<string, List<string>> References { get; } = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+            private readonly HashSet<string> _processed = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            public void Enqueue(string functionName)
+            {
+                if (!_processed.Add(functionName)) return;
+                DiscoveredFunctions.Add(functionName);
+                ScanQueue.Enqueue(functionName);
+            }
+
+            public void AddReference(string parentFunction, string referencedFunction)
+            {
+                if (string.IsNullOrEmpty(parentFunction)) return;
+                if (!References.TryGetValue(parentFunction, out var refs))
+                {
+                    refs = new List<string>();
+                    References.Add(parentFunction, refs);
+                }
+                if (!refs.Contains(referencedFunction, StringComparer.OrdinalIgnoreCase)) refs.Add(referencedFunction);
+            }
+        }
+
+        // Queries DISCOVER_CALC_DEPENDENCY for the measures and user defined functions referenced by
+        // the specified measure or function. Pass the object name in parentFunction when scanning a
+        // user defined function so that function to function references can be tracked.
+        private void ScanObjectDependencies(string objectName, string parentFunction, List<ADOTabularMeasure> modelMeasures, List<ADOTabularMeasure> foundMeasures, Queue<ADOTabularMeasure> scanMeasures, FunctionScanState functionScanner)
+        {
+            var dmvDependency = $"SELECT REFERENCED_OBJECT_TYPE, REFERENCED_TABLE, REFERENCED_OBJECT\r\nFROM $SYSTEM.DISCOVER_CALC_DEPENDENCY\r\nWHERE OBJECT='{objectName.Replace("'", "''")}' AND (REFERENCED_OBJECT_TYPE = 'MEASURE' OR REFERENCED_OBJECT_TYPE = 'FUNCTION')";
+
+            using (var dr = ExecuteReader(dmvDependency, null))
+            {
+                while (dr.Read())
+                {
+                    var referencedObjectType = dr.GetString(0);
+                    var referencedObjectName = dr.GetString(2);
+
+                    if (referencedObjectType == "MEASURE")
                     {
-                        var referencedObjectType = dr.GetString(0);
-                        if (referencedObjectType != "MEASURE") continue;
-                        // var referencedTable = dr.GetString(1);
-                        var referencedMeasureName = dr.GetString(2);
-                        if (!dependentMeasures.Where(item => item.Name == referencedMeasureName).Any())
+                        if (!foundMeasures.Any(item => item.Name == referencedObjectName))
                         {
-                            var dependentMeasure = modelMeasures.First(m => m.Name == referencedMeasureName);
-                            scanMeasures.Enqueue(dependentMeasure);
+                            var dependentMeasure = modelMeasures.FirstOrDefault(m => m.Name == referencedObjectName);
+                            if (dependentMeasure != null) scanMeasures.Enqueue(dependentMeasure);
                         }
+                    }
+                    else if (referencedObjectType == "FUNCTION")
+                    {
+                        functionScanner.AddReference(parentFunction, referencedObjectName);
+                        functionScanner.Enqueue(referencedObjectName);
                     }
                 }
             }
-            return dependentMeasures;
+        }
+
+        // Looks up the expression for each of the discovered user defined functions and returns them
+        // in dependency order (any function that is referenced by another function is returned first)
+        private List<ADOTabularUserDefinedFunction> ResolveUserDefinedFunctions(FunctionScanState functionScanner)
+        {
+            var result = new List<ADOTabularUserDefinedFunction>();
+            if (functionScanner.DiscoveredFunctions.Count == 0) return result;
+
+            var modelFunctions = GetUserDefinedFunctions();
+            var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var missingFunctions = new List<string>();
+
+            void VisitFunction(string functionName)
+            {
+                if (!visited.Add(functionName)) return;
+
+                if (functionScanner.References.TryGetValue(functionName, out var referencedFunctions))
+                {
+                    foreach (var referencedFunction in referencedFunctions) VisitFunction(referencedFunction);
+                }
+
+                if (modelFunctions.TryGetValue(functionName, out var function)) result.Add(function);
+                else missingFunctions.Add(functionName);
+            }
+
+            foreach (var functionName in functionScanner.DiscoveredFunctions) VisitFunction(functionName);
+
+            if (missingFunctions.Count > 0)
+            {
+                var msg = $"Unable to read the definition of the following user defined function(s): {string.Join(", ", missingFunctions)}. You may need to add these definitions manually.";
+                Log.Warning(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(ResolveUserDefinedFunctions), msg);
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, msg));
+            }
+
+            return result;
         }
 
         public void SetSelectedDatabase(IDatabaseReference database)
@@ -1189,6 +1326,10 @@ namespace DaxStudio.Core.Connections
         internal async Task ConnectAsync(ConnectEvent message, Guid uniqueId)
         {
             IsConnecting = true;
+            // the supported trace events/columns, the DMV list and the function list are all engine
+            // version specific so any cached copies must be discarded before we connect to a
+            // (potentially different) server
+            ClearConnectionCaches();
             Log.Verbose(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(ConnectAsync), $"ConnectionString: {message.ConnectionString}/n  ServerType: {message.ServerType}");
             await _eventAggregator.PublishAsync(new ConnectionOpenedEvent(this));
 
@@ -1220,6 +1361,9 @@ namespace DaxStudio.Core.Connections
             _dmvConnection = new ADOTabular.ADOTabularConnection(string.Empty, ADOTabular.Enums.AdomdType.AnalysisServices);
             _dmvConnection.ServerType = ServerType.Offline;
             _dmvConnection.Visitor = new MetadataVisitorVpax(_connection, vpaContent.DaxModel, vpaContent.TomDatabase);
+            // clear the caches again in case anything re-populated them from the previous connection
+            // while we were publishing the ConnectionOpenedEvent
+            ClearConnectionCaches();
 
             ServerType = message.ServerType;
             FileName = message.FileName??String.Empty;
@@ -1236,6 +1380,9 @@ namespace DaxStudio.Core.Connections
             var connectionString = UpdateApplicationName(message.ConnectionString, uniqueId);
             _connection = new ADOTabularConnection(connectionString, AdomdType.AnalysisServices);
             _dmvConnection = new ADOTabularConnection(connectionString, AdomdType.AnalysisServices);
+            // clear the caches again in case anything re-populated them from the previous connection
+            // while we were publishing the ConnectionOpenedEvent
+            ClearConnectionCaches();
 
             
             if (message.AccessToken.IsNotNull())
@@ -1401,6 +1548,30 @@ namespace DaxStudio.Core.Connections
                 return _supportedTraceEventClasses;
 
             }
+        }
+
+        // The set of trace events and the columns that each event supports varies between engine
+        // versions (eg. SSAS 2025 removed the ApplicationName column from the VertiPaqSEQuery* events)
+        // so the cached values must be discarded whenever we connect to a different server, otherwise
+        // we can request columns which are not valid for the current engine.
+        public void ClearSupportedTraceEventClasses()
+        {
+            lock (_supportedTraceEventClassesLock)
+            {
+                _supportedTraceEventClasses = null;
+            }
+        }
+
+        // Discards all the metadata that is cached for the lifetime of this ConnectionManager, but which
+        // is specific to the server that we are connected to. A ConnectionManager is created once per
+        // document and is re-used every time that document connects to a different server.
+        private void ClearConnectionCaches()
+        {
+            ClearSupportedTraceEventClasses();
+            // these are built from _dmvConnection which gets replaced when we connect
+            _dynamicManagementViews = null;
+            _functionGroups = null;
+            _userDefinedFunctions = null;
         }
 
         private Dictionary<DaxStudioTraceEventClass,HashSet<TOM.TraceColumn>> PopulateSupportedTraceEventClasses()

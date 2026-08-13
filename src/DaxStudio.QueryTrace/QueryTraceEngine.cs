@@ -214,7 +214,30 @@ namespace DaxStudio.QueryTrace
         }
         private void SetupTraceEvents(Trace trace, List<DaxStudioTraceEventClass> events)
         {
-            Log.Verbose(Constants.LogMessageTemplate, nameof(QueryTraceEngine), nameof(SetupTraceEvents), "entering"); 
+            Log.Verbose(Constants.LogMessageTemplate, nameof(QueryTraceEngine), nameof(SetupTraceEvents), "entering");
+
+            PopulateTraceEvents(trace, events);
+
+            try
+            {
+                trace.Update(UpdateOptions.Default, UpdateMode.CreateOrReplace);
+            }
+            catch (Exception ex) when (IsUnsupportedTraceColumnError(ex))
+            {
+                // The set of columns supported by an event varies between engine versions. If the cached
+                // list of supported columns is out of date (eg. the connection was switched to a different
+                // server) we refresh it and rebuild the events before trying again.
+                Log.Warning(ex, Constants.LogMessageTemplate, nameof(QueryTraceEngine), nameof(SetupTraceEvents), $"Trace creation failed with an unsupported column error, refreshing the supported trace columns and retrying: {ex.Message}");
+                _connectionManager.ClearSupportedTraceEventClasses();
+                PopulateTraceEvents(trace, events);
+                trace.Update(UpdateOptions.Default, UpdateMode.CreateOrReplace);
+            }
+
+            Log.Verbose(Constants.LogMessageTemplate, nameof(QueryTraceEngine), nameof(SetupTraceEvents), "exiting");
+        }
+
+        private void PopulateTraceEvents(Trace trace, List<DaxStudioTraceEventClass> events)
+        {
             trace.Events.Clear();
             // Add CommandBegine & DiscoverBegin so we can catch the heartbeat events
             trace.Events.Add(TraceEventFactory.Create(TraceEventClass.DiscoverBegin, _connectionManager.SupportedTraceEventClasses[DaxStudioTraceEventClass.DiscoverBegin])); 
@@ -234,8 +257,33 @@ namespace DaxStudio.QueryTrace
                 var trcEvent = TraceEventFactory.Create(amoEventClass, _connectionManager.SupportedTraceEventClasses[eventClass]);
                 trace.Events.Add(trcEvent);
             }
-            trace.Update(UpdateOptions.Default, UpdateMode.CreateOrReplace);
-            Log.Verbose(Constants.LogMessageTemplate, nameof(QueryTraceEngine), nameof(SetupTraceEvents), "exiting");
+
+            LogTraceEventColumns(trace);
+        }
+
+        // Logs the events and columns that we are requesting so that if the server rejects any of them
+        // we can see exactly what was requested in the log file
+        private void LogTraceEventColumns(Trace trace)
+        {
+            if (!Log.IsEnabled(Serilog.Events.LogEventLevel.Verbose)) return;
+
+            foreach (TraceEvent evt in trace.Events)
+            {
+                var columns = new List<string>();
+                foreach (TraceColumn col in evt.Columns) columns.Add($"{col}({(int)col})");
+                Log.Verbose(Constants.LogMessageTemplate, nameof(QueryTraceEngine), nameof(SetupTraceEvents), $"Server: {_server?.Version} Event: {evt.EventID}({(int)evt.EventID}) Columns: {string.Join(",", columns)}");
+            }
+        }
+
+        private static bool IsUnsupportedTraceColumnError(Exception ex)
+        {
+            var currentEx = ex;
+            while (currentEx != null)
+            {
+                if (currentEx.Message.IndexOf("does not contain the column", StringComparison.OrdinalIgnoreCase) >= 0) return true;
+                currentEx = currentEx.InnerException;
+            }
+            return false;
         }
 
         private XmlNode GetSpidFilter(int spid)
@@ -250,6 +298,10 @@ namespace DaxStudio.QueryTrace
 
         private XmlNode GetSessionIdFilter(string sessionId, string applicationName, int spid)
         {
+            // NOTE: the columns used in this filter must exist on at least one of the events in the trace.
+            //       The ApplicationName column is not available on all events (eg. SSAS 2025 removed it from
+            //       the VertiPaqSEQuery* events) but the DiscoverBegin/CommandBegin/QueryEnd events are always
+            //       added to the trace and they do support it.
             string filterTemplate =
                 "<Or xmlns=\"http://schemas.microsoft.com/analysisservices/2003/engine\">" +
                 "<Or xmlns=\"http://schemas.microsoft.com/analysisservices/2003/engine\">" +

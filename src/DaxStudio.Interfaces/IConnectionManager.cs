@@ -25,6 +25,7 @@ namespace DaxStudio.Interfaces
         string SessionId { get; }
         int SPID { get; }
         Dictionary<DaxStudioTraceEventClass, HashSet<TOM.TraceColumn>> SupportedTraceEventClasses { get; }
+        void ClearSupportedTraceEventClasses();
         AdomdType Type { get; }
         DaxColumnsRemap DaxColumnsRemapInfo { get; }
         void Ping();

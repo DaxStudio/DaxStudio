@@ -30,6 +30,7 @@ namespace DaxStudio.UI.ViewModels
         private string _viewAsStatus = "On";
         private int _totalRuns = 0;
         private int _viewAsRuns = 0;
+        private bool _isRunning = false;
 
         [ImportingConstructor]
         public BenchmarkViewModel(IEventAggregator eventAggregator, DocumentViewModel document, RibbonViewModel ribbon, IGlobalOptions options)
@@ -54,6 +55,10 @@ namespace DaxStudio.UI.ViewModels
 
         private void SetDefaultsFromOptions()
         {
+            // don't overwrite the run counts the user has entered once a benchmark has started
+            // (reconnecting when switching ViewAs off can trigger a global options update)
+            if (_isRunning) return;
+
             EnableColdCacheExecutions = Options.BenchmarkColdCacheSwitchedOn;
             EnableWarmCacheExecutions = Options.BenchmarkWarmCacheSwitchedOn;
             ColdCacheRuns = Options.BenchmarkColdCacheRuns;
@@ -67,6 +72,7 @@ namespace DaxStudio.UI.ViewModels
             try
             {
                 Log.Information(Constants.LogMessageTemplate, nameof(BenchmarkViewModel), nameof(Run), $"Running Benchmark - Cold:{CalculatedColdCacheRuns} Warm: {CalculatedWarmCacheRuns} RepeatWithoutViewAs: {RepeatRunWithoutViewAs}");
+                _isRunning = true;
                 _stopwatch = new Stopwatch();
                 _stopwatch.Start();
                 _totalRuns = CalculatedColdCacheRuns + CalculatedWarmCacheRuns;
@@ -90,6 +96,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 Log.Error(ex, DaxStudio.Common.Constants.LogMessageTemplate, nameof(BenchmarkViewModel), nameof(Run), ex.Message);
                 await EventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"An error occurred while attempting to run the benchmark: {ex.Message}"));
+                _isRunning = false;
                 _stopwatch?.Stop();
             }
         }
@@ -97,6 +104,7 @@ namespace DaxStudio.UI.ViewModels
         public void Cancel()
         {
             _stopwatch?.Stop();
+            _isRunning = false;
             IsCancelled = true;
             //await TryCloseAsync(true);
         }
@@ -194,6 +202,7 @@ namespace DaxStudio.UI.ViewModels
         private async Task BenchmarkingComplete()
         {
             _stopwatch?.Stop();
+            _isRunning = false;
             // Stop listening to events
             EventAggregator.Unsubscribe(this);
 
