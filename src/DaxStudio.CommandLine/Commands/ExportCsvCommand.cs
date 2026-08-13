@@ -6,9 +6,12 @@ using System.Threading.Tasks;
 using Caliburn.Micro;
 using DaxStudio.CommandLine.Converters;
 using DaxStudio.CommandLine.Extensions;
+using DaxStudio.CommandLine.Helpers;
 using DaxStudio.CommandLine.UIStubs;
+using DaxStudio.Common;
 using DaxStudio.Core.Connections;
 using DaxStudio.Core.Exports;
+using DaxStudio.Interfaces;
 using Serilog;
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -37,9 +40,12 @@ namespace DaxStudio.CommandLine.Commands
         static List<SelectedTable> SelectedTables = new List<SelectedTable>();
         static List<ProgressTask> ProgressTasks = new List<ProgressTask>();
         static IEventAggregator EventAggregator;
-        public ExportCsvCommand(IEventAggregator eventAggregator)
+        public IGlobalOptions Options { get; }
+
+        public ExportCsvCommand(IEventAggregator eventAggregator, IGlobalOptions options)
         {
             EventAggregator = eventAggregator;
+            Options = options;
         }
 
         public ValidationResult Validate(CommandContext context, CommandSettings settings)
@@ -76,7 +82,11 @@ namespace DaxStudio.CommandLine.Commands
                             ConnectionString = settings.FullConnectionString,
                             ApplicationName = "DAX Studio Command Line",
                             DatabaseName = settings.Database,
-                            PowerBIFileName = ""
+                            PowerBIFileName = "",
+                            AccessToken = AccessTokenHelper.GetAccessTokenIfNeeded(
+                                settings.FullConnectionString,
+                                settings,
+                                Options)
                         };
                         connMgr.Connect(connEvent);
                         connMgr.SelectedModel = connMgr.Database.Models.BaseModel;

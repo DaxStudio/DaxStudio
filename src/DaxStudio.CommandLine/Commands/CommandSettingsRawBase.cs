@@ -28,8 +28,9 @@ namespace DaxStudio.CommandLine.Commands
         [Description("The password to use for AzureAD authentication")]
         public string Password { get; set; }
 
-
-
+        [CommandOption("--non-interactive")]
+        [Description("Never open an authentication prompt; fail if cached sign-in cannot be used")]
+        public bool NonInteractive { get; set; }
 
         //[CommandArgument(1, "[connectionstring]")]
         [CommandOption("-c|--connectionstring <connectionString>")]

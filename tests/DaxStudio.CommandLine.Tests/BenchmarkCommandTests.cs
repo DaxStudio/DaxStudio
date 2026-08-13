@@ -1,13 +1,20 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DaxStudio.CommandLine.Commands;
+using DaxStudio.CommandLine.Helpers;
 using Spectre.Console.Cli;
+using System;
+#if NET8_0_OR_GREATER
+using AccessToken = Microsoft.AnalysisServices.AccessToken;
+#else
+using AccessToken = Microsoft.AnalysisServices.AdomdClient.AccessToken;
+#endif
 
 namespace DaxStudio.CommandLine.Tests
 {
     [TestClass]
     public class BenchmarkCommandTests
     {
-    private static BenchmarkCommand CreateCommand() => new BenchmarkCommand(null, null);
+        private static BenchmarkCommand CreateCommand() => new BenchmarkCommand(null, null);
 
         // Tests validate the Settings class directly (same pattern as
         // CommandLineParameterTests). BenchmarkCommand constructor requires
@@ -166,6 +173,40 @@ namespace DaxStudio.CommandLine.Tests
             var result = ((ICommand)CreateCommand()).Validate(null, settings);
             Assert.IsFalse(result.Successful);
             Assert.AreEqual("--warm must be >= 0", result.Message);
+        }
+
+        [TestMethod]
+        public void Benchmark_connection_events_reuse_the_same_access_token()
+        {
+            var settings = new BenchmarkCommand.Settings
+            {
+                Database = "Adventure Works",
+                PowerBIFileName = "model.pbix"
+            };
+            var accessToken = new AccessToken(
+                "access-token", DateTimeOffset.UtcNow.AddHours(1), null);
+
+            var queryEvent = BenchmarkCommand.CreateConnectEvent(
+                settings, "Data Source=powerbi://example;Roles=Sales", "DAX Studio Command Line", accessToken);
+            var adminEvent = BenchmarkCommand.CreateConnectEvent(
+                settings, "Data Source=powerbi://example", "DAX Studio Command Line (admin)", accessToken);
+
+            Assert.AreEqual(accessToken.Token, queryEvent.AccessToken.Token);
+            Assert.AreEqual(accessToken.ExpirationTime, queryEvent.AccessToken.ExpirationTime);
+            Assert.AreEqual(accessToken.UserContext, queryEvent.AccessToken.UserContext);
+            Assert.AreEqual(accessToken.Token, adminEvent.AccessToken.Token);
+            Assert.AreEqual(accessToken.ExpirationTime, adminEvent.AccessToken.ExpirationTime);
+            Assert.AreEqual(accessToken.UserContext, adminEvent.AccessToken.UserContext);
+        }
+
+        [TestMethod]
+        public void Benchmark_service_principal_certificate_does_not_require_access_token()
+        {
+            const string connectionString =
+                "Data Source=powerbi://api.powerbi.com/v1.0/myorg/workspace;" +
+                "User ID=app:client-id@tenant-id;Password=cert:thumbprint";
+
+            Assert.IsFalse(AccessTokenHelper.IsAccessTokenNeeded(connectionString));
         }
     }
 }

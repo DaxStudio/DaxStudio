@@ -1,7 +1,16 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DaxStudio.CommandLine.Commands;
+using DaxStudio.CommandLine.Helpers;
+using DaxStudio.CommandLine.Interfaces;
+using DaxStudio.CommandLine.UIStubs;
+using DaxStudio.CommandLine.Infrastructure;
+using DaxStudio.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
+using NSubstitute;
 using Spectre.Console.Cli;
+using System;
 using System.Data.OleDb;
+using System.Threading.Tasks;
 
 namespace DaxStudio.CommandLine.Tests
 {
@@ -106,6 +115,86 @@ namespace DaxStudio.CommandLine.Tests
         }
 
         [TestMethod]
+        public void Non_interactive_routes_all_registered_commands_to_silent_only_authentication()
+        {
+            var settings = new ISettingsConnection[]
+            {
+                new ExportSqlCommand.Settings { NonInteractive = true },
+                new ExportCsvCommand.Settings { NonInteractive = true },
+                new ExportParquetCommand.Settings { NonInteractive = true },
+                new FileCommand.Settings { NonInteractive = true },
+                new XlsxCommand.Settings { NonInteractive = true },
+                new VpaxCommand.Settings { NonInteractive = true },
+                new AccessTokenCommand.Settings { NonInteractive = true },
+                new AuthCommand.Settings { NonInteractive = true },
+                new BenchmarkCommand.Settings { NonInteractive = true },
+                new CustomTraceCommand.Settings { NonInteractive = true },
+            };
+
+            foreach (var commandSettings in settings)
+            {
+                Assert.IsTrue(
+                    AccessTokenHelper.UsesSilentOnlyAuthentication(commandSettings),
+                    commandSettings.GetType().Name);
+            }
+        }
+
+        [TestMethod]
+        public void Default_routes_all_registered_commands_to_interactive_fallback_authentication()
+        {
+            var settings = new ISettingsConnection[]
+            {
+                new ExportSqlCommand.Settings(),
+                new ExportCsvCommand.Settings(),
+                new ExportParquetCommand.Settings(),
+                new FileCommand.Settings(),
+                new XlsxCommand.Settings(),
+                new VpaxCommand.Settings(),
+                new AccessTokenCommand.Settings(),
+                new AuthCommand.Settings(),
+                new BenchmarkCommand.Settings(),
+                new CustomTraceCommand.Settings(),
+            };
+
+            foreach (var commandSettings in settings)
+            {
+                Assert.IsFalse(
+                    AccessTokenHelper.UsesSilentOnlyAuthentication(commandSettings),
+                    commandSettings.GetType().Name);
+            }
+        }
+
+        [TestMethod]
+        public void Cli_account_selection_does_not_force_an_interactive_prompt()
+        {
+            var options = new HaveLastUsedUPNStub();
+
+            Assert.AreEqual(string.Empty, options.LastUsedUPN);
+        }
+
+        [TestMethod]
+        public void Query_runner_initializes_and_persists_cli_account_selection()
+        {
+            var settings = new FileCommand.Settings
+            {
+                Server = "localhost",
+                Database = "Model"
+            };
+            var settingProvider = Substitute.For<ISettingProvider>();
+
+            var runner = new QueryRunner(settings, settingProvider);
+            runner.Options.LastUsedUPN = "selected@example.com";
+
+            settingProvider.Received(1).Initialize(runner.Options);
+            settingProvider.Received(1).SetValue(
+                nameof(runner.Options.LastUsedUPN),
+                "selected@example.com",
+                false,
+                runner.Options,
+                nameof(runner.Options.LastUsedUPN));
+        }
+
+        [TestMethod]
         public void Using_server_and_password_should_succeed()
         {
             var settings = new FileCommand.Settings
@@ -135,6 +224,150 @@ namespace DaxStudio.CommandLine.Tests
             Assert.IsTrue(validationResult.Successful, validationResult.Message);
             Assert.IsTrue(cmdValidationResult.Successful, cmdValidationResult.Message);
             Assert.IsNull(validationResult.Message);
+        }
+
+        [TestMethod]
+        public async Task Auth_command_is_registered()
+        {
+            var app = Program.CreateCommands(
+                new TypeRegistrar(new ServiceCollection()));
+
+            var exitCode = await app.RunAsync(new[] { "auth", "--help" });
+
+            Assert.AreEqual(0, exitCode);
+        }
+
+        [TestMethod]
+        public void Auth_command_accepts_server_without_database()
+        {
+            var settings = new AuthCommand.Settings
+            {
+                Server = "powerbi://api.powerbi.com/v1.0/myorg/workspace"
+            };
+
+            var validationResult = settings.Validate();
+
+            Assert.IsTrue(validationResult.Successful, validationResult.Message);
+            Assert.AreEqual(
+                "powerbi://api.powerbi.com/v1.0/myorg/workspace",
+                ParseValue(settings.FullConnectionString, "Data Source"));
+        }
+
+        [TestMethod]
+        public void Auth_command_accepts_connection_string_without_database()
+        {
+            var settings = new AuthCommand.Settings
+            {
+                ConnectionString =
+                    "Data Source=powerbi://api.powerbi.com/v1.0/myorg/workspace"
+            };
+
+            var validationResult = settings.Validate();
+
+            Assert.IsTrue(validationResult.Successful, validationResult.Message);
+        }
+
+        [TestMethod]
+        public void Auth_command_rejects_missing_source()
+        {
+            var validationResult = new AuthCommand.Settings().Validate();
+
+            Assert.IsFalse(validationResult.Successful);
+            Assert.AreEqual(
+                "You must specify either <server> or <connectionstring>",
+                validationResult.Message);
+        }
+
+        [TestMethod]
+        public void Auth_command_rejects_server_and_connection_string()
+        {
+            var settings = new AuthCommand.Settings
+            {
+                Server = "powerbi://api.powerbi.com/v1.0/myorg/workspace",
+                ConnectionString =
+                    "Data Source=powerbi://api.powerbi.com/v1.0/myorg/workspace"
+            };
+
+            var validationResult = settings.Validate();
+
+            Assert.IsFalse(validationResult.Successful);
+            Assert.AreEqual(
+                "You cannot specify both <server> and <connectionstring>",
+                validationResult.Message);
+        }
+
+        [TestMethod]
+        public void Auth_command_propagates_non_interactive_authentication()
+        {
+            var settings = new AuthCommand.Settings
+            {
+                Server = "powerbi://api.powerbi.com/v1.0/myorg/workspace",
+                NonInteractive = true
+            };
+
+            Assert.IsTrue(
+                AccessTokenHelper.UsesSilentOnlyAuthentication(settings));
+        }
+
+        [TestMethod]
+        public void Auth_command_defaults_to_interactive_fallback_authentication()
+        {
+            var settings = new AuthCommand.Settings
+            {
+                Server = "powerbi://api.powerbi.com/v1.0/myorg/workspace"
+            };
+
+            Assert.IsFalse(
+                AccessTokenHelper.UsesSilentOnlyAuthentication(settings));
+        }
+
+        [TestMethod]
+        public void Auth_command_rejects_service_principal_connection_string()
+        {
+            var settings = new AuthCommand.Settings
+            {
+                ConnectionString =
+                    "Data Source=powerbi://api.powerbi.com/v1.0/myorg/workspace;" +
+                    "User ID=app:client-id@tenant-id"
+            };
+
+            var validationResult = settings.Validate();
+
+            Assert.IsFalse(validationResult.Successful);
+            StringAssert.Contains(
+                validationResult.Message,
+                "password and service-principal connection strings are not supported");
+        }
+
+        [TestMethod]
+        public void Auth_command_rejects_password_connection_string()
+        {
+            var settings = new AuthCommand.Settings
+            {
+                ConnectionString =
+                    "Data Source=powerbi://api.powerbi.com/v1.0/myorg/workspace;" +
+                    "Password=not-a-real-password"
+            };
+
+            var validationResult = settings.Validate();
+
+            Assert.IsFalse(validationResult.Successful);
+            StringAssert.Contains(
+                validationResult.Message,
+                "password and service-principal connection strings are not supported");
+        }
+
+        [TestMethod]
+        public void Auth_command_success_message_contains_only_safe_metadata()
+        {
+            var message = AuthCommand.CreateSuccessMessage(
+                "account@example.com",
+                new DateTimeOffset(2026, 8, 10, 1, 2, 3, TimeSpan.Zero));
+
+            StringAssert.Contains(message, "account@example.com");
+            StringAssert.Contains(message, "2026-08-10 01:02:03Z");
+            Assert.IsFalse(
+                message.IndexOf("token", StringComparison.OrdinalIgnoreCase) >= 0);
         }
 
         // The following tests verify that values containing characters which are
@@ -244,5 +477,3 @@ namespace DaxStudio.CommandLine.Tests
 
     }
 }
-
-

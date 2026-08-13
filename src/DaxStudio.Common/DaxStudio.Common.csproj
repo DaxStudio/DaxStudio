@@ -14,6 +14,9 @@
     <Compile Include="..\CommonAssemblyVersion.cs" Link="Properties\CommonAssemblyVersion.cs" />
   </ItemGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="dscmd" />
+  </ItemGroup>
+  <ItemGroup>
     <EmbeddedResource Include="Resources\ASAzureSecurityConfig.xml">
       <WebResourceUrl>https://global.asazure.windows.net/ASAzureSecurityConfig.xml</WebResourceUrl>
     </EmbeddedResource>

@@ -1,6 +1,8 @@
 using Caliburn.Micro;
+using DaxStudio.CommandLine.Helpers;
 using DaxStudio.CommandLine.UIStubs;
 using DaxStudio.CommandLine.ViewModel;
+using DaxStudio.Common;
 using DaxStudio.Interfaces;
 using DaxStudio.Core.Connections;
 using DaxStudio.Core.Model;
@@ -97,10 +99,14 @@ namespace DaxStudio.CommandLine.Commands
                     var connMgr = new DaxStudio.Core.Connections.ConnectionManager(EventAggregator);
                     var connEvent = new ConnectEvent()
                     {
-                        ConnectionString = $"Data Source={settings.Server};Initial Catalog={settings.Database}",
+                        ConnectionString = settings.FullConnectionString,
                         ApplicationName = "DAX Studio Command Line",
                         DatabaseName = settings.Database,
-                        PowerBIFileName = ""
+                        PowerBIFileName = "",
+                        AccessToken = AccessTokenHelper.GetAccessTokenIfNeeded(
+                            settings.FullConnectionString,
+                            settings,
+                            Options)
                     };
                 try {
                     connMgr.Connect(connEvent);

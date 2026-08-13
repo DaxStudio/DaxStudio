@@ -1,6 +1,8 @@
 ﻿using DaxStudio.CommandLine.UIStubs;
+using DaxStudio.CommandLine.Interfaces;
 using DaxStudio.Common;
 using DaxStudio.Common.Extensions;
+using DaxStudio.Common.Interfaces;
 using Microsoft.AnalysisServices.AdomdClient;
 #if NET8_0_OR_GREATER
 using AccessToken = Microsoft.AnalysisServices.AccessToken;
@@ -22,20 +24,63 @@ namespace DaxStudio.CommandLine.Helpers
 
             return true;
         }
-        public static AccessToken GetAccessToken(string connStr)
+        public static AccessToken GetAccessToken(
+            string connStr,
+            IHaveLastUsedUPN options = null)
         {
-            GetScopeFromConnectionString(connStr, out var tokenScope,out var serverName );
-            var hwnd = NativeMethods.GetConsoleWindow();
-            var dataSource = new OleDbConnectionStringBuilder(connStr).DataSource;
-            var (authResult, context) = EntraIdHelper.PromptForAccountAsync(hwnd, new HaveLastUsedUPNStub(), tokenScope, dataSource).Result;
-            var token = EntraIdHelper.CreateAccessToken(authResult.AccessToken, authResult.ExpiresOn, context);
-            return token;
+            return GetAccessToken(
+                connStr,
+                EntraTokenAcquisitionMode.SilentThenInteractive,
+                options);
         }
 
-        private static void GetScopeFromConnectionString(string connStr, out AccessTokenScope tokenScope, out string serverName)
+        internal static AccessToken GetAccessToken(
+            string connStr,
+            EntraTokenAcquisitionMode interactionMode,
+            IHaveLastUsedUPN options = null)
+        {
+            GetScopeFromConnectionString(connStr, out var tokenScope);
+            var hwnd = NativeMethods.GetConsoleWindow();
+            var dataSource = new OleDbConnectionStringBuilder(connStr).DataSource;
+            var (authResult, context) = EntraIdHelper.AcquireTokenForConnectionAsync(
+                hwnd,
+                options ?? new HaveLastUsedUPNStub(),
+                tokenScope,
+                dataSource,
+                interactionMode).GetAwaiter().GetResult();
+            return EntraIdHelper.CreateAccessToken(
+                authResult.AccessToken,
+                authResult.ExpiresOn,
+                context);
+        }
+
+        internal static AccessToken GetAccessTokenIfNeeded(
+            string connStr,
+            ISettingsConnection settings,
+            IHaveLastUsedUPN options = null)
+        {
+            return IsAccessTokenNeeded(connStr)
+                ? GetAccessToken(connStr, GetAcquisitionMode(settings), options)
+                : default;
+        }
+
+        internal static EntraTokenAcquisitionMode GetAcquisitionMode(
+            ISettingsConnection settings)
+        {
+            return UsesSilentOnlyAuthentication(settings)
+                ? EntraTokenAcquisitionMode.SilentOnly
+                : EntraTokenAcquisitionMode.SilentThenInteractive;
+        }
+
+        internal static bool UsesSilentOnlyAuthentication(
+            ISettingsConnection settings)
+        {
+            return settings.NonInteractive;
+        }
+
+        private static void GetScopeFromConnectionString(string connStr, out AccessTokenScope tokenScope)
         {
             var builder = new OleDbConnectionStringBuilder(connStr);
-            serverName = builder.DataSource;
             if (builder.DataSource.IsAsAzure())
             {
                 tokenScope = AccessTokenScope.AsAzure;
