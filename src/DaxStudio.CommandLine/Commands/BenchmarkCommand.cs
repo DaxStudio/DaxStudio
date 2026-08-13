@@ -1,4 +1,5 @@
 using Caliburn.Micro;
+using DaxStudio.CommandLine.Helpers;
 using DaxStudio.CommandLine.UIStubs;
 using DaxStudio.CommandLine.ViewModel;
 using DaxStudio.Interfaces;
@@ -21,7 +22,9 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using DaxStudio.Core.Interfaces;
+#if NET8_0_OR_GREATER
+using AccessToken = Microsoft.AnalysisServices.AccessToken;
+#endif
 
 namespace DaxStudio.CommandLine.Commands
 {
@@ -118,9 +121,17 @@ namespace DaxStudio.CommandLine.Commands
 
             // Connect — same pattern as CustomTraceCommand (lines 98-110)
             // Roles/EffectiveUserName are added to the query connection for RLS testing.
-            // ClearCache requires admin privileges, so ConnectionManager internally
-            // clones a connection without the RLS parameters to clear the cache.
-            string queryConnectionString = settings.FullConnectionString;
+            // ClearCache requires admin privileges, so it uses the base connection
+            // (without role impersonation) via a separate ConnectionManager.
+            string baseConnectionString = settings.FullConnectionString;
+            string queryConnectionString = baseConnectionString;
+            var accessToken = default(AccessToken);
+            if (AccessTokenHelper.IsAccessTokenNeeded(baseConnectionString))
+            {
+                accessToken = AccessTokenHelper.GetAccessToken(baseConnectionString);
+            }
+
+            bool hasImpersonation = false;
             if (!string.IsNullOrWhiteSpace(settings.Role))
             {
                 queryConnectionString += $";Roles={settings.Role}";
@@ -131,13 +142,8 @@ namespace DaxStudio.CommandLine.Commands
             }
 
             var connMgr = new ConnectionManager(EventAggregator);
-            var connEvent = new UIStubs.ConnectEvent()
-            {
-                ConnectionString = queryConnectionString,
-                ApplicationName = "DAX Studio Command Line",
-                DatabaseName = settings.Database,
-                PowerBIFileName = settings.PowerBIFileName ?? ""
-            };
+            var connEvent = CreateConnectEvent(
+                settings, queryConnectionString, "DAX Studio Command Line", accessToken);
 
             try
             {
@@ -190,10 +196,27 @@ namespace DaxStudio.CommandLine.Commands
                     AnsiConsole.MarkupLine("[yellow]Trace unavailable[/] — wall-clock timing only");
             }
 
-            // Cache clearing is handled by ConnectionManager.ClearCache() which
-            // internally clones the connection without Roles/EffectiveUserName when
-            // RLS impersonation is active (ClearCache requires server admin privileges)
-            // and then runs the session refresh query on the query connection.
+            // For cache clearing with RLS impersonation: use a separate admin
+            // connection without Roles/EffectiveUserName, since ClearCache
+            // requires server admin privileges that the impersonated role lacks.
+            ConnectionManager adminConnMgr = null;
+            if (hasImpersonation && settings.ColdRuns > 0)
+            {
+                try
+                {
+                    adminConnMgr = new ConnectionManager(new Caliburn.Micro.EventAggregator());
+                    var adminEvent = CreateConnectEvent(
+                        settings, baseConnectionString, "DAX Studio Command Line (admin)", accessToken);
+                    adminConnMgr.Connect(adminEvent);
+                    adminConnMgr.SelectedModel = adminConnMgr.Database.Models.BaseModel;
+                    if (!silent) AnsiConsole.MarkupLine("[dim]Admin connection for cache clear established[/]");
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning("Could not create admin connection for cache clear: {message}", ex.Message);
+                    adminConnMgr = null;
+                }
+            }
 
             // Run benchmark
             int totalRuns = settings.ColdRuns + settings.WarmRuns;
@@ -209,7 +232,8 @@ namespace DaxStudio.CommandLine.Commands
                 {
                     // this also runs the session refresh query so that the calculation
                     // script evaluation is not charged to the timed query below
-                    connMgr.ClearCache();
+                    if (adminConnMgr != null) adminConnMgr.ClearCache()
+                    else connMgr.ClearCache();
                 }
                 catch (Exception ex) { Log.Warning("Cache clear failed: {message}", ex.Message); }
 
@@ -257,6 +281,19 @@ namespace DaxStudio.CommandLine.Commands
 
             Log.Information("Finished Benchmark command");
             return 0;
+        }
+
+        internal static UIStubs.ConnectEvent CreateConnectEvent(
+            Settings settings, string connectionString, string applicationName, AccessToken accessToken)
+        {
+            return new UIStubs.ConnectEvent
+            {
+                ConnectionString = connectionString,
+                ApplicationName = applicationName,
+                DatabaseName = settings.Database,
+                PowerBIFileName = settings.PowerBIFileName ?? string.Empty,
+                AccessToken = accessToken
+            };
         }
 
         private static BenchmarkResult ExecuteTimedQuery(
