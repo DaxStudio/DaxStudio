@@ -883,7 +883,7 @@
                         </DataGridTemplateColumn.HeaderStyle>
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding QueryGroup, StringFormat='#,#;;'}" TextAlignment="Right" Padding="2">
+                                <TextBlock Text="{Binding QueryGroup, StringFormat='#,#;;'}" TextAlignment="Right" Padding="6 0 6 0" VerticalAlignment="Center">
                                     <TextBlock.ToolTip>
                                         <ToolTip DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
                                             <ContentControl Content="{Binding QueryGroupSummary}" ContentTemplate="{StaticResource QueryGroupTooltipTemplate}"/>

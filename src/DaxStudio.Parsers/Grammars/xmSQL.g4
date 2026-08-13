@@ -286,9 +286,19 @@ QUOTED_TABLE_NAME
     ;
 
 // Bracketed name: [ColumnName], [$SemijoinProjection], [CallbackDataID('T'[Col])], etc.
-// Supports one level of nested brackets for callback expressions
+// Handles three forms of embedded brackets:
+//   - a balanced parenthesised group, where ']' has no special meaning
+//     e.g. [CallbackDataID(Mod([CustomerKey]],100))]
+//   - the DAX ']]' escape sequence for a literal ']'
+//   - one level of nested brackets (legacy callback expressions)
 BRACKETED_NAME
-    : '[' ( ~('[' | ']' | '\r' | '\n') | '[' ~(']' | '\r' | '\n')* ']' )+ ']'
+    : '[' ( ']' ']' | PAREN_GROUP | ~('[' | ']' | '\r' | '\n') | '[' ~(']' | '\r' | '\n')* ']' )+ ']'
+    ;
+
+// A balanced run of parentheses. Brackets are treated as ordinary characters
+// inside it, so a ']' nested in a function call does not terminate the name.
+fragment PAREN_GROUP
+    : '(' ( PAREN_GROUP | ~('(' | ')' | '\r' | '\n') )* ')'
     ;
 
 // String literals (double-quoted)

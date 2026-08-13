@@ -95,6 +95,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<ChangeThemeEvent>
         , IHandle<CloseTraceWindowEvent>
         , IHandle<DefineMeasureOnEditor>
+        , IHandle<DefineFunctionOnEditor>
         , IHandle<ExportDaxFunctionsEvent>
         , IHandle<LoadFileEvent>
         , IHandle<LoadQueryBuilderEvent>
@@ -332,7 +333,13 @@ namespace DaxStudio.UI.ViewModels
                 base.OnViewLoaded(view);
                 _editor = GetEditor();
 
-                await _eventAggregator.PublishAsync(new LoadQueryHistoryAsyncEvent());
+                // Kick off the query history load without awaiting it. The history is only needed by the
+                // Query History pane, but awaiting it here delayed the initial connection by the full load
+                // time (several seconds with a full history folder) when a server was passed on the command
+                // line. Any load failure is already logged and reported by the handler itself.
+                _ = _eventAggregator.PublishAsync(new LoadQueryHistoryAsyncEvent())
+                        .ContinueWith(t => Log.Error(t.Exception, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnViewLoaded), "Error loading the query history"),
+                                      TaskContinuationOptions.OnlyOnFaulted);
 
                 IntellisenseProvider.Editor = _editor;
                 UpdateSettings();
@@ -2625,6 +2632,12 @@ namespace DaxStudio.UI.ViewModels
             return Task.CompletedTask;
         }
 
+        public Task HandleAsync(DefineFunctionOnEditor message, CancellationToken cancellationToken)
+        {
+            DefineFunctionOnEditor(message.FunctionName, message.FunctionExpression);
+            return Task.CompletedTask;
+        }
+
         public void DefineMeasures()
         {
 
@@ -2661,13 +2674,25 @@ namespace DaxStudio.UI.ViewModels
 
         private void DefineMeasuresForQuery(bool recursive = false)
         {
-            var measures = this.Connection.FindDependentMeasuresForQuery(_editor.SelectedText, recursive);
-            if (measures.Count == 0) return;
+            var dependentObjects = this.Connection.FindDependentObjectsForQuery(_editor.SelectedText, recursive);
+            var measures = dependentObjects.Measures;
+            if (measures.Count == 0 && dependentObjects.Functions.Count == 0) return;
             _editor.SelectionLength = 0; // set the selection length to 0 to stop the query being overwritten
+
+            DefineFunctionsOnEditor(dependentObjects.Functions);
+
             foreach (var m in measures)
             {
                 var measureFullName = $"{m.Table.DaxName}{m.DaxName}";
                 DefineMeasureOnEditor(measureFullName, m.Expression);
+            }
+        }
+
+        private void DefineFunctionsOnEditor(IEnumerable<ADOTabularUserDefinedFunction> functions)
+        {
+            foreach (var function in functions)
+            {
+                DefineFunctionOnEditor(function.Name, function.Expression);
             }
         }
 
@@ -2718,9 +2743,11 @@ namespace DaxStudio.UI.ViewModels
 
         private void DefineDependentMeasuresByName(string measureName)
         {
-            var dependentMeasures = this.Connection.FindDependentMeasures(measureName);
+            var dependentObjects = this.Connection.FindDependentObjects(measureName);
 
-            foreach (var measure in dependentMeasures)
+            DefineFunctionsOnEditor(dependentObjects.Functions);
+
+            foreach (var measure in dependentObjects.Measures)
             {
                 var measureFullName = $"{measure.Table.DaxName}{measure.DaxName}";
                 DefineMeasureOnEditor(measureFullName, measure.Expression);
@@ -2741,24 +2768,42 @@ namespace DaxStudio.UI.ViewModels
 
         private void DefineMeasureOnEditor(string measureName, string measureExpression)
         {
+            InsertDefinitionOnEditor(MEASURE_KEYWORD, measureName, measureExpression);
+        }
+
+        private void DefineFunctionOnEditor(string functionName, string functionExpression)
+        {
+            InsertDefinitionOnEditor(FUNCTION_KEYWORD, functionName, functionExpression);
+        }
+
+        const string MEASURE_KEYWORD = "MEASURE";
+        const string FUNCTION_KEYWORD = "FUNCTION";
+
+        private void InsertDefinitionOnEditor(string keyword, string objectName, string expression)
+        {
             try
             {
                 var editor = GetEditor();
                 var currentText = editor.Text;
+                var isFunction = keyword == FUNCTION_KEYWORD;
 
                 // if the default separator is not the default Comma style
                 // then we should switch the separators to the SemiColon style
                 if (Options.DefaultSeparator == DelimiterType.SemiColon)
                 {
                     var dsm = new DelimiterStateMachine(DelimiterType.SemiColon);
-                    measureExpression = dsm.ProcessString(measureExpression);
+                    expression = dsm.ProcessString(expression);
                 }
 
                 // We include a section ---- MODEL MEASURES ----
                 // where we include all the measures
                 // the section ends with ---- END MODEL MEASURES ----
                 // so we append the measures at the end of that section
-                var measureDeclaration = $"MEASURE {measureName} = {measureExpression}";
+                // user defined functions are inserted at the start of that section, before any measures
+                var declaration = $"{keyword} {objectName} = {expression}";
+
+                // a duplicate function definition is an error, so we skip functions that are already defined
+                if (isFunction && ContainsFunctionDefinition(currentText, objectName)) return;
 
                 // Try to find the DEFINE statements
                 // If found then add the measure inside the DEFINE statement, if not then just paste the measure expression
@@ -2766,9 +2811,11 @@ namespace DaxStudio.UI.ViewModels
                 {
                     currentText = defineMeasureRegex_ModelMeasures.Replace(currentText, m =>
                     {
+                        if (isFunction) return InsertFunctionIntoSection(m.Groups[1].Value, declaration);
+
                         var measuresText = new StringBuilder(m.Groups[1].Value);
 
-                        measuresText.AppendLine(measureDeclaration);
+                        measuresText.AppendLine(declaration);
 
                         return measuresText.ToString();
                     });
@@ -2783,7 +2830,7 @@ namespace DaxStudio.UI.ViewModels
                     var newSection = new StringBuilder();
                     newSection.AppendLine();
                     newSection.AppendLine(MODELMEASURES_BEGIN);
-                    newSection.AppendLine(measureDeclaration);
+                    newSection.AppendLine(declaration);
                     newSection.AppendLine(MODELMEASURES_END);
                     newSection.AppendLine();
 
@@ -2803,18 +2850,43 @@ namespace DaxStudio.UI.ViewModels
                     }
                     else
                     {
-                        measureDeclaration = $"DEFINE {newSection}";
+                        var declarationText = $"DEFINE {newSection}";
                         // look for preceeding EVALUATE
                         MoveSelectionToPreceedingEvaluate();
-                        InsertTextAtSelection(measureDeclaration, false, false);
+                        InsertTextAtSelection(declarationText, false, false);
                     }
                 }
             }
             catch (Exception e)
             {
-                Log.Error(e, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(DefineMeasureOnEditor), e.Message);
+                Log.Error(e, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(InsertDefinitionOnEditor), e.Message);
                 _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, "The following error occurred while trying to define the measure\n" + e.Message));
             }
+        }
+
+        // returns true if the passed in text already contains a definition for the specified function
+        internal static bool ContainsFunctionDefinition(string text, string functionName)
+        {
+            if (string.IsNullOrEmpty(text)) return false;
+            var pattern = $@"^\s*{FUNCTION_KEYWORD}\s+{Regex.Escape(functionName)}\s*=";
+            return Regex.IsMatch(text, pattern, RegexOptions.IgnoreCase | RegexOptions.Multiline);
+        }
+
+        // inserts a function declaration into the model measures section, after any existing
+        // function declarations, but before the first measure declaration
+        internal static string InsertFunctionIntoSection(string sectionText, string declaration)
+        {
+            var newLine = sectionText.Contains("\r\n") ? "\r\n" : "\n";
+            var lines = sectionText.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None).ToList();
+
+            var insertAt = lines.FindIndex(l => l.TrimStart().StartsWith(MEASURE_KEYWORD + " ", StringComparison.OrdinalIgnoreCase));
+
+            // if there are no measures in this section then insert before the last line
+            // as that holds the indenting for the end of section marker
+            if (insertAt < 0) insertAt = Math.Max(lines.Count - 1, 0);
+
+            lines.Insert(insertAt, declaration);
+            return string.Join(newLine, lines);
         }
 
         private void MoveSelectionToPreceedingEvaluate()
@@ -3736,23 +3808,11 @@ namespace DaxStudio.UI.ViewModels
                 var sw = Stopwatch.StartNew();
                 _currentQueryDetails = CreateQueryHistoryEvent(string.Empty, string.Empty);
 
-                Connection.ClearCache();
                 OutputMessage(string.Format("Evaluating Calculation Script for Database: {0}", Connection.DatabaseName));
 
-
-                string refreshQuery;
-                if (Options.DefaultSeparator == DelimiterType.SemiColon)
-                {
-                    // switch the default delimiter on the refresh query to the semi-colon style
-                    var dsm = new DelimiterStateMachine(DelimiterType.SemiColon);
-                    refreshQuery = dsm.ProcessString(Constants.RefreshSessionQuery);
-                }
-                else
-                {
-                    refreshQuery = Constants.RefreshSessionQuery;
-                }
-
-                await ExecuteDataTableQueryAsync(refreshQuery);
+                // ClearCacheAsync also runs the session refresh query which re-evaluates
+                // the calculation script so that the global scopes are re-populated
+                await Connection.ClearCacheAsync();
 
                 sw.Stop();
                 var duration = sw.ElapsedMilliseconds;

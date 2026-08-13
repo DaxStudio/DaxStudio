@@ -300,8 +300,9 @@ namespace DaxStudio.Common
         }
 
         // Option names that the launcher recognises. Used by NormalizeArgs to
-        // translate DOS-style /option syntax into Spectre's POSIX -o/--option
-        // form without accidentally rewriting file paths.
+        // translate DOS-style /option and legacy single-dash -option syntax
+        // into Spectre's POSIX -o/--option form without accidentally rewriting
+        // file paths.
         private static readonly HashSet<string> KnownShortOptions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "P", "L", "F", "S", "D", "R", "U",
@@ -332,13 +333,23 @@ namespace DaxStudio.Common
 
         private static string NormalizeArg(string arg)
         {
-            if (string.IsNullOrEmpty(arg) || arg[0] == '-') return arg.ToLowerInvariant();
-            if (string.IsNullOrEmpty(arg) || arg[0] != '/') return arg;
+            if (string.IsNullOrEmpty(arg)) return arg;
+
+            string prefix;
+            if (arg.StartsWith("--", StringComparison.Ordinal)) prefix = "--";
+            else if (arg[0] == '-') prefix = "-";
+            else if (arg[0] == '/') prefix = "/";
+            else return arg;
+
+            var body = arg.Substring(prefix.Length);
+            if (body.Length == 0) return arg;
 
             // Split on the first '=' so /server=localhost also normalizes.
-            var equalsIndex = arg.IndexOf('=');
-            var name = equalsIndex > 0 ? arg.Substring(1, equalsIndex - 1).ToLowerInvariant() : arg.Substring(1).ToLowerInvariant();
-            var tail = equalsIndex > 0 ? arg.Substring(equalsIndex) : string.Empty;
+            // Only the option name is lower-cased, the value must keep its
+            // original casing (eg. file paths and base64 encoded queries).
+            var equalsIndex = body.IndexOf('=');
+            var name = (equalsIndex >= 0 ? body.Substring(0, equalsIndex) : body).ToLowerInvariant();
+            var tail = equalsIndex >= 0 ? body.Substring(equalsIndex) : string.Empty;
 
             // Only translate when the name matches a known option to avoid
             // mangling forward-slash file paths.
@@ -351,7 +362,11 @@ namespace DaxStudio.Common
                 return "-" + name + tail;
             }
 
-            return arg;
+            // Unrecognised DOS-style tokens are most likely file paths, so they
+            // are passed through untouched.
+            if (prefix == "/") return arg;
+
+            return prefix + name + tail;
         }
 
         private static readonly HashSet<string> HelpTokens = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
