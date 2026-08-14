@@ -58,8 +58,9 @@ namespace DaxStudio.Common
             }
 
             sb.AppendLine();
-            sb.AppendLine("To fix this, sign in once interactively to cache the account:");
-            sb.Append("  dscmd auth");
+            sb.AppendLine("To fix this, sign in once interactively so the account is cached. Either re-run");
+            sb.AppendLine("this command without --non-interactive, or acquire a token on its own:");
+            sb.Append("  dscmd accesstoken");
             if (!string.IsNullOrWhiteSpace(serverName)) sb.Append($" -s \"{serverName}\"");
 
             // Suggest the account to bootstrap: the one that was asked for, or the only sensible
@@ -67,6 +68,9 @@ namespace DaxStudio.Common
             if (!string.IsNullOrWhiteSpace(requestedUpn)) sb.Append($" -u \"{requestedUpn}\"");
             else if (candidates != null && candidates.Count > 1) sb.Append(" -u \"<account>\"");
             else if (candidates != null && candidates.Count == 1) sb.Append($" -u \"{candidates[0]}\"");
+
+            // Redirected because accesstoken writes the raw bearer token to stdout.
+            sb.Append(" > nul");
 
             sb.AppendLine();
             sb.Append("Then re-run this command, passing the same account via -u or the DSCMD_USER environment variable.");

@@ -208,7 +208,8 @@ namespace DaxStudio.Tests
             StringAssert.Contains(ex.Message, "absent@contoso.com");
             StringAssert.Contains(ex.Message, "one@contoso.com");
             StringAssert.Contains(ex.Message, "two@contoso.com");
-            StringAssert.Contains(ex.Message, "dscmd auth");
+            StringAssert.Contains(ex.Message, "dscmd accesstoken");
+            StringAssert.Contains(ex.Message, "--non-interactive");
             StringAssert.Contains(ex.Message, "powerbi://api.powerbi.com/v1.0/myorg/ws");
         }
 

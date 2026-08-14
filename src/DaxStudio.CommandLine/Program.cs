@@ -166,14 +166,10 @@ namespace DaxStudio.CommandLine
                 .WithExample(new[] { "vpax", "c:\\temp\\export\\model.vpax", "-c", "\"Data Source=localhost\\tabular;Initial Catalog=Adventure Works\"" });
 
             config.AddCommand<AccessTokenCommand>("accesstoken")
-                            .WithDescription("Returns an access token that can be used to run other commands without repeated authentication prompts")
+                            .WithDescription("Returns an access token that can be used to run other commands without repeated authentication prompts. Adding --non-interactive makes this a pre-flight check for an unattended job: it returns a non-zero exit code rather than prompting if no cached account can be used")
                             .WithExample(new[] { "accesstoken", "-s", "asazure://australiasoutheast.asazure.windows.net/myserver", "-d", "\"Adventure Works\"" })
-                            .WithExample(new[] { "accesstoken", "-c", "\"Data Source=asazure://australiasoutheast.asazure.windows.net/myserver;Initial Catalog=Adventure Works\"" });
-
-            config.AddCommand<AuthCommand>("auth")
-                            .WithDescription("Signs in once so later commands can authenticate silently. Use --check to verify an unattended run will succeed without prompting")
-                            .WithExample(new[] { "auth", "-s", "powerbi://api.powerbi.com/v1.0/myorg/myworkspace", "-u", "user@contoso.com" })
-                            .WithExample(new[] { "auth", "-s", "powerbi://api.powerbi.com/v1.0/myorg/myworkspace", "-u", "user@contoso.com", "--check" });
+                            .WithExample(new[] { "accesstoken", "-c", "\"Data Source=asazure://australiasoutheast.asazure.windows.net/myserver;Initial Catalog=Adventure Works\"" })
+                            .WithExample(new[] { "accesstoken", "-s", "powerbi://api.powerbi.com/v1.0/myorg/myworkspace", "-u", "user@contoso.com", "--non-interactive" });
 
             config.AddCommand<BenchmarkCommand>("benchmark")
                 .WithDescription("Runs a DAX query benchmark with cold and warm cache timings")
