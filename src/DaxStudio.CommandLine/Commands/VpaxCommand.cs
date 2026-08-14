@@ -84,7 +84,6 @@ namespace DaxStudio.CommandLine.Commands
         protected override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
         {
             VersionInfo.Output();
-            AnsiConsole.MarkupLine("Starting VPAX command");
             Log.Information("Starting VPAX command");
             AnsiConsole.Status()
                 .AutoRefresh(true)

@@ -51,7 +51,7 @@ namespace DaxStudio.CommandLine.Commands
         protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
         {
             
-            Log.Information("Starting [yellow]EXPORT PARQUET[/] Command");
+            Log.Information("Starting EXPORT PARQUET command");
             var HasError = false;
             //AnsiConsole.MarkupLine("Starting [yellow]EXPORTPARQUET[/] Command...");
 

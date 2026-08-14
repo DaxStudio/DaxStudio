@@ -70,7 +70,7 @@ namespace DaxStudio.CommandLine.Commands
 
         protected override async Task<int> ExecuteAsync(CommandContext context, CustomTraceCommand.Settings settings, CancellationToken cancellationToken)
         {
-            Log.Information("Starting [yellow]Custom Trace[/] Command");
+            Log.Information("Starting Custom Trace command");
 
             //AnsiConsole.MarkupLine("Starting [yellow]EXPORTCSV[/] Command...");
 

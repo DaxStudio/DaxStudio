@@ -51,7 +51,7 @@ namespace DaxStudio.CommandLine.Commands
         protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
         {
             
-            Log.Information("Starting [yellow]EXPORT CSV[/] Command");
+            Log.Information("Starting EXPORT CSV command");
             var HasError = false;
             //AnsiConsole.MarkupLine("Starting [yellow]EXPORTCSV[/] Command...");
 

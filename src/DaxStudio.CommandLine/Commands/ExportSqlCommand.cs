@@ -67,7 +67,7 @@ namespace DaxStudio.CommandLine.Commands
             
             Log.Information("Starting EXPORT SQL Command");
             var hasError = false;
-            AnsiConsole.MarkupLine("Starting [yellow]EXPORTSQL[/] Command...");
+            Log.Information("Starting EXPORT SQL command");
 
             // Show progress
             await AnsiConsole.Progress()

@@ -2,8 +2,7 @@
 using DaxStudio.CommandLine.Commands;
 using DaxStudio.CommandLine.Help;
 using DaxStudio.CommandLine.Infrastructure;
-using DaxStudio.CommandLine.UIStubs;
-using DaxStudio.Common.Extensions;
+using DaxStudio.CommandLine.UIStubs;using DaxStudio.Common.Extensions;
 using DaxStudio.Core.Options;
 using DaxStudio.Core.Settings;
 using DaxStudio.Interfaces;
@@ -11,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
-using Serilog.Sinks.SystemConsole.Themes;
+using Serilog.Sinks.Spectre;
 using Spectre.Console.Cli;
 using System;
 using System.Collections.Generic;
@@ -95,8 +94,20 @@ namespace DaxStudio.CommandLine
             levelSwitch.MinimumLevel = verboseLogging ? LogEventLevel.Verbose : LogEventLevel.Information;
             if (verboseLogging) { outputTemplate = "{Timestamp:HH:mm:ss} [{Level:u3}] {Message:lj}{NewLine}{Exception}"; }
 
+            // Log through Spectre rather than straight to Console.Out. Commands report progress
+            // with AnsiConsole.Status()/Progress(), which own a region of the screen and the cursor
+            // position within it. A sink writing directly to the console knows nothing about that
+            // region, so its output began wherever the cursor happened to be - appended to the
+            // spinner line ("Exporting to file..21:48:56 [INF] Command Complete"). Spectre's live
+            // display moves its own region out of the way before writing, so log lines always start
+            // in column zero.
+            //
+            // renderTextAsMarkup must stay false: it defaults to true, which would parse message
+            // text as Spectre markup and throw on the square brackets in any logged DAX
+            // (EVALUATE 'Product'[Color]) or on Windows paths containing them.
             Log.Logger = new LoggerConfiguration()
-                        .WriteTo.Console(outputTemplate: outputTemplate, restrictedToMinimumLevel: verboseLogging ? LogEventLevel.Verbose : LogEventLevel.Information, theme: AnsiConsoleTheme.Code)
+                        .WriteTo.Sink(new LiteralStringSink(
+                            new SpectreConsoleSink(outputTemplate, renderTextAsMarkup: false)))
                         .MinimumLevel.ControlledBy(levelSwitch)
                         .CreateLogger();
 
