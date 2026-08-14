@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Caliburn.Micro;
 using DaxStudio.CommandLine.Converters;
 using DaxStudio.CommandLine.Extensions;
+using DaxStudio.CommandLine.Helpers;
 using DaxStudio.CommandLine.UIStubs;
 using DaxStudio.Core.Connections;
 using DaxStudio.Core.Exports;
@@ -84,11 +85,16 @@ namespace DaxStudio.CommandLine.Commands
                     try
                     {
                         var connMgr = new ConnectionManager(EventAggregator);
+                        var connStr = settings.FullConnectionString;
+
                         var connEvent = new ConnectEvent()
                         {
-                            ConnectionString = settings.FullConnectionString,
+                            ConnectionString = connStr,
                             ApplicationName = "DAX Studio Command Line",
-                            DatabaseName = settings.Database
+                            DatabaseName = settings.Database,
+                            AccessToken = AccessTokenHelper.IsAccessTokenNeeded(connStr)
+                                ? AccessTokenHelper.GetAccessToken(connStr, settings)
+                                : default
                         };
                         connMgr.Connect(connEvent);
                         connMgr.SelectedModel = connMgr.Database.Models.BaseModel;
