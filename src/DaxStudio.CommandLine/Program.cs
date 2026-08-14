@@ -159,6 +159,11 @@ namespace DaxStudio.CommandLine
                             .WithExample(new[] { "accesstoken", "-s", "asazure://australiasoutheast.asazure.windows.net/myserver", "-d", "\"Adventure Works\"" })
                             .WithExample(new[] { "accesstoken", "-c", "\"Data Source=asazure://australiasoutheast.asazure.windows.net/myserver;Initial Catalog=Adventure Works\"" });
 
+            config.AddCommand<AuthCommand>("auth")
+                            .WithDescription("Signs in once so later commands can authenticate silently. Use --check to verify an unattended run will succeed without prompting")
+                            .WithExample(new[] { "auth", "-s", "powerbi://api.powerbi.com/v1.0/myorg/myworkspace", "-u", "user@contoso.com" })
+                            .WithExample(new[] { "auth", "-s", "powerbi://api.powerbi.com/v1.0/myorg/myworkspace", "-u", "user@contoso.com", "--check" });
+
             config.AddCommand<BenchmarkCommand>("benchmark")
                 .WithDescription("Runs a DAX query benchmark with cold and warm cache timings")
                 .WithExample(new[] { "benchmark", "c:\\temp\\results.csv", "-s", "localhost\\tabular", "-d", "\"Adventure Works\"", "-f", "query.dax", "--cold", "5", "--warm", "5" });

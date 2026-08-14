@@ -1,4 +1,4 @@
-﻿using DaxStudio.CommandLine.UIStubs;
+using DaxStudio.CommandLine.Interfaces;
 using DaxStudio.Common;
 using DaxStudio.Common.Extensions;
 using Microsoft.AnalysisServices.AdomdClient;
@@ -22,14 +22,36 @@ namespace DaxStudio.CommandLine.Helpers
 
             return true;
         }
-        public static AccessToken GetAccessToken(string connStr)
+
+        internal static AccessToken GetAccessToken(string connStr, ISettingsConnection settings)
         {
-            GetScopeFromConnectionString(connStr, out var tokenScope,out var serverName );
-            var hwnd = NativeMethods.GetConsoleWindow();
+            if (settings == null) throw new ArgumentNullException(nameof(settings));
+            return GetAccessToken(connStr, settings.ResolvedUserID, settings.IsNonInteractive);
+        }
+
+        internal static AccessToken GetAccessToken(string connStr, string requestedUpn, bool nonInteractive)
+        {
+            GetScopeFromConnectionString(connStr, out var tokenScope, out var serverName);
             var dataSource = new OleDbConnectionStringBuilder(connStr).DataSource;
-            var (authResult, context) = EntraIdHelper.PromptForAccountAsync(hwnd, new HaveLastUsedUPNStub(), tokenScope, dataSource).Result;
-            var token = EntraIdHelper.CreateAccessToken(authResult.AccessToken, authResult.ExpiresOn, context);
-            return token;
+
+            var authOptions = new AuthenticationOptions
+            {
+                RequestedUpn = requestedUpn,
+                // On the command line a user id is an explicit instruction, not a hint, so the
+                // resolved identity must match it exactly.
+                EnforceRequestedUpn = !string.IsNullOrWhiteSpace(requestedUpn),
+                AllowInteractivePrompt = !nonInteractive,
+                OwnerWindowHandle = NativeMethods.GetConsoleWindow()
+            };
+
+            var (authResult, context) = EntraIdHelper.AcquireTokenForConnectionAsync(tokenScope, dataSource, authOptions)
+                .GetAwaiter().GetResult();
+
+            // Renewal happens inside the ADOMD/TOM callback long after this method returns, so the
+            // policy has to travel with the token.
+            context.RenewalMode = nonInteractive ? TokenRenewalMode.SilentOnly : TokenRenewalMode.AllowInteractive;
+
+            return EntraIdHelper.CreateAccessToken(authResult.AccessToken, authResult.ExpiresOn, context);
         }
 
         private static void GetScopeFromConnectionString(string connStr, out AccessTokenScope tokenScope, out string serverName)

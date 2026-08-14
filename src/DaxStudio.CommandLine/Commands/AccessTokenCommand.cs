@@ -20,7 +20,7 @@ namespace DaxStudio.CommandLine.Commands
         }
         protected override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
         {            
-            var accessToken = AccessTokenHelper.GetAccessToken(settings.FullConnectionString);
+            var accessToken = AccessTokenHelper.GetAccessToken(settings.FullConnectionString, settings);
             Console.Write(accessToken.Token);
             return 0;
         }

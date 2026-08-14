@@ -90,66 +90,284 @@ namespace DaxStudio.Common
             return Process.GetCurrentProcess().MainWindowHandle;
         }
 
-        public static async Task<AuthenticationResult> AcquireTokenAsync(IntPtr? hwnd, IHaveLastUsedUPN options, AccessTokenScope tokenScope,AccessTokenContext context)
+        /// <summary>
+        /// Resolves which Entra account should be used, <b>before</b> any token is requested.
+        /// <para>
+        /// The governing rule is that a token is acquired silently whenever the identity is
+        /// unambiguous - either because the caller named it, or because there is only one account
+        /// to choose from. Prompting is reserved for genuine ambiguity or a genuine Entra
+        /// requirement.
+        /// </para>
+        /// </summary>
+        public static async Task<AccountSelectionResult> SelectAccountAsync(AccessTokenContext context, AuthenticationOptions authOptions)
         {
+            if (authOptions == null) throw new ArgumentNullException(nameof(authOptions));
 
-            AuthenticationResult authResult = null;
-            var app = await GetPublicClientAppAsync(context);
-            IAccount firstAccount = null;
-            var accounts = await app.GetAccountsAsync();
+            // Accounts that have deliberately signed in to DAX Studio. Excludes Windows accounts,
+            // so a machine with many work/school accounts can still have exactly one obvious choice.
+            var cacheApp = await GetPublicClientAppAsync(context, listOperatingSystemAccounts: false);
+            var cachedAccounts = (await cacheApp.GetAccountsAsync()).ToList();
 
-            // if the user signed-in before, try to get that account info from the cache
-            if (!string.IsNullOrEmpty(options.LastUsedUPN))
+            // Only widen the search to Windows work/school accounts when there is a specific UPN to
+            // look for - they must never contribute to the "exactly one account" rule.
+            List<IAccount> brokerAccounts = null;
+            if (authOptions.HasRequestedUpn
+                && !cachedAccounts.Any(acct => string.Equals(acct.Username, authOptions.RequestedUpn.Trim(), StringComparison.OrdinalIgnoreCase)))
             {
-                firstAccount = accounts.FirstOrDefault(acct => string.Equals(acct.Username, options.LastUsedUPN, StringComparison.OrdinalIgnoreCase));
+                var brokerApp = await GetPublicClientAppAsync(context, listOperatingSystemAccounts: true);
+                brokerAccounts = (await brokerApp.GetAccountsAsync()).ToList();
             }
 
-            // try to get the first account from the cache
-            if (firstAccount == null && string.IsNullOrEmpty(options.LastUsedUPN))
+            return SelectAccountFrom(cachedAccounts, brokerAccounts, authOptions.RequestedUpn);
+        }
+
+        /// <summary>
+        /// The account selection rules, isolated from MSAL so they can be tested directly.
+        /// </summary>
+        /// <param name="cachedAccounts">Accounts from the DAX Studio token cache.</param>
+        /// <param name="brokerAccounts">
+        /// Accounts from the Windows broker, or null when the broker was not consulted. These are
+        /// only ever used to match an explicitly requested UPN - counting them would make the
+        /// "exactly one account" rule useless on a machine with several Windows accounts.
+        /// </param>
+        /// <param name="requestedUpn">The UPN the caller asked for, if any.</param>
+        internal static AccountSelectionResult SelectAccountFrom(
+            IReadOnlyList<IAccount> cachedAccounts,
+            IReadOnlyList<IAccount> brokerAccounts,
+            string requestedUpn)
+        {
+            cachedAccounts = cachedAccounts ?? new List<IAccount>();
+
+            if (!string.IsNullOrWhiteSpace(requestedUpn))
             {
-                firstAccount = accounts.FirstOrDefault();
+                var upn = requestedUpn.Trim();
+
+                var match = cachedAccounts.FirstOrDefault(acct => string.Equals(acct.Username, upn, StringComparison.OrdinalIgnoreCase));
+                if (match != null) return AccountSelectionResult.Matched(match);
+
+                if (brokerAccounts != null)
+                {
+                    match = brokerAccounts.FirstOrDefault(acct => string.Equals(acct.Username, upn, StringComparison.OrdinalIgnoreCase));
+                    if (match != null) return AccountSelectionResult.Matched(match);
+                }
+
+                // Nothing to try silently. Substituting any other account here is how a job ends up
+                // running as the wrong identity with no prompt and no error.
+                return AccountSelectionResult.RequestedAccountNotFound(
+                    (brokerAccounts != null && brokerAccounts.Count > 0) ? brokerAccounts : cachedAccounts);
             }
 
-            // otherwise, try with the Windows account
-            if (firstAccount == null)
-            {
-                firstAccount = PublicClientApplication.OperatingSystemAccount;
-            }
-            var scope = GetScope(tokenScope);
+            if (cachedAccounts.Count == 1) return AccountSelectionResult.Matched(cachedAccounts[0]);
+            if (cachedAccounts.Count > 1) return AccountSelectionResult.Ambiguous(cachedAccounts);
+
+            return AccountSelectionResult.NoCachedAccounts();
+        }
+
+        public static async Task<AuthenticationResult> AcquireTokenAsync(IntPtr? hwnd, IHaveLastUsedUPN options, AccessTokenScope tokenScope, AccessTokenContext context)
+        {
+            // The desktop app treats the last used UPN as a convenience hint, never as an assertion -
+            // the user is always free to pick a different account in the sign-in dialog.
+            var authOptions = AuthenticationOptions.ForInteractiveUser(options.LastUsedUPN, hwnd);
+
             try
             {
-                authResult = await app.AcquireTokenSilent(scope, firstAccount).ExecuteAsync();
-                options.LastUsedUPN = authResult.Account.Username;
-            }
-            catch (MsalUiRequiredException)
-            {
-                // A MsalUiRequiredException happened on AcquireTokenSilent. 
-                // This indicates you need to call AcquireTokenInteractive to acquire a token
-                Log.Warning(Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(AcquireTokenAsync), "User not found in cache, prompting user to sign-in interactively");
-
-                try
-                {
-                    authResult = await app.AcquireTokenInteractive(scope)
-                        .WithAccount(firstAccount)
-                        .WithParentActivityOrWindow(GetOwnerWindowHandle(hwnd)) // owner for the WAM sign-in dialog so it stays in front of the DAX Studio window
-                        .WithExtraQueryParameters(MicrosoftAccountOnlyQueryParameters)
-                        .WithPrompt(Prompt.SelectAccount)
-                        .ExecuteAsync();
-                    options.LastUsedUPN = authResult.Account.Username;
-                }
-                catch (MsalException msalex)
-                {
-                    Log.Error(msalex, Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(AcquireTokenAsync), "Error Acquiring Token Interactively");
-                }
+                var authResult = await AcquireTokenCoreAsync(context, GetScope(tokenScope), authOptions, serverName: null);
+                if (authResult?.Account != null) options.LastUsedUPN = authResult.Account.Username;
+                return authResult;
             }
             catch (Exception ex)
             {
-                Log.Error(ex, Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(AcquireTokenAsync), "Error Acquiring Token Silently");
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(AcquireTokenAsync), "Error Acquiring Token");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Acquires a token for a specific server, resolving the account from
+        /// <paramref name="authOptions"/> rather than from any shared/persisted setting. This is the
+        /// entry point used by the command line, where identity must be deterministic across
+        /// concurrent processes.
+        /// </summary>
+        public static async Task<(AuthenticationResult, AccessTokenContext)> AcquireTokenForConnectionAsync(
+            AccessTokenScope tokenScope,
+            string serverName,
+            AuthenticationOptions authOptions)
+        {
+            if (authOptions == null) throw new ArgumentNullException(nameof(authOptions));
+
+            IEnumerable<string> scope = GetScope(tokenScope);
+            var tenantId = GetTenantIdFromServerName(serverName);
+            var authInfo = GetAuthenticationInformationFromUri(new Uri(serverName));
+
+            // Override the scope if the authentication information contains a ResourceId, except for
+            // the storage scope which must be preserved for OneLake connections.
+            if (!string.IsNullOrEmpty(authInfo.ResourceId) && tokenScope != AccessTokenScope.Storage)
+                scope = authInfo.GetDefaultScopes();
+
+            var context = new AccessTokenContext
+            {
+                TokenScope = tokenScope,
+                TenantId = tenantId,
+                DomainPostfix = authInfo.DomainPostfix,
+                Scope = scope
+            };
+
+            var authResult = await AcquireTokenCoreAsync(context, scope, authOptions, serverName);
+
+            context.Username = authResult?.Account?.Username;
+            // Bind any later renewal to the exact identity that was authenticated here, so a
+            // long-running job cannot silently renew as a different account.
+            context.AccountIdentifier = authResult?.Account?.HomeAccountId?.Identifier;
+
+            return (authResult, context);
+        }
+
+        /// <summary>
+        /// The single token acquisition path. Interactivity is a policy applied at one seam rather
+        /// than a separate implementation, so silent and interactive callers cannot drift apart.
+        /// </summary>
+        private static async Task<AuthenticationResult> AcquireTokenCoreAsync(
+            AccessTokenContext context,
+            IEnumerable<string> scope,
+            AuthenticationOptions authOptions,
+            string serverName)
+        {
+            var selection = await SelectAccountAsync(context, authOptions);
+
+            // The account set must come from an application configured the same way as the one that
+            // found it, otherwise a broker-only account cannot be used.
+            var needsBrokerAccounts = authOptions.HasRequestedUpn;
+            var app = await GetPublicClientAppAsync(context, listOperatingSystemAccounts: needsBrokerAccounts);
+
+            var silentAccount = selection.Account;
+
+            // Falling back to the Windows account is only safe when no specific account was asked
+            // for AND the cache is empty - there is then no other identity that could be silently
+            // substituted. Doing this when a UPN was requested is how a job ends up running as the
+            // wrong user with no prompt and no error.
+            if (silentAccount == null
+                && selection.Status == AccountSelectionStatus.NoCachedAccounts
+                && !authOptions.HasRequestedUpn)
+            {
+                silentAccount = PublicClientApplication.OperatingSystemAccount;
             }
 
+            AuthenticationResult authResult = null;
 
-            return authResult;
+            if (silentAccount != null)
+            {
+                try
+                {
+                    authResult = await app.AcquireTokenSilent(scope, silentAccount).ExecuteAsync().ConfigureAwait(false);
+                    return AssertRequestedIdentity(authResult, authOptions);
+                }
+                catch (MsalUiRequiredException ex)
+                {
+                    Log.Information(Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(AcquireTokenCoreAsync),
+                        $"Silent token acquisition requires interaction: {ex.Message}");
+                }
+            }
+
+            authResult = await AcquireTokenInteractivelyAsync(app, context, scope, authOptions, selection, serverName);
+            return AssertRequestedIdentity(authResult, authOptions);
         }
+
+        /// <summary>
+        /// The one place where the user can be prompted. Everything above this point is identical
+        /// regardless of whether interaction is permitted.
+        /// </summary>
+        private static async Task<AuthenticationResult> AcquireTokenInteractivelyAsync(
+            IPublicClientApplication app,
+            AccessTokenContext context,
+            IEnumerable<string> scope,
+            AuthenticationOptions authOptions,
+            AccountSelectionResult selection,
+            string serverName)
+        {
+            if (!authOptions.AllowInteractivePrompt)
+            {
+                throw EntraAuthenticationException.InteractionRequired(
+                    DescribeWhyInteractionIsNeeded(selection, authOptions),
+                    authOptions.RequestedUpn,
+                    selection.Candidates,
+                    serverName);
+            }
+
+            var builder = app.AcquireTokenInteractive(scope)
+                .WithParentActivityOrWindow(GetOwnerWindowHandle(authOptions.OwnerWindowHandle)) // owner for the WAM sign-in dialog so it stays in front of the DAX Studio window
+                .WithExtraQueryParameters(MicrosoftAccountOnlyQueryParameters);
+
+            if (selection.Account != null)
+            {
+                // Targeted at a known account, so no picker is needed.
+                builder = builder.WithAccount(selection.Account);
+            }
+            else if (authOptions.HasRequestedUpn)
+            {
+                // Pre-fill the requested account. Prompt.SelectAccount must NOT be combined with a
+                // login hint - the service shows the picker and ignores the hint.
+                builder = builder.WithLoginHint(authOptions.RequestedUpn);
+            }
+            else
+            {
+                builder = builder.WithPrompt(Prompt.SelectAccount);
+            }
+
+            try
+            {
+                return await builder.ExecuteAsync().ConfigureAwait(false);
+            }
+            catch (MsalException msalex)
+            {
+                Log.Error(msalex, Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(AcquireTokenInteractivelyAsync), "Error Acquiring Token Interactively");
+                throw;
+            }
+        }
+
+        internal static string DescribeWhyInteractionIsNeeded(AccountSelectionResult selection, AuthenticationOptions authOptions)
+        {
+            switch (selection.Status)
+            {
+                case AccountSelectionStatus.RequestedAccountNotFound:
+                    return $"The account '{authOptions.RequestedUpn}' is not signed in on this machine.";
+                case AccountSelectionStatus.Ambiguous:
+                    return "Several accounts are available and no account was specified, so the identity to use is ambiguous. Specify one with -u|--userid.";
+                case AccountSelectionStatus.NoCachedAccounts:
+                    return "No accounts are signed in on this machine.";
+                default:
+                    return $"The cached sign-in for '{selection.Account?.Username ?? authOptions.RequestedUpn}' has expired or requires re-authentication.";
+            }
+        }
+
+        /// <summary>
+        /// Verifies that the identity actually authenticated is the one that was demanded. Login
+        /// hints are best-effort and an operator can choose a different account in the picker, so
+        /// this check - not the UI branching above - is what guarantees correctness.
+        /// </summary>
+        private static AuthenticationResult AssertRequestedIdentity(AuthenticationResult authResult, AuthenticationOptions authOptions)
+        {
+            if (authResult == null) return null;
+
+            var actualUpn = authResult.Account?.Username;
+            if (IsAcceptableIdentity(authOptions.RequestedUpn, actualUpn, authOptions.EnforceRequestedUpn)) return authResult;
+
+            Log.Error(Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(AssertRequestedIdentity),
+                $"Requested account '{authOptions.RequestedUpn}' but authenticated as '{actualUpn}'");
+            throw EntraAuthenticationException.IdentityMismatch(authOptions.RequestedUpn, actualUpn);
+        }
+
+        /// <summary>
+        /// True when the authenticated identity is acceptable. Isolated from MSAL so it can be
+        /// tested directly. A requested UPN that is only a hint (the desktop app) never fails here.
+        /// </summary>
+        internal static bool IsAcceptableIdentity(string requestedUpn, string actualUpn, bool enforce)
+        {
+            if (!enforce) return true;
+            if (string.IsNullOrWhiteSpace(requestedUpn)) return true;
+
+            return string.Equals(actualUpn, requestedUpn.Trim(), StringComparison.OrdinalIgnoreCase);
+        }
+
 
         /// <summary>
         /// SILENTLY acquires a Microsoft Graph token for an account that already signed in for the
@@ -254,9 +472,34 @@ namespace DaxStudio.Common
 
         public static async Task<IPublicClientApplication> GetPublicClientAppAsync(AccessTokenContext context)
         {
+            return await GetPublicClientAppAsync(context, listOperatingSystemAccounts: false);
+        }
+
+        /// <summary>
+        /// Builds the public client application for the supplied context.
+        /// </summary>
+        /// <param name="listOperatingSystemAccounts">
+        /// Controls <see cref="BrokerOptions.ListOperatingSystemAccounts"/>, which decides what
+        /// <c>GetAccountsAsync()</c> returns. MSAL merges the accounts held in the DAX Studio token
+        /// cache with those reported by the WAM broker, and the broker returns nothing at all unless
+        /// this flag is set. That gives two useful account sets from one API:
+        /// <list type="bullet">
+        /// <item><description><c>false</c> - only accounts that have deliberately signed in to DAX
+        /// Studio. Used to decide whether there is exactly one obvious account, so the "single
+        /// account" rule still fires on a machine with many Windows accounts.</description></item>
+        /// <item><description><c>true</c> - also every Windows work/school account, so an explicitly
+        /// requested UPN can be matched without a prior DAX Studio sign-in.</description></item>
+        /// </list>
+        /// Rebuilding the application is cheap here because it is not cached between calls.
+        /// </param>
+        public static async Task<IPublicClientApplication> GetPublicClientAppAsync(AccessTokenContext context, bool listOperatingSystemAccounts)
+        {
             //if (_clientApp != null) return _clientApp;
 
-            BrokerOptions brokerOptions = new BrokerOptions(BrokerOptions.OperatingSystems.Windows);
+            BrokerOptions brokerOptions = new BrokerOptions(BrokerOptions.OperatingSystems.Windows)
+            {
+                ListOperatingSystemAccounts = listOperatingSystemAccounts
+            };
 
            
             if (!TryFindAuthenticationInformation(new Uri ($"powerbi://{context.DomainPostfix}"), out var authenticationInformation))
@@ -602,53 +845,79 @@ namespace DaxStudio.Common
 
         private static async Task<AuthenticationResult> RefreshTokenInternalAsync(TokenDetails token)
         {
-            var lastUpn = (token.UserContext?.Username) ?? string.Empty;
+            var context = token.UserContext;
+            if (context == null) throw new EntraAuthenticationException("Cannot renew an access token that has no authentication context.");
 
-            AuthenticationResult authResult = null;
-            var app = await GetPublicClientAppAsync(token.UserContext);
-            IAccount firstAccount = null;
-            var accounts = await app.GetAccountsAsync();
+            var accountIdentifier = context.AccountIdentifier ?? string.Empty;
+            var lastUpn = context.Username ?? string.Empty;
 
-            // if the user signed-in before, try to get that account info from the cache
-            if (!string.IsNullOrEmpty(lastUpn))
+            // A renewal must target the account the token was originally issued to, so look in the
+            // broker set too - the original sign-in may have used a Windows account.
+            var app = await GetPublicClientAppAsync(context, listOperatingSystemAccounts: !string.IsNullOrEmpty(accountIdentifier) || !string.IsNullOrEmpty(lastUpn));
+            var accounts = (await app.GetAccountsAsync()).ToList();
+
+            IAccount account = null;
+
+            // Bind to the immutable account id first; the username can change (e.g. after a rename)
+            // and is not guaranteed unique across tenants.
+            if (!string.IsNullOrEmpty(accountIdentifier))
+                account = accounts.FirstOrDefault(acct => string.Equals(acct.HomeAccountId?.Identifier, accountIdentifier, StringComparison.OrdinalIgnoreCase));
+
+            if (account == null && !string.IsNullOrEmpty(lastUpn))
+                account = accounts.FirstOrDefault(acct => string.Equals(acct.Username, lastUpn, StringComparison.OrdinalIgnoreCase));
+
+            var scope = context.Scope;
+
+            if (account != null)
             {
-                firstAccount = accounts.FirstOrDefault(acct => string.Equals(acct.Username, lastUpn, StringComparison.OrdinalIgnoreCase));
+                try
+                {
+                    return await app.AcquireTokenSilent(scope, account).ExecuteAsync().ConfigureAwait(false);
+                }
+                catch (MsalUiRequiredException ex)
+                {
+                    Log.Information(Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(RefreshTokenInternalAsync),
+                        $"Silent token renewal requires interaction: {ex.Message}");
+                }
             }
 
-            var scope = token.UserContext.Scope;
+            if (context.RenewalMode == TokenRenewalMode.SilentOnly)
+            {
+                throw EntraAuthenticationException.InteractionRequired(
+                    account == null
+                        ? $"The account '{lastUpn}' used for this connection is no longer available on this machine."
+                        : $"The cached sign-in for '{lastUpn}' has expired and cannot be renewed without signing in again.",
+                    lastUpn,
+                    accounts.Select(a => a.Username).ToList(),
+                    serverName: null);
+            }
+
+            Log.Warning(Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(RefreshTokenInternalAsync), "Token could not be renewed silently, prompting user to sign-in interactively");
 
             try
             {
-                if (firstAccount == null) throw new MsalUiRequiredException("UserNotFoundInCache", "User not found in cache");
-                authResult = await app.AcquireTokenSilent(scope, firstAccount).ExecuteAsync().ConfigureAwait(false);
+                var builder = app.AcquireTokenInteractive(scope)
+                    .WithParentActivityOrWindow(GetOwnerWindowHandle(null)) // owner for the WAM sign-in dialog so it stays in front of the DAX Studio window
+                    .WithExtraQueryParameters(MicrosoftAccountOnlyQueryParameters);
 
+                if (account != null) builder = builder.WithAccount(account);
+                else if (!string.IsNullOrEmpty(lastUpn)) builder = builder.WithLoginHint(lastUpn);
+                else builder = builder.WithPrompt(Prompt.SelectAccount);
+
+                var authResult = await builder.ExecuteAsync().ConfigureAwait(false);
+
+                // Renewal must not quietly change identity mid-job.
+                if (!string.IsNullOrEmpty(lastUpn)
+                    && !string.Equals(authResult.Account?.Username, lastUpn, StringComparison.OrdinalIgnoreCase))
+                    throw EntraAuthenticationException.IdentityMismatch(lastUpn, authResult.Account?.Username);
+
+                return authResult;
             }
-            catch (MsalUiRequiredException)
+            catch (MsalException msalex)
             {
-                Log.Warning(Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(RefreshTokenInternalAsync), "User not found in cache, prompting user to sign-in interactively");
-
-                try
-                {
-                    authResult = await app.AcquireTokenInteractive(scope)
-                        .WithAccount(firstAccount)
-                        .WithParentActivityOrWindow(GetOwnerWindowHandle(null)) // owner for the WAM sign-in dialog so it stays in front of the DAX Studio window
-                        .WithExtraQueryParameters(MicrosoftAccountOnlyQueryParameters)
-                        .WithPrompt(Prompt.SelectAccount)
-                        .ExecuteAsync().ConfigureAwait(false);
-
-                }
-                catch (MsalException msalex)
-                {
-                    Log.Error(msalex, Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(RefreshTokenInternalAsync), "Error Acquiring Token Interactively");
-                }
+                Log.Error(msalex, Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(RefreshTokenInternalAsync), "Error Acquiring Token Interactively");
+                throw;
             }
-            catch (Exception ex)
-            {
-                Log.Error(ex, Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(RefreshTokenInternalAsync), "Error Acquiring Token Silently");
-            }
-
-            // TODO - not sure if this is the correct way to refresh the token
-            return authResult;
         }
 
         private static string[] GetScope(TokenDetails tokenDetails)

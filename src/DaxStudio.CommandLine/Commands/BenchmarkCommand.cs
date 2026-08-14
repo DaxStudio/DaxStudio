@@ -128,7 +128,7 @@ namespace DaxStudio.CommandLine.Commands
             var accessToken = default(AccessToken);
             if (AccessTokenHelper.IsAccessTokenNeeded(baseConnectionString))
             {
-                accessToken = AccessTokenHelper.GetAccessToken(baseConnectionString);
+                accessToken = AccessTokenHelper.GetAccessToken(baseConnectionString, settings);
             }
 
             bool hasImpersonation = false;

@@ -98,7 +98,7 @@ namespace DaxStudio.CommandLine.Commands
 
                     // if requires Entra Auth add the AccessToken to the connection string
                     if (AccessTokenHelper.IsAccessTokenNeeded(connStr)) {
-                        var token = AccessTokenHelper.GetAccessToken(connStr);
+                        var token = AccessTokenHelper.GetAccessToken(connStr, settings);
                         connStr = $"{connStr};Password={token.Token}";
                     }
 
