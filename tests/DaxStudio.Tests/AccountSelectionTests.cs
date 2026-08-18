@@ -162,6 +162,81 @@ namespace DaxStudio.Tests
 
         #endregion
 
+        #region Available account listing
+
+        [TestMethod]
+        public void AvailableAccounts_CachedAccountOverridesTheSameWindowsAccount()
+        {
+            var cached = Account("user@contoso.com", "account-1");
+            var windows = Account("user@contoso.com", "account-1");
+
+            var result = EntraIdHelper.MergeAvailableAccounts(new[] { cached }, new[] { windows });
+
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual(EntraAccountSource.DaxStudioCache, result[0].Source);
+        }
+
+        [TestMethod]
+        public void AvailableAccounts_PreservesTheSameUpnInDifferentTenants()
+        {
+            var firstTenant = Account("shared@contoso.com", "account-1");
+            var secondTenant = Account("shared@contoso.com", "account-2");
+
+            var result = EntraIdHelper.MergeAvailableAccounts(
+                new[] { firstTenant },
+                new[] { firstTenant, secondTenant });
+
+            Assert.AreEqual(2, result.Count);
+            Assert.AreEqual(EntraAccountSource.DaxStudioCache, result[0].Source);
+            Assert.AreEqual(EntraAccountSource.Windows, result[1].Source);
+        }
+
+        [TestMethod]
+        public void AvailableAccounts_LabelsWindowsOnlyAccounts()
+        {
+            var windows = Account("windows@contoso.com", "account-1");
+
+            var result = EntraIdHelper.MergeAvailableAccounts(
+                new List<IAccount>(),
+                new[] { windows });
+
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual("windows@contoso.com", result[0].Username);
+            Assert.AreEqual(EntraAccountSource.Windows, result[0].Source);
+        }
+
+        [TestMethod]
+        public void AvailableAccounts_HandlesMissingAccountMetadata()
+        {
+            var account = Substitute.For<IAccount>();
+
+            var result = EntraIdHelper.MergeAvailableAccounts(
+                new[] { account },
+                new List<IAccount>());
+
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual(string.Empty, result[0].Username);
+            Assert.AreEqual(string.Empty, result[0].TenantId);
+            Assert.AreEqual(string.Empty, result[0].HomeAccountId);
+        }
+
+        [TestMethod]
+        public void AvailableAccounts_AreSortedByUsernameThenTenant()
+        {
+            var zed = Account("zed@contoso.com", "account-z");
+            var alpha = Account("alpha@contoso.com", "account-a");
+
+            var result = EntraIdHelper.MergeAvailableAccounts(
+                new[] { zed, alpha },
+                new List<IAccount>());
+
+            CollectionAssert.AreEqual(
+                new[] { "alpha@contoso.com", "zed@contoso.com" },
+                result.Select(account => account.Username).ToArray());
+        }
+
+        #endregion
+
         #region Identity assertion
 
         [TestMethod]
@@ -194,6 +269,56 @@ namespace DaxStudio.Tests
 
         #endregion
 
+        #region Renewal account selection
+
+        [TestMethod]
+        public void Renewal_SelectsTheExactHomeAccountIdentifier_WhenUpnsMatch()
+        {
+            var first = Account("shared@contoso.com", "account-1");
+            var expected = Account("shared@contoso.com", "account-2");
+
+            var result = EntraIdHelper.SelectRenewalAccount(
+                new[] { first, expected },
+                expected.HomeAccountId.Identifier,
+                expected.Username);
+
+            Assert.AreSame(expected, result);
+        }
+
+        [TestMethod]
+        public void Renewal_DoesNotSubstituteASameUpn_WhenTheHomeAccountIsMissing()
+        {
+            var otherTenant = Account("shared@contoso.com", "other-account");
+
+            var result = EntraIdHelper.SelectRenewalAccount(
+                new[] { otherTenant },
+                "missing-account.tenant",
+                "shared@contoso.com");
+
+            Assert.IsNull(result);
+        }
+
+        [TestMethod]
+        public void LegacyRenewalContext_FallsBackToTheUsername()
+        {
+            var expected = Account("user@contoso.com");
+
+            var result = EntraIdHelper.SelectRenewalAccount(
+                new[] { expected },
+                accountIdentifier: null,
+                username: "USER@CONTOSO.COM");
+
+            Assert.AreSame(expected, result);
+        }
+
+        [TestMethod]
+        public void ExistingTokenContexts_AllowInteractiveRenewalByDefault()
+        {
+            Assert.AreEqual(TokenRenewalMode.AllowInteractive, new AccessTokenContext().RenewalMode);
+        }
+
+        #endregion
+
         #region Error messages
 
         [TestMethod]
@@ -208,7 +333,7 @@ namespace DaxStudio.Tests
             StringAssert.Contains(ex.Message, "absent@contoso.com");
             StringAssert.Contains(ex.Message, "one@contoso.com");
             StringAssert.Contains(ex.Message, "two@contoso.com");
-            StringAssert.Contains(ex.Message, "dscmd accesstoken");
+            StringAssert.Contains(ex.Message, "dscmd auth");
             StringAssert.Contains(ex.Message, "--non-interactive");
             StringAssert.Contains(ex.Message, "powerbi://api.powerbi.com/v1.0/myorg/ws");
         }

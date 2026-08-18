@@ -1,4 +1,5 @@
 using DaxStudio.CommandLine.Commands;
+using DaxStudio.CommandLine.Interfaces;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Serilog;
 using Serilog.Core;
@@ -84,6 +85,36 @@ namespace DaxStudio.CommandLine.Tests
         #endregion
 
         #region Interactivity policy
+
+        private static IEnumerable<ISettingsConnection> ConnectionSettings(string userId = null, bool nonInteractive = false)
+        {
+            return new ISettingsConnection[]
+            {
+                new ExportSqlCommand.Settings { UserID = userId, NonInteractive = nonInteractive },
+                new ExportCsvCommand.Settings { UserID = userId, NonInteractive = nonInteractive },
+                new ExportParquetCommand.Settings { UserID = userId, NonInteractive = nonInteractive },
+                new FileCommand.Settings { UserID = userId, NonInteractive = nonInteractive },
+                new XlsxCommand.Settings { UserID = userId, NonInteractive = nonInteractive },
+                new VpaxCommand.Settings { UserID = userId, NonInteractive = nonInteractive },
+                new AccessTokenCommand.Settings { UserID = userId, NonInteractive = nonInteractive },
+                new BenchmarkCommand.Settings { UserID = userId, NonInteractive = nonInteractive },
+                new CustomTraceCommand.Settings { UserID = userId, NonInteractive = nonInteractive }
+            };
+        }
+
+        [TestMethod]
+        public void AllConnectionCommands_UseTheExplicitAccountSelection()
+        {
+            foreach (var settings in ConnectionSettings(userId: "user@contoso.com"))
+                Assert.AreEqual("user@contoso.com", settings.ResolvedUserID, settings.GetType().Name);
+        }
+
+        [TestMethod]
+        public void AllConnectionCommands_HonourNonInteractiveMode()
+        {
+            foreach (var settings in ConnectionSettings(nonInteractive: true))
+                Assert.IsTrue(settings.IsNonInteractive, settings.GetType().Name);
+        }
 
         [TestMethod]
         public void NonInteractive_Flag_IsHonoured()

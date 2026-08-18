@@ -121,6 +121,54 @@ namespace DaxStudio.Common
             return SelectAccountFrom(cachedAccounts, brokerAccounts, authOptions.RequestedUpn);
         }
 
+        public static async Task<IReadOnlyList<AvailableEntraAccount>> GetAvailableAccountsAsync()
+        {
+            var context = CreateDefaultContext(AccessTokenScope.PowerBI);
+            var cacheApp = await GetPublicClientAppAsync(context, listOperatingSystemAccounts: false);
+            var cachedAccounts = (await cacheApp.GetAccountsAsync()).ToList();
+
+            var brokerApp = await GetPublicClientAppAsync(context, listOperatingSystemAccounts: true);
+            var brokerAccounts = (await brokerApp.GetAccountsAsync()).ToList();
+
+            return MergeAvailableAccounts(cachedAccounts, brokerAccounts);
+        }
+
+        internal static IReadOnlyList<AvailableEntraAccount> MergeAvailableAccounts(
+            IReadOnlyList<IAccount> cachedAccounts,
+            IReadOnlyList<IAccount> brokerAccounts)
+        {
+            var accounts = new Dictionary<string, AvailableEntraAccount>(StringComparer.OrdinalIgnoreCase);
+
+            AddAvailableAccounts(accounts, brokerAccounts, EntraAccountSource.Windows);
+            AddAvailableAccounts(accounts, cachedAccounts, EntraAccountSource.DaxStudioCache);
+
+            return accounts.Values
+                .OrderBy(account => account.Username, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(account => account.TenantId, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(account => account.HomeAccountId, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+        }
+
+        private static void AddAvailableAccounts(
+            IDictionary<string, AvailableEntraAccount> accounts,
+            IReadOnlyList<IAccount> sourceAccounts,
+            EntraAccountSource source)
+        {
+            if (sourceAccounts == null) return;
+
+            foreach (var account in sourceAccounts.Where(account => account != null))
+            {
+                var username = account.Username ?? string.Empty;
+                var tenantId = account.HomeAccountId?.TenantId ?? string.Empty;
+                var homeAccountId = account.HomeAccountId?.Identifier ?? string.Empty;
+                var key = !string.IsNullOrWhiteSpace(homeAccountId)
+                    ? homeAccountId
+                    : $"{username}|{tenantId}|{account.Environment}";
+
+                accounts[key] = new AvailableEntraAccount(username, tenantId, homeAccountId, source);
+            }
+        }
+
         /// <summary>
         /// The account selection rules, isolated from MSAL so they can be tested directly.
         /// </summary>
@@ -856,15 +904,7 @@ namespace DaxStudio.Common
             var app = await GetPublicClientAppAsync(context, listOperatingSystemAccounts: !string.IsNullOrEmpty(accountIdentifier) || !string.IsNullOrEmpty(lastUpn));
             var accounts = (await app.GetAccountsAsync()).ToList();
 
-            IAccount account = null;
-
-            // Bind to the immutable account id first; the username can change (e.g. after a rename)
-            // and is not guaranteed unique across tenants.
-            if (!string.IsNullOrEmpty(accountIdentifier))
-                account = accounts.FirstOrDefault(acct => string.Equals(acct.HomeAccountId?.Identifier, accountIdentifier, StringComparison.OrdinalIgnoreCase));
-
-            if (account == null && !string.IsNullOrEmpty(lastUpn))
-                account = accounts.FirstOrDefault(acct => string.Equals(acct.Username, lastUpn, StringComparison.OrdinalIgnoreCase));
+            var account = SelectRenewalAccount(accounts, accountIdentifier, lastUpn);
 
             var scope = context.Scope;
 
@@ -918,6 +958,30 @@ namespace DaxStudio.Common
                 Log.Error(msalex, Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(RefreshTokenInternalAsync), "Error Acquiring Token Interactively");
                 throw;
             }
+        }
+
+        internal static IAccount SelectRenewalAccount(
+            IReadOnlyList<IAccount> accounts,
+            string accountIdentifier,
+            string username)
+        {
+            accounts = accounts ?? new List<IAccount>();
+
+            // Once a token has been bound to a home account id, never fall back to a username.
+            // The same UPN can identify accounts in different tenants.
+            if (!string.IsNullOrEmpty(accountIdentifier))
+                return accounts.FirstOrDefault(acct => string.Equals(
+                    acct.HomeAccountId?.Identifier,
+                    accountIdentifier,
+                    StringComparison.OrdinalIgnoreCase));
+
+            if (!string.IsNullOrEmpty(username))
+                return accounts.FirstOrDefault(acct => string.Equals(
+                    acct.Username,
+                    username,
+                    StringComparison.OrdinalIgnoreCase));
+
+            return null;
         }
 
         private static string[] GetScope(TokenDetails tokenDetails)

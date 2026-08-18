@@ -28,7 +28,6 @@ namespace DaxStudio.CommandLine
         static IGlobalOptions Options { get; set; }
         static async Task<int> Main(string[] args)
         {
-
             var settingProvider = SettingsProviderFactory.GetSettingProvider();
             Options = new OptionsModel(EventAggregator, settingProvider);
             Options.Initialize();
@@ -170,6 +169,11 @@ namespace DaxStudio.CommandLine
                             .WithExample(new[] { "accesstoken", "-s", "asazure://australiasoutheast.asazure.windows.net/myserver", "-d", "\"Adventure Works\"" })
                             .WithExample(new[] { "accesstoken", "-c", "\"Data Source=asazure://australiasoutheast.asazure.windows.net/myserver;Initial Catalog=Adventure Works\"" })
                             .WithExample(new[] { "accesstoken", "-s", "powerbi://api.powerbi.com/v1.0/myorg/myworkspace", "-u", "user@contoso.com", "--non-interactive" });
+
+            config.AddCommand<AuthCommand>("auth")
+                .WithDescription("Authenticates an account without exposing its access token, or lists accounts available from the DAX Studio cache and Windows")
+                .WithExample(new[] { "auth", "-u", "user@contoso.com", "--non-interactive" })
+                .WithExample(new[] { "auth", "--list" });
 
             config.AddCommand<BenchmarkCommand>("benchmark")
                 .WithDescription("Runs a DAX query benchmark with cold and warm cache timings")
