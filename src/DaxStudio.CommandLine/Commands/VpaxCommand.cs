@@ -84,7 +84,6 @@ namespace DaxStudio.CommandLine.Commands
         protected override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
         {
             VersionInfo.Output();
-            AnsiConsole.MarkupLine("Starting VPAX command");
             Log.Information("Starting VPAX command");
             AnsiConsole.Status()
                 .AutoRefresh(true)
@@ -98,7 +97,7 @@ namespace DaxStudio.CommandLine.Commands
 
                     // if requires Entra Auth add the AccessToken to the connection string
                     if (AccessTokenHelper.IsAccessTokenNeeded(connStr)) {
-                        var token = AccessTokenHelper.GetAccessToken(connStr);
+                        var token = AccessTokenHelper.GetAccessToken(connStr, settings);
                         connStr = $"{connStr};Password={token.Token}";
                     }
 

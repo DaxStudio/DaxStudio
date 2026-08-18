@@ -1,4 +1,5 @@
 using Caliburn.Micro;
+using DaxStudio.CommandLine.Helpers;
 using DaxStudio.CommandLine.UIStubs;
 using DaxStudio.CommandLine.ViewModel;
 using DaxStudio.Interfaces;
@@ -15,6 +16,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using DaxStudio.Core.Enums;
+#if NET8_0_OR_GREATER
+using AccessToken = Microsoft.AnalysisServices.AccessToken;
+#else
+using AccessToken = Microsoft.AnalysisServices.AdomdClient.AccessToken;
+#endif
 
 namespace DaxStudio.CommandLine.Commands
 {
@@ -70,7 +76,7 @@ namespace DaxStudio.CommandLine.Commands
 
         protected override async Task<int> ExecuteAsync(CommandContext context, CustomTraceCommand.Settings settings, CancellationToken cancellationToken)
         {
-            Log.Information("Starting [yellow]Custom Trace[/] Command");
+            Log.Information("Starting Custom Trace command");
 
             //AnsiConsole.MarkupLine("Starting [yellow]EXPORTCSV[/] Command...");
 
@@ -95,13 +101,11 @@ namespace DaxStudio.CommandLine.Commands
                 {
                     statusContext = ctx;
                     var connMgr = new DaxStudio.Core.Connections.ConnectionManager(EventAggregator);
-                    var connEvent = new ConnectEvent()
-                    {
-                        ConnectionString = $"Data Source={settings.Server};Initial Catalog={settings.Database}",
-                        ApplicationName = "DAX Studio Command Line",
-                        DatabaseName = settings.Database,
-                        PowerBIFileName = ""
-                    };
+                    var connectionString = settings.FullConnectionString;
+                    var accessToken = AccessTokenHelper.IsAccessTokenNeeded(connectionString)
+                        ? AccessTokenHelper.GetAccessToken(connectionString, settings)
+                        : default;
+                    var connEvent = CreateConnectEvent(settings, connectionString, accessToken);
                 try {
                     connMgr.Connect(connEvent);
                     connMgr.SelectedModel = connMgr.Database.Models.BaseModel;
@@ -145,6 +149,21 @@ namespace DaxStudio.CommandLine.Commands
             Log.Information("{0}", "Done!");
 
             return 0;
+        }
+
+        internal static ConnectEvent CreateConnectEvent(
+            Settings settings,
+            string connectionString,
+            AccessToken accessToken)
+        {
+            return new ConnectEvent
+            {
+                ConnectionString = connectionString,
+                ApplicationName = "DAX Studio Command Line",
+                DatabaseName = settings.Database,
+                PowerBIFileName = string.Empty,
+                AccessToken = accessToken
+            };
         }
 
         private void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
