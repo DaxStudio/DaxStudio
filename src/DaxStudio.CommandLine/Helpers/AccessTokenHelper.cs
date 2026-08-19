@@ -1,3 +1,4 @@
+using ADOTabular.Utils;
 using DaxStudio.CommandLine.Interfaces;
 using DaxStudio.Common;
 using DaxStudio.Common.Extensions;
@@ -71,7 +72,7 @@ namespace DaxStudio.CommandLine.Helpers
             bool nonInteractive)
         {
             GetScopeFromConnectionString(connStr, out var tokenScope, out _);
-            var dataSource = new OleDbConnectionStringBuilder(connStr).DataSource;
+            var dataSource = connStr.ToConnectionStringBuilder().GetDataSource();
 
             var authOptions = new AuthenticationOptions
             {

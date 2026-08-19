@@ -371,7 +371,7 @@ namespace DaxStudio.CommandLine.Commands
                 // token-authenticated model (Power BI / Fabric) would fail to connect here even though
                 // the rest of the command works.
                 if (Helpers.AccessTokenHelper.IsAccessTokenNeeded(settings.FullConnectionString))
-                    connectEvent.AccessToken = Helpers.AccessTokenHelper.GetAccessToken(settings.FullConnectionString);
+                    connectEvent.AccessToken = Helpers.AccessTokenHelper.GetAccessToken(settings.FullConnectionString, settings);
 
                 connMgr.Connect(connectEvent);
                 connMgr.SelectedModel = connMgr.Database.Models.BaseModel;

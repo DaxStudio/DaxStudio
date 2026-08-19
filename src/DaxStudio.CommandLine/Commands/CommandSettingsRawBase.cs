@@ -70,7 +70,7 @@ namespace DaxStudio.CommandLine.Commands
             // here or the caller's choice of account would be silently discarded.
             if (!string.IsNullOrEmpty(ConnectionString))
             {
-                var supplied = new OleDbConnectionStringBuilder(ConnectionString);
+                var supplied = ConnectionString.ToConnectionStringBuilder();
                 if (supplied.ContainsKey("User ID")) return supplied["User ID"]?.ToString() ?? string.Empty;
                 if (supplied.ContainsKey("UID")) return supplied["UID"]?.ToString() ?? string.Empty;
             }
@@ -137,7 +137,7 @@ namespace DaxStudio.CommandLine.Commands
                 // unchanged from previous releases.
                 var hasPassword = builder.ContainsKey("Password") || builder.ContainsKey("Pwd") || !string.IsNullOrEmpty(pass);
 
-                if (!hasPassword && builder.DataSource.RequiresEntraAuth())
+                if (!hasPassword && builder.GetDataSource().RequiresEntraAuth())
                 {
                     // Without a password the user id names which cached Entra account to get a
                     // token for; it is not a credential. Leaving it on the connection string makes

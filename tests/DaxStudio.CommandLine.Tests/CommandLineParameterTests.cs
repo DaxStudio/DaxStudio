@@ -3,7 +3,7 @@ using DaxStudio.CommandLine.Commands;
 using Spectre.Console.Cli;
 using System;
 using System.Linq;
-using System.Data.OleDb;
+using ADOTabular.Utils;
 #if NET8_0_OR_GREATER
 using AccessToken = Microsoft.AnalysisServices.AccessToken;
 #else
