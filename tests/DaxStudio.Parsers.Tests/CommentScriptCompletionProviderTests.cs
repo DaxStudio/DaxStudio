@@ -51,6 +51,15 @@ namespace DaxStudio.Parsers.Tests
         }
 
         [TestMethod]
+        public void GetCompletions_AfterGo_ReturnsDelay()
+        {
+            var items = CommentScriptCompletionProvider.GetCompletions("--> GO ");
+            var delay = items.Single(i => i.Label == "DELAY");
+
+            StringAssert.Contains(delay.Description, "200ms");
+        }
+
+        [TestMethod]
         public void GetCompletions_AfterTraceSubCommand_ReturnsOnOff()
         {
             var items = CommentScriptCompletionProvider.GetCompletions("--> TRACE SERVERTIMINGS ");

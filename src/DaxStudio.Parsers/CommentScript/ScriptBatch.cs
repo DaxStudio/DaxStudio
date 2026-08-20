@@ -11,6 +11,12 @@ namespace DaxStudio.Parsers.CommentScript
         public StringBuilder Output { get;  } = new StringBuilder();
 
         /// <summary>
+        /// Delay requested on the <c>--&gt; GO</c> boundary after this batch, in milliseconds.
+        /// A null value means the boundary has no delay.
+        /// </summary>
+        public int? DelayAfterMilliseconds { get; set; }
+
+        /// <summary>
         /// The executable DAX for this batch: the batch's section of the original input with any
         /// comment-script (<c>--&gt;</c>) command lines removed and whitespace/formatting preserved.
         /// (<see cref="Output"/> cannot be used for this because whitespace is lexed on a hidden

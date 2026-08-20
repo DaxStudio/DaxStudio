@@ -69,6 +69,12 @@ namespace DaxStudio.Core.Interfaces
         Task ProcessBatchPreQueryCommandsAsync(int batchIndex);
 
         /// <summary>
+        /// Waits at a delayed <c>--&gt; GO</c> boundary. Implementations should cancel the wait when
+        /// the active query run is cancelled.
+        /// </summary>
+        Task WaitForBatchDelayAsync(int milliseconds);
+
+        /// <summary>
         /// Called (and awaited) by the results-target batch loop immediately AFTER a batch's query has
         /// produced its result tables, before the next batch starts. Evaluates just this batch's
         /// assertions - waiting for and capturing this batch's Server Timings slice for any performance

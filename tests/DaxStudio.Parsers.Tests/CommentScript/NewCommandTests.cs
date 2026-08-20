@@ -857,6 +857,59 @@ namespace DaxStudio.Parsers.Tests.CommentScript
             Assert.AreEqual(typeof(long), tableCmd.Data.Columns["Count"].DataType, "Column types should be inferred for a GO-terminated batch");
         }
 
+        [DataTestMethod]
+        [DataRow("200", 200)]
+        [DataRow("200ms", 200)]
+        [DataRow("2s", 2000)]
+        [DataRow("0", 0)]
+        public void GoDelay_CapturesBoundaryDelay(string duration, int expectedMilliseconds)
+        {
+            var input = $"EVALUATE {{ 1 }}\n--> GO DELAY {duration}\nEVALUATE {{ 2 }}";
+            var result = DaxStudio.Parsers.PreProcessor.AntlrPreProcessor.Parse(input);
+
+            Assert.IsFalse(result.HasCommandErrors);
+            Assert.AreEqual(2, result.Batches.Count);
+            Assert.AreEqual(expectedMilliseconds, result.Batches[0].DelayAfterMilliseconds);
+            Assert.IsNull(result.Batches[1].DelayAfterMilliseconds);
+            Assert.IsFalse(result.Batches[0].QueryText.Contains("GO DELAY"));
+            StringAssert.Contains(result.Batches[1].QueryText, "EVALUATE { 2 }");
+        }
+
+        [DataTestMethod]
+        [DataRow("1minute")]
+        [DataRow("2147483648ms")]
+        [DataRow("2147484s")]
+        public void GoDelay_InvalidDuration_SurfacesCommandError(string duration)
+        {
+            var result = DaxStudio.Parsers.PreProcessor.AntlrPreProcessor.Parse(
+                $"EVALUATE {{ 1 }}\n--> GO DELAY {duration}\nEVALUATE {{ 2 }}");
+
+            Assert.IsTrue(result.HasCommandErrors);
+            StringAssert.Contains(result.CommandErrors.First().Msg, "GO DELAY");
+        }
+
+        [DataTestMethod]
+        [DataRow("")]
+        [DataRow("-1")]
+        [DataRow("1.5")]
+        public void GoDelay_MalformedDuration_SurfacesCommandError(string duration)
+        {
+            var result = DaxStudio.Parsers.PreProcessor.AntlrPreProcessor.Parse(
+                $"EVALUATE {{ 1 }}\n--> GO DELAY {duration}\nEVALUATE {{ 2 }}");
+
+            Assert.IsTrue(result.HasCommandErrors);
+        }
+
+        [TestMethod]
+        public void PlainGo_HasNoBoundaryDelay()
+        {
+            var result = DaxStudio.Parsers.PreProcessor.AntlrPreProcessor.Parse(
+                "EVALUATE { 1 }\n--> GO\nEVALUATE { 2 }");
+
+            Assert.IsFalse(result.HasCommandErrors);
+            Assert.IsNull(result.Batches[0].DelayAfterMilliseconds);
+        }
+
         [TestMethod]
         public void AssertTableFromCsvFile_CapturesFormatAndPath()
         {

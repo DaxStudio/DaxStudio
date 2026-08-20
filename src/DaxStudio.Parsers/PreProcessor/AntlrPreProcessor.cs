@@ -141,8 +141,8 @@ namespace DaxStudio.Parsers.PreProcessor
             }
         }
 
-        // Splits text into segments delimited by lines whose trimmed content is '--> GO'
-        // (case-insensitive). The GO lines themselves are dropped.
+        // Splits text into segments delimited by GO lines, including GO DELAY boundaries.
+        // The GO lines themselves are dropped.
         private static List<string> SplitOnGo(string text)
         {
             var segments = new List<string>();
@@ -168,7 +168,10 @@ namespace DaxStudio.Parsers.PreProcessor
             var trimmed = line.Trim();
             if (!trimmed.StartsWith("-->")) return false;
             var rest = trimmed.Substring(3).Trim();
-            return string.Equals(rest, "GO", StringComparison.OrdinalIgnoreCase);
+            return string.Equals(rest, "GO", StringComparison.OrdinalIgnoreCase)
+                || (rest.Length > 2
+                    && rest.StartsWith("GO", StringComparison.OrdinalIgnoreCase)
+                    && char.IsWhiteSpace(rest[2]));
         }
 
         // Moves any parser/lexer syntax error whose line points at a comment-script command ("-->")

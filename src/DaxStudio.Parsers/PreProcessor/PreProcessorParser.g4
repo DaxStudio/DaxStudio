@@ -162,8 +162,10 @@ saveas:            CS_SAVEAS (CS_STRING_LITERAL | CS_IDENTIFIER);
 // PreProcessorListener from the parse-tree char interval.
 unquoted_value:    ~(CS_NEWLINE | CS_STRING_LITERAL) (~CS_NEWLINE)* ;
 
-// the go command is special as it terminates a batch
-go_command:        COMMENT_SCRIPT CS_GO (CS_NEWLINE | EOF);
+// The GO command is special as it terminates a batch. An optional delay belongs to the
+// boundary and runs before the following batch starts. Bare values are milliseconds.
+go_command:        COMMENT_SCRIPT CS_GO go_delay? (CS_NEWLINE | EOF);
+go_delay:          CS_DELAY (CS_INTEGER_LITERAL CS_IDENTIFIER? | CS_IDENTIFIER);
 
 // XMLA Parameters
 

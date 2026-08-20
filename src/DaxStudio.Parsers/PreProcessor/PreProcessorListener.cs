@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using static DaxStudio.Parsers.Grammars.Generated.PreProcessorParser;
 
 using DaxStudio.Parsers.Grammars.Generated;
@@ -800,6 +801,33 @@ namespace DaxStudio.Parsers.Dax
 
         public override void ExitGo_command([NotNull] Go_commandContext context)
         {
+            var delay = context.go_delay();
+            if (delay != null)
+            {
+                var durationText = delay.GetText().Substring("DELAY".Length);
+                var match = Regex.Match(durationText, @"^(?<value>[0-9]+)(?<unit>ms|s)?$", RegexOptions.IgnoreCase);
+                if (!match.Success)
+                    throw new CommentScriptCommandException("Invalid GO DELAY duration. Use an integer followed by 'ms' or 's'.", context.Start.Line, context.Start.Column);
+
+                var valueText = match.Groups["value"].Value;
+                var unit = match.Groups["unit"].Value;
+                if (!long.TryParse(valueText, NumberStyles.None, CultureInfo.InvariantCulture, out var value))
+                    throw new CommentScriptCommandException("Invalid GO DELAY duration.", context.Start.Line, context.Start.Column);
+
+                long milliseconds;
+                if (string.IsNullOrEmpty(unit) || unit.Equals("ms", StringComparison.OrdinalIgnoreCase))
+                    milliseconds = value;
+                else if (unit.Equals("s", StringComparison.OrdinalIgnoreCase))
+                    milliseconds = value > int.MaxValue / 1000L ? int.MaxValue + 1L : value * 1000L;
+                else
+                    throw new CommentScriptCommandException("Invalid GO DELAY unit. Use 'ms', 's', or omit the unit for milliseconds.", context.Start.Line, context.Start.Column);
+
+                if (milliseconds > int.MaxValue)
+                    throw new CommentScriptCommandException("GO DELAY duration is too large.", context.Start.Line, context.Start.Column);
+
+                _currentBatch.DelayAfterMilliseconds = (int)milliseconds;
+            }
+
             FinalizeBatch(_currentBatch);
             _currentBatch = new ScriptBatch();
             _scriptBatches.Add(_currentBatch);

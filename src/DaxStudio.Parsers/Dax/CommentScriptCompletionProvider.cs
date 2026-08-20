@@ -109,6 +109,10 @@ namespace DaxStudio.Parsers.Dax
                     ("XLSX", "Output to an Excel file"),
                     ("JSON", "Output to a JSON file"),
                 },
+                ["GO"] = new[]
+                {
+                    ("DELAY", "Wait before starting the next batch (for example, DELAY 200ms or DELAY 2s)"),
+                },
                 ["RESULTS"] = new[]
                 {
                     ("ON",  "Show the results grid"),

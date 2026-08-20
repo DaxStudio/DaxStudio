@@ -128,9 +128,20 @@ Traces
 ## Go
 ```
 --> GO
+--> GO DELAY 200ms
+--> GO DELAY 2s
 ```
 
-This would just be a batch separator if there are no other commands that need to be run. This way you could run 2 or more DAX queries with different DEFINE statements.
+`GO` separates batches, allowing a script to run two or more DAX queries with different `DEFINE`
+statements. Add `DELAY <duration>` to pause before the next runnable batch starts. The delay occurs
+after the preceding query and its assertions complete, and before the next batch clears the cache,
+prepares traces, handles `SHOW`, or runs its query.
+
+Durations are non-negative integers. Use `ms` for milliseconds or `s` for seconds; a bare integer
+is interpreted as milliseconds. For example, `DELAY 200`, `DELAY 200ms`, and `DELAY 2s` are valid.
+A delayed trailing `GO` does not wait when there is no later runnable batch. The pause is excluded
+from query elapsed times and Server Timings. **Cancel Query** interrupts it immediately without
+running later batches.
 
 ## Clear Cache
 ```

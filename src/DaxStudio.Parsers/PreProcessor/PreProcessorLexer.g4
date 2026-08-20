@@ -197,6 +197,7 @@ CS_USE:                   'USE';
 CS_SET:                   'SET';
 CS_SET_PARAMETER:         'PARAMETER';
 CS_GO:					  'GO';
+CS_DELAY:                 'DELAY';
 CS_OUTPUT:                'OUTPUT';
 CS_TEST:                  'TEST';
 CS_ASSERT:                'ASSERT';

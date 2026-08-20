@@ -130,6 +130,108 @@ namespace DaxStudio.Tests.ResultsTargets
         }
 
         [TestMethod]
+        public async System.Threading.Tasks.Task GoDelay_WaitsBetweenExecutableBatchesInOrder()
+        {
+            var provider = BuildProvider("EVALUATE { 1 }\n--> GO DELAY 25ms\nEVALUATE { 2 }");
+            var runner = Substitute.For<IQueryRunner>();
+            var target = new ResultsTargetGrid(_eventAggregator, NewParserOptions());
+
+            await target.OutputResultsAsync(runner, provider, null);
+
+            Received.InOrder(() =>
+            {
+                runner.ProcessBatchAssertionsAsync(0, Arg.Any<System.Collections.Generic.IReadOnlyList<System.Data.DataTable>>());
+                runner.WaitForBatchDelayAsync(25);
+                runner.ProcessBatchPreQueryCommandsAsync(1);
+            });
+            await runner.Received(1).WaitForBatchDelayAsync(25);
+        }
+
+        [TestMethod]
+        public async System.Threading.Tasks.Task GoDelay_WaitsBeforeFollowingShowBatch()
+        {
+            var provider = BuildProvider("EVALUATE { 1 }\n--> GO DELAY 30ms\n--> SHOW DEPENDENCIES");
+            var runner = Substitute.For<IQueryRunner>();
+            var target = new ResultsTargetGrid(_eventAggregator, NewParserOptions());
+
+            await target.OutputResultsAsync(runner, provider, null);
+
+            await runner.Received(1).WaitForBatchDelayAsync(30);
+        }
+
+        [TestMethod]
+        public async System.Threading.Tasks.Task TrailingGoDelay_DoesNotWait()
+        {
+            var provider = BuildProvider("EVALUATE { 1 }\n--> GO DELAY 30ms");
+            var runner = Substitute.For<IQueryRunner>();
+            var target = new ResultsTargetGrid(_eventAggregator, NewParserOptions());
+
+            await target.OutputResultsAsync(runner, provider, null);
+
+            await runner.DidNotReceive().WaitForBatchDelayAsync(Arg.Any<int>());
+        }
+
+        [TestMethod]
+        public async System.Threading.Tasks.Task GoDelay_OnCommandOnlyBatch_WaitsBeforeNextQuery()
+        {
+            var provider = BuildProvider(
+                "EVALUATE { 1 }\n--> GO\n--> SET Env = dev\n--> GO DELAY 40ms\nEVALUATE { 2 }");
+            var runner = Substitute.For<IQueryRunner>();
+            var target = new ResultsTargetGrid(_eventAggregator, NewParserOptions());
+
+            await target.OutputResultsAsync(runner, provider, null);
+
+            Received.InOrder(() =>
+            {
+                runner.WaitForBatchDelayAsync(40);
+                runner.ProcessBatchPreQueryCommandsAsync(2);
+            });
+        }
+
+        [TestMethod]
+        public async System.Threading.Tasks.Task GoDelay_CancellationStopsBeforeNextBatch()
+        {
+            var provider = BuildProvider("EVALUATE { 1 }\n--> GO DELAY 5s\nEVALUATE { 2 }");
+            var runner = Substitute.For<IQueryRunner>();
+            var target = new ResultsTargetGrid(_eventAggregator, NewParserOptions());
+            var cancellationToken = new System.Threading.CancellationToken(true);
+            runner.WaitForBatchDelayAsync(5000)
+                .Returns(System.Threading.Tasks.Task.FromCanceled(cancellationToken));
+
+            var wasCancelled = false;
+            try
+            {
+                await target.OutputResultsAsync(runner, provider, null);
+            }
+            catch (System.OperationCanceledException)
+            {
+                wasCancelled = true;
+            }
+
+            Assert.IsTrue(wasCancelled);
+            await runner.DidNotReceive().ProcessBatchPreQueryCommandsAsync(1);
+        }
+
+        [TestMethod]
+        public async System.Threading.Tasks.Task GoDelay_IsExcludedFromReportedBatchDuration()
+        {
+            const int delayMilliseconds = 200;
+            var provider = BuildProvider($"EVALUATE {{ 1 }}\n--> GO DELAY {delayMilliseconds}ms\nEVALUATE {{ 2 }}");
+            var runner = Substitute.For<IQueryRunner>();
+            var target = new ResultsTargetGrid(_eventAggregator, NewParserOptions());
+            runner.WaitForBatchDelayAsync(delayMilliseconds)
+                .Returns(System.Threading.Tasks.Task.Delay(delayMilliseconds));
+            var wallClock = System.Diagnostics.Stopwatch.StartNew();
+
+            await target.OutputResultsAsync(runner, provider, null);
+
+            wallClock.Stop();
+            runner.Received().OutputError(
+                Arg.Is<string>(message => message.Contains("Query Batch Completed")),
+                Arg.Is<double>(duration => duration < wallClock.ElapsedMilliseconds - 100));
+        }
+
+        [TestMethod]
         public void ResolveDiagramTablesWithoutConnectionReturnsNullAndWarns()
         {
             // With a query but no live connection we cannot resolve the query's tables, so the full

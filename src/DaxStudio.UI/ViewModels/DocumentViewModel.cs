@@ -1292,6 +1292,7 @@ namespace DaxStudio.UI.ViewModels
         // active) and completed by the QueryTraceCompletedEvent handler once that batch's trace slice has
         // finished aggregating, so the batch's performance assertions read metrics captured in isolation.
         private TaskCompletionSource<bool> _perBatchServerTimingsTcs;
+        private CancellationTokenSource _queryRunCancellationTokenSource;
 
         // True when the cache has been cleared and no query has run since. Lets a per-batch
         // "--> CLEARCACHE" skip a redundant clear (because the whole-script pre-query pass, or an
@@ -2221,6 +2222,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 using (NewStatusBarMessage("Cancelling Query..."))
                 {
+                    _queryRunCancellationTokenSource?.Cancel();
                     var c = Connection;
                     c.Cancel();
                     QueryCompleted(true);
@@ -2254,7 +2256,6 @@ namespace DaxStudio.UI.ViewModels
                 }
 
                 NotifyOfPropertyChange(() => CanRunQuery);
-                if (message.RunStyle.ClearCache) await ClearDatabaseCacheAsync();
 
                 IsQueryRunning = true;
 
@@ -2334,6 +2335,9 @@ namespace DaxStudio.UI.ViewModels
 
         private async Task RunQueryInternalAsync(RunQueryEvent message)
         {
+            _queryRunCancellationTokenSource?.Dispose();
+            _queryRunCancellationTokenSource = new CancellationTokenSource();
+
             // Whether the result grid should be displayed for this run. Resolved from the
             // comment-script "--> RESULTS ON|OFF" directives / presence of ASSERT commands once the
             // query has been pre-processed (which is when QueryInfo.ScriptBatches is built), then
@@ -2466,7 +2470,7 @@ namespace DaxStudio.UI.ViewModels
                         // Process any comment-script commands that must run before the query (e.g.
                         // "--> CONNECT", "--> CLEARCACHE"). If a CONNECT command was present but the
                         // connection could not be established, abort the run.
-                        if (!await ProcessCommentScriptPreQueryCommandsAsync(message.QueryProvider))
+                        if (!await ProcessCommentScriptPreQueryCommandsAsync(message.QueryProvider, message.RunStyle.ClearCache))
                         {
                             IsQueryRunning = false;
                             return;
@@ -2536,6 +2540,10 @@ namespace DaxStudio.UI.ViewModels
 
                     }
                 }
+                catch (OperationCanceledException) when (_queryRunCancellationTokenSource?.IsCancellationRequested == true)
+                {
+                    // CancelQuery reports the cancellation and completes the active query.
+                }
                 catch (AggregateException aggEx)
                 {
                     var durationMs = _queryStopWatch?.ElapsedMilliseconds ?? 0;
@@ -2562,6 +2570,8 @@ namespace DaxStudio.UI.ViewModels
 
                 finally
                 {
+                    _queryRunCancellationTokenSource?.Dispose();
+                    _queryRunCancellationTokenSource = null;
                     IsQueryRunning = false;
                     NotifyOfPropertyChange(() => CanRunQuery);
                     StopTimer();
@@ -2632,7 +2642,7 @@ namespace DaxStudio.UI.ViewModels
         // Returns true when the pre-query commands succeeded (or there were none); false when a
         // command that must halt the run (CONNECT or USE) could not be completed (the caller should
         // then abort the run).
-        private async Task<bool> ProcessCommentScriptPreQueryCommandsAsync(IQueryTextProvider queryProvider)
+        private async Task<bool> ProcessCommentScriptPreQueryCommandsAsync(IQueryTextProvider queryProvider, bool clearCacheRequested)
         {
             var batches = queryProvider?.QueryInfo?.ScriptBatches;
             if (batches == null || batches.Count == 0) return true;
@@ -2677,10 +2687,12 @@ namespace DaxStudio.UI.ViewModels
             // This up-front pass clears the cache once for the whole script (unchanged behaviour);
             // batches that need their own clear before their query are handled by
             // ProcessBatchPreQueryCommandsAsync, which uses the flag set here to avoid a redundant clear.
-            if (commands.OfType<CommentScript.ClearCacheCommand>().Any())
+            var hasClearCacheCommand = commands.OfType<CommentScript.ClearCacheCommand>().Any();
+            if (hasClearCacheCommand || clearCacheRequested)
             {
-                await ExecuteClearCacheCommandAsync();
-                _cacheClearedSinceLastQuery = true;
+                _cacheClearedSinceLastQuery = hasClearCacheCommand
+                    ? await ExecuteClearCacheCommandAsync()
+                    : await ExecuteRunStyleClearCacheAsync();
             }
 
             // "--> TRACE <type> [ON|OFF]" toggles trace watchers. Started last so the trace is fresh
@@ -3044,6 +3056,23 @@ namespace DaxStudio.UI.ViewModels
             _cacheClearedSinceLastQuery = false;
         }
 
+        public async Task WaitForBatchDelayAsync(int milliseconds)
+        {
+            if (milliseconds <= 0) return;
+            var cancellationToken = _queryRunCancellationTokenSource?.Token ?? CancellationToken.None;
+            var resumeTimer = _queryStopWatch?.IsRunning == true;
+            if (resumeTimer) _queryStopWatch.Stop();
+            try
+            {
+                await Task.Delay(milliseconds, cancellationToken);
+            }
+            finally
+            {
+                if (resumeTimer && !cancellationToken.IsCancellationRequested)
+                    _queryStopWatch.Start();
+            }
+        }
+
         // Called synchronously by the results-target batch loop before a batch's query runs. When the
         // batch has performance assertions or is a "--> BASELINE" capture, and the Server Timings trace
         // is active, resets that trace and arms a fresh completion signal so the batch's metrics are
@@ -3405,17 +3434,17 @@ namespace DaxStudio.UI.ViewModels
         // Clears the database cache in response to a "--> CLEARCACHE" command. Mirrors the guards of
         // the ribbon "Clear Cache" command (admin permission required) but does not abort the query -
         // a warning is emitted and the query still runs, matching the "Run with Clear Cache" behaviour.
-        private async Task ExecuteClearCacheCommandAsync()
+        private async Task<bool> ExecuteClearCacheCommandAsync()
         {
             if (!IsConnected)
             {
                 OutputWarning("--> CLEARCACHE: not connected, unable to clear the cache");
-                return;
+                return false;
             }
             if (!IsAdminConnection)
             {
                 OutputWarning("--> CLEARCACHE: you do not have sufficient permission to clear the cache");
-                return;
+                return false;
             }
 
             try
@@ -3424,10 +3453,40 @@ namespace DaxStudio.UI.ViewModels
                 await ClearCacheCoreAsync();
                 sw.Stop();
                 OutputMessage($"--> CLEARCACHE: cache cleared for database '{Connection.DatabaseName}'", sw.ElapsedMilliseconds);
-            }            catch (Exception ex)
+                return true;
+            }
+            catch (Exception ex)
             {
                 Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(ExecuteClearCacheCommandAsync), ex.Message);
                 OutputError($"--> CLEARCACHE failed: {ex.Message}");
+                return false;
+            }
+        }
+
+        private async Task<bool> ExecuteRunStyleClearCacheAsync()
+        {
+            if (!IsAdminConnection)
+            {
+                var msg = "You do not have sufficient permission to clear the cache";
+                OutputWarning(msg);
+                Log.Warning(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(ExecuteRunStyleClearCacheAsync), msg);
+                return false;
+            }
+
+            try
+            {
+                var sw = Stopwatch.StartNew();
+                OutputMessage(string.Format("Evaluating Calculation Script for Database: {0}", Connection.DatabaseName));
+                await Connection.ClearCacheAsync();
+                sw.Stop();
+                OutputMessage(string.Format("Cache Cleared for Database: {0}", Connection.DatabaseName), sw.ElapsedMilliseconds);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(ExecuteRunStyleClearCacheAsync), ex.Message);
+                OutputError(ex.Message);
+                return false;
             }
         }
 

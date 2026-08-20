@@ -196,6 +196,11 @@ namespace DaxStudio.CommandLine.UIStubs
         public System.Threading.Tasks.Task ProcessBatchPreQueryCommandsAsync(int batchIndex)
             => System.Threading.Tasks.Task.CompletedTask;
 
+        public System.Threading.Tasks.Task WaitForBatchDelayAsync(int milliseconds)
+            => milliseconds > 0
+                ? System.Threading.Tasks.Task.Delay(milliseconds)
+                : System.Threading.Tasks.Task.CompletedTask;
+
         public void SetResultTabs(System.Collections.Generic.IList<DaxStudio.Core.Model.ResultTabDescriptor> tabs)
         {
             if (tabs == null) return;

@@ -108,8 +108,9 @@ namespace DaxStudio.UI.ResultsTargets
             int tableIdx = 1;
             bool anyReader = false;
 
-            foreach (var (batchIndex, dq) in batches)
+            for (var executableBatchIndex = 0; executableBatchIndex < batches.Count; executableBatchIndex++)
             {
+                var (batchIndex, dq) = batches[executableBatchIndex];
                 // Comment-script commands that change the document state (e.g. "--> CONNECT")
                 // are dispatched in DocumentViewModel.RunQueryInternalAsync before we get here.
                 // Future per-batch commands (CLEAR CACHE, TRACE, USE, ...) would hook in here.
@@ -146,6 +147,12 @@ namespace DaxStudio.UI.ResultsTargets
                 // Timings slice) before the next batch starts, so a completed batch's tests show their
                 // outcome while later batches remain pending. A no-op when the script has no asserts.
                 await runner.ProcessBatchAssertionsAsync(batchIndex, batchTables);
+
+                if (executableBatchIndex < batches.Count - 1)
+                {
+                    var nextBatchIndex = batches[executableBatchIndex + 1].BatchIndex;
+                    await WaitForBatchDelaysAsync(runner, textProvider.QueryInfo.ScriptBatches, batchIndex, nextBatchIndex, sw);
+                }
             }
 
             sw.Stop();
@@ -248,11 +255,21 @@ namespace DaxStudio.UI.ResultsTargets
                     // query in the same batch should still run and produce its own result tab(s) after the
                     // SHOW tab(s). This rule is shared with the "--> ASSERT ... PREVIOUS" resolver, which
                     // must agree about which batches produce results/timings - see ScriptBatch.
-                    if (batch.ConsumesQueryAsAnalysisTarget) continue;
+                    if (batch.ConsumesQueryAsAnalysisTarget)
+                    {
+                        if (HasRunnableBatchAfter(batches, batchIndex))
+                            await WaitForBatchDelayAsync(runner, batch, sw);
+                        continue;
+                    }
                 }
 
                 var dax = batch.QueryText;
-                if (string.IsNullOrWhiteSpace(dax)) continue; // comment-only batch (e.g. "--> CONNECT")
+                if (string.IsNullOrWhiteSpace(dax))
+                {
+                    if (HasRunnableBatchAfter(batches, batchIndex))
+                        await WaitForBatchDelayAsync(runner, batch, sw);
+                    continue;
+                }
 
                 // Run any per-batch comment-script commands (e.g. "--> CLEARCACHE") before the query.
                 await runner.ProcessBatchPreQueryCommandsAsync(batchIndex);
@@ -292,6 +309,9 @@ namespace DaxStudio.UI.ResultsTargets
 
                 // Evaluate just this batch's assertions before the next batch starts (no-op without asserts).
                 await runner.ProcessBatchAssertionsAsync(batchIndex, batchTables);
+
+                if (HasRunnableBatchAfter(batches, batchIndex))
+                    await WaitForBatchDelayAsync(runner, batch, sw);
             }
 
             sw.Stop();
@@ -563,6 +583,42 @@ namespace DaxStudio.UI.ResultsTargets
 
         // Returns the executable query text for each batch to run, paired with the zero-based index of
         // the script batch it came from (so callers can map a running batch back to its assertions).
+        private static async Task WaitForBatchDelayAsync(IQueryRunner runner, ScriptBatch batch, Stopwatch elapsedTimer)
+        {
+            if (!(batch?.DelayAfterMilliseconds is int milliseconds) || milliseconds <= 0) return;
+
+            elapsedTimer.Stop();
+            try
+            {
+                await runner.WaitForBatchDelayAsync(milliseconds);
+            }
+            finally
+            {
+                elapsedTimer.Start();
+            }
+        }
+
+        private static async Task WaitForBatchDelaysAsync(
+            IQueryRunner runner,
+            System.Collections.Generic.IReadOnlyList<ScriptBatch> batches,
+            int firstBoundaryIndex,
+            int nextBatchIndex,
+            Stopwatch elapsedTimer)
+        {
+            for (var index = firstBoundaryIndex; index < nextBatchIndex; index++)
+                await WaitForBatchDelayAsync(runner, batches[index], elapsedTimer);
+        }
+
+        private static bool HasRunnableBatchAfter(System.Collections.Generic.IReadOnlyList<ScriptBatch> batches, int batchIndex)
+        {
+            for (var index = batchIndex + 1; index < batches.Count; index++)
+            {
+                if (batches[index].RunsItsQuery || batches[index].Commands.OfType<ShowCommand>().Any())
+                    return true;
+            }
+            return false;
+        }
+
         // When the pre-processor produced multiple non-empty batches (sections separated by "--> GO")
         // each is returned in order. Otherwise a single element equal to the whole processed query text
         // is returned (batch index 0) so the classic / single-batch path is byte-identical to the
