@@ -309,8 +309,27 @@ namespace DaxStudio.UI.ViewModels
 
         public override async Task TryCloseAsync(bool? dialogResult = null)
         {
-            await base.TryCloseAsync(dialogResult);
+            if (IsDirty && dialogResult == null)
+            {
+                var closeDialog = new SaveDialogViewModel
+                {
+                    Documents = new ObservableCollection<ISaveable> { this }
+                };
 
+                await _windowManager.ShowDialogBoxAsync(closeDialog, settings: new Dictionary<string, object>
+                {
+                    { "WindowStyle", WindowStyle.None },
+                    { "ShowInTaskbar", false },
+                    { "ResizeMode", ResizeMode.NoResize },
+                    { "Background", Brushes.Transparent },
+                    { "AllowsTransparency", true }
+                });
+
+                if (closeDialog.Result == SaveDialogResult.Cancel)
+                    return;
+            }
+
+            await base.TryCloseAsync(dialogResult);
         }
 
         public Guid AutoSaveId { get; set; } = Guid.NewGuid();
