@@ -24,8 +24,8 @@
                 <support:EnumDisplayEntry EnumValue="Like" DisplayString="" ExcludeFromDisplay="True"/>
                 <support:EnumDisplayEntry EnumValue="Contains" DisplayString="" ExcludeFromDisplay="True"/>
                 <support:EnumDisplayEntry EnumValue="Between" DisplayString="" ExcludeFromDisplay="True"/>
-                <support:EnumDisplayEntry EnumValue="LessThanOrEqual" DisplayString="&lt;="/>
-                <support:EnumDisplayEntry EnumValue="GreaterThanOrEqual" DisplayString="&gt;="/>
+                <support:EnumDisplayEntry EnumValue="LessThanOrEqual" DisplayString="≤"/>
+                <support:EnumDisplayEntry EnumValue="GreaterThanOrEqual" DisplayString="≥"/>
             </support:EnumDisplayer>
             
             <support:CheckBoxValueConverter x:Key="checkBoxValueConverter" />
