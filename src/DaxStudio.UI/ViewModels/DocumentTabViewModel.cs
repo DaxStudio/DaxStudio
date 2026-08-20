@@ -20,7 +20,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using AvalonDock.Controls;
 using System.Text.RegularExpressions;
-using System.Windows.Threading;
 using DaxStudio.Core.Model;
 
 namespace DaxStudio.UI.ViewModels
@@ -391,7 +390,7 @@ namespace DaxStudio.UI.ViewModels
 
                 args.Cancel = true; // cancel the default tab close action as we want to call 
 
-                await Dispatcher.CurrentDispatcher.InvokeAsync(new System.Action(async () => { await CloseTabAsync(doc); }), DispatcherPriority.Normal);
+                await CloseTabAsync(doc);
 
             }
             catch (Exception ex)
@@ -401,6 +400,7 @@ namespace DaxStudio.UI.ViewModels
             }
             finally
             {
+                _isClosing = false;
                 Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(TabClosing), "Finished");
             }
         }
