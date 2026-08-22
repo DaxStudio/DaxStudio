@@ -55,6 +55,19 @@ namespace DaxStudio.Core.Connections
         protected readonly IEventAggregator _eventAggregator;
         protected RetryPolicy _retry;
         private RetryPolicy _dmvRetry;
+
+        // Cache for the storage-engine remap information (COLUMN_ID / TABLE_ID -> friendly name).
+        // The remap is read from DISCOVER_STORAGE_TABLE_COLUMNS / DISCOVER_STORAGE_TABLES which
+        // require admin access. When an RLS "View As" context is active the primary connection
+        // carries Roles / EffectiveUserName and the impersonated role usually cannot read these
+        // DMVs (the server returns an error such as "The server sent an unrecognizable response").
+        // The remap only depends on the physical model structure - not on the RLS context - so we
+        // capture it from the admin connection and reuse it while RLS is active instead of querying
+        // the restricted connection. The signature ties the cache to a specific server + database
+        // so it is refreshed if either changes.
+        private DaxColumnsRemap _cachedColumnsRemap;
+        private DaxTablesRemap _cachedTablesRemap;
+        private string _cachedRemapSignature;
         private static readonly IEnumerable<string> _keywords;
         private static readonly Regex guidRegex = new Regex("([0-9A-Fa-f]{8}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{12})", RegexOptions.Compiled);
         public event EventHandler AfterReconnect;
@@ -297,6 +310,18 @@ namespace DaxStudio.Core.Connections
         {
             get
             {
+                var signature = RemapCacheSignature;
+
+                // When RLS ("View As") is active we must not run the remap DMV against the primary
+                // connection - the impersonated role typically cannot read it. Reuse the remap that
+                // was captured from the admin connection for this server + database if we have it.
+                if (_dmvConnection?.IsTestingRls == true
+                    && _cachedColumnsRemap != null
+                    && _cachedRemapSignature == signature)
+                {
+                    return _cachedColumnsRemap;
+                }
+
                 ADOTabularConnection newConn = null;
                 ADOTabularConnection conn;
                 try
@@ -316,6 +341,13 @@ namespace DaxStudio.Core.Connections
                     }
 
                     var remapInfo = _dmvRetry.Execute(() =>  conn?.DaxColumnsRemapInfo);
+
+                    // cache the successfully retrieved remap so it can be reused while RLS is active
+                    if (remapInfo != null)
+                    {
+                        _cachedColumnsRemap = remapInfo;
+                        _cachedRemapSignature = signature;
+                    }
                     return remapInfo;
                 }
                 catch (Exception ex)
@@ -324,7 +356,8 @@ namespace DaxStudio.Core.Connections
                         nameof(DaxColumnsRemapInfo), "Error getting column remap information");
                     _eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning,
                         $"Unable to get column re-map information, this will mean that some of the xmSQL simplification cannot be done\nThis may be caused by connection parameters like Roles and EffectiveUserName that alter the permissions:\n {ex.Message}"));
-                    return new DaxColumnsRemap();
+                    // fall back to any previously cached remap rather than losing the mapping entirely
+                    return _cachedColumnsRemap ?? new DaxColumnsRemap();
                 }
                 finally
                 {
@@ -340,6 +373,18 @@ namespace DaxStudio.Core.Connections
         {
             get
             {
+                var signature = RemapCacheSignature;
+
+                // When RLS ("View As") is active we must not run the remap DMV against the primary
+                // connection - the impersonated role typically cannot read it. Reuse the remap that
+                // was captured from the admin connection for this server + database if we have it.
+                if (_dmvConnection?.IsTestingRls == true
+                    && _cachedTablesRemap != null
+                    && _cachedRemapSignature == signature)
+                {
+                    return _cachedTablesRemap;
+                }
+
                 ADOTabularConnection newConn = null;
                 ADOTabularConnection conn;
                 try
@@ -347,7 +392,7 @@ namespace DaxStudio.Core.Connections
                     // if the connection contains EffectiveUserName or Roles we clone it and strip those out
                     // so that we can run the discover command to get the column remap info
                     // Otherwise we just use the current connection
-                    if (_connection.IsTestingRls)
+                    if (_dmvConnection.IsTestingRls)
                     {
                         newConn = _dmvConnection.CloneWithoutRLS();
                         conn = newConn;
@@ -357,6 +402,13 @@ namespace DaxStudio.Core.Connections
                         conn = _dmvConnection;
                     }
                     var remapInfo = _dmvRetry.Execute(() => conn?.DaxTablesRemapInfo);
+
+                    // cache the successfully retrieved remap so it can be reused while RLS is active
+                    if (remapInfo != null)
+                    {
+                        _cachedTablesRemap = remapInfo;
+                        _cachedRemapSignature = signature;
+                    }
                     return remapInfo;
                 }
                 catch (Exception ex)
@@ -365,7 +417,8 @@ namespace DaxStudio.Core.Connections
                         nameof(DaxColumnsRemapInfo), "Error getting column remap information");
                     _eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning,
                         $"Unable to get column re-map information, this will mean that some of the xmSQL simplification cannot be done\nThis may be caused by connection parameters like Roles and EffectiveUserName that alter the permissions:\n {ex.Message}"));
-                    return new DaxTablesRemap();
+                    // fall back to any previously cached remap rather than losing the mapping entirely
+                    return _cachedTablesRemap ?? new DaxTablesRemap();
                 }
                 finally
                 {
@@ -375,6 +428,12 @@ namespace DaxStudio.Core.Connections
 
             }
         }
+
+        // A signature used to tie the cached remap information to a specific server + database so
+        // that the cache survives RLS "View As" reconnects (same server / database) but is refreshed
+        // when the connection points at a different model.
+        private string RemapCacheSignature => $"{ServerName}|{DatabaseName}";
+
 
         #region Query Exection
 

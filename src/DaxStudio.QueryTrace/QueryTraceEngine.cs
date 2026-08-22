@@ -461,7 +461,14 @@ namespace DaxStudio.QueryTrace
         private AccessToken OnAccessTokenExpired(AccessToken token)
         {
             Log.Information("{class} {method} {message}", nameof(QueryTraceEngine), nameof(OnAccessTokenExpired), "Refreshing expired AccessToken");
-            var newToken = EntraIdHelper.RefreshToken(token).GetAwaiter().GetResult();
+            // This callback runs synchronously (via GetResult()) on the thread driving the current
+            // trace operation. When we are stopping/dropping a trace that call is typically made on the
+            // UI thread during shutdown, so triggering an interactive sign-in prompt here would block
+            // the message pump and deadlock. We therefore only allow an interactive prompt while the
+            // trace is starting (a user-initiated action) and force a silent-only renewal while the
+            // trace is stopping - if the silent renewal fails the drop will error rather than hang.
+            var forceSilent = Status == QueryTraceStatus.Stopping;
+            var newToken = EntraIdHelper.RefreshToken(token, forceSilent).GetAwaiter().GetResult();
             return newToken;
         }
 
