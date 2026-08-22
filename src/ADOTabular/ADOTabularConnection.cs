@@ -63,6 +63,32 @@ namespace ADOTabular
             set => _adomdConn.OnAccessTokenExpired = value;
         }
 
+        /// <summary>
+        /// Returns the current access token, renewing it via <see cref="OnAccessTokenExpired"/> if
+        /// it has already expired. The AdomdClient rejects expired tokens when they are assigned, and
+        /// it will not invoke the renewal callback for a connection that has no baseline token (which
+        /// is common after a session has been idle for a long time - e.g. populating a tooltip). By
+        /// renewing up-front we also refresh the token cached on this connection so the source stays
+        /// consistent.
+        /// </summary>
+        private
+#if NET8_0_OR_GREATER
+            Microsoft.AnalysisServices.AccessToken
+#else
+            Microsoft.AnalysisServices.AdomdClient.AccessToken
+#endif
+            GetValidAccessToken()
+        {
+            var token = this.AccessToken;
+            if (token.ExpirationTime <= DateTimeOffset.UtcNow && OnAccessTokenExpired != null)
+            {
+                token = OnAccessTokenExpired(token);
+                // refresh the token cached on this connection so the source stays consistent
+                this.AccessToken = token;
+            }
+            return token;
+        }
+
         public ADOTabularConnection(string connectionString, AdomdType connectionType, bool showHiddenObjects, ADOTabularMetadataDiscovery visitorType)
         {
 
@@ -1077,8 +1103,11 @@ namespace ADOTabular
 #endif
                 )))
             {
-                cnn.AccessToken = this.AccessToken;
+                // Wire up the renewal callback first so the clone can renew on demand, then copy a
+                // valid (renewed if necessary) token. Assigning an expired token throws an
+                // ArgumentException ("The token has expired.") in the AdomdClient setter.
                 cnn.OnAccessTokenExpired = OnAccessTokenExpired;
+                cnn.AccessToken = GetValidAccessToken();
             }
             if (copyDatabaseReference)
             {

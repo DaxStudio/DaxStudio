@@ -867,19 +867,19 @@ namespace DaxStudio.Common
             public AccessTokenContext UserContext;
         }
 
-        public static async Task<Tom.AccessToken> RefreshToken(Tom.AccessToken token)
+        public static async Task<Tom.AccessToken> RefreshToken(Tom.AccessToken token, bool forceSilent = false)
         {
             var details = new TokenDetails(token);
-            var authResult = await RefreshTokenInternalAsync(details);
+            var authResult = await RefreshTokenInternalAsync(details, forceSilent);
             Tom.AccessToken newToken = new Tom.AccessToken(authResult.AccessToken, authResult.ExpiresOn, details.UserContext);
             return newToken;
         }
 
 #if NET472
-        public static async Task<Adomd.AccessToken> RefreshToken(Adomd.AccessToken token)
+        public static async Task<Adomd.AccessToken> RefreshToken(Adomd.AccessToken token, bool forceSilent = false)
         {
             var details = new TokenDetails(token);
-            var authResult = await RefreshTokenInternalAsync(details);
+            var authResult = await RefreshTokenInternalAsync(details, forceSilent);
             AccessToken newToken = new AccessToken(authResult.AccessToken, authResult.ExpiresOn, details.UserContext);
             return newToken;
         }
@@ -891,10 +891,14 @@ namespace DaxStudio.Common
             return accessToken;
         }
 
-        private static async Task<AuthenticationResult> RefreshTokenInternalAsync(TokenDetails token)
+        private static async Task<AuthenticationResult> RefreshTokenInternalAsync(TokenDetails token, bool forceSilent = false)
         {
             var context = token.UserContext;
             if (context == null) throw new EntraAuthenticationException("Cannot renew an access token that has no authentication context.");
+
+            // A caller can force silent-only renewal (e.g. a trace drop running synchronously on the
+            // UI thread) on top of whatever the context already allows.
+            var silentOnly = forceSilent || context.RenewalMode == TokenRenewalMode.SilentOnly;
 
             var accountIdentifier = context.AccountIdentifier ?? string.Empty;
             var lastUpn = context.Username ?? string.Empty;
@@ -921,7 +925,7 @@ namespace DaxStudio.Common
                 }
             }
 
-            if (context.RenewalMode == TokenRenewalMode.SilentOnly)
+            if (silentOnly)
             {
                 throw EntraAuthenticationException.InteractionRequired(
                     account == null
