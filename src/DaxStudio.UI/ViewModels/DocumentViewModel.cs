@@ -1393,24 +1393,36 @@ namespace DaxStudio.UI.ViewModels
                         UpdateViewAsDescription(message.ConnectionString);
 
                         NotifyOfPropertyChange(() => IsAdminConnection);
-                        var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
-                        // enable/disable traces depending on the current connection
-                        foreach (var traceWatcher in TraceWatchers)
-                        {
-                            // on change of connection we need to disable traces as they will
-                            // be pointing to the old connection
-                            traceWatcher.IsChecked = false;
-                            traceWatcher.StopTrace();
-                            // then we need to check if the new connection can be traced
-                            traceWatcher.CheckEnabled(Connection, activeTrace);
-                        }
 
-                        // re-connect any traces that were previously active
-                        if (message.ActiveTraces != null)
+                        // When PreserveTraces is set (eg. an RLS "View As" change) we are
+                        // reconnecting to the same server and only the RLS context on the query
+                        // connection changes. The trace runs on a separate admin connection that
+                        // already strips out any RLS parameters and it filters on the document's
+                        // ApplicationName (which is preserved across the reconnect), so the running
+                        // traces keep capturing events. Stopping and immediately restarting them here
+                        // is unnecessary and is racy (it intermittently leaves the connection in a
+                        // stuck busy state), so we skip it in that case.
+                        if (!message.PreserveTraces)
                         {
-                            foreach (ITraceWatcher traceWatcher in message.ActiveTraces)
+                            var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
+                            // enable/disable traces depending on the current connection
+                            foreach (var traceWatcher in TraceWatchers)
                             {
-                                traceWatcher.IsChecked = true;
+                                // on change of connection we need to disable traces as they will
+                                // be pointing to the old connection
+                                traceWatcher.IsChecked = false;
+                                traceWatcher.StopTrace();
+                                // then we need to check if the new connection can be traced
+                                traceWatcher.CheckEnabled(Connection, activeTrace);
+                            }
+
+                            // re-connect any traces that were previously active
+                            if (message.ActiveTraces != null)
+                            {
+                                foreach (ITraceWatcher traceWatcher in message.ActiveTraces)
+                                {
+                                    traceWatcher.IsChecked = true;
+                                }
                             }
                         }
                         Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(UpdateConnectionsAsync), "Starting - Editor Function highlight updates");
@@ -3644,6 +3656,15 @@ namespace DaxStudio.UI.ViewModels
 
                 await _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error Connecting: {errMsg}"), cancellationToken);
                 Log.Error(ex?.InnerException ?? ex, "{class} {method} {message}", "DocumentViewModel", "Handle(ConnectEvent message)", errMsg);
+            }
+            finally
+            {
+                // Safety net - make sure the metadata pane is never left stuck in a busy
+                // state and that the "View As" info bar reflects the current connection even
+                // if the connection setup threw part way through (eg. while reading the SPID
+                // or database list after the underlying connection had already been swapped).
+                MetadataPane?.SetBusy(false);
+                NotifyOfPropertyChange(() => IsViewAsActive);
             }
 
         }

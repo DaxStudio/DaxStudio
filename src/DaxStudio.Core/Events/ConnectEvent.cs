@@ -54,6 +54,17 @@ namespace DaxStudio.Core.Events
         /// UI handlers should cast each entry to <c>ITraceWatcher</c>.
         /// </summary>
         public IList<object> ActiveTraces { get; set; }
+
+        /// <summary>
+        /// When true the current trace watchers are left running across the reconnect
+        /// instead of being stopped and restarted. This is used for RLS "View As"
+        /// changes where the server (and therefore the running admin traces) do not
+        /// change - only the RLS context on the query connection changes. The traces
+        /// filter on the document's ApplicationName which is preserved across the
+        /// reconnect, so they continue to capture events without an (intermittently
+        /// racy) stop/restart.
+        /// </summary>
+        public bool PreserveTraces { get; set; }
         public string WorkbookName { get; set; }
         public string PowerBIFileName { get; set; }
         public AccessToken AccessToken { get; private set; }
