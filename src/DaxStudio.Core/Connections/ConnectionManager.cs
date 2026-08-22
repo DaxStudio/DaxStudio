@@ -508,8 +508,12 @@ namespace DaxStudio.Core.Connections
                         var conn = new ADOTabularConnection(this.ConnectionString, this.Type);
                         if (this.AccessToken.IsNotNull())
                         {
+                            // the callback must be wired up first - the AccessToken setter uses it to
+                            // renew the token if the cached one has already expired.
+                            // This is a background poller, so renewal is silent-only - it must never
+                            // pop an interactive sign-in dialog from the timer thread.
+                            conn.OnAccessTokenExpired = this.OnAccessTokenExpiredSilent;
                             conn.AccessToken = this.AccessToken;
-                            conn.OnAccessTokenExpired = this.OnAccessTokenExpired;
                         }
                         conn.ChangeDatabase(this.DatabaseName);
                         if (conn.State != ConnectionState.Open) conn.Open();
@@ -1444,10 +1448,12 @@ namespace DaxStudio.Core.Connections
             if (message.AccessToken.IsNotNull())
             {
                 Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OpenOnlineConnectionAsync), $"Setting Connection AccessToken (ExpirationTime: {message.AccessToken.ExpirationTime})");
-                _connection.AccessToken = message.AccessToken;
+                // the callback must be wired up first - the AccessToken setter uses it to renew the
+                // token if the one supplied by the connect dialog has already expired
                 _connection.OnAccessTokenExpired = OnAccessTokenExpired;
-                _dmvConnection.AccessToken = message.AccessToken;
+                _connection.AccessToken = message.AccessToken;
                 _dmvConnection.OnAccessTokenExpired = OnAccessTokenExpired;
+                _dmvConnection.AccessToken = message.AccessToken;
             }
 
             ServerType = message.ServerType;
@@ -1481,19 +1487,66 @@ namespace DaxStudio.Core.Connections
         private Microsoft.AnalysisServices.AdomdClient.AccessToken OnAccessTokenExpired(Microsoft.AnalysisServices.AdomdClient.AccessToken token)
 #endif
         {
+            // Interactive sign-in is allowed here - this callback is used by foreground connections
+            // where the user is expecting to be prompted if their session can no longer be renewed.
+            return RefreshAccessToken(token, forceSilent: false);
+        }
+
+        /// <summary>
+        /// Renews an expired access token. When <paramref name="forceSilent"/> is true the renewal is
+        /// limited to a silent (cached) refresh and will throw rather than escalating to an interactive
+        /// sign-in dialog. Background operations (e.g. the schema-change poller) must use silent-only
+        /// renewal, otherwise a timer thread can raise an unexpected modal sign-in window while
+        /// blocking on GetAwaiter().GetResult().
+        /// </summary>
+        internal
+#if NET8_0_OR_GREATER
+            Microsoft.AnalysisServices.AccessToken
+#else
+            Microsoft.AnalysisServices.AdomdClient.AccessToken
+#endif
+            RefreshAccessToken(
+#if NET8_0_OR_GREATER
+            Microsoft.AnalysisServices.AccessToken
+#else
+            Microsoft.AnalysisServices.AdomdClient.AccessToken
+#endif
+            token, bool forceSilent)
+        {
             if (_isDisposing)
             {
                 // The connection is being disposed - skip the (blocking) token refresh. The refreshed
                 // token would only be used to keep the connection alive, but it is going away.
-                Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OnAccessTokenExpired), "Skipping AccessToken refresh - connection is being disposed");
+                Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(RefreshAccessToken), "Skipping AccessToken refresh - connection is being disposed");
                 return token;
             }
 
-            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OnAccessTokenExpired), "AccessToken Expired - refreshing token");
-            var newToken = EntraIdHelper.RefreshToken(token).GetAwaiter().GetResult();
-            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OnAccessTokenExpired), $"AccessToken Refreshed - ExpirationTime: {newToken.ExpirationTime}");
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(RefreshAccessToken), $"AccessToken Expired - refreshing token (forceSilent: {forceSilent})");
+            var newToken = EntraIdHelper.RefreshToken(token, forceSilent).GetAwaiter().GetResult();
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(RefreshAccessToken), $"AccessToken Refreshed - ExpirationTime: {newToken.ExpirationTime}");
             return newToken;
 
+        }
+
+        /// <summary>
+        /// Token renewal callback for background operations. Restricts renewal to a silent refresh so
+        /// that a background thread can never raise an interactive sign-in dialog.
+        /// </summary>
+        private
+#if NET8_0_OR_GREATER
+            Microsoft.AnalysisServices.AccessToken
+#else
+            Microsoft.AnalysisServices.AdomdClient.AccessToken
+#endif
+            OnAccessTokenExpiredSilent(
+#if NET8_0_OR_GREATER
+            Microsoft.AnalysisServices.AccessToken
+#else
+            Microsoft.AnalysisServices.AdomdClient.AccessToken
+#endif
+            token)
+        {
+            return RefreshAccessToken(token, forceSilent: true);
         }
 
         // Defer publishing DatabaseChangedEvent until both the query and dmv

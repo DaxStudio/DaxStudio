@@ -47,8 +47,22 @@ namespace ADOTabular
 #endif
             AccessToken
         {
-            get => _adomdConn.AccessToken;
-            set => _adomdConn.AccessToken = value;
+            get => _adomdConn == null
+                ? default(
+#if NET8_0_OR_GREATER
+                    Microsoft.AnalysisServices.AccessToken
+#else
+                    Microsoft.AnalysisServices.AdomdClient.AccessToken
+#endif
+                    )
+                : _adomdConn.AccessToken;
+            set
+            {
+                if (_adomdConn == null) return;
+                // Centralized guard - the AdomdClient throws ArgumentException("The token has expired.")
+                // if an expired token is assigned, so renew it before it ever reaches the client.
+                _adomdConn.AccessToken = EnsureValidAccessToken(value);
+            }
         }
 
         public Func<
@@ -64,12 +78,20 @@ namespace ADOTabular
         }
 
         /// <summary>
-        /// Returns the current access token, renewing it via <see cref="OnAccessTokenExpired"/> if
-        /// it has already expired. The AdomdClient rejects expired tokens when they are assigned, and
-        /// it will not invoke the renewal callback for a connection that has no baseline token (which
-        /// is common after a session has been idle for a long time - e.g. populating a tooltip). By
-        /// renewing up-front we also refresh the token cached on this connection so the source stays
-        /// consistent.
+        /// The amount of time before the actual expiry at which a token is treated as expired. A token
+        /// that is about to expire can lapse during the Open()/ChangeDatabase() round-trip that follows
+        /// the assignment, so we renew slightly early rather than racing the clock.
+        /// </summary>
+        private static readonly TimeSpan AccessTokenExpiryBuffer = TimeSpan.FromMinutes(2);
+
+        /// <summary>
+        /// Returns a non-expired access token, renewing it via <see cref="OnAccessTokenExpired"/> when
+        /// the supplied token has expired (or is about to). The AdomdClient rejects expired tokens when
+        /// they are assigned, and it will not invoke the renewal callback for a connection that has no
+        /// baseline token (which is common after a session has been idle for a long time - e.g.
+        /// populating a tooltip or the background schema-change poller). Centralizing the check here
+        /// means no caller can push an expired token onto a connection.
+        /// Callers must assign <see cref="OnAccessTokenExpired"/> before assigning the token.
         /// </summary>
         private
 #if NET8_0_OR_GREATER
@@ -77,16 +99,30 @@ namespace ADOTabular
 #else
             Microsoft.AnalysisServices.AdomdClient.AccessToken
 #endif
-            GetValidAccessToken()
+            EnsureValidAccessToken(
+#if NET8_0_OR_GREATER
+            Microsoft.AnalysisServices.AccessToken
+#else
+            Microsoft.AnalysisServices.AdomdClient.AccessToken
+#endif
+            token)
         {
-            var token = this.AccessToken;
-            if (token.ExpirationTime <= DateTimeOffset.UtcNow && OnAccessTokenExpired != null)
-            {
-                token = OnAccessTokenExpired(token);
-                // refresh the token cached on this connection so the source stays consistent
-                this.AccessToken = token;
-            }
-            return token;
+            // an unset/default token is a valid state - it means this connection does not use Entra auth
+            if (token.Equals(default(
+#if NET8_0_OR_GREATER
+                Microsoft.AnalysisServices.AccessToken
+#else
+                Microsoft.AnalysisServices.AdomdClient.AccessToken
+#endif
+                ))) return token;
+
+            if (token.ExpirationTime > DateTimeOffset.UtcNow.Add(AccessTokenExpiryBuffer)) return token;
+
+            if (OnAccessTokenExpired == null)
+                throw new InvalidOperationException(
+                    $"The access token expired at {token.ExpirationTime:u} and no token renewal callback has been configured for this connection.");
+
+            return OnAccessTokenExpired(token);
         }
 
         public ADOTabularConnection(string connectionString, AdomdType connectionType, bool showHiddenObjects, ADOTabularMetadataDiscovery visitorType)
@@ -1103,11 +1139,11 @@ namespace ADOTabular
 #endif
                 )))
             {
-                // Wire up the renewal callback first so the clone can renew on demand, then copy a
-                // valid (renewed if necessary) token. Assigning an expired token throws an
-                // ArgumentException ("The token has expired.") in the AdomdClient setter.
+                // Wire up the renewal callback first so the clone can renew on demand, then copy the
+                // token. The AccessToken setter renews it if it has expired - assigning an expired
+                // token throws an ArgumentException ("The token has expired.") in the AdomdClient.
                 cnn.OnAccessTokenExpired = OnAccessTokenExpired;
-                cnn.AccessToken = GetValidAccessToken();
+                cnn.AccessToken = this.AccessToken;
             }
             if (copyDatabaseReference)
             {
