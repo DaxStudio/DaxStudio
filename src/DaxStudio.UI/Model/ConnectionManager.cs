@@ -148,9 +148,6 @@ namespace DaxStudio.UI.Model
 
             var connEvent = new ConnectEvent(builder.ConnectionString, IsPowerPivot, this.ApplicationName, FileName, ServerType, true, this.DatabaseName, this.AccessToken);
             connEvent.ActiveTraces = activeTraces?.Cast<object>().ToList();
-            // We are only changing the RLS context on the same server, so leave the
-            // existing traces running rather than stopping and restarting them.
-            connEvent.PreserveTraces = true;
             await _eventAggregator.PublishAsync(connEvent);
         }
 
@@ -170,9 +167,6 @@ namespace DaxStudio.UI.Model
 
             var connEvent = new ConnectEvent(builder.ConnectionString, IsPowerPivot, this.ApplicationName, FileName, ServerType, true, DatabaseName, AccessToken);
             connEvent.ActiveTraces = activeTraces?.Cast<object>().ToList();
-            // We are only removing the RLS context on the same server, so leave the
-            // existing traces running rather than stopping and restarting them.
-            connEvent.PreserveTraces = true;
             _eventAggregator.PublishAsync(connEvent);
         }
     }

@@ -528,20 +528,26 @@ namespace DaxStudio.UI.ViewModels
         private int _isBusyCnt;
         public bool IsBusy
         {
-            get => _isBusyCnt != 0;
-            //private set
-            //{
-            //    if (value) Interlocked.Increment(ref _isBusyCnt);
-            //    else Interlocked.Decrement(ref _isBusyCnt);
-            //    Log.Debug(Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), nameof(IsBusy), $"Cnt: {_isBusyCnt}");
-            //    NotifyOfPropertyChange();
-            //}
+            // Only positive counts mean "busy". Previously this checked != 0 which meant that a
+            // single unbalanced SetBusy(false) (driving the reference count negative) would leave
+            // the loading overlay stuck on permanently.
+            get => _isBusyCnt > 0;
         }
 
         public  void SetBusy(bool value, [CallerMemberName] string caller = null)
         {
-            if (value) Interlocked.Increment(ref _isBusyCnt);
-            else Interlocked.Decrement(ref _isBusyCnt);
+            if (value)
+            {
+                Interlocked.Increment(ref _isBusyCnt);
+            }
+            else
+            {
+                // Clamp at zero - an unbalanced/duplicate SetBusy(false) must never drive the
+                // counter negative, otherwise a subsequent genuine busy operation would be masked
+                // (or with the old != 0 check, the overlay would be stuck on).
+                if (Interlocked.Decrement(ref _isBusyCnt) < 0)
+                    Interlocked.Increment(ref _isBusyCnt);
+            }
             Log.Debug(Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), nameof(SetBusy), $"Cnt: {_isBusyCnt} | Caller: {caller}");
             NotifyOfPropertyChange(() => IsBusy);
         }

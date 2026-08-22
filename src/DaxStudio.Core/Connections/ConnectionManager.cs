@@ -312,11 +312,13 @@ namespace DaxStudio.Core.Connections
             {
                 var signature = RemapCacheSignature;
 
-                // When RLS ("View As") is active we must not run the remap DMV against the primary
-                // connection - the impersonated role typically cannot read it. Reuse the remap that
-                // was captured from the admin connection for this server + database if we have it.
-                if (_dmvConnection?.IsTestingRls == true
-                    && _cachedColumnsRemap != null
+                // The remap information describes the physical storage structure of the model, which
+                // does not change when "View As" (RLS) is toggled on or off - only when the model is
+                // reprocessed or the connection points at a different database. So whenever we already
+                // have a cached remap for this server + database, reuse it. This avoids re-running the
+                // remap DMV on every View As toggle, and (importantly) avoids running it while RLS is
+                // active, where the impersonated role typically cannot read it.
+                if (_cachedColumnsRemap != null
                     && _cachedRemapSignature == signature)
                 {
                     return _cachedColumnsRemap;
@@ -326,19 +328,16 @@ namespace DaxStudio.Core.Connections
                 ADOTabularConnection conn;
                 try
                 {
-                    // if the connection contains EffectiveUserName or Roles we clone it and strip those out
-                    // so that we can run the discover command to get the column remap info
-                    // Otherwise we just use the current connection
-
-                    if (_dmvConnection.IsTestingRls)
-                    {
-                        newConn = _dmvConnection.CloneWithoutRLS();
-                        conn = newConn;
-                    }
-                    else
-                    {
-                        conn = _dmvConnection;
-                    }
+                    // Always run the remap discover on a dedicated (cloned) connection rather than
+                    // the shared _dmvConnection. This getter can be invoked from a background thread
+                    // (eg. when a trace is (re)started during a View As reconnect) while the connect
+                    // flow is concurrently reading metadata on _dmvConnection. AdomdConnection is not
+                    // thread-safe, so the overlapping DMV reads corrupted each other's response stream
+                    // (a NullReferenceException in the Adomd XML reader) which then surfaced as a
+                    // failed reconnect. CloneWithoutRLS also strips any Roles / EffectiveUserName so
+                    // the discover always runs with admin permissions.
+                    newConn = _dmvConnection?.CloneWithoutRLS();
+                    conn = newConn;
 
                     var remapInfo = _dmvRetry.Execute(() =>  conn?.DaxColumnsRemapInfo);
 
@@ -375,11 +374,13 @@ namespace DaxStudio.Core.Connections
             {
                 var signature = RemapCacheSignature;
 
-                // When RLS ("View As") is active we must not run the remap DMV against the primary
-                // connection - the impersonated role typically cannot read it. Reuse the remap that
-                // was captured from the admin connection for this server + database if we have it.
-                if (_dmvConnection?.IsTestingRls == true
-                    && _cachedTablesRemap != null
+                // The remap information describes the physical storage structure of the model, which
+                // does not change when "View As" (RLS) is toggled on or off - only when the model is
+                // reprocessed or the connection points at a different database. So whenever we already
+                // have a cached remap for this server + database, reuse it. This avoids re-running the
+                // remap DMV on every View As toggle, and (importantly) avoids running it while RLS is
+                // active, where the impersonated role typically cannot read it.
+                if (_cachedTablesRemap != null
                     && _cachedRemapSignature == signature)
                 {
                     return _cachedTablesRemap;
@@ -389,18 +390,14 @@ namespace DaxStudio.Core.Connections
                 ADOTabularConnection conn;
                 try
                 {
-                    // if the connection contains EffectiveUserName or Roles we clone it and strip those out
-                    // so that we can run the discover command to get the column remap info
-                    // Otherwise we just use the current connection
-                    if (_dmvConnection.IsTestingRls)
-                    {
-                        newConn = _dmvConnection.CloneWithoutRLS();
-                        conn = newConn;
-                    }
-                    else
-                    {
-                        conn = _dmvConnection;
-                    }
+                    // Always run the remap discover on a dedicated (cloned) connection rather than
+                    // the shared _dmvConnection - see the note in DaxColumnsRemapInfo. Sharing the
+                    // connection across threads corrupted the Adomd response stream during a View As
+                    // reconnect. CloneWithoutRLS also strips any Roles / EffectiveUserName so the
+                    // discover always runs with admin permissions.
+                    newConn = _dmvConnection?.CloneWithoutRLS();
+                    conn = newConn;
+
                     var remapInfo = _dmvRetry.Execute(() => conn?.DaxTablesRemapInfo);
 
                     // cache the successfully retrieved remap so it can be reused while RLS is active
@@ -2495,6 +2492,10 @@ namespace DaxStudio.Core.Connections
         }
         private object _supportedTraceEventClassesLock = new object();
         private Dictionary<DaxStudioTraceEventClass,HashSet<TOM.TraceColumn>> _supportedTraceEventClasses;
+        // The server that _supportedTraceEventClasses was read from. The supported events/columns are
+        // purely a function of the engine version, so the cache only has to be discarded when we connect
+        // to a different server - not when we simply reconnect to the same one (eg. toggling "View As").
+        private string _supportedTraceEventClassesServer;
         private bool disposedValue;
 
         // Set at the start of the dispose path (before the underlying connections are torn down)
@@ -2509,7 +2510,11 @@ namespace DaxStudio.Core.Connections
             get
             {
                 lock (_supportedTraceEventClassesLock) {
-                    _supportedTraceEventClasses ??= PopulateSupportedTraceEventClasses();
+                    if (_supportedTraceEventClasses == null)
+                    {
+                        _supportedTraceEventClasses = PopulateSupportedTraceEventClasses();
+                        _supportedTraceEventClassesServer = ServerName;
+                    }
                 }
                 return _supportedTraceEventClasses;
 
@@ -2525,6 +2530,24 @@ namespace DaxStudio.Core.Connections
             lock (_supportedTraceEventClassesLock)
             {
                 _supportedTraceEventClasses = null;
+                _supportedTraceEventClassesServer = null;
+            }
+        }
+
+        // Discards the cached trace events only if we are now pointing at a different server. Unlike the
+        // other connection caches these values depend on the engine version rather than the connection
+        // itself, so re-reading them on every connect is both unnecessary and harmful: a reconnect that
+        // enables RLS ("View As") would otherwise re-run DISCOVER_TRACE_EVENT_CATEGORIES while the
+        // connection is impersonating a role, which does not return the full list of trace events.
+        private void ClearSupportedTraceEventClassesIfServerChanged()
+        {
+            lock (_supportedTraceEventClassesLock)
+            {
+                if (_supportedTraceEventClasses == null) return;
+                if (string.Equals(_supportedTraceEventClassesServer, ServerName, StringComparison.OrdinalIgnoreCase)) return;
+
+                _supportedTraceEventClasses = null;
+                _supportedTraceEventClassesServer = null;
             }
         }
 
@@ -2533,7 +2556,7 @@ namespace DaxStudio.Core.Connections
         // document and is re-used every time that document connects to a different server.
         private void ClearConnectionCaches()
         {
-            ClearSupportedTraceEventClasses();
+            ClearSupportedTraceEventClassesIfServerChanged();
             // these are built from _dmvConnection which gets replaced when we connect
             _dynamicManagementViews = null;
             _functionGroups = null;
@@ -2542,8 +2565,30 @@ namespace DaxStudio.Core.Connections
 
         private Dictionary<DaxStudioTraceEventClass,HashSet<TOM.TraceColumn>> PopulateSupportedTraceEventClasses()
         {
+            // When RLS ("View As") is active the primary connection is impersonating a role, and
+            // DISCOVER_TRACE_EVENT_CATEGORIES does not return the full set of trace events for an
+            // impersonated user. Caching a truncated list would silently reduce the events that a
+            // trace subscribes to, so the trace would start successfully but never capture anything.
+            // Run the discover on a clone that has the RLS parameters stripped so we always see the
+            // complete, admin view of the events the engine supports.
+            var rlsConnection = _connection != null && _connection.IsTestingRls ? _connection : null;
+            var isolatedConnection = rlsConnection?.CloneWithoutRLS();
+            try
+            {
+                return PopulateSupportedTraceEventClasses(isolatedConnection);
+            }
+            finally
+            {
+                isolatedConnection?.Close();
+            }
+        }
+
+        private Dictionary<DaxStudioTraceEventClass, HashSet<TOM.TraceColumn>> PopulateSupportedTraceEventClasses(ADOTabularConnection isolatedConnection)
+        {
             var result = new Dictionary<DaxStudioTraceEventClass, HashSet<TOM.TraceColumn>>();
-            using (var dr = ExecuteReader("SELECT * FROM $SYSTEM.DISCOVER_TRACE_EVENT_CATEGORIES", null))
+            using (var dr = isolatedConnection != null
+                ? isolatedConnection.ExecuteReader("SELECT * FROM $SYSTEM.DISCOVER_TRACE_EVENT_CATEGORIES", null)
+                : ExecuteReader("SELECT * FROM $SYSTEM.DISCOVER_TRACE_EVENT_CATEGORIES", null))
             {
                 while (dr.Read())
                 {

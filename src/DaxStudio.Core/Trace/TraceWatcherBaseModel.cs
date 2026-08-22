@@ -339,11 +339,13 @@ namespace DaxStudio.Core.Trace
             Log.Debug("{class} {method} {message}", GetSubclassName(), "Handle<QueryStartedEvent>", "Query Started");
             if (!IsPaused && IsChecked)
             {
+                // Reset() clears IsBusy and BusyMessage, so it has to run *before* we flag the pane
+                // as busy. Otherwise it immediately wipes the state we just set and the
+                // "Query Running..." overlay never appears while the query is executing.
+                Reset();
                 ErrorMessage = string.Empty;
                 BusyMessage = "Query Running...";
-                ErrorMessage = string.Empty;
                 IsBusy = true;
-                Reset();
             }
             return Task.CompletedTask;
         }
