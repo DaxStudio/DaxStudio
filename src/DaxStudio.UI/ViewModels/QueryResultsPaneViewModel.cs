@@ -7,13 +7,17 @@ using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.Utils;
 using ICSharpCode.AvalonEdit.Document;
+using Newtonsoft.Json;
 using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
 using System.Data;
+using System.IO;
+using System.IO.Packaging;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -23,6 +27,8 @@ using System.Windows.Input;
 using UnitComboLib.Unit.Screen;
 using UnitComboLib.ViewModel;
 using DaxStudio.Core.Interfaces;
+using DaxStudio.Core;
+using DaxStudio.Core.Model;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -39,6 +45,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<UpdateGlobalOptions>
         , IHandle<SizeUnitsUpdatedEvent>
         , IHandle<CopyWithHeadersEvent>
+        , ISaveState
     {
         private DataTable _resultsTable;
         private string _selectedWorksheet;
@@ -76,13 +83,79 @@ namespace DaxStudio.UI.ViewModels
             {
                 _resultsDataSet?.Dispose();
                 _resultsDataSet = value;
-                ShowResultsTable = true;
-                NotifyOfPropertyChange(() => Tables);
-                ShowResultsTable = _resultsDataSet.Tables.Count > 0;
+                // Rebuild the visible tabs to contain one data-grid tab per result table. This is the
+                // classic / back-compat path (e.g. a cancelled query resetting to an empty DataSet);
+                // the richer interspersed path (data + SHOW tabs) goes through SetResultTabs.
+                RebuildDataTabsFromDataSet();
+                ShowResultsTable = _resultTabs.Count > 0;
                 SelectedTableIndex = 0;
                 NotifyOfPropertyChange(() => SelectedTableIndex);
             }
         }
+
+        /// <summary>The heterogeneous set of tabs shown in the Results TabControl: query-result data
+        /// grids and Comment Script <c>--&gt; SHOW</c> tree-grids interspersed in execution order.</summary>
+        private readonly BindableCollection<ResultTabViewModel> _resultTabs = new BindableCollection<ResultTabViewModel>();
+        public BindableCollection<ResultTabViewModel> ResultTabs => _resultTabs;
+
+        private void RebuildDataTabsFromDataSet()
+        {
+            Execute.OnUIThread(() =>
+            {
+                _resultTabs.Clear();
+                if (_resultsDataSet != null)
+                {
+                    foreach (DataTable table in _resultsDataSet.Tables)
+                    {
+                        _resultTabs.Add(new DataTableResultTab(table));
+                    }
+                }
+                NotifyOfPropertyChange(() => Tables);
+                NotifyOfPropertyChange(() => ShowResultsMessage);
+            });
+        }
+
+        /// <summary>
+        /// Populates the Results pane with an ordered set of tabs - a mix of query-result data grids
+        /// and Comment Script <c>--&gt; SHOW</c> tree-grids - preserving batch execution order. This
+        /// replaces the previous approach of assigning <see cref="ResultsDataSet"/> and separately
+        /// overlaying a single SHOW tree.
+        /// </summary>
+        public void SetResultTabs(IList<DaxStudio.Core.Model.ResultTabDescriptor> tabs)
+        {
+            Execute.OnUIThread(() =>
+            {
+                // The DataSet is still kept in sync (row-counts, exports and other consumers read it)
+                // and holds only the query-result tables in their execution order.
+                _resultsDataSet?.Dispose();
+                _resultsDataSet = new DataSet();
+
+                _resultTabs.Clear();
+                if (tabs != null)
+                {
+                    foreach (var tab in tabs)
+                    {
+                        if (tab.IsShowTree)
+                        {
+                            _resultTabs.Add(new ShowTreeResultTab(tab.ShowTreeRoots, tab.ShowType));
+                        }
+                        else if (tab.Table != null)
+                        {
+                            if (tab.Table.DataSet != null) tab.Table.DataSet.Tables.Remove(tab.Table);
+                            _resultsDataSet.Tables.Add(tab.Table);
+                            _resultTabs.Add(new DataTableResultTab(tab.Table));
+                        }
+                    }
+                }
+
+                ShowResultsTable = _resultTabs.Count > 0;
+                NotifyOfPropertyChange(() => Tables);
+                SelectedTableIndex = 0;
+                NotifyOfPropertyChange(() => SelectedTableIndex);
+                NotifyOfPropertyChange(() => ShowResultsMessage);
+            });
+        }
+
         private int _selectedTabIndex = -1;
         public int SelectedTableIndex
         {
@@ -90,7 +163,11 @@ namespace DaxStudio.UI.ViewModels
             set
             {
                 _selectedTabIndex = value;
-                if (_document != null && value >= 0 && ResultsDataSet != null && ResultsDataSet.Tables.Count > 0) _document.RowCount = ResultsDataSet.Tables[value].Rows.Count;
+                if (_document != null && value >= 0 && value < _resultTabs.Count)
+                {
+                    // a SHOW tree tab has no row data, so it reports a zero row-count
+                    _document.RowCount = _resultTabs[value] is DataTableResultTab dataTab ? dataTab.RowCount : 0;
+                }
                 NotifyOfPropertyChange(() => SelectedTableIndex);
             }
         }
@@ -111,6 +188,30 @@ namespace DaxStudio.UI.ViewModels
 
         public DataView ResultsDataView
         { get { return _resultsTable == null ? new DataTable("blank").AsDataView() : _resultsTable.AsDataView(); } }
+
+        /// <summary>
+        /// The <see cref="DataTable"/> backing the currently selected result tab (or the first
+        /// data-result tab if the selection isn't a data grid). Returns null when there are no
+        /// query results. Used to build a <c>--&gt; ASSERT TABLE</c> block from the live results.
+        /// </summary>
+        public DataTable ActiveResultsTable
+        {
+            get
+            {
+                if (_selectedTabIndex >= 0 && _selectedTabIndex < _resultTabs.Count
+                    && _resultTabs[_selectedTabIndex] is DataTableResultTab selected)
+                {
+                    return selected.Table;
+                }
+
+                foreach (var tab in _resultTabs)
+                {
+                    if (tab is DataTableResultTab dataTab) return dataTab.Table;
+                }
+
+                return _resultsTable;
+            }
+        }
 
         public void OnListViewItemPreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
@@ -149,13 +250,7 @@ namespace DaxStudio.UI.ViewModels
         //private bool _showResultsMessage;
         public bool ShowResultsMessage
         {
-            get { return !ShowResultsTable && !ShowErrorMessage; }
-            //private set
-            //{
-            //    _showResultsMessage = value;
-            //    NotifyOfPropertyChange(() => ShowResultsMessage);
-            //    NotifyOfPropertyChange(() => ShowResultsTable);
-            //}
+            get { return !ShowResultsTable && !ShowErrorMessage && _resultTabs.Count == 0; }
         }
         private OutputTarget _icon;
         public OutputTarget ResultsIcon
@@ -257,6 +352,8 @@ namespace DaxStudio.UI.ViewModels
 
         public Task HandleAsync(QueryStartedEvent message, CancellationToken cancellation)
         {
+            // clear any tabs (including SHOW trees) from a previous query when a new query starts
+            ClearShowTabs();
             // if we are not outputting to the grid it should be cleared
             if (!ShowResultsTable) Clear();
             IsBusy = true;
@@ -331,6 +428,98 @@ namespace DaxStudio.UI.ViewModels
             }
 
 
+        }
+
+        public void CopyAsTableAssertion(RoutedEventArgs args)
+        {
+            if (args?.Source is MenuItem menu
+                && menu.Parent is ContextMenu ctxMenu
+                && ctxMenu.PlacementTarget is DataGrid grid)
+            {
+                var dt = BuildAssertionDataTable(grid);
+                if (dt == null) return;
+
+                var text = DaxStudio.Parsers.CommentScript.TableAssertionFormatter.FormatDataTable(dt, includeHeaderLine: true, includeTypeRow: true);
+
+                try
+                {
+                    Clipboard.SetText(text);
+                }
+                catch (System.Runtime.InteropServices.ExternalException ex)
+                {
+                    Log.Warning(ex, Constants.LogMessageTemplate, nameof(QueryResultsPaneViewModel), nameof(CopyAsTableAssertion), "Error setting clipboard text for table assertion");
+                }
+            }
+        }
+
+        private static DataTable BuildAssertionDataTable(DataGrid grid)
+        {
+            // the grid is bound to a DataView, so the underlying source is its Table
+            var sourceTable = (grid.ItemsSource as DataView)?.Table;
+            if (sourceTable == null) return null;
+
+            var totalCellCount = sourceTable.Rows.Count * sourceTable.Columns.Count;
+            var isProperSubset = grid.SelectedCells.Count > 0 && grid.SelectedCells.Count < totalCellCount;
+
+            if (!isProperSubset)
+            {
+                // nothing selected, or all cells selected - use the full result table
+                return sourceTable;
+            }
+
+            // build the list of distinct selected columns in visual column order. The grid column
+            // Header is the friendly Caption while SortMemberPath holds the underlying (possibly
+            // escaped) ColumnName used to index the source table.
+            var selectedColumns = new List<DataColumn>();
+            foreach (var col in grid.Columns.OrderBy(c => c.DisplayIndex))
+            {
+                var columnName = col.SortMemberPath;
+                if (string.IsNullOrEmpty(columnName)) continue;
+                if (!sourceTable.Columns.Contains(columnName)) continue;
+                var sourceColumn = sourceTable.Columns[columnName];
+                if (grid.SelectedCells.Any(sc => ReferenceEquals(sc.Column, col)) && !selectedColumns.Contains(sourceColumn))
+                {
+                    selectedColumns.Add(sourceColumn);
+                }
+            }
+            if (selectedColumns.Count == 0) return sourceTable;
+
+            // build the set of rows that have at least one selected cell, preserving row order
+            var selectedRowViews = new List<DataRowView>();
+            var seenRows = new HashSet<DataRow>();
+            foreach (var cell in grid.SelectedCells)
+            {
+                if (cell.Item is DataRowView drv && seenRows.Add(drv.Row))
+                {
+                    selectedRowViews.Add(drv);
+                }
+            }
+            // re-order the selected rows to match the underlying table row order
+            selectedRowViews = selectedRowViews
+                .OrderBy(drv => sourceTable.Rows.IndexOf(drv.Row))
+                .ToList();
+
+            var result = new DataTable();
+            foreach (var sourceColumn in selectedColumns)
+            {
+                // preserve the real CLR type so the formatter emits the correct DAX type, and the
+                // Caption so the formatter emits the friendly header (with spaces) rather than the
+                // escaped ColumnName.
+                var newColumn = result.Columns.Add(sourceColumn.ColumnName, sourceColumn.DataType);
+                newColumn.Caption = sourceColumn.Caption;
+            }
+
+            foreach (var drv in selectedRowViews)
+            {
+                var values = new object[selectedColumns.Count];
+                for (int i = 0; i < selectedColumns.Count; i++)
+                {
+                    values[i] = drv.Row[selectedColumns[i].ColumnName];
+                }
+                result.Rows.Add(values);
+            }
+
+            return result;
         }
 
         public void CopyingRowClipboardContent(object sender, DataGridRowClipboardEventArgs e)
@@ -530,10 +719,182 @@ namespace DaxStudio.UI.ViewModels
 
         public void Clear()
         {
-            ResultsDataSet?.Tables?.Clear();
-            ShowResultsTable = false;
-            ResultsMessage = "Results Cleared";
+            Execute.OnUIThread(() =>
+            {
+                ResultsDataSet?.Tables?.Clear();
+                // Remove every tab (query-result data grids AND SHOW trees) so an error / cleared state
+                // hides the TabControl entirely rather than leaving stale grids visible behind the error
+                // overlay. ShowResultsTable is bound to the grid's visibility.
+                _resultTabs.Clear();
+                ShowResultsTable = false;
+                ResultsMessage = "Results Cleared";
+                NotifyOfPropertyChange(() => Tables);
+                NotifyOfPropertyChange(() => ShowResultsMessage);
+            });
         }
+
+        #region SHOW command tabs
+
+        /// <summary>
+        /// Appends a Comment Script <c>--&gt; SHOW</c> tree-grid as a new tab at the end of the results.
+        /// SHOW output is now a first-class tab interspersed with the query-result grids rather than a
+        /// full-pane overlay.
+        /// </summary>
+        public void AddShowTreeTab(IList<ShowTreeNode> roots, DaxStudio.Parsers.CommentScript.ShowType showType)
+        {
+            Execute.OnUIThread(() =>
+            {
+                _resultTabs.Add(new ShowTreeResultTab(roots, showType));
+                ShowResultsTable = _resultTabs.Count > 0;
+                NotifyOfPropertyChange(() => ShowResultsMessage);
+            });
+        }
+
+        /// <summary>Removes any SHOW tree tabs, leaving the query-result data tabs untouched.</summary>
+        private void ClearShowTabs()
+        {
+            Execute.OnUIThread(() =>
+            {
+                var showTabs = _resultTabs.OfType<ShowTreeResultTab>().ToList();
+                foreach (var tab in showTabs) _resultTabs.Remove(tab);
+                ShowResultsTable = _resultTabs.Count > 0;
+                NotifyOfPropertyChange(() => ShowResultsMessage);
+            });
+        }
+
+        #endregion
+
+        #region ISaveState - persist only the SHOW tree tabs into the .daxx package (query-result grids are never saved)
+
+        /// <summary>Serializable snapshot of a single SHOW tree tab written to the .daxx package. The
+        /// <see cref="TabIndex"/> records the tab's position within the interspersed results collection
+        /// so the relative order of multiple SHOW tabs is preserved on reload.</summary>
+        private class ShowTreeTabState
+        {
+            public int TabIndex { get; set; }
+            public DaxStudio.Parsers.CommentScript.ShowType ShowType { get; set; }
+            public List<ShowTreeNode> Roots { get; set; } = new List<ShowTreeNode>();
+        }
+
+        /// <summary>The original (pre-array) schema: a single SHOW tree object. Retained so existing
+        /// .daxx files written before SHOW became a tab can still be read.</summary>
+        private class ShowTreeState
+        {
+            public List<ShowTreeNode> Roots { get; set; } = new List<ShowTreeNode>();
+            public DaxStudio.Parsers.CommentScript.ShowType ShowType { get; set; }
+        }
+
+        // Satellite (.dax) files do not persist SHOW output - persistence is only via the .daxx package.
+        public void Save(string filename) { }
+        public void Load(string filename) { }
+
+        public string GetJson()
+        {
+            var states = new List<ShowTreeTabState>();
+            for (int i = 0; i < _resultTabs.Count; i++)
+            {
+                if (_resultTabs[i] is ShowTreeResultTab showTab)
+                {
+                    states.Add(new ShowTreeTabState
+                    {
+                        TabIndex = i,
+                        ShowType = showTab.ShowType,
+                        Roots = showTab.ShowTreeRoots.ToList()
+                    });
+                }
+            }
+            return JsonConvert.SerializeObject(states, Formatting.Indented);
+        }
+
+        public void LoadJson(string json)
+        {
+            if (string.IsNullOrWhiteSpace(json)) return;
+
+            List<ShowTreeTabState> states;
+            var trimmed = json.TrimStart();
+            if (trimmed.StartsWith("["))
+            {
+                states = JsonConvert.DeserializeObject<List<ShowTreeTabState>>(json) ?? new List<ShowTreeTabState>();
+            }
+            else
+            {
+                // backward-compat: the original schema persisted a single SHOW tree object
+                var legacy = JsonConvert.DeserializeObject<ShowTreeState>(json);
+                states = new List<ShowTreeTabState>();
+                if (legacy?.Roots != null && legacy.Roots.Count > 0)
+                {
+                    states.Add(new ShowTreeTabState { TabIndex = 0, ShowType = legacy.ShowType, Roots = legacy.Roots });
+                }
+            }
+
+            if (states.Count == 0) return;
+
+            Execute.OnUIThread(() =>
+            {
+                // Only SHOW tabs are persisted, so on reload we recreate them at their saved positions.
+                // The index is clamped because the query-result data tabs they were interspersed with
+                // are never saved (so the collection is shorter than when they were written).
+                foreach (var state in states.OrderBy(s => s.TabIndex))
+                {
+                    var index = state.TabIndex;
+                    if (index < 0 || index > _resultTabs.Count) index = _resultTabs.Count;
+                    _resultTabs.Insert(index, new ShowTreeResultTab(state.Roots, state.ShowType));
+                }
+                ShowResultsTable = _resultTabs.Count > 0;
+                NotifyOfPropertyChange(() => Tables);
+                NotifyOfPropertyChange(() => ShowResultsMessage);
+                SelectedTableIndex = 0;
+                NotifyOfPropertyChange(() => SelectedTableIndex);
+            });
+        }
+
+        public void SavePackage(Package package)
+        {
+            // Only the SHOW tree tabs are persisted. The query-result data grids are intentionally
+            // never saved into the .daxx file.
+            if (!_resultTabs.OfType<ShowTreeResultTab>().Any()) return;
+            try
+            {
+                var uri = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.ShowResults, UriKind.Relative));
+                if (package.PartExists(uri)) package.DeletePart(uri);
+                using (var strm = package.CreatePart(uri, "application/json", CompressionOption.Maximum).GetStream())
+                using (var writer = new StreamWriter(strm, new UTF8Encoding(false)))
+                {
+                    writer.Write(GetJson());
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(QueryResultsPaneViewModel), nameof(SavePackage), "Error saving SHOW results to daxx file");
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error saving SHOW results to daxx file\n{ex.Message}"));
+            }
+        }
+
+        public void LoadPackage(Package package)
+        {
+            var uri = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.ShowResults, UriKind.Relative));
+            if (!package.PartExists(uri)) return;
+            try
+            {
+                var part = package.GetPart(uri);
+                string json;
+                using (var strm = part.GetStream())
+                using (var reader = new StreamReader(strm))
+                {
+                    json = reader.ReadToEnd();
+                }
+                LoadJson(json);
+                Activate();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(QueryResultsPaneViewModel), nameof(LoadPackage), "Error loading SHOW results from daxx file");
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error loading SHOW results from daxx file\n{ex.Message}"));
+            }
+        }
+
+        #endregion
+
 
         public void CopyError()
         {

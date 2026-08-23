@@ -18,6 +18,7 @@ namespace DaxStudio.Core.Interfaces
         //List<DaxStudioTraceEventClass> MonitoredEvents { get; }
 
         void Reset();
+        void ClearAll();
         bool IsEnabled { get; set; }
         bool IsChecked { get; set; }
         bool IsBusy { get; set; }

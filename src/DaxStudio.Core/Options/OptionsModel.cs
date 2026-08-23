@@ -1850,6 +1850,42 @@ namespace DaxStudio.Core.Options
                 NotifyOfPropertyChange(() => UseAntlrParser);
             }
         }
+
+        private bool _useNewPreprocessor;
+        [DataMember, DefaultValue(false)]
+        [Category("Preview")]
+        [Subcategory("Editor")]
+        [DisplayName("Use New Query Preprocessor")]
+        [Description("Use the new grammar-based preprocessor instead of the regex-based one when preparing queries for execution.\nParameter handling (@name prompting and <Parameters> blocks) is preserved. Comment-script commands other than PARAMETER are parsed but not yet executed.\nWARNING: this is a preview feature and its behaviour may change before the final release.")]
+        public bool UseNewPreprocessor
+        {
+            get => _useNewPreprocessor;
+
+            set
+            {
+                _useNewPreprocessor = value;
+                SettingProvider.SetValue(nameof(UseNewPreprocessor), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => UseNewPreprocessor);
+            }
+        }
+
+        private bool _useAntlrCodeCompletion;
+        [DataMember, DefaultValue(false)]
+        [Category("Preview")]
+        [Subcategory("Editor")]
+        [DisplayName("Use New Code Completion Engine")]
+        [Description("Use the new grammar-based (ANTLR) engine for editor code completion, signature help and comment-script command completion instead of the current regex-based engine.\nThe new engine applies to newly opened query windows.\nWARNING: this is a preview feature and its behaviour may change before the final release.")]
+        public bool UseAntlrCodeCompletion
+        {
+            get => _useAntlrCodeCompletion;
+
+            set
+            {
+                _useAntlrCodeCompletion = value;
+                SettingProvider.SetValue(nameof(UseAntlrCodeCompletion), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => UseAntlrCodeCompletion);
+            }
+        }
         #endregion
 
 
@@ -2317,8 +2353,25 @@ namespace DaxStudio.Core.Options
             }
         }
 
-        private bool _blockAllInternetAccess;
-        // this setting is set by the installer writing a non-zero value to HKLM:\Software\DaxStudio\BlockAllInternetAccess
+        private bool _forceSoftwareRendering;
+        [Category("Defaults")]
+        [Subcategory("Rendering")]
+        [DisplayName("Disable Hardware Rendering")]
+        [Description("Forces DAX Studio to render its user interface in software rather than using the graphics card. Only enable this if you are seeing graphical glitches or rendering crashes. Takes effect immediately.")]
+        [DataMember, DefaultValue(false)]
+        public bool ForceSoftwareRendering
+        {
+            get => _forceSoftwareRendering;
+            set
+            {
+                _forceSoftwareRendering = value;
+                _eventAggregator.PublishAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(ForceSoftwareRendering), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => ForceSoftwareRendering);
+            }
+        }
+
+        private bool _blockAllInternetAccess;        // this setting is set by the installer writing a non-zero value to HKLM:\Software\DaxStudio\BlockAllInternetAccess
         [Category("Privacy")]
         [DisplayName("Block All Internet Access")]
         [Description("[NOT RECOMMENDED] Stops DAX Studio from all external access. This option can only be set by an administrator during an 'All Users' install and overrides all the other options below. (and they will show up as disabled when this option has been set)")]
@@ -2869,6 +2922,20 @@ namespace DaxStudio.Core.Options
                 NotifyOfPropertyChange();
                 _eventAggregator.PublishAsync(new UpdateGlobalOptions());
             } 
+        }
+
+        private bool _useStructuralCodeFolding;
+        [Category("Editor")]
+        [DisplayName("Use structural code folding")]
+        [Description("Collapse sections of code based on the structure of the DAX (DEFINE, MEASURE, EVALUATE, VAR/RETURN, brackets, etc.) instead of indenting. When disabled the 'Use Indent based code folding' setting is used instead.")]
+        [DataMember, DefaultValue(true)]
+        public bool UseStructuralCodeFolding { get => _useStructuralCodeFolding;
+            set {
+                _useStructuralCodeFolding = value;
+                SettingProvider.SetValue(nameof(UseStructuralCodeFolding), value, _isInitializing, this);
+                NotifyOfPropertyChange();
+                _eventAggregator.PublishAsync(new UpdateGlobalOptions());
+            }
         }
 
         [Category("Defaults")]

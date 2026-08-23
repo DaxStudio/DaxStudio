@@ -18,6 +18,7 @@ using DaxStudio.Core.Events;
 using DaxStudio.Core.Trace;
 using DaxStudio.Interfaces;
 using DaxStudio.Parsers;
+using DaxStudio.Parsers.StorageEngine;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;

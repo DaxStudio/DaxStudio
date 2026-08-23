@@ -39,7 +39,7 @@ namespace DaxStudio.UI.Utils.Intellisense
     }
 
     public class DaxIntellisenseProvider:
-        IIntellisenseProvider, 
+        IDaxIntellisenseProvider,
         IInsightProvider, 
         IHandle<MetadataLoadedEvent>, 
         IHandle<DmvsLoadedEvent>,
@@ -364,6 +364,11 @@ namespace DaxStudio.UI.Utils.Intellisense
         public void ShowInsight(string funcName)
         {
             ShowInsight(funcName, -1);
+        }
+
+        public string GetTableAssertionFromResults()
+        {
+            return TableAssertionInsertHelper.BuildFromResults(Document);
         }
         
         public void ShowInsight(string funcName, int offset)

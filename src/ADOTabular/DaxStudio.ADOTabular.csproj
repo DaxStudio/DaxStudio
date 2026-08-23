@@ -24,7 +24,6 @@
     <PackageReference Include="Serilog" />
     <PackageReference Include="System.Buffers" />
     <PackageReference Include="System.ValueTuple" />
-    <PackageReference Include="System.Data.OleDb" Condition="'$(TargetFramework)' == 'net8.0-windows'" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="System.Text.Json" Condition="'$(TargetFramework)' == 'net472'" />

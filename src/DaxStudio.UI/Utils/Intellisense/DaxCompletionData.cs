@@ -20,6 +20,9 @@ namespace DaxStudio.UI.Utils
         private double _priority = 120.0;
 #pragma warning restore IDE0052 // Remove unread private members
         private IInsightProvider _insightProvider;
+        private readonly bool _isCommentScript;
+        private readonly bool _isFromResults;
+        private readonly bool _isVariableRef;
 
         /*
 public DaxCompletionData(IInsightProvider insightProvider, string text, string content, string description, ImageSource image )
@@ -90,6 +93,68 @@ _insightProvider = insightProvider;
             _insightProvider = insightProvider;
         }
 
+        public DaxCompletionData(IInsightProvider insightProvider, DaxStudio.Parsers.Dax.CompletionItem item, bool isCommentScript = false)
+        {
+            // The "<from Results>" table-assertion helper carries a sentinel InsertText. Keep the
+            // visible label as the completion Text so the list still filters as the user types (the
+            // sentinel would never match), and flag it so Complete inserts the generated block instead.
+            _isFromResults = isCommentScript
+                && string.Equals(item.InsertText, DaxStudio.Parsers.Dax.CommentScriptCompletionProvider.FromResultsInsertText, StringComparison.Ordinal);
+            // A comment-script $(...) variable reference. Its InsertText is the bare name (so the
+            // completion list filters on what is typed after the '$') and the full "$(name)" syntax is
+            // rebuilt when the item is inserted.
+            _isVariableRef = isCommentScript && item.Kind == DaxStudio.Parsers.Dax.CompletionItemKind.Variable;
+            _text = _isFromResults
+                ? item.Label
+                : (string.IsNullOrEmpty(item.InsertText) ? item.Label : item.InsertText);
+            _content = item.Label;
+            _description = string.IsNullOrEmpty(item.Description) ? null : item.Description;
+            _imageResource = GetImageResource(item.Kind);
+            _priority = GetPriority(item.Kind);
+            _insightProvider = insightProvider;
+            _isCommentScript = isCommentScript;
+        }
+
+        private static string GetImageResource(DaxStudio.Parsers.Dax.CompletionItemKind kind)
+        {
+            switch (kind)
+            {
+                case DaxStudio.Parsers.Dax.CompletionItemKind.Function:
+                    return "functionDrawingImage";
+                case DaxStudio.Parsers.Dax.CompletionItemKind.Table:
+                    return "tableDrawingImage";
+                case DaxStudio.Parsers.Dax.CompletionItemKind.Column:
+                    return "columnDrawingImage";
+                case DaxStudio.Parsers.Dax.CompletionItemKind.Measure:
+                    return "measureDrawingImage";
+                case DaxStudio.Parsers.Dax.CompletionItemKind.Calendar:
+                    return "datetimeDrawingImage";
+                case DaxStudio.Parsers.Dax.CompletionItemKind.Variable:
+                case DaxStudio.Parsers.Dax.CompletionItemKind.Keyword:
+                default:
+                    return string.Empty;
+            }
+        }
+
+        private static double GetPriority(DaxStudio.Parsers.Dax.CompletionItemKind kind)
+        {
+            switch (kind)
+            {
+                case DaxStudio.Parsers.Dax.CompletionItemKind.Column:
+                case DaxStudio.Parsers.Dax.CompletionItemKind.Measure:
+                    return 50.0;
+                case DaxStudio.Parsers.Dax.CompletionItemKind.Table:
+                case DaxStudio.Parsers.Dax.CompletionItemKind.Calendar:
+                    return 100.0;
+                case DaxStudio.Parsers.Dax.CompletionItemKind.Function:
+                    return 120.0;
+                case DaxStudio.Parsers.Dax.CompletionItemKind.Keyword:
+                    return 200.0;
+                default:
+                    return 120.0;
+            }
+        }
+
         public void Complete(ICSharpCode.AvalonEdit.Editing.TextArea textArea, ICSharpCode.AvalonEdit.Document.ISegment completionSegment, EventArgs insertionRequestEventArgs)
         {
             CompleteInternal(textArea.Document, completionSegment, insertionRequestEventArgs);
@@ -100,12 +165,74 @@ _insightProvider = insightProvider;
             Log.Debug("{class} {method} {start}-{end}({length})", "DaxCompletionData", "Complete", completionSegment.Offset, completionSegment.EndOffset, completionSegment.Length);
             try
             {
+                var funcParamStart = Text.IndexOf("«", StringComparison.OrdinalIgnoreCase);
+                string insertionText = funcParamStart > 0 ? Text.Substring(0, funcParamStart) : Text;
+
+                if (_isCommentScript)
+                {
+                    // The "<from Results>" table-assertion helper is a synthetic completion: instead
+                    // of inserting its label we ask the insight provider to build a "-->> | ... |"
+                    // block from the current query results.
+                    if (_isFromResults)
+                    {
+                        var block = _insightProvider?.GetTableAssertionFromResults();
+                        if (string.IsNullOrEmpty(block)) return;
+
+                        int fromEnd = completionSegment.EndOffset;
+                        int fromStart = fromEnd;
+                        while (fromStart > 0)
+                        {
+                            var prev = document.GetCharAt(fromStart - 1);
+                            if (char.IsWhiteSpace(prev) || prev == '>') break;
+                            fromStart--;
+                        }
+                        document.Replace(fromStart, fromEnd - fromStart, block);
+                        return;
+                    }
+
+                    // A script-variable reference: replace everything back to (and including) the '$'
+                    // that opened it with the full "$(name)" syntax. The generic word-boundary walk
+                    // below would also swallow the preceding quote of a path argument (e.g. "$).
+                    if (_isVariableRef)
+                    {
+                        int varEnd = completionSegment.EndOffset;
+                        int varStart = varEnd;
+                        bool foundDollar = false;
+                        while (varStart > 0)
+                        {
+                            var prev = document.GetCharAt(varStart - 1);
+                            if (char.IsWhiteSpace(prev) || prev == '>') break;
+                            varStart--;
+                            if (prev == '$') { foundDollar = true; break; }
+                        }
+                        if (foundDollar)
+                        {
+                            document.Replace(varStart, varEnd - varStart, $"$({insertionText})");
+                            return;
+                        }
+                    }
+
+                    // Comment-script command lines are not DAX, so the DAX-aware word-boundary logic
+                    // (which treats "-->" as a comment) would incorrectly consume the marker and the
+                    // separating space. Instead replace only the partial word immediately before the
+                    // caret, bounded by whitespace or the "-->" marker.
+                    int csEnd = completionSegment.EndOffset;
+                    int csStart = csEnd;
+                    while (csStart > 0)
+                    {
+                        var prev = document.GetCharAt(csStart - 1);
+                        if (char.IsWhiteSpace(prev) || prev == '>') break;
+                        csStart--;
+                    }
+                    document.Replace(csStart, csEnd - csStart, insertionText);
+                    _insightProvider.ShowInsight(insertionText);
+                    return;
+                }
+
                 // walk back to start of word
                 var newSegment = GetPreceedingWordSegment(document, completionSegment);
                 var replaceOffset = newSegment.Offset;
                 var replaceLength = newSegment.Length;
-                var funcParamStart = Text.IndexOf("«", StringComparison.OrdinalIgnoreCase);
-                string insertionText = funcParamStart > 0 ? Text.Substring(0, funcParamStart) : Text;
 
                 if (insertionRequestEventArgs is TextCompositionEventArgs args)
                 {
@@ -114,14 +241,26 @@ _insightProvider = insightProvider;
                     var insertionChar = args.Text;
                     if (insertionText.EndsWith(insertionChar, StringComparison.Ordinal)) insertionText = insertionText.TrimEnd(insertionChar[0]);
                 }
-                if (completionSegment.EndOffset <= document.TextLength - 1)
+
+                // When the caret is in the MIDDLE of an existing identifier the segment above only
+                // reaches the caret, so the tail of the old word would be left behind - e.g. editing
+                // "SELE|COLUMNS" to SELECTCOLUMNS would produce "SELECTCOLUMNSCOLUMNS". Extend the
+                // replaced range to the end of the identifier so the whole word is replaced. This is
+                // skipped when the completion itself opens a new call/reference (its text ends with
+                // "(", "[" or a quote) because those are "wrapping" inserts placed at the caret that
+                // must preserve the following text - e.g. inserting "FILTER(" before "VALUES(...)" to
+                // get "FILTER(VALUES(...))".
+                if (insertionText.Length > 0 && !EndsWithWrappingChar(insertionText)
+                    && completionSegment.EndOffset < document.TextLength
+                    && IsIdentifierChar(document.GetCharAt(completionSegment.EndOffset)))
                 {
-                    var lastCompletionChar = insertionText[insertionText.Length - 1];
-                    var lastDocumentChar = document.GetCharAt(completionSegment.EndOffset);
-                    Log.Debug("{class} {method} {lastCompletionChar} vs {lastDocumentChar} off: {offset} len:{length}", "DaxCompletionData", "Complete", lastCompletionChar, lastDocumentChar, newSegment.Offset, newSegment.Length);
-                    if (lastCompletionChar == lastDocumentChar) replaceLength++;
+                    int wordEnd = completionSegment.EndOffset;
+                    while (wordEnd < document.TextLength && IsIdentifierChar(document.GetCharAt(wordEnd))) wordEnd++;
+                    var extendedLength = wordEnd - replaceOffset;
+                    if (extendedLength > replaceLength) replaceLength = extendedLength;
                 }
-                document.Replace(newSegment.Offset, newSegment.Length, insertionText);
+
+                document.Replace(replaceOffset, replaceLength, insertionText);
                 _insightProvider.ShowInsight(insertionText);
             } catch (Exception ex)
             {
@@ -143,8 +282,55 @@ _insightProvider = insightProvider;
             Log.Verbose("{class} {method} {message}", "DaxCompletionData", "GetPreceedingWordSegment", "line: " + line);
             var daxState = DaxLineParser.ParseLine(line, loc.Column, 0);
             //TODO - look ahead to see if we have a table/column/function end character that we should replace upto
-            return DaxLineParser.GetPreceedingWordSegment(docLine.Offset, loc.Column, line, daxState);
+            var segment = DaxLineParser.GetPreceedingWordSegment(docLine.Offset, loc.Column, line, daxState);
 
+            // The line parser anchors the start of the current "word" on the character that ended the
+            // previous token, so when the caret sits immediately after a separator (e.g. "EVALUATE |" or
+            // "FILTER(|") the returned segment covers that separator. Replacing it would delete the
+            // space/bracket and produce invalid syntax, so any leading non-identifier characters are
+            // skipped. Quoted/bracketed references are excluded from this as their segment deliberately
+            // starts on the opening ' or [ which the inserted text includes again.
+            switch (daxState.LineState)
+            {
+                case LineState.String:
+                case LineState.Table:
+                case LineState.TableClosed:
+                case LineState.Column:
+                case LineState.ColumnClosed:
+                case LineState.Measure:
+                case LineState.MeasureClosed:
+                case LineState.Dmv:
+                    break;
+                default:
+                    while (segment.Length > 0)
+                    {
+                        var idx = segment.Offset - docLine.Offset;
+                        if (idx < 0 || idx >= line.Length) break;
+                        if (IsIdentifierChar(line[idx])) break;
+                        segment.Offset++;
+                        segment.Length--;
+                    }
+                    break;
+            }
+
+            return segment;
+
+        }
+
+        // A DAX identifier (function/keyword/DMV name) is made up of letters, digits, underscores and
+        // '$' (used by DMV names like $SYSTEM). Used to find the end of an identifier the caret sits in.
+        private static bool IsIdentifierChar(char c)
+        {
+            return char.IsLetterOrDigit(c) || c == '_' || c == '$';
+        }
+
+        // A completion whose text opens a new call or reference ("FILTER(", "'Table"[..], "[Column")
+        // is inserted at the caret to wrap the following text, so the current word must not be consumed.
+        private static bool EndsWithWrappingChar(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return false;
+            var last = text[text.Length - 1];
+            return last == '(' || last == '[' || last == '\'' || last == '"';
         }
 
         public object Content

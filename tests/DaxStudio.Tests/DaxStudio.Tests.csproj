@@ -36,6 +36,7 @@
     <ProjectReference Include="..\..\src\ADOTabular\DaxStudio.ADOTabular.csproj" />
     <ProjectReference Include="..\..\src\DAXEditor\DaxStudio.DAXEditor.csproj" />
     <ProjectReference Include="..\..\src\DaxStudio.Common\DaxStudio.Common.csproj" />
+    <ProjectReference Include="..\..\src\DaxStudio.Core\DaxStudio.Core.csproj" />
     <ProjectReference Include="..\..\src\DaxStudio.Interfaces\DaxStudio.Interfaces.csproj" />
     <ProjectReference Include="..\..\src\DaxStudio.Parsers\DaxStudio.Parsers.csproj" />
     <ProjectReference Include="..\..\src\DaxStudio.QueryTrace\DaxStudio.QueryTrace.csproj" />

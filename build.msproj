@@ -112,6 +112,22 @@
     <Delete Files="@(FilesToDelete)" />
   </Target>
 
+  <!-- Remove localized satellite resource assemblies for the test frameworks that
+       land in Release\bin\<culture>\ subfolders (e.g. bin\cs\Microsoft.Testing.Platform.resources.dll).
+       These can't be moved aside like the top-level test DLLs because the same file
+       name repeats across every culture folder, so they are deleted outright. The
+       installer already excludes them via its filename-based Excludes list. -->
+  <Target Name="DeleteTestSatellites" AfterTargets="StageRelease" DependsOnTargets="StageRelease">
+    <ItemGroup>
+      <FilesToDelete Include=".\Release\bin\**\Microsoft.Testing.*.resources.dll" />
+      <FilesToDelete Include=".\Release\bin\**\Microsoft.TestPlatform.*.resources.dll" />
+      <FilesToDelete Include=".\Release\bin\**\Microsoft.VisualStudio.TestPlatform.*.resources.dll" />
+      <FilesToDelete Include=".\Release\bin\**\MSTest.*.resources.dll" />
+    </ItemGroup>
+    <Message Text="Deleting test framework satellite resource assemblies" Importance="High" />
+    <Delete Files="@(FilesToDelete)" />
+  </Target>
+
   <PropertyGroup>
     <MyAssemblies>.\Release\bin\DaxStudio.dll</MyAssemblies>
   </PropertyGroup>
@@ -229,7 +245,16 @@
 
 <Target Name="MoveTestsOut">
   <ItemGroup>
-      <TestsToMoveOut Include=".\Release\bin\*.Tests.dll;.\Release\bin\*.Tests.dll.config" />
+      <TestsToMoveOut Include=".\Release\bin\*.Tests.dll;
+                               .\Release\bin\*.Tests.dll.config;
+                               .\Release\bin\Microsoft.Testing.*.dll;
+                               .\Release\bin\Microsoft.TestPlatform.*.dll;
+                               .\Release\bin\Microsoft.VisualStudio.TestPlatform.*.dll;
+                               .\Release\bin\Microsoft.VisualStudio.CodeCoverage.*.dll;
+                               .\Release\bin\MSTest.*.dll;
+                               .\Release\bin\MSTestAdapter.*.dll;
+                               .\Release\bin\NSubstitute.dll;
+                               .\Release\bin\.msCoverageSourceRootsMapping_*" />
     </ItemGroup>
     <MakeDir Directories="./Tmp" />
     <Message Text="Moving Tests Out" Importance="High" />
@@ -238,14 +263,10 @@
 
   <Target Name="MoveTestsIn">
     <ItemGroup>
-      <TestsToMoveIn Include=".\Tmp\DaxStudio.Tests.*" />
-    </ItemGroup>
-    <ItemGroup>
-      <CmdLineTestsToMoveIn Include=".\Tmp\DaxStudio.CommandLine.Tests.*" />
+      <TestsToMoveIn Include=".\Tmp\**\*.*" />
     </ItemGroup>
     <Message Text="Moving Tests In" Importance="High" />
     <Move SourceFiles="@(TestsToMoveIn)" DestinationFolder=".\Release\bin" />
-    <Move SourceFiles="@(CmdLineTestsToMoveIn)" DestinationFolder=".\Release\bin" />
   </Target>
 
 

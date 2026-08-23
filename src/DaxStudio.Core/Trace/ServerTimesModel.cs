@@ -15,6 +15,7 @@ using DaxStudio.Core.Extensions;
 using DaxStudio.Interfaces;
 using DaxStudio.Interfaces.Enums;
 using DaxStudio.Parsers;
+using DaxStudio.Parsers.StorageEngine;
 using DaxStudio.QueryTrace;
 using Newtonsoft.Json;
 using Serilog;
@@ -148,11 +149,13 @@ namespace DaxStudio.Core.Trace
                     {
                         if (!string.IsNullOrEmpty(singleEvent.ActivityId))
                             _internalQueryActivityIds.Add(singleEvent.ActivityId);
+                        // Leave TotalDuration alone - our own internal query is not a user query, and
+                        // setting it here would make HasData true (and publish a duration) before the
+                        // user's query has even run.
+                        break;
                     }
-                    else
-                    {
-                        _queryEndActivityId = singleEvent.ActivityId;
-                    }
+
+                    _queryEndActivityId = singleEvent.ActivityId;
                     TotalDuration = (long)(singleEvent.CurrentTime - QueryStartDateTime).TotalMilliseconds;
                     break;
                 case DaxStudioTraceEventClass.ExecutionMetrics:
@@ -294,6 +297,10 @@ namespace DaxStudio.Core.Trace
                 if (removedInternalEvents && !Events.Any(e => e.EventClass == DaxStudioTraceEventClass.QueryEnd))
                 {
                     Log.Debug(Constants.LogMessageTemplate, nameof(ServerTimesModel), nameof(ProcessResults), "No user QueryEnd event present after removing internal query events, skipping processing");
+                    // Suppress the completion signal: the only QueryEnd we saw was our own internal
+                    // query, so anything awaiting this trace (e.g. a comment-script performance
+                    // assertion) must keep waiting for the user's query rather than read empty metrics.
+                    ResultsIncomplete = true;
                     return;
                 }
 

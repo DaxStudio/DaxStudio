@@ -6,7 +6,6 @@ using ADOTabular.Utils;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -73,8 +72,8 @@ namespace ADOTabular
 #endif
             > OnAccessTokenExpired
         {
-            get => _adomdConn.OnAccessTokenExpired;
-            set => _adomdConn.OnAccessTokenExpired = value;
+            get => _adomdConn?.OnAccessTokenExpired;
+            set { if (_adomdConn != null) _adomdConn.OnAccessTokenExpired = value; }
         }
 
         /// <summary>
@@ -999,10 +998,8 @@ namespace ADOTabular
         {
             get
             {
-                var builder = new OleDbConnectionStringBuilder(ConnectionString)
-                {
-                    ["Initial Catalog"] = _currentDatabase
-                };
+                var builder = ConnectionString.ToConnectionStringBuilder();
+                builder["Initial Catalog"] = _currentDatabase;
                 if (!string.IsNullOrEmpty(_currentCube)) builder["Cube"] = _currentCube;
                 return builder.ToString();
 
@@ -1091,7 +1088,7 @@ namespace ADOTabular
         /// <returns>bool</returns>
         public static bool HasRlsParameters(string connectionString)
         {
-            var builder = new OleDbConnectionStringBuilder(connectionString);
+            var builder = connectionString.ToConnectionStringBuilder();
             foreach (var param in rlsParameters)
             {
                 if (builder.ContainsKey(param)) return true;
@@ -1102,7 +1099,7 @@ namespace ADOTabular
         private static string[] rlsParameters = { "Roles", "EffectiveUserName", "Authentication Scheme", "Ext Auth Info" };
         public ADOTabularConnection CloneWithoutRLS()
         {
-            var builder = new OleDbConnectionStringBuilder(ConnectionStringWithInitialCatalog);
+            var builder = ConnectionStringWithInitialCatalog.ToConnectionStringBuilder();
             foreach (var param in rlsParameters)
             {
                 builder.Remove(param);
@@ -1119,7 +1116,7 @@ namespace ADOTabular
         {
             if (this.ServerType == ServerType.Offline) return this;
 
-            var connStrBuilder = new System.Data.OleDb.OleDbConnectionStringBuilder(connectionString);
+            var connStrBuilder = connectionString.ToConnectionStringBuilder();
             if (sameSession) connStrBuilder["SessionId"] = _adomdConn?.SessionID;
             var newConnStr = connStrBuilder.ToString();
             var cnn = new ADOTabularConnection(newConnStr, this.Type)

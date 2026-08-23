@@ -117,49 +117,44 @@ namespace DaxStudio.UI.Utils
             }
         }
 
-        // called on a clean shutdown, removes all autosave files
+        // called on a clean shutdown, removes this instance's autosave files
         public void RemoveAll()
         {
             var index = GetCurrentAutoSaveIndex();
 
-            foreach( var f in index.Files)
-
-            try {
-                // delete autosaveindex
-                SharingViolations.Wrap(() => File.Delete(AutoSaveIndexFile(index)));
-            }
-            catch (Exception ex)
+            // Only delete the .dax files that belong to THIS instance's index. Previously this
+            // deleted every file in the shared autosave folder (di.GetFiles()), which meant that
+            // closing one instance cleanly would wipe out the autosave files of a *different*
+            // instance that had crashed - so those files were gone before they could be recovered
+            // (producing "ERROR READING AUTOSAVE FILE" on the next start). Scoping the delete to the
+            // current index leaves other/crashed instances' files intact for recovery.
+            if (index != null)
             {
-                Log.Error(ex, Constants.LogMessageTemplate, nameof(AutoSaver), nameof(RemoveAll), $"Error deleting AutoSaveIndex: {ex.Message}");
-            }
-
-            // delete autosave files
-            // TODO - should I only delete the files for this instance of DAX Studio??
-            //        at the moment this removes all auto save files from all instances
-            //        so if one instance crashes and another is still open closing the open one
-            //        will wipe out any files from the crashed instance...
-            FileInfo[] files;
-            try
-            {
-                System.IO.DirectoryInfo di = new DirectoryInfo(ApplicationPaths.AutoSavePath);
-                files = di.GetFiles();
-
-                foreach (FileInfo file in files)
+                foreach (var f in index.Files)
                 {
                     try
                     {
-                        file.Delete();
+                        var autoSaveFile = Path.Combine(ApplicationPaths.AutoSavePath, $"{f.AutoSaveId}.dax");
+                        if (File.Exists(autoSaveFile))
+                            SharingViolations.Wrap(() => File.Delete(autoSaveFile));
                     }
                     catch (Exception ex)
                     {
-                        Log.Error(ex, Constants.LogMessageTemplate, nameof(AutoSaver), nameof(RemoveAll), $"Error deleting AutoSave file '{file.FullName}' - {ex.Message}");
+                        Log.Error(ex, Constants.LogMessageTemplate, nameof(AutoSaver), nameof(RemoveAll), $"Error deleting AutoSave file '{f.AutoSaveId}.dax' - {ex.Message}");
                     }
                 }
 
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, Constants.LogMessageTemplate, nameof(AutoSaver), nameof(RemoveAll), $"Error getting AutoSave file collection: {ex.Message}");
+                // delete this instance's autosave index
+                try
+                {
+                    var indexFile = AutoSaveIndexFile(index);
+                    if (File.Exists(indexFile))
+                        SharingViolations.Wrap(() => File.Delete(indexFile));
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, Constants.LogMessageTemplate, nameof(AutoSaver), nameof(RemoveAll), $"Error deleting AutoSaveIndex: {ex.Message}");
+                }
             }
 
             try
@@ -302,10 +297,9 @@ namespace DaxStudio.UI.Utils
 
         public string GetAutoSaveText(Guid autoSaveId)
         {
+            var fileName = Path.Combine(ApplicationPaths.AutoSavePath, $"{autoSaveId}.dax");
             try
             {
-                var fileName = Path.Combine(ApplicationPaths.AutoSavePath, $"{autoSaveId}.dax");
-
                 using (TextReader tr = new StreamReader(fileName, true))
                 {
                     // put contents in edit window
@@ -315,7 +309,9 @@ namespace DaxStudio.UI.Utils
             }
             catch (Exception ex)
             {
-                Log.Error(ex, Constants.LogMessageTemplate, "AutoSaver", "GetAutoSaveText", ex.Message);
+                var fileExists = File.Exists(fileName);
+                Log.Error(ex, Constants.LogMessageTemplate, "AutoSaver", "GetAutoSaveText",
+                    $"Error reading autosave file '{fileName}' (exists: {fileExists}, exception: {ex.GetType().Name}): {ex.Message}");
                 return "-- <<< ERROR READING AUTOSAVE FILE >>> --";
             }
         }

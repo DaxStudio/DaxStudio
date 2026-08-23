@@ -7,8 +7,6 @@ using DaxStudio.Interfaces.Attributes;
 using Serilog.Events;
 using Serilog.Core;
 using DaxStudio.Common.Interfaces;
-using System.Drawing;
-
 
 namespace DaxStudio.Interfaces
 {
@@ -48,6 +46,7 @@ namespace DaxStudio.Interfaces
         bool EditorShowControlCharacters { get; set; }
         bool EditorWordWrap { get; set; }
         bool ExcludeHeadersWhenCopyingResults { get; set; }
+        bool ForceSoftwareRendering { get; set; }
         DateTime LastVersionCheckUTC { get; set; }
         int PreviewDataRowLimit { get; set; }
         string ProxyAddress { get; set; }
@@ -133,6 +132,7 @@ namespace DaxStudio.Interfaces
         
         
         bool UseIndentCodeFolding { get; set; }
+        bool UseStructuralCodeFolding { get; set; }
         bool ShowDebugCommas { get; set; }
         bool ShowXmlaInAllQueries { get; set; }
         bool EnablePasteFileOnExistingWindow { get; set; }
@@ -141,6 +141,10 @@ namespace DaxStudio.Interfaces
         bool ShowStorageEngineDependencies { get; set; }
 
         bool UseAntlrParser { get; set; }
+
+        bool UseNewPreprocessor { get; set; }
+
+        bool UseAntlrCodeCompletion { get; set; }
 
         bool HighlightXmSqlCallbacks { get; set; }
         bool SimplifyXmSqlSyntax { get; set; }

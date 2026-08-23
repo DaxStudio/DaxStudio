@@ -196,6 +196,51 @@ namespace DaxStudio.Tests
             Assert.AreEqual(8, daxState.StartOffset, "StartOffset");
         }
 
+        // The DMV completion list must open at the moment the user types the '.' after $SYSTEM,
+        // i.e. when the dot is the final character before the caret and there is no trailing text yet.
+        [TestMethod]
+        public void DmvParsingWithDotAtEnd()
+        {
+            var dax = "$SYSTEM.";
+            var daxState = DaxLineParser.ParseLine(dax, dax.Length, 0);
+            Assert.AreEqual(LineState.Dmv, daxState.LineState);
+            Assert.AreEqual(8, daxState.StartOffset, "StartOffset");
+        }
+
+        [TestMethod]
+        public void DmvParsingWithSelectAndDotAtEnd()
+        {
+            var dax = "SELECT * FROM $SYSTEM.";
+            var daxState = DaxLineParser.ParseLine(dax, dax.Length, 0);
+            Assert.AreEqual(LineState.Dmv, daxState.LineState);
+            Assert.AreEqual(22, daxState.StartOffset, "StartOffset");
+        }
+
+        // The '$' that begins "$SYSTEM" must be treated as part of the word so the completion filter
+        // anchor (StartOffset) starts at the '$'. Otherwise the list filters on "SYS..." and drops the
+        // "$SYSTEM" keyword, and completing it doubles the '$' to "$$SYSTEM".
+        [TestMethod]
+        public void DollarSystemPartialStartsAtDollar()
+        {
+            var daxState = DaxLineParser.ParseLine("$SYS", 4, 0);
+            Assert.AreEqual(0, daxState.StartOffset, "StartOffset should point at the '$'");
+        }
+
+        [TestMethod]
+        public void DollarOnlyPartialStartsAtDollar()
+        {
+            var daxState = DaxLineParser.ParseLine("$", 1, 0);
+            Assert.AreEqual(0, daxState.StartOffset, "StartOffset should point at the '$'");
+        }
+
+        [TestMethod]
+        public void DollarSystemPartialInSelectStartsAtDollar()
+        {
+            var dax = "select * from $SYS";
+            var daxState = DaxLineParser.ParseLine(dax, dax.Length, 0);
+            Assert.AreEqual(14, daxState.StartOffset, "StartOffset should point at the '$'");
+        }
+
 
         [TestMethod]
         public void TestFindTableNameEuropeanListSeparator()

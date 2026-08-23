@@ -21,17 +21,40 @@
     <Compile Include="..\CommonAssemblyVersion.cs" Link="Properties\CommonAssemblyVersion.cs" />
   </ItemGroup>
 
+  <!-- Expose internals to the test project -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="DaxStudio.Parsers.Tests" />
+  </ItemGroup>
+
   <!-- ANTLR4 grammar files -->
   <ItemGroup>
-    <None Remove="Grammars\*.g4" />
-    <Antlr4 Include="Grammars\xmSQL.g4">
+    <None Remove="**\*.g4" />
+    <Antlr4 Include="StorageEngine\xmSQL.g4">
       <Visitor>true</Visitor>
       <Listener>false</Listener>
       <Package>DaxStudio.Parsers.Grammars.Generated</Package>
     </Antlr4>
-    <Antlr4 Include="Grammars\DirectQuerySql.g4">
+    <Antlr4 Include="StorageEngine\DirectQuerySql.g4">
       <Visitor>true</Visitor>
       <Listener>false</Listener>
+      <Package>DaxStudio.Parsers.Grammars.Generated</Package>
+    </Antlr4>
+    <Antlr4 Include="Dax\DAXLexer.g4">
+      <Package>DaxStudio.Parsers.Grammars.Generated</Package>
+    </Antlr4>
+    <Antlr4 Include="Dax\DAXParser.g4">
+      <Visitor>true</Visitor>
+      <Listener>true</Listener>
+      <Package>DaxStudio.Parsers.Grammars.Generated</Package>
+    </Antlr4>
+    <Antlr4 Include="PreProcessor\PreProcessorLexer.g4">
+      <Error>true</Error>
+      <Package>DaxStudio.Parsers.Grammars.Generated</Package>
+    </Antlr4>
+    <Antlr4 Include="PreProcessor\PreProcessorParser.g4">
+      <Visitor>false</Visitor>
+      <Listener>true</Listener>
+      <Error>true</Error>
       <Package>DaxStudio.Parsers.Grammars.Generated</Package>
     </Antlr4>
   </ItemGroup>

@@ -112,6 +112,21 @@ namespace DaxStudio.UI.Utils
             
         }
 
+        // Sets the DMV state triggered by the '.' after $SYSTEM. The completion start is placed
+        // immediately after the dot (dotPos + 1). Unlike the generic SetState, this deliberately
+        // uses the dot position for the caret-boundary check so that the DMV list also opens when
+        // the dot is the final character typed (caret sitting immediately after it) - the exact
+        // moment the user expects the DMV name list to appear.
+        public void SetDmvState(int dotPos)
+        {
+            if (_state == LineState.Dmv) return;
+            if (dotPos < _caretOffset && _endOffset == 0)
+            {
+                _state = LineState.Dmv;
+                _startOffset = dotPos + 1;
+            }
+        }
+
     }
     public static class DaxLineParser
     {
@@ -223,7 +238,7 @@ namespace DaxStudio.UI.Utils
                         if (GetPreceedingWord(line.Substring(0,i)).ToUpper() == "$SYSTEM") {
                             if (daxState.LineState != LineState.String && daxState.LineState != LineState.Table)
                             {
-                                daxState.SetState(LineState.Dmv, i+1);
+                                daxState.SetDmvState(i);
                             }
                         }
                         // TODO can tables have . in them??
@@ -263,7 +278,11 @@ namespace DaxStudio.UI.Utils
 
         private static void SetLetterOrDigitState(string line, DaxLineState daxState, int i)
         {
-            if (line[i].IsDaxLetter())
+            // '$' is not a DAX letter, but it is the first character of the "$SYSTEM" keyword that
+            // begins a DMV query. Treating it as part of the word keeps the word (and therefore the
+            // completion filter anchor and the segment replaced on insertion) starting at the '$', so
+            // "$SYSTEM" prefix-matches what is typed and is not doubled up to "$$SYSTEM" on insertion.
+            if (line[i].IsDaxLetter() || line[i] == '$')
             {
                 daxState.SetState(LineState.Letter, i);
             }

@@ -66,6 +66,117 @@ namespace DaxStudio.Tests
         }
 
         [TestMethod]
+        public void TestMidWordFunctionRename_ReplacesWholeWord()
+        {
+            // The user edits an existing function name: the caret is in the middle of "SELECOLUMNS"
+            // (after "SELE") and they pick "SELECTCOLUMNS". The whole identifier must be replaced so the
+            // result is "SELECTCOLUMNS(...)" and NOT "SELECTCOLUMNSCOLUMNS(...)".
+            var doc = new TextDocument("EVALUATE SELECOLUMNS([MyColumn])");
+            var mockIp = Substitute.For<IInsightProvider>();
+            var compData = new DaxCompletionData(mockIp, "SELECTCOLUMNS", 1.0);
+
+            int caret = "EVALUATE SELE".Length; // caret in the middle of the identifier
+            var seg = new TextSegment { StartOffset = caret, Length = 0 };
+            var e = new TextCompositionEventArgs(Keyboard.PrimaryDevice, new TextComposition(null, null, "\t"));
+
+            compData.CompleteInternal(doc, seg, e);
+
+            Assert.AreEqual("EVALUATE SELECTCOLUMNS([MyColumn])", doc.Text);
+        }
+
+        [TestMethod]
+        public void TestMidWordFunctionRename_CaretAtEndOfWord()
+        {
+            // When the caret is at the end of the word being replaced there is no trailing identifier
+            // text, so only that word is replaced.
+            var doc = new TextDocument("EVALUATE SUM([Sales])");
+            var mockIp = Substitute.For<IInsightProvider>();
+            var compData = new DaxCompletionData(mockIp, "SUMX", 1.0);
+
+            int caret = "EVALUATE SUM".Length; // caret at the end of "SUM", before "("
+            var seg = new TextSegment { StartOffset = caret, Length = 0 };
+            var e = new TextCompositionEventArgs(Keyboard.PrimaryDevice, new TextComposition(null, null, "\t"));
+
+            compData.CompleteInternal(doc, seg, e);
+
+            Assert.AreEqual("EVALUATE SUMX([Sales])", doc.Text);
+        }
+
+        [TestMethod]
+        public void TestMidWordWrappingInsert_PreservesTrailingText()
+        {
+            // A "wrapping" completion whose text ends with "(" is inserted at the caret and must NOT
+            // consume the following identifier: inserting "FILTER(" before "VALUES" yields
+            // "FILTER(VALUES(...))".
+            var doc = new TextDocument("CALCULATE( FVALUES([MyColumn])");
+            var mockIp = Substitute.For<IInsightProvider>();
+            var compData = new DaxCompletionData(mockIp, "FILTER(«Table", 1.0);
+
+            int caret = "CALCULATE( F".Length; // caret right after the "F"
+            var seg = new TextSegment { StartOffset = caret, Length = 0 };
+            var e = new TextCompositionEventArgs(Keyboard.PrimaryDevice, new TextComposition(null, null, "\t"));
+
+            compData.CompleteInternal(doc, seg, e);
+
+            Assert.AreEqual("CALCULATE( FILTER(VALUES([MyColumn])", doc.Text);
+        }
+
+        [TestMethod]
+        public void TestCommentScriptVariableInsert_AfterDollar()
+        {
+            // Typing "$" in a comment-script path argument then picking a "--> SET" variable must insert
+            // the full "$(name)" syntax over the "$" only - the opening quote must be preserved.
+            var doc = new TextDocument("--> SAVEAS \"$");
+            var mockIp = Substitute.For<IInsightProvider>();
+            var item = new DaxStudio.Parsers.Dax.CompletionItem(
+                "$(OutDir)", DaxStudio.Parsers.Dax.CompletionItemKind.Variable, "", "OutDir");
+            var compData = new DaxCompletionData(mockIp, item, true);
+
+            var seg = new TextSegment { StartOffset = doc.TextLength, Length = 0 };
+            var e = new TextCompositionEventArgs(Keyboard.PrimaryDevice, new TextComposition(null, null, "\t"));
+
+            compData.CompleteInternal(doc, seg, e);
+
+            Assert.AreEqual("--> SAVEAS \"$(OutDir)", doc.Text);
+        }
+
+        [TestMethod]
+        public void TestCommentScriptVariableInsert_OverPartialReference()
+        {
+            // A partially typed reference is replaced back to (and including) the "$" that opened it.
+            var doc = new TextDocument("--> EXPORT METRICS \"$(Out");
+            var mockIp = Substitute.For<IInsightProvider>();
+            var item = new DaxStudio.Parsers.Dax.CompletionItem(
+                "$(OutDir)", DaxStudio.Parsers.Dax.CompletionItemKind.Variable, "", "OutDir");
+            var compData = new DaxCompletionData(mockIp, item, true);
+
+            var seg = new TextSegment { StartOffset = doc.TextLength, Length = 0 };
+            var e = new TextCompositionEventArgs(Keyboard.PrimaryDevice, new TextComposition(null, null, "\t"));
+
+            compData.CompleteInternal(doc, seg, e);
+
+            Assert.AreEqual("--> EXPORT METRICS \"$(OutDir)", doc.Text);
+        }
+
+        [TestMethod]
+        public void TestCommentScriptKeywordInsert_IsUnaffectedByVariableHandling()
+        {
+            // A normal comment-script keyword completion still replaces just the partial word.
+            var doc = new TextDocument("--> SE");
+            var mockIp = Substitute.For<IInsightProvider>();
+            var item = new DaxStudio.Parsers.Dax.CompletionItem(
+                "SET", DaxStudio.Parsers.Dax.CompletionItemKind.Keyword, "");
+            var compData = new DaxCompletionData(mockIp, item, true);
+
+            var seg = new TextSegment { StartOffset = doc.TextLength, Length = 0 };
+            var e = new TextCompositionEventArgs(Keyboard.PrimaryDevice, new TextComposition(null, null, "\t"));
+
+            compData.CompleteInternal(doc, seg, e);
+
+            Assert.AreEqual("--> SET", doc.Text);
+        }
+
+        [TestMethod]
         public void TestCodeCompletionWithUnderscoresInName()
         {
             var testLine = "EVALUATE DIM_D";
@@ -150,6 +261,47 @@ namespace DaxStudio.Tests
             compData.CompleteInternal(doc, seg, e);
 
             Assert.AreEqual("EVALUATE Dim1Date", doc.Text);
+        }
+
+        // Regression: choosing an item from the completion list when the caret sits immediately after a
+        // separator must not consume that separator. Previously "EVALUATE |" + 'Time Intelligence'
+        // produced "EVALUATE'Time Intelligence'" which is invalid DAX.
+        [DataTestMethod]
+        [DataRow("EVALUATE ", "'Time Intelligence'", "EVALUATE 'Time Intelligence'", DisplayName = "space before a quoted table")]
+        [DataRow("EVALUATE ", "Sales", "EVALUATE Sales", DisplayName = "space before an unquoted table")]
+        [DataRow("EVALUATE FILTER(", "Sales", "EVALUATE FILTER(Sales", DisplayName = "open paren before a table")]
+        [DataRow("EVALUATE FILTER(Sales, ", "Sales", "EVALUATE FILTER(Sales, Sales", DisplayName = "comma and space before a table")]
+        public void CompletionAfterSeparator_DoesNotRemoveTheSeparator(string testLine, string completionText, string expected)
+        {
+            var mockIp = Substitute.For<IInsightProvider>();
+            var compData = new DaxCompletionData(mockIp, completionText, 1.0);
+
+            var mockDocLine = Substitute.For<IDocumentLine>();
+            mockDocLine.Length.Returns(testLine.Length);
+
+            var mockDoc = Substitute.For<IDocument>();
+            var documentText = testLine;
+            mockDoc.Text.Returns(_ => documentText);
+            mockDoc.GetLineByOffset(testLine.Length - 1).Returns(mockDocLine);
+            mockDoc.GetLocation(testLine.Length - 1).Returns(new TextLocation(0, testLine.Length));
+            mockDoc.GetText(0, testLine.Length).Returns(testLine);
+            mockDoc.TextLength.Returns(testLine.Length);
+            mockDoc.When(x => x.Replace(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string>()))
+                .Do(callInfo =>
+                {
+                    int offset = callInfo.ArgAt<int>(0);
+                    int length = callInfo.ArgAt<int>(1);
+                    documentText = documentText.Substring(0, offset)
+                        + callInfo.ArgAt<string>(2)
+                        + documentText.Substring(offset + length);
+                });
+
+            var mockSegment = Substitute.For<ISegment>();
+            mockSegment.EndOffset.Returns(testLine.Length);
+
+            compData.CompleteInternal(mockDoc, mockSegment, null);
+
+            Assert.AreEqual(expected, mockDoc.Text);
         }
 
         [TestMethod]

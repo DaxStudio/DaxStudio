@@ -1,3 +1,4 @@
+using ADOTabular.Utils;
 using DaxStudio.CommandLine.Interfaces;
 using DaxStudio.Common;
 using DaxStudio.Common.Extensions;
@@ -7,7 +8,6 @@ using Microsoft.Identity.Client;
 using AccessToken = Microsoft.AnalysisServices.AccessToken;
 #endif
 using System;
-using System.Data.OleDb;
 
 namespace DaxStudio.CommandLine.Helpers
 {
@@ -29,9 +29,9 @@ namespace DaxStudio.CommandLine.Helpers
     {
         public static bool IsAccessTokenNeeded(string connectionString)
         {
-            var builder = new OleDbConnectionStringBuilder(connectionString);
+            var builder = connectionString.ToConnectionStringBuilder();
 
-            if (!builder.DataSource.RequiresEntraAuth()) return false;
+            if (!builder.GetDataSource().RequiresEntraAuth()) return false;
             // if there is some sort of password on the connection string do not use an explicit AccessToken
             if (builder.ContainsKey("Password") || builder.ContainsKey("Pwd")) return false;
 
@@ -72,7 +72,7 @@ namespace DaxStudio.CommandLine.Helpers
             bool nonInteractive)
         {
             GetScopeFromConnectionString(connStr, out var tokenScope, out _);
-            var dataSource = new OleDbConnectionStringBuilder(connStr).DataSource;
+            var dataSource = connStr.ToConnectionStringBuilder().GetDataSource();
 
             var authOptions = new AuthenticationOptions
             {
@@ -90,9 +90,9 @@ namespace DaxStudio.CommandLine.Helpers
 
         private static void GetScopeFromConnectionString(string connStr, out AccessTokenScope tokenScope, out string serverName)
         {
-            var builder = new OleDbConnectionStringBuilder(connStr);
-            serverName = builder.DataSource;
-            if (builder.DataSource.IsAsAzure())
+            var builder = connStr.ToConnectionStringBuilder();
+            serverName = builder.GetDataSource();
+            if (builder.GetDataSource().IsAsAzure())
             {
                 tokenScope = AccessTokenScope.AsAzure;
             }

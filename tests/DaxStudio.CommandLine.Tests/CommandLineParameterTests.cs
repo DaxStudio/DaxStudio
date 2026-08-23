@@ -3,7 +3,7 @@ using DaxStudio.CommandLine.Commands;
 using Spectre.Console.Cli;
 using System;
 using System.Linq;
-using System.Data.OleDb;
+using ADOTabular.Utils;
 #if NET8_0_OR_GREATER
 using AccessToken = Microsoft.AnalysisServices.AccessToken;
 #else
@@ -96,7 +96,7 @@ namespace DaxStudio.CommandLine.Tests
             var validationResult = settings.Validate();
             Assert.IsTrue(validationResult.Successful, validationResult.Message);
             Assert.IsNull(validationResult.Message);
-            Assert.AreEqual("Data Source=localhost;User ID=testUser;Password=testPwd", settings.FullConnectionString, "connection strings don't match");
+            Assert.AreEqual("data source=localhost;User ID=testUser;Password=testPwd", settings.FullConnectionString, "connection strings don't match");
         }
 
         [TestMethod]
@@ -280,7 +280,7 @@ namespace DaxStudio.CommandLine.Tests
 
         private static string ParseValue(string connectionString, string key)
         {
-            var builder = new OleDbConnectionStringBuilder(connectionString);
+            var builder = connectionString.ToConnectionStringBuilder();
             return builder.ContainsKey(key) ? (string)builder[key] : null;
         }
 

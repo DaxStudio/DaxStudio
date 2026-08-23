@@ -25,6 +25,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using FocusManager = DaxStudio.UI.Utils.FocusManager;
+using DaxStudio.Parsers.CommentScript;
+using DaxStudio.UI.ResultsTargets;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -303,6 +305,15 @@ namespace DaxStudio.UI.ViewModels
                 if (value == _modelList)
                     return;
                 _modelList = value;
+                // Reading BaseModel forces the (potentially blocking) model DISCOVER query if the
+                // collection has not been materialized yet. Log the thread so any UI-thread stall
+                // caused by this is easy to spot in the log (it should run on a background thread).
+                if (_modelList != null && !_modelList.IsMaterialized && Application.Current != null
+                    && Application.Current.Dispatcher.CheckAccess())
+                {
+                    Log.Warning(Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), nameof(ModelList),
+                        $"Materializing model collection on the UI thread (thread {System.Threading.Thread.CurrentThread.ManagedThreadId}) - this may block the UI");
+                }
                 SelectedModel = _modelList?.BaseModel;
                 NotifyOfPropertyChange(() => ModelList);
                 NotifyOfPropertyChange(() => SelectedModel);
@@ -1184,6 +1195,39 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
+        public async Task ShowLastUpdated()
+        {
+            await RunTimestampShowAsync(ShowType.LastUpdated);
+        }
+
+        public async Task ShowMaxUpdated()
+        {
+            await RunTimestampShowAsync(ShowType.MaxUpdated);
+        }
+
+        // Builds and displays the SHOW LAST_UPDATED / SHOW MAX_UPDATED timestamp tree from the metadata
+        // pane database context menu, producing the same result tab as running the equivalent
+        // "--> SHOW" comment-script command. The tree is built off the UI thread as it issues DMV
+        // queries against the connection.
+        private async Task RunTimestampShowAsync(ShowType showType)
+        {
+            if (!_metadataProvider.IsConnected)
+            {
+                await EventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, "Cannot show metadata timestamps - there is no open connection"));
+                return;
+            }
+
+            try
+            {
+                await Task.Run(() => ResultsTargetGrid.RunMetadataTimestampShow(ActiveDocument, showType));
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), nameof(RunTimestampShowAsync), ex.Message);
+                await EventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error showing metadata timestamps: {ex.Message}"));
+            }
+        }
+
         public Task HandleAsync(QueryStartedEvent message, CancellationToken cancellationToken)
         {
             NotifyOfPropertyChange(() => CanSelectDatabase);
@@ -1235,14 +1279,30 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(nameof(Databases));
 
                 var ml = _metadataProvider.GetModels();
-                
+
+                // Materialize the model collection on a background thread BEFORE assigning it to
+                // ModelList. The ModelList setter reads ModelCollection.BaseModel, which lazily
+                // runs a blocking DISCOVER metadata query the first time the collection is read.
+                // Against a remote powerbi:// endpoint that query can take several seconds, so if
+                // it ran on the UI thread it would freeze the app (see MetadataPaneViewModel /
+                // ADOTabularModelCollection). Pre-warming here caches the models so the subsequent
+                // ModelList assignment is instant regardless of which thread it runs on.
+                if (ml != null)
+                {
+                    var sw = Stopwatch.StartNew();
+                    await Task.Run(() => { var _ = ml.BaseModel; });
+                    Log.Debug(Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), nameof(HandleAsync),
+                        $"Pre-warmed model collection off the UI thread (duration: {sw.ElapsedMilliseconds}ms, thread {System.Threading.Thread.CurrentThread.ManagedThreadId})");
+                }
+
+                // Assign on the UI thread. This is now cheap because the models are already cached.
                 if (Application.Current.Dispatcher.CheckAccess())
                 {
-                    Application.Current.Dispatcher.Invoke(new System.Action(() => ModelList = ml));
+                    ModelList = ml;
                 }
                 else
                 {
-                    ModelList = ml;
+                    Application.Current.Dispatcher.Invoke(new System.Action(() => ModelList = ml));
                 }
 
                 NotifyOfPropertyChange(() => CanSelectDatabase);

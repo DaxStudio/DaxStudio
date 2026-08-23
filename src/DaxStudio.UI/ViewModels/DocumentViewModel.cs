@@ -1,4 +1,5 @@
 using ADOTabular;
+using ADOTabular.Utils;
 using ADOTabular.AdomdClientWrappers;
 using ADOTabular.Enums;
 using ADOTabular.Extensions;
@@ -24,6 +25,7 @@ using DaxStudio.Interfaces.Enums;
 using DaxStudio.UI.Enums;
 using DaxStudio.Core.Events;
 using DaxStudio.Core.Utils;
+using CommentScript = DaxStudio.Parsers.CommentScript;
 using DaxStudio.UI.Events;
 using DaxStudio.Core.Extensions;
 using DaxStudio.UI.Extensions;
@@ -86,6 +88,7 @@ namespace DaxStudio.UI.ViewModels
     [Export(typeof(DocumentViewModel))]
     public class DocumentViewModel : Screen
         , IDaxDocument
+        , IResultsTableProvider
         , IHaveTraceWatchers
         , IHandle<ApplicationActivatedEvent>
         , IHandle<CancelConnectEvent>
@@ -123,6 +126,8 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<SetFocusEvent>
         , IHandle<ToggleCommentEvent>
         , IHandle<PasteServerTimingsEvent>
+        , IHandle<DaxStudio.Core.Events.QueryTraceCompletedEvent>
+        , IHandle<DaxStudio.Core.Events.QueryBatchStartedEvent>
         , IDropTarget
         , IQueryRunner
         , IQueryTextProvider
@@ -182,7 +187,7 @@ namespace DaxStudio.UI.ViewModels
                 IconSource = Application.Current.Resources["dax_smallDrawingImage"] as ImageSource;
                 Connection = new ConnectionManager(_eventAggregator);
                 Connection.AfterReconnect += Connection_AfterReconnect;
-                IntellisenseProvider = new DaxIntellisenseProvider(this, _eventAggregator, Options);
+                IntellisenseProvider = IntellisenseProviderFactory.Create(this, _eventAggregator, Options);
                 Init(_ribbon);
                 SubscribeAll();
             }
@@ -254,6 +259,7 @@ namespace DaxStudio.UI.ViewModels
             Dispatcher.Yield(DispatcherPriority.Background);
             OutputPane = IoC.Get<OutputPaneViewModel>();// (_eventAggregator);
             QueryResultsPane = IoC.Get<QueryResultsPaneViewModel>();//(_eventAggregator,_host);
+            TestResultsPane = IoC.Get<TestResultsPaneViewModel>();
 
             MeasureExpressionEditor = new MeasureExpressionEditorViewModel(this, _eventAggregator, Options);
 
@@ -337,6 +343,10 @@ namespace DaxStudio.UI.ViewModels
 
         private DAXEditorControl.DAXEditor _editor;
 
+        // Tracks the editor default font size that was last applied via UpdateSettings so we can
+        // detect a genuine change to Options.EditorFontSize without clobbering the user's zoom level.
+        private double _appliedEditorFontSize = double.NaN;
+
         internal NewDocumentParameters NewDocumentParameters { get; set; } = new NewDocumentParameters();
         #region "Event Handlers"
         /// <summary>
@@ -378,6 +388,11 @@ namespace DaxStudio.UI.ViewModels
                     _editor.OnPasting += OnPasting;
                     _editor.OnCopying += OnCopying;
                     RemoveShiftEnterBinding(_editor.TextArea.InputBindings);
+
+                    // Discover comment-script tests in the initial text and keep them in sync (debounced)
+                    // as the user types so the Test Results pane shows them in a pending state.
+                    _testDiscoveryTimer.Tick += OnTestDiscoveryTimerTick;
+                    ScheduleTestDiscovery();
                 }
                 switch (State)
                 {
@@ -393,9 +408,16 @@ namespace DaxStudio.UI.ViewModels
                 {
                     await CopyConnectionAsync(NewDocumentParameters.SourceDocument);
                 }
-                else
+                else if (!_isOfflineVpaxFile)
                 {
-                    await ConnectToServerAsync();
+                    // VPAX/OVPAX files load an offline connection during file import, so we
+                    // don't want to prompt the user with the connection dialog in that case.
+                    // If the freshly-loaded file declares its connection via a "--> CONNECT"
+                    // comment-script command, use that to connect instead of prompting; only
+                    // fall back to the normal connection flow when there was no such command
+                    // or it could not be established.
+                    if (!await TryAutoConnectFromCommentScriptAsync())
+                        await ConnectToServerAsync();
                 }
 
 
@@ -758,6 +780,7 @@ namespace DaxStudio.UI.ViewModels
                 LastModifiedUtcTime = DateTime.UtcNow;
                 NotifyOfPropertyChange(() => IsDirty);
                 NotifyOfPropertyChange(() => DisplayName);
+                ScheduleTestDiscovery();
             }
             catch (Exception ex)
             {
@@ -855,6 +878,7 @@ namespace DaxStudio.UI.ViewModels
                 DmvPane,
                 OutputPane,
                 QueryResultsPane,
+                TestResultsPane,
                 QueryHistoryPane,
                 QueryBuilder
             }));
@@ -989,6 +1013,25 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public void ActivateTestResults()
+        {
+            if (!TraceWatchers.Any(tw => tw.IsChecked))
+            {
+                // only activate if no trace watchers are active
+                // otherwise we assume that the user will want to keep the
+                // trace active. Visibility is controlled by the run path
+                // (ProcessCommentScriptPostQueryCommandsAsync) so a pane the
+                // user has closed is not force-reopened here.
+                TestResultsPane.Activate();
+            }
+        }
+
+        public void SetResultTabs(IList<DaxStudio.Core.Model.ResultTabDescriptor> tabs)
+        {
+            QueryResultsPane.SetResultTabs(tabs);
+            QueryResultsPane.Activate();
+        }
+
         public void QueryFailed(string errorMessage)
         {
             _queryStopWatch?.Stop();
@@ -1063,6 +1106,12 @@ namespace DaxStudio.UI.ViewModels
                 UnsubscribeAll();
 
                 StopFoldingManager();
+
+                if (close)
+                {
+                    _testDiscoveryTimer.Stop();
+                    _testDiscoveryTimer.Tick -= OnTestDiscoveryTimerTick;
+                }
 
                 IsClosing = close;
                 if (close)
@@ -1155,7 +1204,7 @@ namespace DaxStudio.UI.ViewModels
                 var loc = Document.GetLocation(0);
                 //SelectedWorksheet = QueryResultsPane.SelectedWorksheet;
 
-                if (Options.UseIndentCodeFolding) StartFoldingManager();
+                if (Options.UseStructuralCodeFolding || Options.UseIndentCodeFolding) StartFoldingManager();
 
                 // exit here if we are not in a state to run a query
                 // means something is using the connection like
@@ -1206,10 +1255,23 @@ namespace DaxStudio.UI.ViewModels
             {
                 if (foldingManager == null)
                 {
-                    foldingStrategy = new Model.IndentFoldingStrategy();
+                    foldingStrategy = CreateFoldingStrategy();
                     foldingManager = FoldingManager.Install(this.GetEditor().TextArea);
                 }
             }
+        }
+
+        /// <summary>
+        /// Builds the folding strategy for the current options: structural (parser based) folding
+        /// when <see cref="IGlobalOptions.UseStructuralCodeFolding"/> is enabled, otherwise the
+        /// indentation based strategy.
+        /// </summary>
+        private Model.IFoldingStrategy CreateFoldingStrategy()
+        {
+            if (Options.UseStructuralCodeFolding)
+                return new Model.StructuralFoldingStrategy();
+
+            return new Model.IndentFoldingStrategy { TabIndent = Options.EditorIndentationSize };
         }
 
         private void StopFoldingManager()
@@ -1222,7 +1284,47 @@ namespace DaxStudio.UI.ViewModels
         }
 
         DispatcherTimer foldingUpdateTimer = new DispatcherTimer();
-        private Model.IndentFoldingStrategy foldingStrategy;
+        // Debounces re-parsing of the editor text to discover comment-script tests ("--> TEST" /
+        // "--> ASSERT") so the Test Results pane can show them in a pending state while the user types.
+        private readonly DispatcherTimer _testDiscoveryTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(400) };
+
+        // Armed (before a query runs) when the script contains performance assertions and the Server
+        // Timings trace is active. Completed by the QueryTraceCompletedEvent handler once the trace
+        // has finished aggregating, so the post-query assertion step can wait for the metrics.
+        private TaskCompletionSource<bool> _serverTimingsAssertionTcs;
+
+        // Set at the start of a run when the script contains test assertions. Read by the
+        // QueryBatchStartedEvent handler (which fires from the background query loop) to transition each
+        // batch's tests to "running", and by the finally block to clean up if the run is aborted.
+        private bool _hasTestAsserts;
+
+        // The script batches for the current run (captured when the run resets the Test Results pane),
+        // so the per-batch assertion hooks (PrepareBatchAssertions / ProcessBatchAssertionsAsync) called
+        // from the background results-target loop can find each batch's assert commands by index.
+        private IReadOnlyList<CommentScript.ScriptBatch> _currentRunBatches;
+
+        // Batch indexes whose assertions have already been evaluated by the per-batch hook, so the
+        // end-of-run pass only handles batches the hook did not cover (e.g. a batch whose query errored).
+        private readonly HashSet<int> _evaluatedBatches = new HashSet<int>();
+
+        // Re-armed before each performance-assert batch's query runs (when the Server Timings trace is
+        // active) and completed by the QueryTraceCompletedEvent handler once that batch's trace slice has
+        // finished aggregating, so the batch's performance assertions read metrics captured in isolation.
+        private TaskCompletionSource<bool> _perBatchServerTimingsTcs;
+        private CancellationTokenSource _queryRunCancellationTokenSource;
+
+        // True when the cache has been cleared and no query has run since. Lets a per-batch
+        // "--> CLEARCACHE" skip a redundant clear (because the whole-script pre-query pass, or an
+        // earlier batch, already left the cache cold) without ever skipping a clear that is genuinely
+        // needed. Reset at the start of every run.
+        private bool _cacheClearedSinceLastQuery;
+
+        // The result sets and Server Timings metrics captured by "--> BASELINE" batches in the current
+        // run, so a later batch's "ASSERT ... BASELINE" can compare against them. Cleared at the start
+        // of every run so a baseline never leaks from one execution into the next.
+        private readonly DaxStudio.Core.Assertions.BaselineStore _baselineStore = new DaxStudio.Core.Assertions.BaselineStore();
+
+        private Model.IFoldingStrategy foldingStrategy;
         private FoldingManager foldingManager;
         private void UpdateFoldings()
         {
@@ -1230,7 +1332,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 if (foldingManager == null)
                 {
-                    foldingStrategy = new Model.IndentFoldingStrategy();
+                    foldingStrategy = CreateFoldingStrategy();
                     foldingManager = FoldingManager.Install(this.GetEditor().TextArea);
                 }
 
@@ -1486,7 +1588,7 @@ namespace DaxStudio.UI.ViewModels
 
         private void UpdateViewAsDescription(string connectionString)
         {
-            var builder = new System.Data.OleDb.OleDbConnectionStringBuilder(connectionString);
+            var builder = connectionString.ToConnectionStringBuilder();
             var effUser = builder.ContainsKey("EffectiveUserName") ? builder["EffectiveUserName"].ToString() : string.Empty;
             var roles = builder.ContainsKey("Roles") ? builder["Roles"].ToString() : string.Empty;
             SetViewAsDescription(effUser, roles);
@@ -1654,6 +1756,7 @@ namespace DaxStudio.UI.ViewModels
         public OutputPaneViewModel OutputPane { get; set; }
 
         public QueryResultsPaneViewModel QueryResultsPane { get; set; }
+        public TestResultsPaneViewModel TestResultsPane { get; set; }
         public MeasureExpressionEditorViewModel MeasureExpressionEditor { get; private set; }
         public QueryInfo QueryInfo { get; set; }
 
@@ -1661,7 +1764,33 @@ namespace DaxStudio.UI.ViewModels
         {
 
             // merge in any parameters
-            textProvider.QueryInfo = new QueryInfo(textProvider.EditorText, _eventAggregator);
+            textProvider.QueryInfo = new QueryInfo(textProvider.EditorText, _eventAggregator, Options);
+
+            // A malformed comment-script ("-->") command (e.g. "--> USE" with no database) is a hard
+            // error: surface a helpful message (with a red marker and "Goto" link on the offending
+            // command line) and abort the run rather than silently ignoring the command. The error is
+            // shown in both the Output pane and the results-pane error box, mirroring how a DAX engine
+            // error is displayed.
+            if (!string.IsNullOrEmpty(textProvider.QueryInfo.PreProcessError))
+            {
+                var msg = textProvider.QueryInfo.PreProcessError;
+                if (textProvider.QueryInfo.PreProcessErrorLine > 0)
+                {
+                    // ANTLR columns are 0-based; the editor marker expects a 1-based column.
+                    var line = textProvider.QueryInfo.PreProcessErrorLine;
+                    var column = textProvider.QueryInfo.PreProcessErrorColumn + 1;
+                    OutputError(msg, line, column);
+                    OutputQueryError(msg, line, column);
+                }
+                else
+                {
+                    OutputError(msg);
+                    OutputQueryError(msg);
+                }
+                ActivateResults();
+                return DialogResult.Cancel;
+            }
+
             DialogResult paramDialogResult = DialogResult.Skip;
             if (textProvider.QueryInfo.NeedsParameterValues)
             {
@@ -1742,7 +1871,7 @@ namespace DaxStudio.UI.ViewModels
         {
             var editor = GetEditor();
             var txt = GetQueryTextFromEditor();
-            var queryProcessor = new QueryInfo(txt, _eventAggregator);
+            var queryProcessor = new QueryInfo(txt, _eventAggregator, Options);
             txt = DaxHelper.replaceParamsInQuery(queryProcessor.ProcessedQuery, queryProcessor.Parameters);
             if (editor.Dispatcher.CheckAccess())
             {
@@ -2125,6 +2254,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 using (NewStatusBarMessage("Cancelling Query..."))
                 {
+                    _queryRunCancellationTokenSource?.Cancel();
                     var c = Connection;
                     c.Cancel();
                     QueryCompleted(true);
@@ -2158,7 +2288,6 @@ namespace DaxStudio.UI.ViewModels
                 }
 
                 NotifyOfPropertyChange(() => CanRunQuery);
-                if (message.RunStyle.ClearCache) await ClearDatabaseCacheAsync();
 
                 IsQueryRunning = true;
 
@@ -2238,6 +2367,21 @@ namespace DaxStudio.UI.ViewModels
 
         private async Task RunQueryInternalAsync(RunQueryEvent message)
         {
+            _queryRunCancellationTokenSource?.Dispose();
+            _queryRunCancellationTokenSource = new CancellationTokenSource();
+
+            // Whether the result grid should be displayed for this run. Resolved from the
+            // comment-script "--> RESULTS ON|OFF" directives / presence of ASSERT commands once the
+            // query has been pre-processed (which is when QueryInfo.ScriptBatches is built), then
+            // applied after the assertion engine has consumed the result data.
+            bool showResultsGrid = true;
+
+            // Reset the per-run assertion flag (a field, not a local, so the QueryBatchStartedEvent
+            // handler that fires from the background query loop can see it). When true the Test Results
+            // pane is reset to a pending (clock) state up-front, each batch's tests are marked "running"
+            // as that batch's query executes, and all are updated to their final outcome once done.
+            _hasTestAsserts = false;
+
             using (var msg = NewStatusBarMessage("Running Query..."))
             {
 
@@ -2340,13 +2484,59 @@ namespace DaxStudio.UI.ViewModels
                     }
                     else
                     {
+                        // If this run contains test assertions, reset the Test Results pane so every
+                        // discovered test shows a pending (clock) icon - clearing any Passed/Failed
+                        // results from a previous run - before we mark them running and then update them
+                        // with their final outcome. Done before the pre-query commands so the tests read
+                        // as pending while the connection / traces are being set up.
+                        _hasTestAsserts = ResetTestResultsForRun(message.QueryProvider);
+
+                        // Capture the batches for the per-batch assertion hooks and reset the
+                        // per-run evaluation tracking (the hooks run from the background query loop).
+                        _currentRunBatches = message.QueryProvider?.QueryInfo?.ScriptBatches;
+                        _evaluatedBatches.Clear();
+                        _perBatchServerTimingsTcs = null;
+                        _baselineStore.Clear();
+                        _cacheClearedSinceLastQuery = false;
+
+                        // Process any comment-script commands that must run before the query (e.g.
+                        // "--> CONNECT", "--> CLEARCACHE"). If a CONNECT command was present but the
+                        // connection could not be established, abort the run.
+                        if (!await ProcessCommentScriptPreQueryCommandsAsync(message.QueryProvider, message.RunStyle.ClearCache))
+                        {
+                            IsQueryRunning = false;
+                            return;
+                        }
+
                         Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RunQueryInternalAsync), "Sending QueryStarted Event");
+
+                        // If the script has performance assertions (or a SAVEAS that writes a .daxx
+                        // package, which embeds the trace results) and the Server Timings trace is
+                        // active, arm a completion signal now (before the query runs) so the
+                        // post-query step can wait for the trace to finish aggregating its metrics
+                        // (which happens asynchronously after the query returns) before reading /
+                        // saving them. See HandleAsync(QueryTraceCompletedEvent).
+                        _serverTimingsAssertionTcs =
+                            (ScriptHasPerformanceAsserts(message.QueryProvider) || ScriptHasDaxxSaveAs(message.QueryProvider))
+                            && (TraceWatchers.OfType<ServerTimesViewModel>().FirstOrDefault()?.IsChecked ?? false)
+                                ? new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously)
+                                : null;
+
                         await _eventAggregator.PublishAsync(new QueryStartedEvent());
 
+                        // Now that PreProcessQuery has (re)built QueryInfo.ScriptBatches for the
+                        // current query text, resolve whether the result grid should be shown based
+                        // on the "--> RESULTS ON|OFF" directive / presence of ASSERT commands.
+                        showResultsGrid = Utils.CommentScriptCommandHelper.ResolveResultsGridVisible(
+                            message.QueryProvider?.QueryInfo?.ScriptBatches);
+
+                        // Prefer the history text (keeps comment-script "-->" commands visible on the
+                        // new pre-processor path); falls back to the executable QueryText otherwise.
+                        var historyText = (message.QueryProvider.QueryInfo?.HistoryText ?? message.QueryProvider.QueryText).Trim();
                         if (message.QueryProvider is ISaveState)
-                            _currentQueryDetails = CreateQueryHistoryEvent((ISaveState)message.QueryProvider, message.QueryProvider.QueryText.Trim(), ParameterHelper.GetParameterXml(message.QueryProvider.QueryInfo));
+                            _currentQueryDetails = CreateQueryHistoryEvent((ISaveState)message.QueryProvider, historyText, ParameterHelper.GetParameterXml(message.QueryProvider.QueryInfo));
                         else
-                            _currentQueryDetails = CreateQueryHistoryEvent(message.QueryProvider.QueryText.Trim(), ParameterHelper.GetParameterXml(message.QueryProvider.QueryInfo));
+                            _currentQueryDetails = CreateQueryHistoryEvent(historyText, ParameterHelper.GetParameterXml(message.QueryProvider.QueryInfo));
 
 
 
@@ -2354,7 +2544,13 @@ namespace DaxStudio.UI.ViewModels
                         ClearQueryError();
                         StartTimer();
 
+                        // The discovered tests were reset to pending above; each batch's tests now
+                        // transition to "running" as its query executes, driven by the
+                        // QueryBatchStartedEvent raised per batch from the results target (batches run
+                        // sequentially). See HandleAsync(QueryBatchStartedEvent).
                         await message.ResultsTarget.OutputResultsAsync(this, message.QueryProvider, null);
+
+                        await ProcessCommentScriptPostQueryCommandsAsync(message.QueryProvider);
 
                         // if the server times trace watcher is not active then just record client timings
                         if (!TraceWatchers.OfType<ServerTimesViewModel>().First().IsChecked && _currentQueryDetails != null)
@@ -2364,9 +2560,21 @@ namespace DaxStudio.UI.ViewModels
                             await _eventAggregator.PublishAsync(_currentQueryDetails);
                         }
 
+                        // Honor "--> RESULTS OFF" (or the implicit "asserts hide results" default) by
+                        // clearing the grid now that the assertion engine has already read the data.
+                        if (!showResultsGrid)
+                        {
+                            ClearQueryResults();
+                            QueryResultsPane.ResultsMessage = "Results not displayed (--> RESULTS OFF)";
+                        }
+
                         QueryCompleted();
 
                     }
+                }
+                catch (OperationCanceledException) when (_queryRunCancellationTokenSource?.IsCancellationRequested == true)
+                {
+                    // CancelQuery reports the cancellation and completes the active query.
                 }
                 catch (AggregateException aggEx)
                 {
@@ -2394,13 +2602,1067 @@ namespace DaxStudio.UI.ViewModels
 
                 finally
                 {
+                    _queryRunCancellationTokenSource?.Dispose();
+                    _queryRunCancellationTokenSource = null;
                     IsQueryRunning = false;
                     NotifyOfPropertyChange(() => CanRunQuery);
                     StopTimer();
-                    ActivateResults();
+                    // If the run was aborted (e.g. the query threw) before the assertions could be
+                    // evaluated, any tests left showing the "running" icon are marked as errored so the
+                    // pane does not leave them spinning indefinitely.
+                    if (_hasTestAsserts && TestResultsPane.RunningCount > 0)
+                        TestResultsPane.MarkRunningAsError("Test not evaluated - the query did not complete");
+                    if (showResultsGrid)
+                        ActivateResults();
+                    else if (TestResultsPane.Results.Count > 0)
+                        ActivateTestResults();
+                    else
+                        ActivateOutput();
                 }
 
             }
+        }
+
+
+        // Attempts to establish a connection from a "--> CONNECT" (and optional "--> USE") comment-script
+        // command found in the first batch of the freshly-loaded file, so that opening a file that already
+        // declares its connection does not prompt the user with the connection dialog.
+        // Only active when the new (ANTLR) pre-processor is enabled, because that is the only path that
+        // parses the "-->" command lines into ConnectCommand/UseCommand objects.
+        // Returns true when a CONNECT command was present AND the connection was established (the caller
+        // should then skip the connection dialog); false when there was no CONNECT command to act on or the
+        // connection could not be established (the caller should fall back to its normal connection flow).
+        private async Task<bool> TryAutoConnectFromCommentScriptAsync()
+        {
+            // The comment-script commands are only parsed on the new pre-processor path.
+            if (Options == null || !Options.UseNewPreprocessor) return false;
+
+            var text = EditorText;
+            if (string.IsNullOrWhiteSpace(text)) return false;
+
+            CommentScript.ConnectCommand connectCommand;
+            string targetDatabase;
+            try
+            {
+                var queryInfo = new QueryInfo(text, _eventAggregator, Options);
+
+                // Only look at the first batch - the connection for the document is declared up front.
+                if (!Utils.CommentScriptCommandHelper.TryGetAutoConnectCommand(
+                        queryInfo.ScriptBatches, out connectCommand, out targetDatabase))
+                    return false;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(TryAutoConnectFromCommentScriptAsync), ex.Message);
+                return false;
+            }
+
+            // Establish the connection using the shared comment-script connect logic. On failure the error
+            // is surfaced by ExecuteConnectCommandAsync and we return false so the caller falls back to the
+            // connection dialog.
+            return await ExecuteConnectCommandAsync(connectCommand, targetDatabase);
+        }
+
+
+        // Processes the comment-script commands that must run before the DAX query (currently
+        // "--> CONNECT", "--> USE", "--> CLEARCACHE" and "--> TRACE"). CONNECT is handled first
+        // because it changes the connection that the remaining commands and the query run against.
+        // A "--> USE" in the same batch is applied as part of the CONNECT (so it behaves like a
+        // database passed on the command line and the database-selection dialog is not shown); a
+        // standalone USE simply switches the database on the current connection if it is not already
+        // selected. CLEARCACHE runs next, and TRACE last so the trace only captures the query itself.
+        // Returns true when the pre-query commands succeeded (or there were none); false when a
+        // command that must halt the run (CONNECT or USE) could not be completed (the caller should
+        // then abort the run).
+        private async Task<bool> ProcessCommentScriptPreQueryCommandsAsync(IQueryTextProvider queryProvider, bool clearCacheRequested)
+        {
+            var batches = queryProvider?.QueryInfo?.ScriptBatches;
+            if (batches == null || batches.Count == 0) return true;
+
+            // Expand any "$(...)" script-variable / built-in references in command arguments (file
+            // paths, connection/database targets, etc.) before the commands are used. Runs in command
+            // order so a "--> SET" is visible only to later commands. A bad reference (undefined
+            // variable, unknown namespace, etc.) aborts the run with a helpful message.
+            try
+            {
+                CommentScript.ScriptVariableExpander.ExpandBatches(batches);
+            }
+            catch (CommentScript.CommentScriptCommandException ex)
+            {
+                OutputError(ex.Message);
+                return false;
+            }
+
+            var commands = batches.SelectMany(b => b.Commands).ToList();
+
+            var connectCommand = commands.OfType<CommentScript.ConnectCommand>().FirstOrDefault();
+            var useCommand = commands.OfType<CommentScript.UseCommand>().LastOrDefault();
+            var targetDatabase = Utils.CommentScriptCommandHelper.NormalizeDatabaseName(useCommand?.DatabaseName);
+
+            if (connectCommand != null)
+            {
+                // Pass the requested database into the connection so that, on a fresh connection, it
+                // is selected as part of connecting (bypassing the database dialog) exactly like a
+                // database supplied on the command line. When we are already connected to the
+                // requested server the connect is a no-op and the database is switched instead.
+                if (!await ExecuteConnectCommandAsync(connectCommand, targetDatabase))
+                    return false;
+            }
+            else if (useCommand != null)
+            {
+                // No CONNECT in this batch - just switch the database on the current connection.
+                if (!await SwitchDatabaseAsync(targetDatabase, announceAlreadySelected: true))
+                    return false;
+            }
+
+            // "--> CLEARCACHE" runs against the (possibly just-changed) connection before the query.
+            // This up-front pass clears the cache once for the whole script (unchanged behaviour);
+            // batches that need their own clear before their query are handled by
+            // ProcessBatchPreQueryCommandsAsync, which uses the flag set here to avoid a redundant clear.
+            var hasClearCacheCommand = commands.OfType<CommentScript.ClearCacheCommand>().Any();
+            if (hasClearCacheCommand || clearCacheRequested)
+            {
+                _cacheClearedSinceLastQuery = hasClearCacheCommand
+                    ? await ExecuteClearCacheCommandAsync()
+                    : await ExecuteRunStyleClearCacheAsync();
+            }
+
+            // "--> TRACE <type> [ON|OFF]" toggles trace watchers. Started last so the trace is fresh
+            // and only captures the query (not the CLEARCACHE above).
+            var traceCommands = commands.OfType<CommentScript.TraceCommand>().ToList();
+            if (traceCommands.Count > 0)
+                await ExecuteTraceCommandsAsync(traceCommands);
+
+            // Performance assertions ("--> ASSERT DURATION|SE_CPU|SE_QUERIES ...") are evaluated
+            // against the Server Timings trace, so auto-start it (if an explicit TRACE command or a
+            // previous run has not already) before the query runs - otherwise the trace would miss
+            // this query's events and every performance assertion would report "metric not captured".
+            // "--> BASELINE" does the same because it always snapshots its timings.
+            if (commands.Any(c => c is CommentScript.AssertCommand || c is CommentScript.BaselineCommand))
+                await EnsureServerTimingsForPerformanceAssertsAsync();
+
+            // "--> EXPORT METRICS <file>" writes a .vpax file for the connected model. It is a
+            // side-effect command (independent of the batch query), so it runs here alongside the
+            // other pre-query commands.
+            var exportCommands = commands.OfType<CommentScript.ExportCommand>().ToList();
+            if (exportCommands.Count > 0)
+                await ExecuteExportCommandsAsync(exportCommands);
+
+            return true;
+        }
+
+        // Executes "--> EXPORT METRICS <file>" commands by exporting a .vpax for each requested path.
+        private async Task ExecuteExportCommandsAsync(System.Collections.Generic.List<CommentScript.ExportCommand> exportCommands)
+        {
+            foreach (var export in exportCommands)
+            {
+                if (export.Target != CommentScript.ExportTarget.Metrics) continue;
+
+                if (string.IsNullOrWhiteSpace(export.FileName))
+                {
+                    OutputError("--> EXPORT METRICS requires a file path");
+                    continue;
+                }
+
+                if (!IsConnected)
+                {
+                    OutputError("--> EXPORT METRICS requires a connection to a data source");
+                    continue;
+                }
+
+                await ExportAnalysisDataAsync(export.FileName, string.Empty, string.Empty);
+            }
+        }
+
+        // Restarts the debounce timer so test discovery runs a short time after the user stops typing.
+        private void ScheduleTestDiscovery()
+        {
+            if (TestResultsPane == null) return;
+            _testDiscoveryTimer.Stop();
+            _testDiscoveryTimer.Start();
+        }
+
+        private void OnTestDiscoveryTimerTick(object sender, EventArgs e)
+        {
+            _testDiscoveryTimer.Stop();
+            RefreshDiscoveredTests();
+        }
+
+        // Parses the current editor text and shows any discovered comment-script tests ("--> TEST" /
+        // "--> ASSERT [ROWCOUNT|TABLE|...]") in the Test Results pane in a greyed-out "pending" state
+        // (with a clock icon), the way Visual Studio's Test Explorer lists not-yet-run tests. Real
+        // Passed/Failed results from a run are preserved while unrelated text is edited (see
+        // TestResultsPaneViewModel.TryUpdateDiscoveredTests) and only reset back to pending once the
+        // assertions themselves change. This is a no-op unless the new pre-processor is enabled.
+        private void RefreshDiscoveredTests()
+        {
+            try
+            {
+                if (TestResultsPane == null || _editor == null) return;
+                // Don't disturb the pane while a run is populating / has just populated it.
+                if (IsQueryRunning) return;
+                if (Options == null || !Options.UseNewPreprocessor) return;
+
+                var text = _editor.Text;
+
+                // Cheap pre-filter: only parse when the text actually contains a test/assert command,
+                // so ordinary queries never pay the cost of parsing on every keystroke.
+                if (string.IsNullOrEmpty(text)
+                    || text.IndexOf("-->", StringComparison.Ordinal) < 0
+                    || (text.IndexOf("ASSERT", StringComparison.OrdinalIgnoreCase) < 0
+                        && text.IndexOf("TEST", StringComparison.OrdinalIgnoreCase) < 0))
+                {
+                    TestResultsPane.TryUpdateDiscoveredTests(null);
+                    return;
+                }
+
+                // Parse the comment-script commands directly (no event side-effects, unlike QueryInfo,
+                // which would post an Output warning for the partially-typed / invalid DAX that is
+                // normal while editing). The XMLA <Parameters> block is split off first to mirror the
+                // production run path.
+                DaxStudio.Core.Utils.DaxHelper.SplitParametersBlock(text, out var body, out _);
+                var parseResult = DaxStudio.Parsers.PreProcessor.AntlrPreProcessor.Parse(body);
+                var discovered = DaxStudio.Core.Assertions.AssertionEngine.DiscoverTests(parseResult.Batches);
+                TestResultsPane.TryUpdateDiscoveredTests(discovered);
+            }
+            catch (Exception ex)
+            {
+                // Discovery is a best-effort convenience; never let a parse hiccup surface an error.
+                Log.Warning(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RefreshDiscoveredTests), ex.Message);
+            }
+        }
+
+        // At the start of a run, if the script contains test assertions, resets the Test Results pane
+        // to show every discovered test in a pending (clock) state - clearing any Passed/Failed/Error
+        // results from a previous run - and reveals the pane. Returns true when the run needs the
+        // per-batch assertion hooks, so the caller knows to transition the tests to "running" once the
+        // query starts and to clean up any left "running" if the run is aborted.
+        //
+        // A "--> BASELINE" batch also needs the hooks (it has to snapshot its results and timings) even
+        // though it is not itself an assertion, so it makes this return true without adding a pending
+        // row to the pane.
+        private bool ResetTestResultsForRun(IQueryTextProvider queryProvider)
+        {
+            if (TestResultsPane == null) return false;
+            var batches = queryProvider?.QueryInfo?.ScriptBatches;
+            if (batches == null || batches.Count == 0) return false;
+            if (!batches.Any(BatchNeedsAssertionHooks)) return false;
+
+            if (batches.Any(BatchHasAsserts))
+            {
+                var discovered = DaxStudio.Core.Assertions.AssertionEngine.DiscoverTests(batches);
+                TestResultsPane.SetPendingForRun(discovered);
+                TestResultsPane.IsVisible = true;
+            }
+            return true;
+        }
+
+        // True when a batch contains at least one assertion command ("--> ASSERT [ROWCOUNT|TABLE|...]").
+        private static bool BatchHasAsserts(CommentScript.ScriptBatch b) =>
+            b.Commands.OfType<CommentScript.AssertCommand>().Any()
+            || b.Commands.OfType<CommentScript.AssertRowcountCommand>().Any()
+            || b.Commands.OfType<CommentScript.AssertTableCommand>().Any();
+
+        // True when a batch is a "--> BASELINE" capture.
+        private static bool BatchIsBaseline(CommentScript.ScriptBatch b) =>
+            b.Commands.OfType<CommentScript.BaselineCommand>().Any();
+
+        // True when the per-batch hooks must run for a batch - either to evaluate its assertions or to
+        // capture it as a baseline.
+        private static bool BatchNeedsAssertionHooks(CommentScript.ScriptBatch b) =>
+            BatchHasAsserts(b) || BatchIsBaseline(b);
+
+        // Runs the comment-script assertion commands ("--> ASSERT [ROWCOUNT|TABLE|...]") after the
+        // query has produced its results and populates the Test Results pane. Batches are normally
+        // evaluated one-at-a-time by the per-batch hook (ProcessBatchAssertionsAsync) as each batch's
+        // query completes, so this end-of-run pass only covers any assert batch the hook did not reach
+        // (e.g. a batch whose query errored) and then reports the overall summary. The shared,
+        // UI-independent AssertionEngine (DaxStudio.Core.Assertions) does the actual evaluation so the
+        // same logic is used by the dscmd CLI.
+        private async Task ProcessCommentScriptPostQueryCommandsAsync(IQueryTextProvider queryProvider)
+        {
+            var batches = queryProvider?.QueryInfo?.ScriptBatches;
+            if (batches == null || batches.Count == 0) return;
+
+            // "--> SAVEAS" runs after the query so a .daxx snapshot captures the query results and
+            // (when Server Timings is active) the server-timing / query-plan traces. Handle it before
+            // the assert-only early return below because a script can contain SAVEAS without asserts.
+            var saveAsCommands = batches
+                .SelectMany(b => b.Commands)
+                .OfType<CommentScript.SaveAsCommand>()
+                .ToList();
+            if (saveAsCommands.Count > 0)
+            {
+                // If any target is a .daxx package and Server Timings is running, wait for the trace to
+                // finish aggregating so the embedded server-timings data is complete before we save.
+                if (saveAsCommands.Any(c => IsDaxxPath(c.FileName)))
+                    await WaitForServerTimingsAssertionDataAsync();
+
+                foreach (var cmd in saveAsCommands)
+                    ExecuteSaveAsCommand(cmd.FileName);
+            }
+
+            // Only touch the pane when there is at least one assertion to evaluate across all batches.
+            if (!batches.Any(BatchHasAsserts)) return;
+
+            // Fallback: evaluate any assert batch the per-batch hook did not cover. Performance
+            // assertions in such a batch fall back to the whole-run trace wait (armed before the query).
+            var uncoveredHasPerf = false;
+            for (int i = 0; i < batches.Count; i++)
+            {
+                if (BatchNeedsAssertionHooks(batches[i]) && !_evaluatedBatches.Contains(i)
+                    && (BatchIsBaseline(batches[i]) || batches[i].Commands.OfType<CommentScript.AssertCommand>().Any()))
+                {
+                    uncoveredHasPerf = true;
+                    break;
+                }
+            }
+            if (uncoveredHasPerf) await WaitForServerTimingsAssertionDataAsync();
+
+            var perfMetrics = BuildPerformanceMetrics();
+
+            System.Data.DataTable TableForBatch(int index)
+            {
+                var tables = ResultsDataSet?.Tables;
+                if (tables == null || tables.Count == 0) return null;
+                return index < tables.Count ? tables[index] : tables[0];
+            }
+
+            // Capture any baseline batch the per-batch hook did not reach before evaluating the
+            // assertions that reference it, so batch order is still honoured on the fallback path.
+            // Performance metrics are deliberately NOT captured here - see CaptureBatchBaselines.
+            for (int i = 0; i < batches.Count; i++)
+            {
+                if (!BatchIsBaseline(batches[i]) || _evaluatedBatches.Contains(i)) continue;
+
+                var baselineTable = TableForBatch(i);
+                CaptureBatchBaselines(batches[i], baselineTable != null
+                    ? new List<System.Data.DataTable> { baselineTable }
+                    : new List<System.Data.DataTable>(), perfMetrics, capturePerformanceMetrics: false);
+            }
+
+            for (int i = 0; i < batches.Count; i++)
+            {
+                var batch = batches[i];
+                if (!BatchHasAsserts(batch) || _evaluatedBatches.Contains(i)) continue;
+
+                var dataTable = TableForBatch(i);
+
+                var batchTables = dataTable != null
+                    ? new List<System.Data.DataTable> { dataTable }
+                    : new List<System.Data.DataTable>();
+
+                var batchResults = EvaluateBatchAssertions(i, batch, batchTables, perfMetrics, AssertionBaseDirectory, _baselineStore);
+                _evaluatedBatches.Add(i);
+                TestResultsPane.SetBatchResults(i, batchResults);
+            }
+
+            TestResultsPane.IsVisible = true;
+            ActivateTestResults();
+
+            var passed = TestResultsPane.PassedCount;
+            var failed = TestResultsPane.FailedCount;
+            var errored = TestResultsPane.ErrorCount;
+            var summary = $"Tests: {passed} passed, {failed} failed, {errored} errors";
+            if (failed > 0 || errored > 0)
+                OutputWarning(summary);
+            else
+                OutputMessage(summary);
+
+            await Task.CompletedTask;
+        }
+
+        // Builds the performance metric dictionary consumed by AssertionEngine.EvaluatePerformance
+        // from the Server Timings trace watcher, when it is active and has captured data. When the
+        // trace is not running an empty dictionary is returned and the engine reports an error for
+        // any performance assertion (metric not captured).
+        private IReadOnlyDictionary<CommentScript.PerformanceProperty, double> BuildPerformanceMetrics()
+        {
+            var metrics = new Dictionary<CommentScript.PerformanceProperty, double>();
+            var serverTimings = TraceWatchers.OfType<ServerTimesViewModel>().FirstOrDefault();
+            if (serverTimings != null && serverTimings.IsChecked && serverTimings.HasData)
+            {
+                metrics[CommentScript.PerformanceProperty.Duration] = serverTimings.TotalDuration;
+                metrics[CommentScript.PerformanceProperty.SE_CPU] = serverTimings.StorageEngineCpu;
+                metrics[CommentScript.PerformanceProperty.SE_QUERIES] = serverTimings.StorageEngineQueryCount;
+            }
+            return metrics;
+        }
+
+        // True when the script contains a performance assertion ("--> ASSERT DURATION|SE_CPU|SE_QUERIES ...")
+        // or a "--> BASELINE" capture. A baseline always snapshots its Server Timings metrics (so that
+        // adding a performance assertion in a later batch never requires re-running the baseline), which
+        // means it needs the trace running just like a performance assertion does.
+        private static bool ScriptHasPerformanceAsserts(IQueryTextProvider queryProvider)
+        {
+            var batches = queryProvider?.QueryInfo?.ScriptBatches;
+            if (batches == null) return false;
+            return batches.SelectMany(b => b.Commands)
+                .Any(c => c is CommentScript.AssertCommand || c is CommentScript.BaselineCommand);
+        }
+
+        // True when the script contains a "--> SAVEAS <file>.daxx" command. A .daxx package embeds
+        // the query results and trace output, so we arm the Server Timings completion signal for it
+        // (same as a performance assertion) to ensure the trace has finished before the save.
+        private static bool ScriptHasDaxxSaveAs(IQueryTextProvider queryProvider)
+        {
+            var batches = queryProvider?.QueryInfo?.ScriptBatches;
+            if (batches == null) return false;
+            return batches.SelectMany(b => b.Commands)
+                .OfType<CommentScript.SaveAsCommand>()
+                .Any(c => IsDaxxPath(c.FileName));
+        }
+
+        private static bool IsDaxxPath(string path)
+            => !string.IsNullOrEmpty(path)
+               && path.EndsWith(".daxx", StringComparison.OrdinalIgnoreCase);
+
+        // Executes a "--> SAVEAS <path>" command: writes a snapshot of the current document to <path>
+        // without altering this document's own FileName / dirty state / open tab. A .daxx target writes
+        // a full package (query + trace watchers + SHOW output + query results); any other extension
+        // writes just the query text. Errors are reported to the Output pane and do not abort the run.
+        private void ExecuteSaveAsCommand(string path)
+        {
+            try
+            {
+                var dir = System.IO.Path.GetDirectoryName(path);
+                if (!string.IsNullOrEmpty(dir) && !System.IO.Directory.Exists(dir))
+                    System.IO.Directory.CreateDirectory(dir);
+
+                if (IsDaxxPath(path))
+                    WritePackageFile(path);
+                else
+                    WriteSingleFile(path);
+
+                OutputMessage($"--> SAVEAS: saved '{path}'");
+                _eventAggregator.PublishAsync(new FolderOutputMessage($"{System.IO.Path.GetFileName(path)} saved", System.IO.Path.GetDirectoryName(path)));
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(ExecuteSaveAsCommand), ex.Message);
+                OutputError($"--> SAVEAS failed for '{path}': {ex.Message}");
+            }
+        }
+
+        // Waits for the Server Timings trace to finish aggregating (the QueryTraceCompletedEvent
+        // handler completes the task-completion-source armed before the query ran) so performance
+        // metrics are populated before the assertions read them. Bounded by the trace-startup
+        // timeout; a timeout only warns and the assertions then report the metrics as not captured.
+        private async Task WaitForServerTimingsAssertionDataAsync()
+            => await WaitForServerTimingsAssertionDataAsync(_serverTimingsAssertionTcs);
+
+        private async Task WaitForServerTimingsAssertionDataAsync(TaskCompletionSource<bool> tcs)
+        {
+            if (tcs == null) return;
+
+            var timeoutMs = Math.Max(1, Options.TraceStartupTimeout) * 1000;
+            var completed = await Task.WhenAny(tcs.Task, Task.Delay(timeoutMs));
+            if (completed != tcs.Task)
+                OutputWarning("--> ASSERT: timed out waiting for the Server Timings trace to complete; performance assertions may report metrics as not captured");
+        }
+
+        // Called (and awaited) by the results-target batch loop before a batch's query runs, ahead of
+        // PrepareBatchAssertions. Runs the comment-script commands that must take effect per batch
+        // rather than once per script.
+        //
+        // Today that is just "--> CLEARCACHE": the whole-script pre-query pass clears the cache only
+        // once, which is not enough for a baseline comparison where the baseline batch and the candidate
+        // batch each need the same cold start (otherwise the candidate runs against a cache the baseline
+        // query just warmed, and "ASSERT DURATION <= BASELINE" is biased towards passing).
+        //
+        // The clear is skipped only when the cache is already cold - i.e. nothing has run since the last
+        // clear - so a batch never clears twice in a row, and never misses a clear it needs regardless of
+        // which batch is the first to execute.
+        public async Task ProcessBatchPreQueryCommandsAsync(int batchIndex)
+        {
+            var batches = _currentRunBatches;
+            if (batches == null || batchIndex < 0 || batchIndex >= batches.Count) return;
+
+            if (batches[batchIndex].Commands.OfType<CommentScript.ClearCacheCommand>().Any()
+                && !_cacheClearedSinceLastQuery)
+            {
+                await ExecuteClearCacheCommandAsync();
+            }
+
+            // This batch's query runs next and will warm the cache again.
+            _cacheClearedSinceLastQuery = false;
+        }
+
+        public async Task WaitForBatchDelayAsync(int milliseconds)
+        {
+            if (milliseconds <= 0) return;
+            var cancellationToken = _queryRunCancellationTokenSource?.Token ?? CancellationToken.None;
+            var resumeTimer = _queryStopWatch?.IsRunning == true;
+            if (resumeTimer) _queryStopWatch.Stop();
+            try
+            {
+                await Task.Delay(milliseconds, cancellationToken);
+            }
+            finally
+            {
+                if (resumeTimer && !cancellationToken.IsCancellationRequested)
+                    _queryStopWatch.Start();
+            }
+        }
+
+        // Called synchronously by the results-target batch loop before a batch's query runs. When the
+        // batch has performance assertions or is a "--> BASELINE" capture, and the Server Timings trace
+        // is active, resets that trace and arms a fresh completion signal so the batch's metrics are
+        // captured in isolation (mirrors the benchmark's per-iteration OnReset - ServerTimesModel
+        // .ProcessResults early-returns while the previous results are still present, so only the first
+        // batch would otherwise be captured).
+        public void PrepareBatchAssertions(int batchIndex)
+        {
+            if (!_hasTestAsserts) return;
+            var batches = _currentRunBatches;
+            if (batches == null || batchIndex < 0 || batchIndex >= batches.Count) return;
+
+            var batch = batches[batchIndex];
+            // A baseline batch always captures its timings, so it needs its own isolated trace slice
+            // exactly like a batch that asserts on them.
+            var needsTimings = batch.Commands.OfType<CommentScript.AssertCommand>().Any() || BatchIsBaseline(batch);
+            var serverTimings = TraceWatchers.OfType<ServerTimesViewModel>().FirstOrDefault();
+
+            if (needsTimings && (serverTimings?.IsChecked ?? false))
+            {
+                _perBatchServerTimingsTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                Execute.OnUIThread(() => serverTimings.OnReset());
+            }
+            else
+            {
+                _perBatchServerTimingsTcs = null;
+            }
+        }
+
+        // Called (and awaited) by the results-target batch loop after a batch's query has produced its
+        // result tables, before the next batch starts. Captures the batch as a baseline when it carries a
+        // "--> BASELINE" command, and evaluates just this batch's assertions - waiting for and capturing
+        // this batch's Server Timings slice for any performance assertions - and updates the Test Results
+        // pane for this batch only, so a completed batch shows its outcome while later batches remain
+        // pending. A no-op when the script has no assertions or baselines.
+        public async Task ProcessBatchAssertionsAsync(int batchIndex, IReadOnlyList<System.Data.DataTable> batchTables)
+        {
+            if (!_hasTestAsserts) return;
+            var batches = _currentRunBatches;
+            if (batches == null || batchIndex < 0 || batchIndex >= batches.Count) return;
+
+            var batch = batches[batchIndex];
+            var isBaseline = BatchIsBaseline(batch);
+            if (!BatchHasAsserts(batch) && !isBaseline) { _evaluatedBatches.Add(batchIndex); return; }
+
+            // For performance assertions and baseline captures, wait for THIS batch's trace slice to
+            // finish aggregating.
+            if ((isBaseline || batch.Commands.OfType<CommentScript.AssertCommand>().Any()) && _perBatchServerTimingsTcs != null)
+                await WaitForServerTimingsAssertionDataAsync(_perBatchServerTimingsTcs);
+
+            var perfMetrics = BuildPerformanceMetrics();
+
+            if (isBaseline)
+                CaptureBatchBaselines(batch, batchTables, perfMetrics);
+
+            if (!BatchHasAsserts(batch)) { _evaluatedBatches.Add(batchIndex); return; }
+
+            var results = EvaluateBatchAssertions(batchIndex, batch, batchTables, perfMetrics, AssertionBaseDirectory, _baselineStore);
+            _evaluatedBatches.Add(batchIndex);
+
+            await Execute.OnUIThreadAsync(() =>
+            {
+                TestResultsPane.SetBatchResults(batchIndex, results);
+                TestResultsPane.IsVisible = true;
+                return Task.CompletedTask;
+            });
+        }
+
+        // Snapshots a "--> BASELINE" batch's result set and Server Timings metrics so later batches can
+        // assert against them. The result table is copied by the store because the live results DataSet
+        // is reused and cleared as subsequent batches run.
+        //
+        // capturePerformanceMetrics is false on the end-of-run fallback path, where the only metrics
+        // available are whole-run totals rather than this batch's isolated slice. Capturing those would
+        // make the baseline and the candidate read the SAME numbers, so every performance assertion
+        // would pass unconditionally - a false green. Capturing no metrics instead makes those
+        // assertions report an error, which is the honest outcome.
+        private void CaptureBatchBaselines(
+            CommentScript.ScriptBatch batch,
+            IReadOnlyList<System.Data.DataTable> batchTables,
+            IReadOnlyDictionary<CommentScript.PerformanceProperty, double> perfMetrics,
+            bool capturePerformanceMetrics = true)
+        {
+            var dataTable = (batchTables != null && batchTables.Count > 0) ? batchTables[0] : null;
+            var metrics = capturePerformanceMetrics ? perfMetrics : null;
+
+            foreach (var cmd in batch.Commands.OfType<CommentScript.BaselineCommand>())
+            {
+                _baselineStore.Capture(cmd.Name, dataTable, metrics, cmd.Runs);
+
+                // A synthesised capture (created to satisfy an "ASSERT ... PREVIOUS" in a later batch)
+                // has a generated name the user never wrote, so describe it by what it is instead.
+                var described = cmd.IsSynthesised
+                    ? " (previous batch)"
+                    : cmd.IsDefault ? string.Empty : $" \"{cmd.Name}\"";
+                OutputMessage($"--> BASELINE{described} captured: {dataTable?.Rows.Count ?? 0} row(s)");
+
+                if (!capturePerformanceMetrics)
+                    OutputWarning($"--> BASELINE{described}: per-batch Server Timings were not captured for this output target, so performance assertions against it will report an error. Use the Grid output target to compare timings.");
+                else if (metrics == null || metrics.Count == 0)
+                    OutputWarning($"--> BASELINE{described}: no Server Timings metrics were captured - performance assertions against it will report an error.");
+            }
+        }
+
+        // Evaluates every assertion command in a single batch against that batch's result tables and
+        // performance metrics, stamping each result with the batch index. Shared by the per-batch hook
+        // and the end-of-run fallback so both produce identical results.
+        private static List<DaxStudio.Core.Assertions.TestResult> EvaluateBatchAssertions(
+            int batchIndex, CommentScript.ScriptBatch batch,
+            IReadOnlyList<System.Data.DataTable> batchTables,
+            IReadOnlyDictionary<CommentScript.PerformanceProperty, double> perfMetrics,
+            string baseDirectory,
+            DaxStudio.Core.Assertions.BaselineStore baselines)
+        {
+            var results = new List<DaxStudio.Core.Assertions.TestResult>();
+            var testName = batch.Commands.OfType<CommentScript.TestCommand>().FirstOrDefault()?.TestName;
+
+            var dataTable = (batchTables != null && batchTables.Count > 0) ? batchTables[0] : null;
+            var rowCount = dataTable?.Rows.Count ?? 0;
+
+            foreach (var cmd in batch.Commands.OfType<CommentScript.AssertRowcountCommand>())
+                results.Add(DaxStudio.Core.Assertions.AssertionEngine.EvaluateRowCount(cmd, rowCount, testName, baselines));
+
+            foreach (var cmd in batch.Commands.OfType<CommentScript.AssertTableCommand>())
+                results.Add(DaxStudio.Core.Assertions.AssertionEngine.EvaluateTable(cmd, dataTable, testName, baseDirectory, baselines));
+
+            foreach (var cmd in batch.Commands.OfType<CommentScript.AssertCommand>())
+                results.Add(DaxStudio.Core.Assertions.AssertionEngine.EvaluatePerformance(cmd, perfMetrics, testName, baselines));
+
+            foreach (var r in results) r.BatchIndex = batchIndex;
+            return results;
+        }
+
+        public Task HandleAsync(DaxStudio.Core.Events.QueryTraceCompletedEvent message, CancellationToken cancellationToken)
+        {
+            // The Server Timings trace has finished aggregating its results (ProcessResults has run,
+            // so metrics such as the SE query count are now populated); release any pending
+            // performance-assertion wait (both the whole-run wait and the current per-batch wait).
+            // This is the same completion event the benchmark uses.
+            if (message?.Trace is ServerTimesViewModel)
+            {
+                _serverTimingsAssertionTcs?.TrySetResult(true);
+                _perBatchServerTimingsTcs?.TrySetResult(true);
+            }
+            return Task.CompletedTask;
+        }
+
+        public Task HandleAsync(DaxStudio.Core.Events.QueryBatchStartedEvent message, CancellationToken cancellationToken)
+        {
+            // A script batch's query is about to run (batches separated by "--> GO" execute
+            // sequentially); transition just that batch's tests from pending to running. Handled on the
+            // UI thread (SubscribeOnUIThread) so the pane update is marshalled correctly even though the
+            // event is published from the background query loop. Guarded by _hasTestAsserts so ordinary
+            // runs do nothing.
+            if (_hasTestAsserts && message != null)
+                TestResultsPane?.MarkBatchRunning(message.BatchIndex);
+            return Task.CompletedTask;
+        }
+        // accompanied a CONNECT to a server we were already connected to). Mirrors changing the
+        // database from the metadata pane dropdown. Returns true on success (including when the
+        // database is already selected), false if the database could not be selected. When
+        // announceAlreadySelected is false, no message is emitted if the requested database is
+        // already the current one (used after a fresh connect that already selected it).
+        private async Task<bool> SwitchDatabaseAsync(string databaseName, bool announceAlreadySelected)
+        {
+            if (string.IsNullOrWhiteSpace(databaseName))
+            {
+                OutputError("--> USE requires a database name");
+                return false;
+            }
+
+            if (!IsConnected)
+            {
+                OutputError($"--> USE: not connected, unable to switch to database '{databaseName}'");
+                return false;
+            }
+
+            try
+            {
+                // match on Name or Caption - the Caption is what is shown in the metadata dropdown
+                var db = Utils.CommentScriptCommandHelper.ResolveDatabase(Databases, databaseName);
+
+                if (db == null)
+                {
+                    OutputError($"--> USE: database '{databaseName}' was not found on '{Connection.ServerName}'");
+                    return false;
+                }
+
+                if (string.Equals(Connection.DatabaseName, db.Name, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (announceAlreadySelected)
+                        OutputMessage($"--> USE: already using database '{db.Name}'");
+                    return true;
+                }
+
+                await MetadataPane.ChangeDatabaseAsync(db.Name);
+                OutputMessage($"--> USE: current database changed to '{db.Name}'");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(SwitchDatabaseAsync), ex.Message);
+                OutputError($"--> USE failed: {ex.Message}");
+                return false;
+            }
+        }
+
+        // Toggles the trace watchers requested by "--> TRACE <type> [ON|OFF]" commands. Any traces
+        // that are newly started are awaited (up to the configured startup timeout) so that the
+        // query does not run before the trace begins capturing events. A trace that fails to start
+        // in time only emits a warning - the query still runs.
+        private async Task ExecuteTraceCommandsAsync(List<CommentScript.TraceCommand> traceCommands)
+        {
+            if (!IsConnected)
+            {
+                OutputWarning("--> TRACE: not connected, unable to start traces");
+                return;
+            }
+
+            var newlyStarted = new List<ITraceWatcher>();
+            foreach (var traceCommand in traceCommands)
+            {
+                var watcher = GetTraceWatcherForType(traceCommand.TraceType);
+                if (watcher == null)
+                {
+                    OutputWarning($"--> TRACE: unsupported trace type '{traceCommand.TraceType}'");
+                    continue;
+                }
+
+                if (traceCommand.Enabled)
+                {
+                    if (watcher.IsChecked)
+                    {
+                        // The trace is already running. Clearing the accumulated results (for all
+                        // trace types except AllQueries) ensures this batch's query does not append
+                        // to stale data. On a fresh start the QueryStartedEvent already resets the
+                        // trace, but the already-running (and paused) case needs an explicit clear.
+                        if (Utils.CommentScriptCommandHelper.ShouldClearResultsWhenAlreadyRunning(traceCommand.TraceType))
+                        {
+                            watcher.ClearAll();
+                            OutputMessage($"--> TRACE {traceCommand.TraceType} ON: trace already running (previous results cleared)");
+                        }
+                        else
+                        {
+                            OutputMessage($"--> TRACE {traceCommand.TraceType} ON: trace already running");
+                        }
+                    }
+                    else
+                    {
+                        watcher.IsChecked = true;
+                        newlyStarted.Add(watcher);
+                        OutputMessage($"--> TRACE {traceCommand.TraceType} ON");
+                    }
+                }
+                else
+                {
+                    if (watcher.IsChecked)
+                    {
+                        watcher.IsChecked = false;
+                        OutputMessage($"--> TRACE {traceCommand.TraceType} OFF");
+                    }
+                    else
+                    {
+                        OutputMessage($"--> TRACE {traceCommand.TraceType} OFF: trace was not running");
+                    }
+                }
+            }
+
+            if (newlyStarted.Count == 0) return;
+
+            // wait for the newly-started traces to reach the Started state before the query runs
+            var sw = Stopwatch.StartNew();
+            var timeoutMs = Options.TraceStartupTimeout * 1000;
+            while (newlyStarted.Any(tw => tw.TraceStatus != QueryTrace.Interfaces.QueryTraceStatus.Started)
+                   && sw.ElapsedMilliseconds < timeoutMs)
+            {
+                await Task.Delay(200);
+            }
+            sw.Stop();
+
+            foreach (var tw in newlyStarted.Where(tw => tw.TraceStatus != QueryTrace.Interfaces.QueryTraceStatus.Started))
+            {
+                OutputWarning($"--> TRACE: the {tw.Title} trace did not start within the timeout period");
+            }
+        }
+
+        // Maps a comment-script TraceType to the matching trace watcher instance for this document.
+        private ITraceWatcher GetTraceWatcherForType(CommentScript.TraceType traceType)
+        {
+            var watcherType = Utils.CommentScriptCommandHelper.GetTraceWatcherType(traceType);
+            if (watcherType == null) return null;
+            return TraceWatchers.FirstOrDefault(tw => watcherType.IsInstanceOfType(tw));
+        }
+
+        // Ensures the Server Timings trace is running so a script's performance assertions have data
+        // to evaluate against. Does nothing when it is already active (started explicitly via
+        // "--> TRACE ServerTimings ON" or left running from a previous run - a fresh query resets it
+        // via QueryStartedEvent). Newly started, the trace is awaited (up to the configured startup
+        // timeout) so the query does not run before it begins capturing; a trace that fails to start
+        // in time only emits a warning and the query still runs (the assertions will then report the
+        // metrics as not captured).
+        private async Task EnsureServerTimingsForPerformanceAssertsAsync()
+        {
+            var serverTimings = TraceWatchers.OfType<ServerTimesViewModel>().FirstOrDefault();
+            if (serverTimings == null) return;
+            if (serverTimings.IsChecked) return;
+
+            if (!IsConnected)
+            {
+                OutputWarning("--> ASSERT: not connected, unable to start the Server Timings trace required for performance assertions");
+                return;
+            }
+
+            serverTimings.IsChecked = true;
+            OutputMessage("--> ASSERT: Server Timings trace started automatically for performance assertions");
+
+            var sw = Stopwatch.StartNew();
+            var timeoutMs = Options.TraceStartupTimeout * 1000;
+            while (serverTimings.TraceStatus != QueryTrace.Interfaces.QueryTraceStatus.Started
+                   && sw.ElapsedMilliseconds < timeoutMs)
+            {
+                await Task.Delay(200);
+            }
+            sw.Stop();
+
+            if (serverTimings.TraceStatus != QueryTrace.Interfaces.QueryTraceStatus.Started)
+                OutputWarning("--> ASSERT: the Server Timings trace did not start within the timeout period; performance assertions may report metrics as not captured");
+        }
+
+        // Establishes the connection requested by a "--> CONNECT" command. When databaseName is
+        // supplied (from a "--> USE" in the same batch) it is applied as part of the connection so a
+        // fresh connection selects it directly (no database dialog); if we are already connected to
+        // the requested server the database is switched instead. Returns true on success, false if
+        // the connection could not be established (the caller should then abort the run).
+        private async Task<bool> ExecuteConnectCommandAsync(CommentScript.ConnectCommand connectCommand, string databaseName)
+        {
+            try
+            {
+                switch (connectCommand.ConnectionType)
+                {
+                    case CommentScript.ConnectionType.SERVER:
+                        return await ConnectToServerCommandAsync(connectCommand.ConnectionName, databaseName);
+                    case CommentScript.ConnectionType.DESKTOP:
+                    case CommentScript.ConnectionType.SSDT:
+                        return await ConnectToLocalInstanceCommandAsync(connectCommand, databaseName);
+                    default:
+                        OutputError($"--> CONNECT: unsupported connection type '{connectCommand.ConnectionType}'");
+                        return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(ExecuteConnectCommandAsync), ex.Message);
+                OutputError($"--> CONNECT failed: {ex.Message}");
+                return false;
+            }
+        }
+
+        // Clears the database cache in response to a "--> CLEARCACHE" command. Mirrors the guards of
+        // the ribbon "Clear Cache" command (admin permission required) but does not abort the query -
+        // a warning is emitted and the query still runs, matching the "Run with Clear Cache" behaviour.
+        private async Task<bool> ExecuteClearCacheCommandAsync()
+        {
+            if (!IsConnected)
+            {
+                OutputWarning("--> CLEARCACHE: not connected, unable to clear the cache");
+                return false;
+            }
+            if (!IsAdminConnection)
+            {
+                OutputWarning("--> CLEARCACHE: you do not have sufficient permission to clear the cache");
+                return false;
+            }
+
+            try
+            {
+                var sw = Stopwatch.StartNew();
+                await ClearCacheCoreAsync();
+                sw.Stop();
+                OutputMessage($"--> CLEARCACHE: cache cleared for database '{Connection.DatabaseName}'", sw.ElapsedMilliseconds);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(ExecuteClearCacheCommandAsync), ex.Message);
+                OutputError($"--> CLEARCACHE failed: {ex.Message}");
+                return false;
+            }
+        }
+
+        private async Task<bool> ExecuteRunStyleClearCacheAsync()
+        {
+            if (!IsAdminConnection)
+            {
+                var msg = "You do not have sufficient permission to clear the cache";
+                OutputWarning(msg);
+                Log.Warning(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(ExecuteRunStyleClearCacheAsync), msg);
+                return false;
+            }
+
+            try
+            {
+                var sw = Stopwatch.StartNew();
+                OutputMessage(string.Format("Evaluating Calculation Script for Database: {0}", Connection.DatabaseName));
+                await Connection.ClearCacheAsync();
+                sw.Stop();
+                OutputMessage(string.Format("Cache Cleared for Database: {0}", Connection.DatabaseName), sw.ElapsedMilliseconds);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(ExecuteRunStyleClearCacheAsync), ex.Message);
+                OutputError(ex.Message);
+                return false;
+            }
+        }
+
+        // Handles "--> CONNECT SERVER <datasource>". When databaseName is supplied it is selected as
+        // part of a fresh connection (no dialog), or switched to if we are already connected here.
+        private async Task<bool> ConnectToServerCommandAsync(string dataSource, string databaseName)
+        {
+            if (string.IsNullOrWhiteSpace(dataSource))
+            {
+                OutputError("--> CONNECT SERVER requires a server name");
+                return false;
+            }
+
+            if (IsConnected && string.Equals(Connection.ServerName, dataSource, StringComparison.OrdinalIgnoreCase))
+            {
+                OutputMessage($"--> CONNECT: already connected to '{dataSource}'");
+                // already on the requested server - just make sure the requested database is selected
+                if (!string.IsNullOrWhiteSpace(databaseName))
+                    return await SwitchDatabaseAsync(databaseName, announceAlreadySelected: true);
+                return true;
+            }
+
+            var connectionString = $"Data Source=\"{dataSource}\";Application Name=DAX Studio (SSAS) - {UniqueID};";
+            await ConnectViaCommentScriptAsync(connectionString, ServerType.AnalysisServices, string.Empty, databaseName);
+            OutputMessage($"--> CONNECT SERVER '{dataSource}'{CommentScriptUseSuffix(databaseName)}");
+            return true;
+        }
+
+        // Handles "--> CONNECT DESKTOP|SSDT <instance name or full .pbix path>". When a full path is
+        // supplied and no matching instance is running, the file is launched and we wait for its
+        // local engine to start before connecting. When databaseName is supplied it is selected as
+        // part of a fresh connection (no dialog), or switched to if we are already connected here.
+        private async Task<bool> ConnectToLocalInstanceCommandAsync(CommentScript.ConnectCommand command, string databaseName)
+        {
+            var instanceName = command.InstanceName;
+            if (string.IsNullOrWhiteSpace(instanceName))
+            {
+                OutputError("--> CONNECT DESKTOP requires a report name or a full path to a .pbix file");
+                return false;
+            }
+
+            var serverType = command.ConnectionType == CommentScript.ConnectionType.SSDT
+                ? ServerType.SSDT
+                : ServerType.PowerBIDesktop;
+
+            var instance = await FindLocalInstanceAsync(instanceName, refresh: true);
+
+            // Not running - if a full path was supplied, launch the file and wait for it to load.
+            if (instance == null && command.IsFilePath)
+            {
+                if (!File.Exists(command.FilePath))
+                {
+                    OutputError($"--> CONNECT DESKTOP: file not found '{command.FilePath}'");
+                    return false;
+                }
+                OutputMessage($"--> CONNECT: launching '{command.FilePath}' and waiting for it to load...");
+                instance = await LaunchAndWaitForInstanceAsync(command.FilePath, instanceName);
+            }
+
+            if (instance == null)
+            {
+                var hint = command.IsFilePath ? command.FilePath : instanceName;
+                OutputError($"--> CONNECT: could not find a running Power BI Desktop instance named '{instanceName}' ({hint})");
+                return false;
+            }
+
+            var dataSource = $"localhost:{instance.Port}";
+            if (IsConnected && string.Equals(Connection.ServerName, dataSource, StringComparison.OrdinalIgnoreCase))
+            {
+                OutputMessage($"--> CONNECT: already connected to '{instanceName}'");
+                // already on the requested instance - just make sure the requested database is selected
+                if (!string.IsNullOrWhiteSpace(databaseName))
+                    return await SwitchDatabaseAsync(databaseName, announceAlreadySelected: true);
+                return true;
+            }
+
+            var connectionString = $"Data Source={dataSource};Application Name=DAX Studio (Power BI) - {UniqueID};";
+            await ConnectViaCommentScriptAsync(connectionString, serverType, instanceName, databaseName);
+            OutputMessage($"--> CONNECT: connected to '{instanceName}' on {dataSource}{CommentScriptUseSuffix(databaseName)}");
+            return true;
+        }
+
+        // Builds the ", USE '<database>'" suffix appended to auto-connect output messages when a
+        // "--> USE" command accompanied the "--> CONNECT" in the same batch, so the logged message
+        // reflects both the connection and the database that was selected. Returns an empty string
+        // when no database was supplied.
+        private static string CommentScriptUseSuffix(string databaseName)
+        {
+            return string.IsNullOrWhiteSpace(databaseName) ? string.Empty : $", USE '{databaseName}'";
+        }
+
+        // Finds a running local Analysis Services instance (Power BI Desktop / SSDT) whose title-bar
+        // name matches the requested instance name.
+        private static async Task<PowerBIInstance> FindLocalInstanceAsync(string instanceName, bool refresh)
+        {
+            var instances = await PowerBIHelper.GetLocalInstancesAsync(includePBIRS: true, refreshList: refresh, CancellationToken.None);
+            return instances.FirstOrDefault(i => string.Equals(i.Name, instanceName, StringComparison.OrdinalIgnoreCase));
+        }
+
+        // Launches the specified .pbix file and polls until its local Analysis Services engine
+        // appears (or the timeout elapses). Returns the matching instance, or null on timeout/error.
+        private static async Task<PowerBIInstance> LaunchAndWaitForInstanceAsync(string filePath, string instanceName)
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo(filePath) { UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(LaunchAndWaitForInstanceAsync), ex.Message);
+                return null;
+            }
+
+            // A freshly launched Power BI Desktop file can take a while to open the report and
+            // start its local tabular engine, so poll for a couple of minutes before giving up.
+            var timeout = TimeSpan.FromMinutes(2);
+            var pollInterval = TimeSpan.FromSeconds(2);
+            var sw = Stopwatch.StartNew();
+            while (sw.Elapsed < timeout)
+            {
+                await Task.Delay(pollInterval);
+                var instance = await FindLocalInstanceAsync(instanceName, refresh: true);
+                if (instance != null && instance.Port > 0) return instance;
+            }
+            return null;
+        }
+
+        // Builds a ConnectEvent for a comment-script CONNECT command and routes it through the
+        // existing connection handler so metadata and the UI are refreshed. Awaiting this ensures
+        // the connection is fully established before the query runs. When databaseName is supplied it
+        // is passed to the ConnectEvent so SetupConnectionAsync selects it directly (bypassing the
+        // database-selection dialog) - exactly like a database supplied on the command line.
+        private async Task ConnectViaCommentScriptAsync(string connectionString, ServerType serverType, string fileName, string databaseName)
+        {
+            var connectEvent = new ConnectEvent(
+                connectionString,
+                false,
+                $"DAX Studio ({serverType}) - {UniqueID}",
+                fileName,
+                serverType,
+                false,
+                databaseName ?? string.Empty,
+                default);
+            await HandleAsync(connectEvent, CancellationToken.None);
         }
 
 
@@ -3030,28 +4292,7 @@ namespace DaxStudio.UI.ViewModels
         {
             try
             {
-                var package = Package.Open(FileName, FileMode.Create);
-                Uri uriDax = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.Query, UriKind.Relative));
-                using (StreamWriter tw = new StreamWriter(package.CreatePart(uriDax, "text/plain", CompressionOption.Maximum).GetStream(), Encoding.UTF8))
-                {
-                    tw.Write(GetEditor().Text);
-                }
-
-
-                // Save all visible TraceWatchers
-                foreach (var tw in ToolWindows)
-                {
-                    var saver = tw as ISaveState;
-                    if (saver == null) continue;
-
-                    var window = tw as ToolWindowBase;
-                    if (window?.IsVisible ?? false || tw is ITraceWatcher)
-                    {
-                        saver.SavePackage(package);
-                    }
-                }
-
-                package.Close();
+                WritePackageFile(FileName);
 
                 _eventAggregator.PublishAsync(new FileSavedEvent(FileName));
                 IsDirty = false;
@@ -3072,27 +4313,46 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error saving: {ex.Message}"));
             }
         }
+
+        // Writes a .daxx package (query text plus the visible tool windows / trace watchers and the
+        // SHOW output) to the given path. Does not mutate the document's own FileName / dirty state,
+        // so it is reused both by the interactive save (which saves to its own FileName) and by the
+        // "--> SAVEAS" comment-script command (which writes a snapshot to a separate path).
+        private void WritePackageFile(string path)
+        {
+            var package = Package.Open(path, FileMode.Create);
+            Uri uriDax = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.Query, UriKind.Relative));
+            using (StreamWriter tw = new StreamWriter(package.CreatePart(uriDax, "text/plain", CompressionOption.Maximum).GetStream(), Encoding.UTF8))
+            {
+                tw.Write(GetEditor().Text);
+            }
+
+            // Save all visible TraceWatchers
+            foreach (var tw in ToolWindows)
+            {
+                var saver = tw as ISaveState;
+                if (saver == null) continue;
+                // The results pane is saved explicitly below (it self-guards on there being SHOW output)
+                // so it persists regardless of which bottom tab happens to be active at save time.
+                if (tw is QueryResultsPaneViewModel) continue;
+
+                var window = tw as ToolWindowBase;
+                if (window?.IsVisible ?? false || tw is ITraceWatcher)
+                {
+                    saver.SavePackage(package);
+                }
+            }
+
+            // Persist the --> SHOW command output (only writes when a SHOW tree is currently displayed).
+            QueryResultsPane?.SavePackage(package);
+
+            package.Close();
+        }
         private void SaveSingleFiles()
         {
             try
             {
-                using (StreamWriter tw = new StreamWriter(FileName, false, _defaultFileEncoding))
-                {
-                    tw.Write(GetEditor().Text);
-                }
-
-                // Save all visible TraceWatchers
-                foreach (var tw in ToolWindows)
-                {
-                    var saver = tw as ISaveState;
-                    if (saver == null) continue; // go to next item in collection if this one does not implement ISaveState
-
-                    var window = tw as ToolWindowBase;
-                    if (window?.IsVisible ?? false || tw is ITraceWatcher)
-                    {
-                        saver.Save(FileName);
-                    }
-                }
+                WriteSingleFile(FileName);
 
                 _eventAggregator.PublishAsync(new FileSavedEvent(FileName));
                 IsDirty = false;
@@ -3111,6 +4371,30 @@ namespace DaxStudio.UI.ViewModels
                 // catch and report any errors while trying to save
                 Log.Error(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(SaveSingleFiles), ex.Message);
                 _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error saving: {ex.Message}"));
+            }
+        }
+
+        // Writes the query text (and the visible tool windows / trace watchers as sidecar files) to the
+        // given path. Does not mutate the document's own FileName / dirty state; reused by the
+        // interactive save and by the "--> SAVEAS" comment-script command.
+        private void WriteSingleFile(string path)
+        {
+            using (StreamWriter tw = new StreamWriter(path, false, _defaultFileEncoding))
+            {
+                tw.Write(GetEditor().Text);
+            }
+
+            // Save all visible TraceWatchers
+            foreach (var tw in ToolWindows)
+            {
+                var saver = tw as ISaveState;
+                if (saver == null) continue; // go to next item in collection if this one does not implement ISaveState
+
+                var window = tw as ToolWindowBase;
+                if (window?.IsVisible ?? false || tw is ITraceWatcher)
+                {
+                    saver.Save(path);
+                }
             }
         }
 
@@ -3448,16 +4732,23 @@ namespace DaxStudio.UI.ViewModels
                     DisplayName = Path.GetFileName(FileName);
                     IsDiskFileName = true;
 
-                    if (FileName.EndsWith(".vpax", StringComparison.OrdinalIgnoreCase))
+                    if (FileName.EndsWith(".vpax", StringComparison.OrdinalIgnoreCase)
+                        || FileName.EndsWith(".ovpax", StringComparison.OrdinalIgnoreCase))
                     {
-                        ImportAnalysisData(fileName, string.Empty);
-                        return;
-                    }
+                        // VPAX files establish their own offline connection, so we flag this
+                        // so that OnViewLoaded does not prompt with the connection dialog.
+                        _isOfflineVpaxFile = true;
+                        _isLoadingFile = true;
 
-                    if (FileName.EndsWith(".ovpax", StringComparison.OrdinalIgnoreCase))
-                    {
-                        // try to get default dict file
-                        ImportAnalysisData(fileName, string.Empty);
+                        var dictFilePath = string.Empty;
+                        if (FileName.EndsWith(".ovpax", StringComparison.OrdinalIgnoreCase))
+                        {
+                            dictFilePath = DaxStudio.UI.Utils.VpaxDictHelper.GetDictPathForOvpax(fileName);
+                        }
+
+                        // Track the import task so OpenFileAsync can await completion and the
+                        // backstage "Opening File" overlay can be closed via FileOpenedEvent.
+                        _loadFileTask = LoadAnalysisDataFileAsync(fileName, dictFilePath);
                         return;
                     }
 
@@ -3621,7 +4912,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     await Task.Run(async () =>
                         {
-                            if (message.RefreshDatabases) RefreshConnectionFilename(message);
+                            if (message.RefreshDatabases) await RefreshConnectionFilenameAsync(message);
 
                             await SetupConnectionAsync(message);
 
@@ -3680,7 +4971,7 @@ namespace DaxStudio.UI.ViewModels
             return Task.CompletedTask;
         }
 
-        private void RefreshConnectionFilename(ConnectEvent message)
+        private async Task RefreshConnectionFilenameAsync(ConnectEvent message)
         {
             try
             {
@@ -3700,13 +4991,13 @@ namespace DaxStudio.UI.ViewModels
                     message.FileName = String.Empty;
                     return;
                 }
-                var instances = PowerBIHelper.GetLocalInstances(false,false);
+                var instances = await PowerBIHelper.GetLocalInstancesAsync(false, false, CancellationToken.None);
                 var selectedInstance = instances.FirstOrDefault(i => i.Port == port);
-                message.FileName = selectedInstance.Name;
+                message.FileName = selectedInstance?.Name ?? String.Empty;
             }
             catch (Exception ex)
             {
-                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RefreshConnectionFilename), $"Error getting Power BI Filename: {ex.Message}");
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RefreshConnectionFilenameAsync), $"Error getting Power BI Filename: {ex.Message}");
                 OutputWarning($"An error occurred while trying to get the Power BI Desktop filename:\n{ex.Message}");
             }
         }
@@ -3874,6 +5165,14 @@ namespace DaxStudio.UI.ViewModels
                 IsQueryRunning = false;
             }
 
+        }
+
+        // Core cache-clear logic shared by the ribbon "Clear Cache" command and the comment-script
+        // "--> CLEARCACHE" command. Deliberately does NOT touch IsQueryRunning or create a query
+        // history event so it can also be called from within a running query pipeline.
+        private async Task ClearCacheCoreAsync()
+        {
+            Connection.ClearCache();
         }
         public async Task HandleAsync(CancelConnectEvent message, CancellationToken cancellationToken)
         {
@@ -4048,6 +5347,7 @@ namespace DaxStudio.UI.ViewModels
         }
         private bool _canPaste = true;
         private bool _isLoadingFile;
+        private bool _isOfflineVpaxFile;
         private Task _loadFileTask;
         public bool CanPaste
         {
@@ -4068,6 +5368,47 @@ namespace DaxStudio.UI.ViewModels
             {
                 Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(Paste), ex.Message);
                 OutputError($"The following error occurred while pasting: {ex.Message}");
+            }
+        }
+
+        public bool CanPasteAsTableAssertion
+        {
+            get
+            {
+                try
+                {
+                    return System.Windows.Clipboard.ContainsText()
+                        && DaxStudio.Parsers.CommentScript.TableAssertionFormatter.LooksLikeTabDelimited(System.Windows.Clipboard.GetText());
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(CanPasteAsTableAssertion), ex.Message);
+                    return false;
+                }
+            }
+        }
+
+        // Converts tab-delimited clipboard text (e.g. copied from Excel or another grid) into a
+        // "--> ASSERT TABLE" block and inserts it at the caret.
+        public void PasteAsTableAssertion()
+        {
+            try
+            {
+                if (!System.Windows.Clipboard.ContainsText()) return;
+                var clipboardText = System.Windows.Clipboard.GetText();
+                if (!DaxStudio.Parsers.CommentScript.TableAssertionFormatter.LooksLikeTabDelimited(clipboardText))
+                {
+                    OutputWarning("Paste as Table Assertion requires tab-delimited text on the clipboard.");
+                    return;
+                }
+
+                var block = DaxStudio.Parsers.CommentScript.TableAssertionFormatter.FormatTabDelimited(clipboardText, includeHeaderLine: true, includeTypeRow: true);
+                InsertTextAtSelection(block, false, false);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(PasteAsTableAssertion), ex.Message);
+                OutputError($"The following error occurred while pasting as a table assertion: {ex.Message}");
             }
         }
 
@@ -4662,7 +6003,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public DaxIntellisenseProvider IntellisenseProvider { get; set; }
+        public IDaxIntellisenseProvider IntellisenseProvider { get; set; }
 
         public Guid UniqueID { get { return _uniqueId; } }
 
@@ -4689,8 +6030,13 @@ namespace DaxStudio.UI.ViewModels
             {
                 editor.FontFamily = new FontFamily(Options.EditorFontFamily);
             }
-            if (editor.FontSizeInPoints != Options.EditorFontSize)
+            // Only re-apply the editor font size (and reset the zoom level to 100%) when the
+            // configured default font size has actually changed. Comparing against the editor's
+            // current FontSizeInPoints would incorrectly reset the zoom whenever the user has
+            // zoomed in/out, because zooming changes FontSizeInPoints but not Options.EditorFontSize.
+            if (_appliedEditorFontSize != Options.EditorFontSize)
             {
+                _appliedEditorFontSize = Options.EditorFontSize;
                 editor.FontSizeInPoints = Options.EditorFontSize;
                 SizeUnitLabel.SetOneHundredPercentFontSize(Options.EditorFontSize);
                 SizeUnitLabel.StringValue = "100";
@@ -4704,9 +6050,9 @@ namespace DaxStudio.UI.ViewModels
             {
                 editor.DisableIntellisense();
             }
-            if (foldingStrategy != null)
+            if (foldingStrategy is Model.IndentFoldingStrategy indentStrategy)
             {
-                foldingStrategy.TabIndent = Options.EditorIndentationSize;
+                indentStrategy.TabIndent = Options.EditorIndentationSize;
             }
         }
 
@@ -4893,6 +6239,11 @@ namespace DaxStudio.UI.ViewModels
         public string Title => FileAndExtension;
 
         public string Folder { get { return IsDiskFileName ? Path.GetDirectoryName(FileName) : ""; } }
+
+        // Base directory used to resolve relative file paths in file-based "--> ASSERT TABLE" commands.
+        // Null when the document has not been saved to disk, in which case relative paths are rejected.
+        private string AssertionBaseDirectory => IsDiskFileName ? Path.GetDirectoryName(FileName) : null;
+
         private bool _shouldSave = true;
 
         public bool ShouldSave
@@ -5179,12 +6530,35 @@ namespace DaxStudio.UI.ViewModels
                     dictFilePath = DaxStudio.UI.Utils.VpaxDictHelper.GetDictPathForOvpax(filename);
                 }
 
-                ImportAnalysisData(filename, dictFilePath);
+                ImportAnalysisData(filename, dictFilePath).FireAndForget();
             }
 
         }
 
-        private async void ImportAnalysisData(string path, string dictFilePath)
+        /// <summary>
+        /// Loads a VPAX/OVPAX file as a new document. Imports the analysis data (which
+        /// establishes an offline connection) and then publishes a <see cref="FileOpenedEvent"/>
+        /// so that the backstage "Opening File" overlay is closed once loading completes.
+        /// </summary>
+        private async Task LoadAnalysisDataFileAsync(string path, string dictFilePath)
+        {
+            try
+            {
+                await ImportAnalysisData(path, dictFilePath);
+            }
+            finally
+            {
+                await Execute.OnUIThreadAsync(async () =>
+                {
+                    _isLoadingFile = false;
+                    IsDirty = false;
+                    State = DocumentState.Loaded;
+                    await _eventAggregator.PublishAsync(new FileOpenedEvent(path));
+                });
+            }
+        }
+
+        private async Task ImportAnalysisData(string path, string dictFilePath)
         {
 
             try
@@ -5203,6 +6577,15 @@ namespace DaxStudio.UI.ViewModels
 
                     content = Dax.Vpax.Tools.VpaxTools.ImportVpax(vpax);
                 }
+
+                if (content.DaxModel == null)
+                {
+                    Log.Warning(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(ImportAnalysisData), $"The file '{Path.GetFileName(path)}' does not contain a data model");
+                    OutputError($"Unable to open '{Path.GetFileName(path)}' - the file does not contain a data model. It may have been created by an incompatible version of the tooling.");
+                    ActivateOutput();
+                    return;
+                }
+
                 var database = content.TomDatabase;
                 if (!Connection.IsConnected)
                     await Task.Run(async () => { await Connection.ConnectAsync(new ConnectEvent(Connection.ApplicationName, content), UniqueID); });
@@ -5425,14 +6808,18 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(ConvertTabsToSpaces));
             NotifyOfPropertyChange(nameof(IndentationSize));
             NotifyOfPropertyChange(nameof(UseIndentCodeFolding));
+            NotifyOfPropertyChange(nameof(UseStructuralCodeFolding));
             NotifyOfPropertyChange(nameof(ShowWhitespace));
             NotifyOfPropertyChange(nameof(ShowControlCharacters));
-            if (Options.UseIndentCodeFolding) StartFoldingManager();
-            else StopFoldingManager();
-            if (foldingStrategy != null)
+            if (Options.UseStructuralCodeFolding || Options.UseIndentCodeFolding)
             {
-                foldingStrategy.TabIndent = Options.EditorIndentationSize;
+                StartFoldingManager();
+                // rebuild the strategy in case the folding style (structural vs indent) or the
+                // indentation size changed, then refresh the folds immediately
+                foldingStrategy = CreateFoldingStrategy();
+                UpdateFoldings();
             }
+            else StopFoldingManager();
             UpdateTheme();
             return Task.CompletedTask;
         }
@@ -5512,6 +6899,12 @@ namespace DaxStudio.UI.ViewModels
 
         IConnectionManager IDaxDocument.Connection => Connection;
 
+        /// <summary>
+        /// Returns the <see cref="DataTable"/> backing the current query results, used to build a
+        /// <c>--&gt; ASSERT TABLE</c> block from the live results (see the "&lt;from Results&gt;" completion).
+        /// </summary>
+        public DataTable GetActiveResultsTable() => QueryResultsPane?.ActiveResultsTable;
+
         public bool IsBenchmarkRunning { get; set; }
 
         public void CloseConnection()
@@ -5564,6 +6957,7 @@ namespace DaxStudio.UI.ViewModels
         {
             NotifyOfPropertyChange(nameof(CanLookupDaxGuide));
             NotifyOfPropertyChange(nameof(LookupDaxGuideHeader));
+            NotifyOfPropertyChange(nameof(CanPasteAsTableAssertion));
         }
 
         public bool CanLookupDaxGuide
@@ -5767,6 +7161,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public bool UseIndentCodeFolding => Options.UseIndentCodeFolding;
+        public bool UseStructuralCodeFolding => Options.UseStructuralCodeFolding;
 
         public void OutputQueryError(string errorMessage)
         {
@@ -5782,6 +7177,18 @@ namespace DaxStudio.UI.ViewModels
                 }
                 QueryResultsPane.SelectionLocation = selectionLoc;
             }
+        }
+
+        // Surfaces an error that already carries an explicit source location (e.g. a malformed
+        // comment-script "-->" command) in the results-pane error box. Unlike a DAX engine error, the
+        // message text has no embedded "Line/Column" for RegexHelper to parse, so the location is set
+        // directly here so the "Goto" link works the same way. The location is treated as an absolute
+        // editor position, so the selection offset used for engine errors is cleared.
+        public void OutputQueryError(string errorMessage, int line, int column)
+        {
+            QueryResultsPane.ErrorMessage = errorMessage;
+            QueryResultsPane.SelectionLocation = new TextLocation();
+            QueryResultsPane.ErrorLocation = (line, column);
         }
 
         public void ClearQueryError()

@@ -92,9 +92,11 @@ namespace DaxStudio.Standalone
             Log.Information("============ DaxStudio Startup =============");
 
             // check if the config file has been set to force software rendering
+            // NOTE: the equivalent user option is applied further below, once the options
+            //       have been loaded. ProcessRenderMode is a live preference (see
+            //       SetSoftwareRendering) so the ordering here is for clarity, not correctness.
             bool.TryParse(ConfigurationManager.AppSettings["ForceSoftwareRendering"], out var forceSoftwareRendering);
-            if (forceSoftwareRendering)
-                RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.Default;
+            if (forceSoftwareRendering) SetSoftwareRendering("app.config ForceSoftwareRendering setting");
 
             // then load Caliburn Micro bootstrapper
             Log.Debug("Loading Caliburn.Micro bootstrapper");
@@ -122,6 +124,10 @@ namespace DaxStudio.Standalone
             _options.Initialize();
             _options.LoggingLevelSwitch = levelSwitch;
             Log.Information("User Options initialized");
+
+            // apply the user level software rendering option as early as possible so that we
+            // never build a hardware render target we would only tear down again
+            if (_options.ForceSoftwareRendering) SetSoftwareRendering("user option");
 
             // if the cmdline or hotkey have not been set then read the log level from the options
             if (!App.Args().LoggingEnabled) UpdateLoggingLevelFromOptions(_options, ref levelSwitch);
@@ -463,86 +469,37 @@ namespace DaxStudio.Standalone
                     return;
                 }
 
-                if (e.Exception is System.Runtime.InteropServices.COMException comException)
-                {
-                
-                    switch (comException.ErrorCode)
-                    {
-                        case -2147221037: // Data on clipboard is invalid (Exception from HRESULT: 0x800401D3 (CLIPBRD_E_BAD_DATA))
-                            e.Handled = true;
-                            _eventAggregator?.PublishAsync(new OutputMessage(MessageType.Warning, "CLIPBRD_E_BAD_DATA Error - Clipboard operation failed, please try again"));
-                            _log.Warning(e.Exception, "{class} {method} COM Error while accessing clipboard: {message}", "EntryPoint", "App_DispatcherUnhandledException", "CLIPBRD_E_BAD_DATA");
-                            return;
-                        case -2147221040: // catch 0x800401D0 (CLIPBRD_E_CANT_OPEN) errors when wpf DataGrid can't access clipboard 
-                            e.Handled = true;
-                            _eventAggregator?.PublishAsync(new OutputMessage(MessageType.Warning, "CLIPBRD_E_CANT_OPEN Error - Clipboard operation failed, please try again"));
-                            _log.Warning(e.Exception, "{class} {method} COM Error while accessing clipboard: {message}", "EntryPoint", "App_DispatcherUnhandledException", "CLIPBRD_E_CANT_OPEN");
-                            return;
-                        case unchecked((int)0x8001010E)://2147549454): // 0x_8001_010E:
-                            e.Handled = true;
-                            _eventAggregator?.PublishAsync(new OutputMessage(MessageType.Warning, "RPC_E_WRONG_THREAD Error - Clipboard operation failed, please try again"));
-                            _log.Warning(e.Exception, "{class} {method} COM Error while accessing clipboard: {message}", "EntryPoint", "App_DispatcherUnhandledException", "RPC_E_WRONG_THREAD");
-                            return;
-                        // WPF MIL composition / render-thread failures. These are raised by the
-                        // WPF render thread (driver glitch / TDR, GPU pressure, DPI or monitor
-                        // change, sleep/wake/RDP transitions) — not by application code. WPF
-                        // can usually re-create the render target on the next paint, so swallow
-                        // them with a warning instead of shutting the whole app down.
-                        case unchecked((int)0x88980406): // UCEERR_RENDERTHREADFAILURE
-                        case unchecked((int)0x88980403): // UCEERR_DISPLAYSTATEINVALID
-                        case unchecked((int)0x88980404): // UCEERR_NOTIFICATIONSDROPPED
-                            e.Handled = true;
-                            _log.Warning(e.Exception,
-                                "{class} {method} WPF render-thread COM failure (non-fatal, allowing recovery): {hresult}",
-                                "EntryPoint", "App_DispatcherUnhandledException",
-                                $"0x{comException.ErrorCode:X8}");
-                            _eventAggregator?.PublishAsync(new OutputMessage(MessageType.Warning,
-                                "A graphics rendering error occurred. If this happens repeatedly, please update your video driver or restart DAX Studio."));
-                            return;
-                        default:
-                            if (e.Exception.Message == "A drag operation is already in progress")
-                            {
-                                _eventAggregator?.PublishAsync(new OutputMessage(MessageType.Warning, $"{e.Exception.Message}\nPlease retry the operation"));
-                                _log.Warning(e.Exception, "{class} {method} COM Error while doing DragDrop: {message}", "EntryPoint", "App_DispatcherUnhandledException", e.Exception.Message);
-                                return;
-                            }
+                var decision = UnhandledExceptionTriage.Default.Triage(e.Exception);
 
-                            // for all other unhandled Exceptions we log them and exit here as we don't know if the app is in a valid state
-                            Log.Fatal(e.Exception, "{class} {method} Unhandled exception", "EntryPoint", "App_DispatcherUnhandledException");
-                            LogFatalCrash(e.Exception, "DAX Studio Standalone DispatcherUnhandledException Unhandled COM Exception",_options);
-                            e.Handled = true;
-                        
-                            Application.Current.Shutdown(1);
-                            break;
-                    }
-
-                }
-                else if (e.Exception is UnauthorizedAccessException
-                    && e.Exception.StackTrace != null
-                    && e.Exception.StackTrace.Contains("GridViewColumnHeader.GetCursor"))
+                if (decision != null && decision.IsRecoverable)
                 {
-                    // Known WPF framework bug: temp cursor file deletion fails due to permissions/locking
                     e.Handled = true;
-                    _log.Warning(e.Exception, "{class} {method} {message}", "EntryPoint",
-                        "App_DispatcherUnhandledException",
-                        "WPF GridViewColumnHeader cursor temp file access denied (non-fatal)");
+
+                    _log.Warning(e.Exception, "{class} {method} {message}", nameof(EntryPoint),
+                        nameof(App_DispatcherUnhandledException), decision.LogMessage);
+
+                    if (!string.IsNullOrEmpty(decision.UserMessage))
+                        _eventAggregator?.PublishAsync(new OutputMessage(MessageType.Warning, decision.UserMessage));
+
                     return;
                 }
-                else if (e.Exception is InvalidOperationException
-                    && e.Exception.StackTrace != null
-                    && e.Exception.StackTrace.Contains("Caliburn.Micro.WindowConductor")
-                    && (e.Exception.Message?.Contains("while a Window is closing") ?? false))
+
+                if (decision != null && decision.Action == UnhandledExceptionAction.FatalRenderThreadFailure)
                 {
-                    // Known Caliburn.Micro race: the conductor's async Closing continuation
-                    // reaches Window.Close() after WPF has already started closing the window
-                    // (typically during shutdown or when two close paths overlap). The window
-                    // is closing anyway, so the exception is meaningless — swallow it to avoid
-                    // producing a cascading crash dialog on top of an in-flight close.
                     e.Handled = true;
-                    _log.Warning(e.Exception, "{class} {method} {message}", "EntryPoint",
-                        "App_DispatcherUnhandledException",
-                        "Caliburn.Micro WindowConductor close race (non-fatal)");
+                    HandleRenderThreadFailure(e.Exception, decision);
                     return;
+                }
+
+                if (e.Exception is System.Runtime.InteropServices.COMException)
+                {
+                    // an unrecognized COM exception - we don't know if the app is in a valid
+                    // state so log a crash report and exit
+                    Log.Fatal(e.Exception, "{class} {method} Unhandled exception", "EntryPoint", "App_DispatcherUnhandledException");
+                    LogFatalCrash(e.Exception, "DAX Studio Standalone DispatcherUnhandledException Unhandled COM Exception", _options);
+                    e.Handled = true;
+
+                    Application.Current.Shutdown(1);
                 }
                 else
                 {
@@ -554,6 +511,102 @@ namespace DaxStudio.Standalone
             finally
             {
                 System.Threading.Interlocked.Exchange(ref _inUnhandledExceptionHandler, 0);
+            }
+        }
+
+        /// <summary>
+        /// Handles a fatal WPF render thread failure.
+        /// <para>
+        /// The composition partition is zombied and WPF has no way to reconnect it, so the UI is
+        /// dead even though the process and dispatcher are still alive. We deliberately do NOT
+        /// call Application.Shutdown() here: that runs the normal close-all path, which puts up a
+        /// "save changes?" dialog (invisible on a dead render thread, so the process would just
+        /// hang) and deletes the auto-save files. Instead we terminate the process hard, which
+        /// leaves the auto-save index intact so the next launch offers to recover the user's
+        /// queries.
+        /// </para>
+        /// </summary>
+        private static void HandleRenderThreadFailure(Exception exception, UnhandledExceptionDecision decision)
+        {
+            var alreadySoftware = RenderOptions.ProcessRenderMode == System.Windows.Interop.RenderMode.SoftwareOnly;
+
+            try
+            {
+                Log.Fatal(exception, Constants.LogMessageTemplate, nameof(EntryPoint),
+                    nameof(HandleRenderThreadFailure), decision.LogMessage);
+            }
+            catch
+            {
+                // already in a fatal path - never let logging stop the shutdown
+            }
+
+            // The most effective mitigation (and Microsoft's first recommendation) is to stop
+            // using the graphics hardware, so arm that for the next launch.
+            if (!alreadySoftware) PersistSoftwareRenderingOption();
+
+            try
+            {
+                var msg = alreadySoftware
+                    ? "DAX Studio has to close because the Windows graphics components it uses to draw its screen have failed.\r\n\r\n" +
+                      "DAX Studio is already running with hardware acceleration disabled, so this is unlikely to be a video driver problem. Installing the latest Windows updates may help.\r\n\r\n" +
+                      "Any unsaved queries will be offered for recovery the next time DAX Studio starts."
+                    : "DAX Studio has to close because the Windows graphics components it uses to draw its screen have failed.\r\n\r\n" +
+                      "This is usually caused by a video driver problem. Hardware acceleration has been switched off, so the next time DAX Studio starts it will use software rendering. Updating your video driver is recommended.\r\n\r\n" +
+                      "Any unsaved queries will be offered for recovery the next time DAX Studio starts.";
+
+                // MessageBox is a thin wrapper over the Win32 message box so it does not depend
+                // on the (now dead) WPF composition partition and will still be visible.
+                MessageBox.Show(msg, "DAX Studio - Graphics Failure", MessageBoxButton.OK,
+                    MessageBoxImage.Error, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+            }
+            catch
+            {
+                // if we can't even show the message box just exit
+            }
+
+            // hard exit - see the remarks above for why Application.Shutdown() is not used
+            Environment.Exit(4);
+        }
+
+        /// <summary>
+        /// Switches WPF to software rendering.
+        /// </summary>
+        /// <remarks>
+        /// Contrary to popular belief this is NOT a startup-only setting. The setter is a
+        /// simple p/invoke to MilCore's RenderOptions_ForceSoftwareRenderingModeForProcess,
+        /// which stores a mutable global. The compositor re-reads that flag on every render
+        /// pass and, when it changes, calls UpdateRenderTargetFlags() which releases and
+        /// rebuilds the existing HWND render targets. So it can safely be toggled at any
+        /// point in the process lifetime. We still apply it as early as we can to avoid
+        /// needlessly creating a hardware render target first.
+        /// </remarks>
+        private static void SetSoftwareRendering(string reason)
+        {
+            RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
+            Log.Information(Constants.LogMessageTemplate, nameof(EntryPoint), nameof(SetSoftwareRendering),
+                $"Hardware rendering disabled (ProcessRenderMode = SoftwareOnly) due to {reason}");
+        }
+
+        /// <summary>
+        /// Persists the software rendering option so that the next launch starts without
+        /// hardware acceleration.
+        /// </summary>
+        private static void PersistSoftwareRenderingOption()
+        {
+            try
+            {
+                if (_options != null && !_options.ForceSoftwareRendering)
+                {
+                    _options.ForceSoftwareRendering = true;
+                    Log.Warning(Constants.LogMessageTemplate, nameof(EntryPoint), nameof(PersistSoftwareRenderingOption),
+                        "WPF render-thread failure - enabling the ForceSoftwareRendering option for the next startup");
+                }
+            }
+            catch (Exception ex)
+            {
+                // never let the recovery path itself take the app down
+                Log.Warning(ex, Constants.LogMessageTemplate, nameof(EntryPoint), nameof(PersistSoftwareRenderingOption),
+                    "Unable to persist the ForceSoftwareRendering option");
             }
         }
 
