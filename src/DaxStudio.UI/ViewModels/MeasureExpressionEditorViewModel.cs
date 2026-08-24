@@ -263,6 +263,28 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(WordWrap));
         }
 
+        // Swaps the intellisense provider when the "Use New Code Completion Engine" option is toggled.
+        // Called by the parent DocumentViewModel so this editor does not need its own options subscription.
+        internal void RefreshIntellisenseProvider()
+        {
+            var shouldUseAntlr = Options.UseAntlrCodeCompletion;
+            var isUsingAntlr = IntellisenseProvider is AntlrIntellisenseProvider;
+            if (shouldUseAntlr == isUsingAntlr) return;
+
+            var oldProvider = IntellisenseProvider;
+            oldProvider?.CloseCompletionWindow();
+            if (oldProvider != null) EventAggregator.Unsubscribe(oldProvider);
+
+            var newProvider = IntellisenseProviderFactory.Create(Document, EventAggregator, Options);
+            if (oldProvider != null) newProvider.SetCachedMetadata(oldProvider.Model, oldProvider.DMVs, oldProvider.FunctionGroups);
+            newProvider.Editor = _editor;
+            IntellisenseProvider = newProvider;
+
+            EventAggregator.SubscribeOnUIThread(newProvider);
+
+            UpdateSettings();
+        }
+
         public void DragEnter(IDropInfo dropInfo)
         {
             // do nothing

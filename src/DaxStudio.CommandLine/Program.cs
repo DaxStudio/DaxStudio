@@ -148,7 +148,9 @@ namespace DaxStudio.CommandLine
 
             config.AddCommand<FileCommand>("csv")
                 .WithDescription("Writes query results out to a .csv file")
-                .WithExample(new[] { "csv", "c:\\temp\\export\\myresults.csv", "-s", "localhost\\tabular", "-d", "\"Adventure Works\"", "-q","\"EVALUATE 'Product Categories'\"" });
+                .WithExample(new[] { "csv", "c:\\temp\\export\\myresults.csv", "-s", "localhost\\tabular", "-d", "\"Adventure Works\"", "-q","\"EVALUATE 'Product Categories'\"" })
+                .IsHidden();
+                
             // the file command is an alias for the csv command
             config.AddCommand<FileCommand>("file")
                 .WithDescription("Writes query results out to a file (csv/txt/json/parquet)")

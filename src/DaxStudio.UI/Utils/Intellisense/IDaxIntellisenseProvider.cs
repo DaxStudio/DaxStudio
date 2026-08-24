@@ -1,3 +1,4 @@
+using ADOTabular;
 using DAXEditorControl;
 
 namespace DaxStudio.UI.Utils.Intellisense
@@ -10,5 +11,14 @@ namespace DaxStudio.UI.Utils.Intellisense
     {
         IEditor Editor { get; set; }
         void CloseCompletionWindow();
+
+        ADOTabularModel Model { get; }
+        ADOTabularDynamicManagementViewCollection DMVs { get; }
+        ADOTabularFunctionGroupCollection FunctionGroups { get; }
+
+        // Copies the metadata that is normally populated by the *Loaded events. This is used when the
+        // provider implementation is swapped at runtime (when the preview code completion option is
+        // toggled) so the new provider does not have to wait for a reconnect to become usable.
+        void SetCachedMetadata(ADOTabularModel model, ADOTabularDynamicManagementViewCollection dmvs, ADOTabularFunctionGroupCollection functionGroups);
     }
 }

@@ -1856,7 +1856,7 @@ namespace DaxStudio.Core.Options
         [Category("Preview")]
         [Subcategory("Editor")]
         [DisplayName("Use New Query Preprocessor")]
-        [Description("Use the new grammar-based preprocessor instead of the regex-based one when preparing queries for execution.\nParameter handling (@name prompting and <Parameters> blocks) is preserved. Comment-script commands other than PARAMETER are parsed but not yet executed.\nWARNING: this is a preview feature and its behaviour may change before the final release.")]
+        [Description("Use the new grammar-based preprocessor instead of the regex-based one when preparing queries for execution.\nParameter handling (@name prompting and <Parameters> blocks) is preserved and comment-script commands (such as CONNECT, USE, PARAMETER, SET, GO, TRACE, RESULTS, SHOW, EXPORT, SAVEAS, CLEARCACHE, TEST, BASELINE and the ASSERT commands) are executed.\nWARNING: this is a preview feature and its behaviour may change before the final release.")]
         public bool UseNewPreprocessor
         {
             get => _useNewPreprocessor;

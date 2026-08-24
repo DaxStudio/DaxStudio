@@ -114,6 +114,7 @@ namespace DaxStudio.CommandLine.Commands
                         break;
                     case ".parquet":
                         settings.FileType = TextFileType.PARQUET;
+                        target = new ResultsTargetParquet();
                         break;
                     default:
                         settings.FileType = (TextFileType)runner.Options.DefaultTextFileType;

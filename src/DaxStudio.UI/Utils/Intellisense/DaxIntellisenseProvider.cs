@@ -748,6 +748,13 @@ namespace DaxStudio.UI.Utils.Intellisense
             return Task.CompletedTask;
         }
 
+        public void SetCachedMetadata(ADOTabularModel model, ADOTabularDynamicManagementViewCollection dmvs, ADOTabularFunctionGroupCollection functionGroups)
+        {
+            Model = model;
+            DMVs = dmvs;
+            FunctionGroups = functionGroups;
+        }
+
         public Task HandleAsync(DmvsLoadedEvent message, CancellationToken cancellationToken)
         {
             DMVs = message.DmvCollection;

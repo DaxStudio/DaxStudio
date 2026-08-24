@@ -1178,6 +1178,34 @@ namespace DaxStudio.UI.ViewModels
             IntellisenseProvider?.CloseCompletionWindow();
         }
 
+        // Swaps the intellisense provider when the "Use New Code Completion Engine" option is toggled so
+        // that already open query windows pick up the change without having to be re-opened.
+        private void RefreshIntellisenseProvider()
+        {
+            var shouldUseAntlr = Options.UseAntlrCodeCompletion;
+            var isUsingAntlr = IntellisenseProvider is AntlrIntellisenseProvider;
+            if (shouldUseAntlr == isUsingAntlr) return;
+
+            var oldProvider = IntellisenseProvider;
+            oldProvider?.CloseCompletionWindow();
+            if (oldProvider != null) _eventAggregator.Unsubscribe(oldProvider);
+
+            var newProvider = IntellisenseProviderFactory.Create(this, _eventAggregator, Options);
+            // carry over the cached metadata so the new provider is immediately usable
+            if (oldProvider != null) newProvider.SetCachedMetadata(oldProvider.Model, oldProvider.DMVs, oldProvider.FunctionGroups);
+            newProvider.Editor = _editor;
+            IntellisenseProvider = newProvider;
+
+            if (_isSubscribed) _eventAggregator.SubscribeOnUIThread(newProvider);
+
+            // re-attach the new provider to the editor (or leave intellisense disabled)
+            UpdateSettings();
+
+            MeasureExpressionEditor?.RefreshIntellisenseProvider();
+
+            Log.Information(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RefreshIntellisenseProvider), $"Switched code completion engine to {newProvider.GetType().Name}");
+        }
+
 
 
         protected override async Task OnActivatedAsync(CancellationToken cancellationToken)
@@ -6811,6 +6839,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(UseStructuralCodeFolding));
             NotifyOfPropertyChange(nameof(ShowWhitespace));
             NotifyOfPropertyChange(nameof(ShowControlCharacters));
+            RefreshIntellisenseProvider();
             if (Options.UseStructuralCodeFolding || Options.UseIndentCodeFolding)
             {
                 StartFoldingManager();
