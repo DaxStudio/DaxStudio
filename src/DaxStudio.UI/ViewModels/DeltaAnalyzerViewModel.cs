@@ -671,6 +671,62 @@ namespace DaxStudio.UI.ViewModels
         public bool CanExportConsiderations => CanCopyConsiderations;
 
         /// <summary>
+        /// Names the table from the OneLake folder that was actually found, rather than from the path the
+        /// user supplied. A path copied from warehouse table properties wraps the table name in square
+        /// brackets as SQL identifier quoting, so the supplied leaf can carry a layer of quoting that the
+        /// real folder does not have - the analysis strips it while probing for the folder that exists, and
+        /// that resolved name is the one to display. Only applies when the manual path named a single
+        /// table; auto-resolved tables keep the authoritative name from the model metadata.
+        /// </summary>
+        private static void RenameManualTableFromResolvedPath(string overridePath, DeltaAnalyzerResult result)
+        {
+            if (string.IsNullOrWhiteSpace(overridePath) || result?.Tables == null || result.Tables.Count != 1) return;
+            if (!DirectLakePathResolver.TryGetTableFromPath(overridePath, out _)) return;
+
+            var table = result.Tables[0];
+            if (DirectLakePathResolver.TryGetTableFromPath(table.OneLakePath, out var resolvedName)
+                && !string.IsNullOrEmpty(resolvedName))
+            {
+                table.TableName = resolvedName;
+            }
+        }
+
+        /// <summary>
+        /// Builds the single status message shown when every table failed. OneLake deliberately answers
+        /// "not found" both for a path that does not exist and for one the caller has no access to, so the
+        /// message names the account the storage token was issued to and the paths that were actually
+        /// requested - otherwise a permissions problem is indistinguishable from a typo.
+        /// </summary>
+        private string BuildFailureMessage(IReadOnlyList<DeltaTableAnalysis> erroredTables)
+        {
+            var message = erroredTables.Select(t => t.Error).Distinct().First();
+
+            var isNotFound = message.IndexOf("404", StringComparison.OrdinalIgnoreCase) >= 0
+                          || message.IndexOf("PathNotFound", StringComparison.OrdinalIgnoreCase) >= 0;
+            if (!isNotFound) return message;
+
+            var sb = new StringBuilder(message);
+            sb.Append(" OneLake reports 'not found' both for a path that does not exist and for one your account cannot access.");
+
+            var attempted = erroredTables
+                .Select(t => t.OneLakePath)
+                .Where(p => !string.IsNullOrEmpty(p))
+                .Distinct()
+                .Take(3)
+                .ToList();
+            if (attempted.Count > 0)
+            {
+                sb.Append($" Requested: {string.Join(", ", attempted)}.");
+            }
+
+            sb.Append(string.IsNullOrEmpty(_storageAccountName)
+                ? " No account could be identified for the OneLake connection."
+                : $" Signed in as '{_storageAccountName}' - check that this account has access to the workspace.");
+
+            return sb.ToString();
+        }
+
+        /// <summary>
         /// Validates a manual OneLake path override. A valid path is an absolute http(s) URL pointing at a
         /// OneLake DFS endpoint (host contains "onelake" or "dfs.fabric"). Returns false with a clean,
         /// user-friendly message in <paramref name="error"/> when the input is not usable, so the caller
@@ -828,6 +884,13 @@ namespace DaxStudio.UI.ViewModels
         private string _directLakeModeNote = string.Empty;
 
         /// <summary>
+        /// The Entra account the OneLake storage token was last issued to. The token is usually acquired
+        /// silently, so there is no sign-in prompt to tell the user which identity is in play - this is
+        /// reported when a request fails so an access problem can be told apart from a bad path.
+        /// </summary>
+        private string _storageAccountName;
+
+        /// <summary>
         /// Entry point called from the ribbon. Resolves OneLake paths, acquires a storage token and runs
         /// the analysis. Safe to call multiple times (e.g. from a Refresh button).
         /// </summary>
@@ -851,14 +914,21 @@ namespace DaxStudio.UI.ViewModels
                 return;
             }
 
-            // When a manual OneLake path is supplied, validate it up-front so obviously invalid input
-            // (not a URL, wrong host, etc.) produces a single clean warning rather than a low-level parse
-            // or network exception surfacing later with a stack trace.
-            if (!string.IsNullOrWhiteSpace(OverridePath) && !IsValidOneLakePath(OverridePath.Trim(), out var pathError))
+            // When a manual OneLake path is supplied, normalize it (abfss:// form, stray quotes or square
+            // brackets, trailing slash) and validate it up-front so obviously invalid input produces a
+            // single clean warning rather than a low-level parse or network exception surfacing later with
+            // a stack trace. The normalized value is written back so the user can see what will be used.
+            if (!string.IsNullOrWhiteSpace(OverridePath))
             {
-                SetStatus(pathError, true);
-                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, pathError));
-                return;
+                var normalizedPath = DirectLakePathResolver.NormalizeOneLakePath(OverridePath);
+                if (!string.Equals(normalizedPath, OverridePath, StringComparison.Ordinal)) OverridePath = normalizedPath;
+
+                if (!IsValidOneLakePath(normalizedPath, out var pathError))
+                {
+                    SetStatus(pathError, true);
+                    _eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, pathError));
+                    return;
+                }
             }
 
             _cts = new CancellationTokenSource();
@@ -878,6 +948,14 @@ namespace DaxStudio.UI.ViewModels
             var overridePath = OverridePath?.Trim();
             var readFooters = ReadParquetFooters;
             var readColumns = ReadColumnStats;
+            // The pane can be restored from a saved package (or used with no model connection at all)
+            // without ever going through LoadFromConnection, leaving no owner window for the sign-in
+            // dialog. Fall back to the main window so an interactive prompt can still be shown when there
+            // is no cached token, instead of silently failing to authenticate.
+            if (_lastWindowHandle == IntPtr.Zero)
+            {
+                _lastWindowHandle = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
+            }
             var windowHandle = _lastWindowHandle;
 
             try
@@ -896,11 +974,13 @@ namespace DaxStudio.UI.ViewModels
                     && erroredTables.Count == result.Tables.Count
                     && result.Tables.All(t => t.FileCount == 0))
                 {
-                    var message = erroredTables.Select(t => t.Error).Distinct().First();
+                    var message = BuildFailureMessage(erroredTables);
                     SetStatus(message, true);
                     _eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, message));
                     return;
                 }
+
+                RenameManualTableFromResolvedPath(overridePath, result);
 
                 TreeRows.Clear();
                 foreach (var t in result.Tables.OrderBy(t => t.TableName))
@@ -1030,12 +1110,25 @@ namespace DaxStudio.UI.ViewModels
 
             // 1. Resolve the Direct Lake table paths from TOM metadata.
             var resolver = new DirectLakePathResolver();
+            overridePath = DirectLakePathResolver.NormalizeOneLakePath(overridePath);
             bool hasOverride = !string.IsNullOrWhiteSpace(overridePath);
+
+            // A manual path can be either the .../Tables root that every table path is rebuilt from, or a
+            // path that already identifies a single table (.../Tables/{schema}/{table}). In the latter case
+            // there is nothing to look up in the model, so skip the metadata pass entirely - otherwise we
+            // would enumerate every table in the connected model and append its name to a path that is
+            // already a table folder, producing paths that can only 404.
+            string overrideTableName = null;
+            bool overrideIsSingleTable = hasOverride
+                && DirectLakePathResolver.TryGetTableFromPath(overridePath, out overrideTableName);
+
             // The connection object can be non-null but not actually open (e.g. the Delta Analyzer was
             // opened without an active model connection to analyze a manual OneLake path). Reading its
             // metadata / access token in that state throws, so treat an unopened connection as none.
             var effectiveConnection = (connection != null && connection.IsConnected) ? connection : null;
-            var resolveResult = resolver.Resolve(effectiveConnection, progress, ct, hasOverride);
+            var resolveResult = overrideIsSingleTable
+                ? new DirectLakeResolveResult()
+                : resolver.Resolve(effectiveConnection, progress, ct, hasOverride);
 
             var tables = new List<(string tableName, string dfsBasePath)>();
 
@@ -1053,12 +1146,17 @@ namespace DaxStudio.UI.ViewModels
                 _directLakeModeNote = BuildDirectLakeModeNote(resolveResult);
             }
 
-            if (resolveResult.Tables.Count > 0)
+            if (overrideIsSingleTable)
+            {
+                // The path names the table, so analyze exactly that folder.
+                tables.Add((overrideTableName, overridePath));
+            }
+            else if (resolveResult.Tables.Count > 0)
             {
                 foreach (var t in resolveResult.Tables)
                 {
                     // The manual override, when supplied, takes precedence over the path discovered from the
-                    // data model - rebuild every table path from the override root (assumed to point at the
+                    // data model - rebuild every table path from the override root (which points at the
                     // .../Tables folder) rather than using the auto-resolved DfsBasePath.
                     var path = hasOverride
                         ? DirectLakePathResolver.BuildFromOverrideRoot(overridePath, t.SchemaName, t.EntityName ?? t.TableName)
@@ -1108,6 +1206,14 @@ namespace DaxStudio.UI.ViewModels
                     return null;
                 }
                 bearerToken = authResult.AccessToken;
+
+                // OneLake returns 404 for anything the caller cannot see, so the identity actually used is
+                // the single most useful thing to know when a path "does not exist". The token is normally
+                // acquired silently from the last used account, meaning there is no sign-in prompt to reveal
+                // it - record it here so it can be reported.
+                _storageAccountName = authResult.Account?.Username;
+                Log.Information(Constants.LogMessageTemplate, nameof(DeltaAnalyzerViewModel), nameof(RunAnalysisAsync),
+                    $"Acquired OneLake storage token for account '{_storageAccountName}' (tenant {authResult.Account?.HomeAccountId?.TenantId})");
             }
             catch (Exception ex)
             {

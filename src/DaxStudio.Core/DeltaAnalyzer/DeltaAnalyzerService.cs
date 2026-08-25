@@ -348,16 +348,55 @@ namespace DaxStudio.Core.DeltaAnalyzer
         }
 
         /// <summary>
-        /// Yields the table path to try, then (when the path is of the form <c>.../Tables/{schema}/{table}</c>)
-        /// a fallback with the schema segment removed. This handles non-schema-enabled lakehouses whose
-        /// SQL endpoint reports a "dbo" schema that has no corresponding OneLake folder.
+        /// Yields the OneLake paths to try for a table, in order, stopping at the first that is found.
+        /// Two independent ambiguities have to be covered:
+        /// <list type="bullet">
+        /// <item>a non-schema-enabled lakehouse whose SQL endpoint reports a "dbo" schema that has no
+        /// corresponding OneLake folder, so the schema segment must be dropped</item>
+        /// <item>a path copied from warehouse table properties, where the table name is wrapped in square
+        /// brackets as SQL identifier quoting. A name that itself contains brackets then comes back double
+        /// wrapped, and the brackets can equally be part of the real folder name - so the name is tried
+        /// as supplied first, then with each layer of wrapping brackets removed.</item>
+        /// </list>
         /// </summary>
         private static IEnumerable<string> CandidateTablePaths(string dfsBasePath)
         {
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var candidate in LeafVariants(dfsBasePath))
+            {
+                if (seen.Add(candidate)) yield return candidate;
+
+                var stripped = TryStripSchemaSegment(candidate);
+                if (!string.IsNullOrEmpty(stripped) && seen.Add(stripped)) yield return stripped;
+            }
+        }
+
+        /// <summary>
+        /// Yields the path as supplied, then a variant for each successive layer of square brackets
+        /// wrapping the table name. The brackets are kept in the first candidate because they can be part
+        /// of the real folder name - only if that is not found are the unwrapped readings tried.
+        /// </summary>
+        private static IEnumerable<string> LeafVariants(string dfsBasePath)
+        {
             yield return dfsBasePath;
-            var stripped = TryStripSchemaSegment(dfsBasePath);
-            if (!string.IsNullOrEmpty(stripped) && !string.Equals(stripped, dfsBasePath, StringComparison.Ordinal))
-                yield return stripped;
+            if (string.IsNullOrEmpty(dfsBasePath)) yield break;
+
+            var lastSlash = dfsBasePath.LastIndexOf('/');
+            if (lastSlash < 0 || lastSlash == dfsBasePath.Length - 1) yield break;
+
+            var prefix = dfsBasePath.Substring(0, lastSlash + 1);
+            var leaf = dfsBasePath.Substring(lastSlash + 1);
+
+            // Work on the decoded name so an encoded %5B / %5D is recognised as a bracket.
+            string decoded;
+            try { decoded = Uri.UnescapeDataString(leaf); }
+            catch { yield break; }
+
+            while (decoded.Length > 2 && decoded[0] == '[' && decoded[decoded.Length - 1] == ']')
+            {
+                decoded = decoded.Substring(1, decoded.Length - 2);
+                yield return prefix + Uri.EscapeDataString(decoded);
+            }
         }
 
         /// <summary>
