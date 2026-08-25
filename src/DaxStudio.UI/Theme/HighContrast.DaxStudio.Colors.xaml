@@ -151,6 +151,10 @@
     <SolidColorBrush x:Key="WhiteBrush" SolidColorBrush.Color="{x:Static SystemColors.WindowColor}" />
     <SolidColorBrush x:Key="WhiteBrush20" SolidColorBrush.Color="{StaticResource WhiteColor20}" />
     <SolidColorBrush x:Key="BlackBrush" SolidColorBrush.Color="{StaticResource BlackColor}" />
+    <!-- Fluent.Ribbon v11 draws the menu item checkmark (Fluent.Ribbon.Images.Checked) with a Pen bound to
+         this key. Without it the DynamicResource resolves to null, so the checkmark is invisible and only
+         the highlighted box behind it shows. Also used by the rootBorder in DaxStudio.FluentRibbonStyles. -->
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Black" SolidColorBrush.Color="{x:Static SystemColors.WindowTextColor}" />
     <SolidColorBrush x:Key="BlackBrush20" SolidColorBrush.Color="{StaticResource BlackColor20}" />
     <SolidColorBrush x:Key="GrayBrush1" SolidColorBrush.Color="{StaticResource Gray1}" />
     <SolidColorBrush x:Key="GrayBrush2" SolidColorBrush.Color="{StaticResource Gray2}" />
@@ -243,7 +247,13 @@
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabItem.Contextual.Background.OpacityMask" SolidColorBrush.Color="#14000000" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonWindow.TitleBackground" SolidColorBrush.Color="Transparent" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonWindow.TitleForeground" SolidColorBrush.Color="{x:Static SystemColors.WindowTextColor}" />
-    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Separator.BorderBrush" SolidColorBrush.Color="{StaticResource Gray8}" />
+    <!-- Fluent.Ribbon paints the quick access toolbar drop-down and overflow ('>>') glyphs with these
+         brushes. They are only defined in the themes that ship with Fluent.Ribbon, so they have to be
+         declared here as well or the glyphs are drawn with a null brush and become invisible. -->
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Images.QuickAccessToolbarDropDown" SolidColorBrush.Color="{x:Static SystemColors.WindowTextColor}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Images.QuickAccessToolbarDropDown.BelowRibbon" SolidColorBrush.Color="{x:Static SystemColors.WindowTextColor}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Images.QuickAccessToolbarExtender" SolidColorBrush.Color="{x:Static SystemColors.WindowTextColor}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Images.QuickAccessToolbarExtender.BelowRibbon" SolidColorBrush.Color="{x:Static SystemColors.WindowTextColor}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Separator.Background" SolidColorBrush.Color="{StaticResource Gray8}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.GroupSeparator.Background" SolidColorBrush.Color="{StaticResource Gray8}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.ScreenTip.BorderBrush" SolidColorBrush.Color="{StaticResource Gray7}" />
