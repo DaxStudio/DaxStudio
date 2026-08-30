@@ -184,5 +184,36 @@ Estimated size: rows = 1  bytes = 12
 
 
         }
+
+        [TestMethod]
+        public void FormatQueryRemapsStorageColumnIdToCurrentName()
+        {
+            const string xmSql = @"SELECT
+[DimProductSubcategory (15)].[ProductCategoryKey (28)] AS [DimProductSubcategory (15)$ProductCategoryKey (28)]
+FROM [DimProductSubcategory (15)];";
+            var options = Substitute.For<IGlobalOptions>();
+            options.SimplifyXmSqlSyntax.Returns(true);
+            options.FormatXmSql.Returns(true);
+            options.UseAntlrParser.Returns(true);
+            var remapColumns = new Dictionary<string, string>
+            {
+                { "ProductCategoryKey (28)", "Product Category Key New" }
+            };
+            var remapTables = new Dictionary<string, string>
+            {
+                { "DimProductSubcategory (15)", "Dim Product Subcategory" }
+            };
+            var args = new DaxStudioTraceEventArgs
+            {
+                EventClassName = "VertiPaqSEQueryEnd",
+                TextData = xmSql
+            };
+
+            var evnt = new TraceStorageEngineEvent(args, 1, options, remapColumns, remapTables);
+
+            Assert.IsTrue(evnt.QueryRichText.Contains("'Dim Product Subcategory'[Product Category Key New]"));
+            Assert.IsTrue(evnt.QueryRichText.Contains("[Product Category Key New]"));
+            Assert.IsFalse(evnt.QueryRichText.Contains("ProductCategoryKey"));
+        }
     }
 }
