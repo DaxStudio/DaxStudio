@@ -19,6 +19,13 @@ namespace DaxStudio.Core.DeltaAnalyzer
     public class OneLakeLocation
     {
         public string FilesystemUrl { get; set; }
+
+        /// <summary>
+        /// The directory below the filesystem root, in <b>decoded</b> form (e.g. a table called
+        /// <c>Currency Exchange</c> appears with a real space, not <c>%20</c>). Callers that build a URL
+        /// from it must escape it - <see cref="BuildFileUrl"/> does, and the DFS list API takes it as a
+        /// query string value which is escaped by <c>OneLakeHttpClient</c>.
+        /// </summary>
         public string Directory { get; set; }
 
         /// <summary>
@@ -52,15 +59,38 @@ namespace DaxStudio.Core.DeltaAnalyzer
             }
             return new OneLakeLocation
             {
+                // The filesystem segment goes straight into a URL, so it stays percent-encoded.
                 FilesystemUrl = $"{uri.Scheme}://{uri.Host}/{filesystem}",
-                Directory = directory
+                Directory = DecodeSegments(directory)
             };
         }
 
-        /// <summary>Builds the full file URL for a path relative to the filesystem root.</summary>
+        /// <summary>
+        /// Percent-decodes each segment of a path individually, so an encoded separator (<c>%2F</c>)
+        /// inside a name is not turned into a real path separator.
+        /// </summary>
+        private static string DecodeSegments(string path)
+        {
+            if (string.IsNullOrEmpty(path)) return path;
+            return string.Join("/", path.Split('/').Select(Unescape));
+        }
+
+        private static string Unescape(string value)
+        {
+            try { return Uri.UnescapeDataString(value); }
+            catch { return value; }
+        }
+
+        /// <summary>
+        /// Builds the full file URL for a <b>decoded</b> path relative to the filesystem root. Each
+        /// segment is escaped individually so names containing spaces or other reserved characters
+        /// produce a valid URL (and the separators are preserved).
+        /// </summary>
         public string BuildFileUrl(string relativePath)
         {
-            return $"{FilesystemUrl.TrimEnd('/')}/{relativePath.TrimStart('/')}";
+            var relative = (relativePath ?? string.Empty).TrimStart('/');
+            var escaped = string.Join("/", relative.Split('/').Select(Uri.EscapeDataString));
+            return $"{FilesystemUrl.TrimEnd('/')}/{escaped}";
         }
     }
 

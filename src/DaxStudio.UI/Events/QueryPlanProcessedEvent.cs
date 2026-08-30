@@ -1,13 +1,14 @@
 using DaxStudio.Core.Interfaces;
 
-namespace DaxStudio.Core.Events
+namespace DaxStudio.UI.Events
 {
-    public class QueryTraceCompletedEvent
+    public sealed class QueryPlanProcessedEvent
     {
-        public QueryTraceCompletedEvent(ITraceWatcher trace)
+        public QueryPlanProcessedEvent(ITraceWatcher trace)
         {
             Trace = trace;
         }
+
         public ITraceWatcher Trace { get; }
     }
 }

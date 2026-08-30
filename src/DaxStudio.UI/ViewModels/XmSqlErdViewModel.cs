@@ -39,6 +39,8 @@ namespace DaxStudio.UI.ViewModels
         private IGlobalOptions _options;
         private IEventAggregator _eventAggregator;
         private ServerTimingDetailsViewModel _serverTimingDetails;
+        private Dictionary<string, string> _remapColumns;
+        private Dictionary<string, string> _remapTables;
         private List<TraceStorageEngineEvent> _rawEvents;  // Stored for debug export
         private List<int> _allAvailableQueryIds = new List<int>();  // Unfiltered query IDs from tables
 
@@ -58,12 +60,19 @@ namespace DaxStudio.UI.ViewModels
         public XmSqlErdViewModel(IEventAggregator eventAggregator, ServerTimingDetailsViewModel serverTimingDetails = null)
         {
             _parser = new XmSqlParser();
-            _analysis = new XmSqlAnalysis();
+            _analysis = new XmSqlAnalysis(_remapColumns, _remapTables);
             _eventAggregator = eventAggregator;
             _serverTimingDetails = serverTimingDetails;
             _eventAggregator.SubscribeOnUIThread(this);
             // Initialize heat map mode from persisted options
             _heatMapMode = Options.SEDependenciesHeatMapMode;
+        }
+
+        public void SetNameRemaps(Dictionary<string, string> remapColumns, Dictionary<string, string> remapTables)
+        {
+            _remapColumns = remapColumns;
+            _remapTables = remapTables;
+            _analysis = new XmSqlAnalysis(_remapColumns, _remapTables);
         }
 
         /// <summary>
@@ -1142,7 +1151,7 @@ namespace DaxStudio.UI.ViewModels
                 var totalEvents = _rawEvents.Count;
 
                 // Clear previous analysis (must be on UI thread - bound to UI)
-                _analysis = new XmSqlAnalysis();
+                _analysis = new XmSqlAnalysis(_remapColumns, _remapTables);
                 Tables.Clear();
                 Relationships.Clear();
 

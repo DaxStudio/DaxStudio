@@ -11,8 +11,7 @@
         d:DesignWidth="466" 
         GlowColor="{x:Null}"
         NonActiveGlowColor="{x:Null}"
-        NonActiveBorderBrush="{DynamicResource Theme.Brush.Dialog.Border}"
-        BorderBrush="{DynamicResource Theme.Brush.Dialog.Border}"            
+        BorderThickness="0"
         Background="Transparent"                   
         Style="{DynamicResource DaxStudioRibbonWindowStyle}"
         Icon="pack://application:,,,/DaxStudio.UI;component/images/DaxStudio.ico"    
@@ -26,6 +25,12 @@
     dd:DragDrop.DropHandler="{Binding}"
 
                      >
+    <!--
+        BorderThickness is 0 so PART_Border in the window template paints nothing. Its only job was the
+        1px outline around the window, which showed as a faint line down the left, right and bottom edges
+        (Theme.Brush.Dialog.Border - grey on light, and a shade lighter than the content on dark). The
+        rounded corners are unaffected because they come from the DWM, not from that border.
+    -->
     <!--
             dd:DragDrop.IsDragSource="True"
  -->

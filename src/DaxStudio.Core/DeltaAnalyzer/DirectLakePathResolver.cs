@@ -63,6 +63,12 @@ namespace DaxStudio.Core.DeltaAnalyzer
         private static readonly Regex Base32SegmentRegex = new Regex(@"[A-Za-z2-7]{26}", RegexOptions.Compiled);
         private const string Base32Alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 
+        // abfss://{filesystem}@{host}/{rest} - the "Copy ABFS path" form offered by the Fabric portal.
+        private static readonly Regex AbfsUrlRegex = new Regex(@"^abfss?://(?<fs>[^@/]+)@(?<host>[^/]+)/?(?<rest>.*)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        // The path group deliberately runs to the end of the string, so a '?' or '#' in a table name is
+        // kept as part of the path instead of being read as a query or fragment delimiter.
+        private static readonly Regex AbsoluteUrlRegex = new Regex(@"^(?<scheme>[a-z][a-z0-9+.\-]*)://(?<authority>[^/?#]+)(?<path>.*)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
         /// <summary>
         /// Resolves Direct Lake table paths. Never throws for individual-table failures - unresolved
         /// tables are returned with <see cref="DirectLakeTableInfo.IsResolved"/> = false.
@@ -322,6 +328,103 @@ namespace DaxStudio.Core.DeltaAnalyzer
             if (GuidRegex.IsMatch(lh)) return lh;
             // Otherwise assume it's a lakehouse display name.
             return $"{lh}.Lakehouse";
+        }
+
+        /// <summary>
+        /// Cleans up a OneLake path typed or pasted by the user so it can be used as a DFS URL. Handles
+        /// the forms most commonly copied out of the Fabric portal, a notebook or a DAX/M expression:
+        /// surrounding whitespace and quotes, the <c>abfss://{workspace}@{host}/{item}/...</c> ABFS form
+        /// (rewritten to the equivalent https DFS URL), and a trailing slash. Every path segment is
+        /// re-encoded so characters that are not legal raw in a URL - notably spaces and square brackets -
+        /// are percent-escaped exactly once.
+        /// <para>
+        /// No characters are ever removed. A OneLake folder name can genuinely contain square brackets, so
+        /// whether a bracketed name is quoted or literal cannot be decided here - the alternatives are
+        /// tried at request time instead.
+        /// </para>
+        /// </summary>
+        public static string NormalizeOneLakePath(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path)) return path;
+
+            var text = path.Trim().Trim('"', '\'').Trim();
+
+            var abfs = AbfsUrlRegex.Match(text);
+            if (abfs.Success)
+            {
+                text = $"https://{abfs.Groups["host"].Value}/{abfs.Groups["fs"].Value}/{abfs.Groups["rest"].Value}";
+            }
+
+            text = text.TrimEnd('/');
+
+            // Only rewrite something we can parse - anything else is handed back untouched so the caller's
+            // validation can report it rather than this method silently mangling it.
+            if (!TrySplitUrl(text, out var origin, out var rawSegments)) return text;
+
+            var segments = rawSegments.Select(NormalizeSegment).ToArray();
+            if (segments.Length == 0) return origin;
+            return $"{origin}/{string.Join("/", segments)}";
+        }
+
+        /// <summary>
+        /// Splits an absolute URL into its origin (scheme and authority) and its raw, still-encoded path
+        /// segments.
+        /// <para>
+        /// This deliberately does not use <see cref="Uri.AbsolutePath"/>. A table name can contain a literal
+        /// <c>?</c> or <c>#</c>, and in an unencoded path <see cref="Uri"/> reads those as the start of the
+        /// query or fragment - so <c>AbsolutePath</c> would silently truncate the name at the first one.
+        /// Splitting textually keeps the whole path, and every segment is percent-escaped afterwards so
+        /// those characters cannot be misread again.
+        /// </para>
+        /// </summary>
+        private static bool TrySplitUrl(string text, out string origin, out string[] segments)
+        {
+            origin = null;
+            segments = null;
+
+            var match = AbsoluteUrlRegex.Match(text);
+            if (!match.Success) return false;
+
+            origin = $"{match.Groups["scheme"].Value}://{match.Groups["authority"].Value}";
+            segments = match.Groups["path"].Value.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+            return true;
+        }
+
+        /// <summary>
+        /// Re-encodes a single path segment. The segment is decoded first so an already-encoded path is not
+        /// double-encoded, then escaped - which turns a space into <c>%20</c> and a square bracket into
+        /// <c>%5B</c>/<c>%5D</c> rather than leaving it raw in the URL, where it is not valid.
+        /// </summary>
+        private static string NormalizeSegment(string segment)
+        {
+            try { return Uri.EscapeDataString(Uri.UnescapeDataString(segment)); }
+            catch { return segment; }
+        }
+
+        /// <summary>
+        /// Determines whether a OneLake path already identifies a single table folder (i.e. it has at
+        /// least one segment below a <c>Tables</c> folder) rather than being the <c>.../Tables</c> root
+        /// that every table path should be rebuilt from. Returns the decoded folder name when it does.
+        /// <para>
+        /// Note this is the name as it appears in the path supplied, which may still carry SQL identifier
+        /// quoting if the path was copied from warehouse table properties. Once the analysis has found the
+        /// folder that actually exists, prefer the name taken from that resolved path.
+        /// </para>
+        /// </summary>
+        public static bool TryGetTableFromPath(string path, out string tableName)
+        {
+            tableName = null;
+            if (string.IsNullOrWhiteSpace(path)) return false;
+            if (!TrySplitUrl(path.Trim().TrimEnd('/'), out _, out var segments)) return false;
+
+            var tablesIndex = Array.FindLastIndex(segments, s => string.Equals(s, "Tables", StringComparison.OrdinalIgnoreCase));
+            // No Tables segment, or nothing below it, means this is a root rather than a table.
+            if (tablesIndex < 0 || tablesIndex >= segments.Length - 1) return false;
+
+            var leaf = segments[segments.Length - 1];
+            try { leaf = Uri.UnescapeDataString(leaf); } catch { /* keep raw */ }
+            tableName = leaf;
+            return true;
         }
 
         /// <summary>

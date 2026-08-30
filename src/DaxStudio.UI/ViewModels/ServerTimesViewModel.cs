@@ -263,6 +263,7 @@ namespace DaxStudio.UI.ViewModels
                 Log.Information("{class} {method} {message}", nameof(ServerTimesViewModel), nameof(ShowQueryDependencies), $"Starting with {AllStorageEngineEvents.Count} events");
 
                 var erdViewModel = new XmSqlErdViewModel(_eventAggregator, ServerTimingDetails);
+                erdViewModel.SetNameRemaps(RemapColumnNames, RemapTableNames);
 
                 _eventAggregator.PublishAsync(new ShowToolWindowEvent(erdViewModel));
 
@@ -288,7 +289,7 @@ namespace DaxStudio.UI.ViewModels
                 IXmSqlParser parser = Options.UseAntlrParser
                     ? (IXmSqlParser)new AntlrXmSqlParser()
                     : new XmSqlParser();
-                var analysis = new XmSqlAnalysis();
+                var analysis = new XmSqlAnalysis(RemapColumnNames, RemapTableNames);
 
                 foreach (var evt in AllStorageEngineEvents)
                 {

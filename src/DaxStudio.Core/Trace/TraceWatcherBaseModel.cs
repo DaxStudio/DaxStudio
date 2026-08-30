@@ -104,7 +104,6 @@ namespace DaxStudio.Core.Trace
             }
 
             IsBusy = false;
-            _eventAggregator.PublishAsync(new QueryTraceCompletedEvent(this));
         }
 
         private void ResetTimeout()

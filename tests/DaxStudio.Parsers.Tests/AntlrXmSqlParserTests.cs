@@ -1,6 +1,7 @@
 using DaxStudio.Parsers;
 using DaxStudio.Parsers.StorageEngine;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Collections.Generic;
 using System.Linq;
 
 using DaxStudio.Parsers.Grammars.Generated;
@@ -49,6 +50,23 @@ FROM 'Product';";
 
             Assert.IsTrue(productTable.Columns["Color"].UsageTypes.HasFlag(XmSqlColumnUsage.Select));
             Assert.IsTrue(productTable.Columns["Class"].UsageTypes.HasFlag(XmSqlColumnUsage.Select));
+        }
+
+        [TestMethod]
+        public void Antlr_ParseQueryWithLineage_UsesCurrentRemappedNames()
+        {
+            const string xmSql = @"SELECT [Old Table (100)].[Old Column (200)]
+FROM [Old Table (100)];";
+            var remapColumns = new Dictionary<string, string> { { "200", "Current Column" } };
+            var remapTables = new Dictionary<string, string> { { "100", "Current Table" } };
+            var analysis = new XmSqlAnalysis(remapColumns, remapTables);
+
+            var result = _parser.ParseQuery(xmSql, analysis);
+
+            Assert.IsTrue(result);
+            Assert.IsTrue(analysis.Tables.ContainsKey("Current Table"));
+            Assert.IsTrue(analysis.Tables["Current Table"].Columns.ContainsKey("Current Column"));
+            Assert.IsFalse(analysis.Tables.ContainsKey("Old Table (100)"));
         }
 
         [TestMethod]

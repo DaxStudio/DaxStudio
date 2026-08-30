@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace DaxStudio.Parsers.StorageEngine
 {
@@ -10,6 +11,16 @@ namespace DaxStudio.Parsers.StorageEngine
     /// </summary>
     public class XmSqlAnalysis
     {
+        private static readonly Regex LineagePattern = new Regex(@"\s*\(\s*(?<id>\d+)\s*\)\s*$", RegexOptions.Compiled);
+        private readonly Dictionary<string, string> _remapColumns;
+        private readonly Dictionary<string, string> _remapTables;
+
+        public XmSqlAnalysis(Dictionary<string, string> remapColumns = null, Dictionary<string, string> remapTables = null)
+        {
+            _remapColumns = remapColumns;
+            _remapTables = remapTables;
+        }
+
         /// <summary>
         /// Dictionary of tables found in the xmSQL queries, keyed by table name.
         /// </summary>
@@ -117,13 +128,27 @@ namespace DaxStudio.Parsers.StorageEngine
 
             // Clean the table name (remove quotes if present)
             tableName = tableName.Trim().Trim('\'', '"');
+            tableName = GetCurrentName(tableName, _remapTables);
 
             if (!Tables.TryGetValue(tableName, out var table))
             {
-                table = new XmSqlTableInfo(tableName);
+                table = new XmSqlTableInfo(tableName, _remapColumns);
                 Tables[tableName] = table;
             }
             return table;
+        }
+
+        private static string GetCurrentName(string name, Dictionary<string, string> remapNames)
+        {
+            if (string.IsNullOrEmpty(name)) return name;
+            if (remapNames != null && remapNames.TryGetValue(name, out var remappedName))
+                return remappedName;
+
+            var lineageMatch = LineagePattern.Match(name);
+            if (!lineageMatch.Success) return name;
+
+            var id = lineageMatch.Groups["id"].Value;
+            return remapNames != null && remapNames.TryGetValue(id, out var currentName) ? currentName : name;
         }
 
         /// <summary>
@@ -133,10 +158,10 @@ namespace DaxStudio.Parsers.StorageEngine
         public void AddRelationship(string fromTable, string fromColumn, string toTable, string toColumn, XmSqlJoinType joinType)
         {
             // Clean table/column names to match GetOrAddTable behavior
-            fromTable = fromTable?.Trim().Trim('\'', '"');
-            fromColumn = fromColumn?.Trim().Trim('[', ']');
-            toTable = toTable?.Trim().Trim('\'', '"');
-            toColumn = toColumn?.Trim().Trim('[', ']');
+            fromTable = GetCurrentName(fromTable?.Trim().Trim('\'', '"'), _remapTables);
+            fromColumn = GetCurrentName(fromColumn?.Trim().Trim('[', ']'), _remapColumns);
+            toTable = GetCurrentName(toTable?.Trim().Trim('\'', '"'), _remapTables);
+            toColumn = GetCurrentName(toColumn?.Trim().Trim('[', ']'), _remapColumns);
 
             // Check if this relationship already exists (in either direction)
             var existing = Relationships.FirstOrDefault(r =>
@@ -202,9 +227,13 @@ namespace DaxStudio.Parsers.StorageEngine
     /// </summary>
     public class XmSqlTableInfo
     {
-        public XmSqlTableInfo(string tableName)
+        private static readonly Regex LineagePattern = new Regex(@"\s*\(\s*(?<id>\d+)\s*\)\s*$", RegexOptions.Compiled);
+        private readonly Dictionary<string, string> _remapColumns;
+
+        public XmSqlTableInfo(string tableName, Dictionary<string, string> remapColumns = null)
         {
             TableName = tableName;
+            _remapColumns = remapColumns;
         }
 
         /// <summary>
@@ -331,6 +360,16 @@ namespace DaxStudio.Parsers.StorageEngine
 
             // Clean the column name (remove brackets if present)
             columnName = columnName.Trim().Trim('[', ']');
+            if (_remapColumns != null && _remapColumns.TryGetValue(columnName, out var remappedName))
+                columnName = remappedName;
+
+            var lineageMatch = LineagePattern.Match(columnName);
+            if (lineageMatch.Success)
+            {
+                var id = lineageMatch.Groups["id"].Value;
+                if (_remapColumns != null && _remapColumns.TryGetValue(id, out var currentName))
+                    columnName = currentName;
+            }
 
             if (!Columns.TryGetValue(columnName, out var column))
             {

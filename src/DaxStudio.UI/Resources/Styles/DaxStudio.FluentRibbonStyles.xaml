@@ -17,12 +17,27 @@
     <DrawingImage x:Key="Fluent.Ribbon.Images.RibbonCollapse"  Drawing="{DynamicResource collapseDrawingGroup}" />
     <DrawingImage x:Key="Fluent.Ribbon.Images.RibbonExpand"  Drawing="{DynamicResource expandDrawingGroup}" />
 
+    <!-- Radius used for the main window border outline. This matches the radius the Windows 11 DWM 
+         applies for the 'Round' corner preference so that our border follows the system corners. -->
+    <CornerRadius x:Key="DaxStudio.Values.RibbonWindow.CornerRadius">8</CornerRadius>
+
     <!-- v11 added a rounded, floating content area (corner radius + side margins + drop shadow).
          Override those values to restore the flat, flush ribbon appearance. -->
     <CornerRadius x:Key="Fluent.Ribbon.Values.RibbonTabControl.Content.CornerRadius">0</CornerRadius>
     <Thickness x:Key="Fluent.Ribbon.Values.RibbonTabControl.Content.Margin">0</Thickness>
     <DropShadowEffect x:Key="Fluent.Ribbon.Values.RibbonTabControl.Content.DropShadowEffect"
                       BlurRadius="0" ShadowDepth="0" Opacity="0" />
+
+    <!-- The QuickAccessToolBar decides how many buttons to show by measuring itself against the width
+         RibbonTitleBar hands it. On fractional DPI scales (eg 150%) layout rounding can shave a fraction
+         of a pixel off that width, which is enough to push the last button into the overflow popup. It is
+         also hard-clamped to the left edge of the first visible contextual tab group, but never below its
+         own MinWidth. Reserving a MinWidth that comfortably fits every quick access button keeps them all
+         visible. Keep this in sync with the QuickAccessItems declared in RibbonView.xaml (~24px each). -->
+    <Style TargetType="{x:Type Fluent:QuickAccessToolBar}">
+        <Setter Property="Template" Value="{DynamicResource Fluent.Ribbon.Templates.QuickAccessToolbar}" />
+        <Setter Property="MinWidth" Value="150" />
+    </Style>
 
     <!-- v11 removed the rounded corners + drop shadow from ribbon drop-down / split-button popups
          (its ResizeableContentControl template uses a plain square PART_DropDownBorder). Re-template
@@ -621,15 +636,19 @@
                 </Border>
             </AdornerDecorator>
                 <!-- 
-                Cannot set CornerRadius to 8 since we need to set the application window to AllowsTransparency=true and this breaks 
-                the AvalonDock unpinned tool windows 
+                Only the border outline is rounded here. The window content itself is still drawn square
+                because clipping it would require AllowsTransparency=true on the window, which breaks the 
+                AvalonDock unpinned tool windows. That is fine because on Windows 11 the DWM clips the window 
+                to the same radius (see CornerPreference on ControlzEx.WindowChromeWindow, which RibbonWindow 
+                derives from), so the square content outside the arc is never visible. The radius matches the 
+                DWM 'Round' preference so the outline lines up with the system corners.
                 -->
                 <ctrl:ClipBorder x:Name="PART_Border"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
                     Background="{x:Null}"
                     ClipToBounds="True"
-                    CornerRadius="0"
+                    CornerRadius="{DynamicResource DaxStudio.Values.RibbonWindow.CornerRadius}"
                     BorderBrush="{TemplateBinding BorderBrush}"
                     BorderThickness="{TemplateBinding BorderThickness}"
                     UseLayoutRounding="True" />

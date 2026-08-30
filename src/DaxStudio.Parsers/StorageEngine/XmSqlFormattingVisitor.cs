@@ -89,12 +89,15 @@ namespace DaxStudio.Parsers.StorageEngine
                 // Check remap before removing lineage
                 if (_remapTables != null)
                 {
+                    if (_remapTables.TryGetValue(raw, out var remapped))
+                        return remapped;
+
                     var lineageMatch = LineagePattern.Match(raw);
                     if (lineageMatch.Success)
                     {
                         var id = lineageMatch.Value.Trim().Trim('(', ')').Trim();
-                        if (_remapTables.TryGetValue(id, out var remapped))
-                            return remapped;
+                        if (_remapTables.TryGetValue(id, out var lineageRemapped))
+                            return lineageRemapped;
                     }
                 }
                 raw = LineagePattern.Replace(raw, "");
@@ -119,12 +122,15 @@ namespace DaxStudio.Parsers.StorageEngine
                 // Check remap before removing lineage
                 if (_remapColumns != null)
                 {
+                    if (_remapColumns.TryGetValue(raw, out var remapped))
+                        return remapped;
+
                     var lineageMatch = LineagePattern.Match(raw);
                     if (lineageMatch.Success)
                     {
                         var id = lineageMatch.Value.Trim().Trim('(', ')').Trim();
-                        if (_remapColumns.TryGetValue(id, out var remapped))
-                            return remapped;
+                        if (_remapColumns.TryGetValue(id, out var lineageRemapped))
+                            return lineageRemapped;
                     }
                 }
                 // Remove lineage IDs like " ( 123 ) "

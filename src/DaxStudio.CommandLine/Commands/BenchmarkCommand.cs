@@ -95,12 +95,6 @@ namespace DaxStudio.CommandLine.Commands
             Log.Information("Starting Benchmark command");
             bool silent = settings.Silent;
 
-            // Install a SynchronizationContext so that Caliburn.Micro's
-            // PublishAsync works in the CLI (no WPF dispatcher).
-            // Without this, ServerTimingsEvent may not be delivered to our handler.
-            if (SynchronizationContext.Current == null)
-                SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
-
             // Read query
             string daxQuery = settings.Query;
             if (!string.IsNullOrWhiteSpace(settings.File))
@@ -168,12 +162,9 @@ namespace DaxStudio.CommandLine.Commands
                 EventAggregator, new ServerTimingDetailsViewModel(), Options, null);
             serverTimes.Document = doc;
 
-            // Subscribe to QueryTraceCompletedEvent — fired by ProcessAllEvents()
-            // after ProcessResults() completes. This is the same event-driven
-            // approach the UI uses (BenchmarkViewModel subscribes to ServerTimingsEvent).
-            var timingReady = new ManualResetEventSlim(false);
-            EventAggregator.SubscribeOnPublishedThread(
-                new TraceCompletedHandler(serverTimes, () => timingReady.Set()));
+            // ServerTimingsEvent is only published after ProcessResults() has
+            // accepted a user QueryEnd and calculated all timing metrics.
+            using var timingHandler = new ServerTimingsHandler(EventAggregator);
 
             // Start trace
             if (!silent) AnsiConsole.MarkupLine("[yellow]Starting server trace...[/]");
@@ -237,9 +228,9 @@ namespace DaxStudio.CommandLine.Commands
                 }
                 catch (Exception ex) { Log.Warning("Cache clear failed: {message}", ex.Message); }
 
-                timingReady.Reset();
+                timingHandler.Reset();
                 var r = ExecuteTimedQuery(connMgr, daxQuery, sequence, "Cold",
-                    traceActive, serverTimes, timingReady);
+                    traceActive, serverTimes, timingHandler);
                 details.Add(r);
 
                 if (!silent)
@@ -253,9 +244,9 @@ namespace DaxStudio.CommandLine.Commands
                 if (cancellationToken.IsCancellationRequested) break;
                 sequence++;
 
-                timingReady.Reset();
+                timingHandler.Reset();
                 var r = ExecuteTimedQuery(connMgr, daxQuery, sequence, "Warm",
-                    traceActive, serverTimes, timingReady);
+                    traceActive, serverTimes, timingHandler);
                 details.Add(r);
 
                 if (!silent)
@@ -299,7 +290,7 @@ namespace DaxStudio.CommandLine.Commands
         private static BenchmarkResult ExecuteTimedQuery(
             ConnectionManager connMgr, string daxQuery, int sequence, string cacheType,
             bool traceActive, CmdServerTimesViewModel serverTimes,
-            ManualResetEventSlim timingReady)
+            ServerTimingsHandler timingHandler)
         {
             // Reset trace state so we get fresh timings for this run
             if (traceActive) serverTimes.OnReset();
@@ -334,21 +325,21 @@ namespace DaxStudio.CommandLine.Commands
                 TotalDurationMs = sw.ElapsedMilliseconds, RowCount = rowCount
             };
 
-            // Wait for ProcessResults() to complete via the event-driven signal.
-            // QueryTraceCompletedEvent is published by ProcessAllEvents() after
-            // ProcessResults() finishes — same signal the UI uses.
+            // Wait for the immutable snapshot published after ProcessResults()
+            // has calculated the complete set of server timing metrics.
             if (traceActive)
             {
                 int timeoutMs = Math.Max(15000, (int)sw.ElapsedMilliseconds * 3);
-                if (timingReady.Wait(timeoutMs))
+                var timings = timingHandler.Wait(timeoutMs);
+                if (timings != null)
                 {
-                    result.TotalDurationMs = serverTimes.TotalDuration;
-                    result.FormulaEngineDurationMs = serverTimes.FormulaEngineDuration;
-                    result.StorageEngineDurationMs = serverTimes.StorageEngineDuration;
-                    result.StorageEngineQueryCount = serverTimes.StorageEngineQueryCount;
-                    result.StorageEngineCpuMs = serverTimes.StorageEngineCpu;
-                    result.TotalCpuMs = serverTimes.TotalCpuDuration;
-                    result.VertipaqCacheMatches = serverTimes.VertipaqCacheMatches;
+                    result.TotalDurationMs = timings.TotalDuration;
+                    result.FormulaEngineDurationMs = timings.FormulaEngineDuration;
+                    result.StorageEngineDurationMs = timings.StorageEngineDuration;
+                    result.StorageEngineQueryCount = timings.StorageEngineQueryCount;
+                    result.StorageEngineCpuMs = timings.StorageEngineCpu;
+                    result.TotalCpuMs = timings.TotalCpuDuration;
+                    result.VertipaqCacheMatches = timings.VertipaqCacheMatches;
                 }
             }
 
@@ -513,26 +504,38 @@ namespace DaxStudio.CommandLine.Commands
 
         #endregion
 
-        /// <summary>
-        /// Handles QueryTraceCompletedEvent from the event aggregator.
-        /// Fired by TraceWatcherBaseViewModel.ProcessAllEvents() after
-        /// ProcessResults() completes — signals that IServerTimes properties
-        /// on ServerTimesViewModel are now populated with fresh data.
-        /// </summary>
-        private class TraceCompletedHandler : IHandle<QueryTraceCompletedEvent>
+        internal sealed class ServerTimingsHandler : IHandle<ServerTimingsEvent>, IDisposable
         {
-            private readonly ITraceWatcher _traceWatcher;
-            private readonly System.Action _callback;
-            public TraceCompletedHandler(ITraceWatcher traceWatcher, System.Action callback)
+            private readonly IEventAggregator _eventAggregator;
+            private readonly ManualResetEventSlim _timingReady = new ManualResetEventSlim(false);
+            private ServerTimingsEvent _timings;
+
+            public ServerTimingsHandler(IEventAggregator eventAggregator)
             {
-                _traceWatcher = traceWatcher;
-                _callback = callback;
+                _eventAggregator = eventAggregator ?? throw new ArgumentNullException(nameof(eventAggregator));
+                _eventAggregator.SubscribeOnPublishedThread(this);
             }
-            public Task HandleAsync(QueryTraceCompletedEvent message, CancellationToken cancellationToken)
+
+            public Task HandleAsync(ServerTimingsEvent message, CancellationToken cancellationToken)
             {
-                if (!ReferenceEquals(message.Trace, _traceWatcher)) return Task.CompletedTask;
-                _callback();
+                _timings = message;
+                _timingReady.Set();
                 return Task.CompletedTask;
+            }
+
+            public void Reset()
+            {
+                _timings = null;
+                _timingReady.Reset();
+            }
+
+            public ServerTimingsEvent Wait(int timeoutMs) =>
+                _timingReady.Wait(timeoutMs) ? _timings : null;
+
+            public void Dispose()
+            {
+                _eventAggregator.Unsubscribe(this);
+                _timingReady.Dispose();
             }
         }
     }

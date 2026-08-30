@@ -22,7 +22,7 @@
     <PackageVersion Include="Dax.ViewVpaExport" Version="1.12.1" />
     <PackageVersion Include="Dax.Vpax" Version="1.12.1" />
     <PackageVersion Include="Dax.Vpax.Obfuscator" Version="1.2.1" />
-    <PackageVersion Include="DaxStudio.Controls" Version="0.1.12" />
+    <PackageVersion Include="DaxStudio.Controls" Version="0.1.13" />
     <PackageVersion Include="Dirkster.AvalonDock" Version="4.74.1" />
     <PackageVersion Include="Dirkster.NumericUpDownLib" Version="3.4.0" />
     <PackageVersion Include="Expression.Blend.Sdk" Version="1.0.2" />

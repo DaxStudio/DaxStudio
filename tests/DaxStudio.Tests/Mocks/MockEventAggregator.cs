@@ -1,5 +1,6 @@
 using Caliburn.Micro;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -7,6 +8,8 @@ namespace DaxStudio.Tests.Mocks
 {
     class MockEventAggregator : IEventAggregator
     {
+        public List<object> PublishedMessages { get; } = new List<object>();
+
         public bool HandlerExistsFor(Type messageType)
         {
             throw new NotImplementedException();
@@ -24,7 +27,7 @@ namespace DaxStudio.Tests.Mocks
 
         public Task PublishAsync(object message, Func<Func<Task>, Task> marshal, CancellationToken cancellationToken = default)
         {
-            // do nothing
+            PublishedMessages.Add(message);
             return Task.CompletedTask;
         }
     }
