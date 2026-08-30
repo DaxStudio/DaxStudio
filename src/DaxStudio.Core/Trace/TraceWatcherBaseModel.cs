@@ -84,7 +84,6 @@ namespace DaxStudio.Core.Trace
             Log.Verbose("{class} {method} {message}", GetSubclassName(), nameof(ProcessAllEvents), "starting ProcessResults");
             if (!IsPaused) ProcessResults();
             IsBusy = false;
-            _eventAggregator.PublishAsync(new QueryTraceCompletedEvent(this));
         }
 
         private void ResetTimeout()

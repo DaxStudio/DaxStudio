@@ -197,6 +197,9 @@ namespace DaxStudio.UI.ViewModels
         // This is where you can do any processing of the events before displaying them to the UI
         protected override void ProcessResults()
         {
+            bool removedInternalEvents = RemoveInternalQueryEvents();
+            bool hasUserQueryEnd = Events.Any(e => e.EventClass == DaxStudioTraceEventClass.QueryEnd);
+            if (removedInternalEvents && !hasUserQueryEnd) return;
             if (PhysicalQueryPlanRows?.Count > 0 || LogicalQueryPlanRows?.Count > 0) return;
             // results have not been cleared so this is probably and end event from some other
             // action like a tooltip populating
@@ -241,6 +244,39 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(nameof(CanExport));
                 NotifyOfPropertyChange(nameof(CanShowTraceDiagnostics));
             });
+
+            if (hasUserQueryEnd)
+                _eventAggregator.PublishAsync(new QueryPlanProcessedEvent(this));
+        }
+
+        private bool RemoveInternalQueryEvents()
+        {
+            var internalActivityIds = new HashSet<string>(
+                Events.Where(IsInternalQueryEnd)
+                    .Select(e => e.ActivityId)
+                    .Where(id => !string.IsNullOrEmpty(id)),
+                StringComparer.OrdinalIgnoreCase);
+
+            bool IsInternalQueryEvent(DaxStudioTraceEventArgs traceEvent)
+            {
+                if (IsInternalQueryEnd(traceEvent)) return true;
+                return !string.IsNullOrEmpty(traceEvent.ActivityId)
+                    && internalActivityIds.Contains(traceEvent.ActivityId);
+            }
+
+            if (!Events.Any(IsInternalQueryEvent)) return false;
+
+            var retainedEvents = Events.Where(e => !IsInternalQueryEvent(e)).ToList();
+            while (Events.TryDequeue(out _)) { }
+            foreach (var traceEvent in retainedEvents) Events.Enqueue(traceEvent);
+            return true;
+        }
+
+        private static bool IsInternalQueryEnd(DaxStudioTraceEventArgs traceEvent)
+        {
+            return traceEvent.EventClass == DaxStudioTraceEventClass.QueryEnd
+                && !string.IsNullOrEmpty(traceEvent.TextData)
+                && traceEvent.TextData.Contains(Common.Constants.InternalQueryHeader);
         }
 
         public override void OnReset()

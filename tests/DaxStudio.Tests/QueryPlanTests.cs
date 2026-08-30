@@ -1,6 +1,9 @@
 ﻿using Caliburn.Micro;
+using DaxStudio.Common.Enums;
 using DaxStudio.Interfaces;
+using DaxStudio.QueryTrace;
 using DaxStudio.Tests.Mocks;
+using DaxStudio.UI.Events;
 using DaxStudio.UI.ViewModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
@@ -135,6 +138,48 @@ namespace DaxStudio.Tests
 
 
 
+		}
+
+		[TestMethod]
+		public void Internal_query_does_not_publish_query_plan_processed_event()
+		{
+			var eventAggregator = new MockEventAggregator();
+			var vm = new QueryPlanTraceViewModelTester(eventAggregator, mockOptions, mockWindowManager);
+			vm.Events.Enqueue(new DaxStudioTraceEventArgs
+			{
+				EventClassName = DaxStudioTraceEventClass.DAXQueryPlan.ToString(),
+				TextData = "Internal query plan",
+				ActivityId = "internal-activity"
+			});
+			vm.Events.Enqueue(new DaxStudioTraceEventArgs
+			{
+				EventClassName = DaxStudioTraceEventClass.QueryEnd.ToString(),
+				TextData = DaxStudio.Common.Constants.InternalQueryHeader + " EVALUATE ROW(\"x\", 1)",
+				ActivityId = "internal-activity"
+			});
+
+			vm.ProcessAllEvents();
+
+			Assert.IsFalse(eventAggregator.PublishedMessages.Any(message => message is QueryPlanProcessedEvent));
+			Assert.IsTrue(vm.Events.IsEmpty);
+		}
+
+		[TestMethod]
+		public void User_query_publishes_source_scoped_query_plan_processed_event()
+		{
+			var eventAggregator = new MockEventAggregator();
+			var vm = new QueryPlanTraceViewModelTester(eventAggregator, mockOptions, mockWindowManager);
+			vm.Events.Enqueue(new DaxStudioTraceEventArgs
+			{
+				EventClassName = DaxStudioTraceEventClass.QueryEnd.ToString(),
+				TextData = "EVALUATE ROW(\"x\", 1)",
+				ActivityId = "user-activity"
+			});
+
+			vm.ProcessAllEvents();
+
+			var processedEvent = eventAggregator.PublishedMessages.OfType<QueryPlanProcessedEvent>().Single();
+			Assert.AreSame(vm, processedEvent.Trace);
 		}
 
 	}

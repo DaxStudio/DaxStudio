@@ -1,8 +1,11 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DaxStudio.CommandLine.Commands;
 using DaxStudio.CommandLine.Helpers;
+using DaxStudio.Core.Events;
+using DaxStudio.Interfaces;
 using Spectre.Console.Cli;
 using System;
+using System.Threading;
 #if NET8_0_OR_GREATER
 using AccessToken = Microsoft.AnalysisServices.AccessToken;
 #else
@@ -207,6 +210,53 @@ namespace DaxStudio.CommandLine.Tests
                 "User ID=app:client-id@tenant-id;Password=cert:thumbprint";
 
             Assert.IsFalse(AccessTokenHelper.IsAccessTokenNeeded(connectionString));
+        }
+
+        [TestMethod]
+        public void Benchmark_server_timings_handler_returns_processed_snapshot()
+        {
+            using var handler = new BenchmarkCommand.ServerTimingsHandler(new Caliburn.Micro.EventAggregator());
+            var timings = new ServerTimingsEvent(new TestServerTimes
+            {
+                TotalDuration = 700,
+                FormulaEngineDuration = 300,
+                StorageEngineDuration = 400,
+                StorageEngineQueryCount = 5,
+                StorageEngineCpu = 350,
+                TotalCpuDuration = 650,
+                VertipaqCacheMatches = 2
+            });
+
+            handler.HandleAsync(timings, CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreSame(timings, handler.Wait(0));
+            Assert.IsInstanceOfType<TestServerTimes>(timings.Source);
+        }
+
+        [TestMethod]
+        public void Benchmark_server_timings_handler_reset_discards_previous_snapshot()
+        {
+            using var handler = new BenchmarkCommand.ServerTimingsHandler(new Caliburn.Micro.EventAggregator());
+            var timings = new ServerTimingsEvent(new TestServerTimes { TotalDuration = 700 });
+            handler.HandleAsync(timings, CancellationToken.None).GetAwaiter().GetResult();
+
+            handler.Reset();
+
+            Assert.IsNull(handler.Wait(0));
+        }
+
+        private sealed class TestServerTimes : IServerTimes
+        {
+            public long FormulaEngineDuration { get; set; }
+            public long StorageEngineCpu { get; set; }
+            public double StorageEngineCpuFactor { get; set; }
+            public long StorageEngineDuration { get; set; }
+            public long StorageEngineQueryCount { get; set; }
+            public long TotalDirectQueryDuration { get; set; }
+            public long TotalCpuDuration { get; set; }
+            public double TotalCpuFactor { get; set; }
+            public long TotalDuration { get; set; }
+            public int VertipaqCacheMatches { get; set; }
         }
     }
 }

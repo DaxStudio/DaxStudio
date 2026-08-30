@@ -11,6 +11,7 @@ namespace DaxStudio.Core.Events
     {
         public ServerTimingsEvent(IServerTimes timings)
         {
+            Source = timings;
             FormulaEngineDuration = timings.FormulaEngineDuration;
             StorageEngineCpu = timings.StorageEngineCpu;
             StorageEngineCpuFactor = timings.StorageEngineCpuFactor;
@@ -23,6 +24,7 @@ namespace DaxStudio.Core.Events
             VertipaqCacheMatches = timings.VertipaqCacheMatches;
         }
 
+        public IServerTimes Source { get; }
         public long FormulaEngineDuration { get; }
         public long StorageEngineCpu { get; }
         public double StorageEngineCpuFactor { get; }
