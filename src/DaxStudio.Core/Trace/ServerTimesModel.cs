@@ -1289,7 +1289,7 @@ namespace DaxStudio.Core.Trace
             public string Rows => "The number of rows processed by the event. This is typically relevant for scan operations.";
             public string Kb => "The size of the data processed by the event in kilobytes.";
             public string Object => "The name of the object associated with the event.";
-            public string Timeline => "The timeline of the event, which shows when it occurred relative to other events in the trace. And shows the pattern of Formula Engine vs Storage Engine operations";
+            public string Timeline => "The timeline of the event, which shows when it occurred relative to other events in the trace. Also shows the pattern of Formula Engine vs Storage Engine operations.";
             public string Query => "The query text associated with the event. This may include xmSQL or SQL queries depending on the event type.";
         }
     }
