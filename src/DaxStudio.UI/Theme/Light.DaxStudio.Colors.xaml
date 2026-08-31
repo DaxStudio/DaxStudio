@@ -261,6 +261,8 @@
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabItem.Contextual.Background.OpacityMask" SolidColorBrush.Color="#14000000" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonWindow.TitleBackground" SolidColorBrush.Color="Transparent" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonWindow.TitleForeground" SolidColorBrush.Color="{StaticResource BlackColor}" />
+     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Separator.Background" SolidColorBrush.Color="{StaticResource Gray8}" />
+     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.GroupSeparator.Background" SolidColorBrush.Color="{StaticResource Gray8}" />
     <!-- Fluent.Ribbon paints the quick access toolbar drop-down and overflow ('>>') glyphs with these
          brushes. They are only defined in the themes that ship with Fluent.Ribbon, so they have to be
          declared here as well or the glyphs are drawn with a null brush and become invisible. -->

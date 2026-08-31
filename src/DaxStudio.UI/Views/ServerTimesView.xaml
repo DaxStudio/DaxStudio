@@ -652,7 +652,7 @@
                        ToolTip="{Binding SECpuTooltip}"
                                Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
                     <TextBlock Grid.Row="2" Grid.Column="1" Padding="0,0,0,5" HorizontalAlignment="Center"
-                   Text="{Binding StorageEngineCpuFactor, StringFormat='x0.0'}"   FontSize="10" Foreground="{DynamicResource Theme.Brush.Accent}" />
+                   Text="{Binding StorageEngineCpuFactor, StringFormat='×0.0'}"   FontSize="10" Foreground="{DynamicResource Theme.Brush.Accent}" />
                     
                     <!-- FE Controls -->
                     <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="0" HorizontalAlignment="Center">
@@ -929,7 +929,7 @@
                             </Style>
                         </DataGridTextColumn.HeaderStyle>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Par." IsReadOnly="True" Width="45" Binding="{Binding CpuFactor, StringFormat='x0.0'}" FontSize="10" ElementStyle="{StaticResource AlignRight}">
+                    <DataGridTextColumn Header="Par." IsReadOnly="True" Width="45" Binding="{Binding CpuFactor, StringFormat='×0.0'}" FontSize="10" ElementStyle="{StaticResource AlignRight}">
                         <DataGridTextColumn.HeaderStyle>
                             <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
                                 <Setter Property="Tag" Value="{Binding DataContext.Tooltips.Parallelism, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>

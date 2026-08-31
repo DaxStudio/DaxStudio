@@ -134,10 +134,10 @@ namespace DaxStudio.ExcelAddin
             // start DAX Studio process
             ProcessStartInfo psi = new ProcessStartInfo(path)
             {
-                Arguments = $"-port {_port}",
+                Arguments = $"--port {_port}",
                 UseShellExecute = false // this is false as we are executing a .exe file directly
             };
-            if (enableLogging) psi.Arguments += " -log";
+            if (enableLogging) psi.Arguments += " --log";
             _client = Process.Start(psi);
 
             

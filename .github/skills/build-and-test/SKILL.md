@@ -15,10 +15,15 @@ description: Build DAX Studio and run tests. Use when you need to verify changes
 msbuild src\DaxStudio.sln /p:Configuration=Debug /restore
 ```
 
-The MSBuild path may need to be fully qualified:
+If `msbuild` is not on `PATH`, use `vswhere` to find MSBuild in the latest Visual Studio installation. Do not hard-code a Visual Studio year or edition:
+
+```powershell
+$vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+$msbuild = & $vswhere -latest -products * -requires Microsoft.Component.MSBuild -find 'MSBuild\**\Bin\MSBuild.exe' | Select-Object -First 1
+& $msbuild src\DaxStudio.sln /p:Configuration=Debug /restore
 ```
-"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe" src\DaxStudio.sln /p:Configuration=Debug /restore
-```
+
+Visual Studio 2026 or later is supported.
 
 ## Test
 

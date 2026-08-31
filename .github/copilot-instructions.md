@@ -6,11 +6,11 @@ DAX Studio is a WPF desktop application for writing and executing DAX queries ag
 
 ## Build & Test
 
-- **Solution:** `src\DaxStudio.sln` — open in Visual Studio 2022.
+- **Solution:** `src\DaxStudio.sln` — open in Visual Studio 2026 or later.
 - **Target framework:** .NET Framework 4.7.2, C# 8.0.
 - **Restore:** NuGet restore pulls all dependencies. No additional setup is required.
 - **Build (VS):** Build the solution normally in Visual Studio. The `DaxStudio.Standalone` project is the default startup project for debugging.
-- **Build (CLI):** `msbuild src\DaxStudio.sln /p:Configuration=Debug /restore`
+- **Build (CLI):** `msbuild src\DaxStudio.sln /p:Configuration=Debug /restore`. If `msbuild` is not on `PATH`, locate the latest installation with `vswhere` as described in `.github\skills\build-and-test\SKILL.md`; do not assume a Visual Studio year or edition in the path.
 - **Tests:** MSTest framework with NSubstitute for mocking.
   - Run all tests: `vstest.console src\bin\Debug\DaxStudio.Tests.dll` or use Test Explorer in VS.
   - Run a single test: `vstest.console src\bin\Debug\DaxStudio.Tests.dll /Tests:TestMethodName`
