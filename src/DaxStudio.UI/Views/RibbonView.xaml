@@ -575,7 +575,8 @@
                                      IsChecked="{Binding IsChecked, Mode=TwoWay}" 
                                      ap:FluentRibbonAttachedProperties.KeyTip="{Binding KeyTip}"
                                      SizeDefinition="{Binding SizeDefinition}" 
-                                     ClickMode="Press" Width="Auto" 
+                                     ClickMode="Press" Width="Auto"
+                                     Margin="4,0"
                                      ap:ImageBindingHelper.ToggleIconResourceKey="{Binding ImageResource}"
                                      
                                      IsEnabled="{Binding IsEnabled}"
@@ -981,7 +982,6 @@
 
             <Fluent:RibbonGroupBox Header="Query" 
                                    x:Name="Query" 
-                                   Margin="4,0" 
                                    Icon="{DynamicResource runDrawingImage}">
                 <Fluent:SplitButton Name="RunQuery"
                                Header="Run"
@@ -1035,6 +1035,7 @@
                     IsChecked="{Binding DisplayQueryBuilder}"
                     Icon="{DynamicResource query_builderDrawingImage}"
                     LargeIcon="{DynamicResource query_builderDrawingImage}"
+                    Margin="4,0"
                     SizeDefinition="Large">
                         <Fluent:ToggleButton.ToolTip>
                             <Fluent:ScreenTip Title="Query Builder" Text="Displays a drag and drop query builder"/>
@@ -1096,7 +1097,7 @@
                                        ap:ImageBindingHelper.IconResourceKey="{Binding SelectedTarget.ImageResource}"
                                        SizeDefinition="Large,Large,Small"
                                        IsEnabled="True"
-                                       VerticalAlignment="Top"  Margin="4,0"
+                                       Margin="4,0"
                                        
                                        >
                     <Fluent:Gallery 
@@ -1118,13 +1119,14 @@
 
             </Fluent:RibbonGroupBox>
 
-            <Fluent:RibbonGroupBox Header="Edit" Name="Edit" Margin="4,0" Icon="{DynamicResource cutDrawingImage}">
+            <Fluent:RibbonGroupBox Header="Edit" Name="Edit" Icon="{DynamicResource cutDrawingImage}">
                 <Fluent:Button x:Name="Cut"
                                 Fluent:KeyTip.Keys="X"
                                 Header="Cut"
                                 Icon="{DynamicResource cutDrawingImage}"
                                 SizeDefinition="Middle,Small,Small"
                                 Command="Cut"
+                                Margin="4,0"
                                 FocusManager.IsFocusScope="True" Size="Middle"
                                 >
                     <Fluent:Button.ToolTip>
@@ -1140,6 +1142,7 @@
                                Icon="{DynamicResource copyDrawingImage}"
                                SizeDefinition="Middle,Small,Small"
                                Command="ApplicationCommands.Copy"
+                               Margin="4,0"
                                FocusManager.IsFocusScope="True"
                                >
                     <Fluent:Button.ToolTip>
@@ -1157,6 +1160,7 @@
                                SizeDefinition="Middle,Small,Small"
                                Command="Paste"
                                IsEnabled="True"
+                               Margin="4,0"
                                FocusManager.IsFocusScope="True"
                                >
                     <Fluent:Button.ToolTip>
@@ -1230,7 +1234,7 @@
             </Fluent:RibbonGroupBox>
 
 
-            <Fluent:RibbonGroupBox Header="Format" Name="Format" Margin="4,0" Icon="{DynamicResource uppercaseDrawingImage}">
+            <Fluent:RibbonGroupBox Header="Format" Name="Format" Icon="{DynamicResource uppercaseDrawingImage}">
                 <Fluent:SplitButton Name="FormatQuery"
                                     KeyTip="F"
                                Header="Format Query"
@@ -1240,7 +1244,7 @@
                                Icon="{DynamicResource dax_formatterDrawingImage}"
                                LargeIcon="{DynamicResource dax_formatterDrawingImage}" 
                                SizeDefinition="Large,Large,Large"
-                               Margin="0,0,10,0"
+                               Margin="4,0"
                                FocusManager.IsFocusScope="True"
                                >
                     <Fluent:SplitButton.ToolTip>
@@ -1378,11 +1382,12 @@
                 
             </Fluent:RibbonGroupBox>
   
-            <Fluent:RibbonGroupBox Header="Find" Name="Find" Margin="4,0" Icon="{DynamicResource findDrawingImage}">
+            <Fluent:RibbonGroupBox Header="Find" Name="Find" Icon="{DynamicResource findDrawingImage}">
                 <Fluent:Button Header="Find" 
                                Command="Find"
                                Icon="{DynamicResource findDrawingImage}"
                                SizeDefinition="Middle,Small,Small"
+                               Margin="4,0"
                                Fluent:KeyTip.Keys="F"
                                FocusManager.IsFocusScope="True">
                     <Fluent:Button.ToolTip>
@@ -1393,6 +1398,7 @@
                                Command="Replace"
                                Icon="{DynamicResource replaceDrawingImage}"
                                SizeDefinition="Middle,Small,Small"
+                               Margin="4,0"
                                Fluent:KeyTip.Keys="H"
                                FocusManager.IsFocusScope="True">
                 <Fluent:Button.ToolTip>
@@ -1403,7 +1409,6 @@
 
             <Fluent:RibbonGroupBox Header="Power BI" 
                                    Name="PowerBI" 
-                                   Margin="0,0" 
                                    >
                 <Fluent:Button Name="ImportPowerBIPerfData" 
                                Header="Load Perf Data" 
@@ -1430,13 +1435,13 @@
             
             
 
-            <Fluent:RibbonGroupBox Header="Connection" Name="Connection" Margin="2,0" Icon="{DynamicResource connectDrawingImage}" >
+            <Fluent:RibbonGroupBox Header="Connection" Name="Connection" Icon="{DynamicResource connectDrawingImage}" >
                 <Fluent:Button x:Name="Connect" 
                                Header="Connect"
                                KeyTip="CO"
                                Icon="{DynamicResource connectDrawingImage}"
                                LargeIcon="{DynamicResource connectDrawingImage}" 
-                               Margin="0,0"
+                               Margin="4,0"
                                cal:Message.Attach="[Event Click] = [Action Connect()]" 
                                SizeDefinition="Large,Large,Small">
                     <Fluent:Button.ToolTip>
@@ -1455,7 +1460,7 @@
                                cal:Message.Attach="[Event Click] = [Action RefreshMetadata()]"
                                Icon="{DynamicResource refreshDrawingImage}"
                                LargeIcon="{DynamicResource refreshDrawingImage}"
-                               Margin="0,0"
+                               Margin="4,0"
                                SizeDefinition="Large,Large,Small"
                                >
                     <Fluent:Button.ToolTip>
@@ -1586,6 +1591,7 @@
                                cal:Message.Attach="[Event Click] = [Action ShowViewAsDialog()]"
                                Icon="{DynamicResource view_asDrawingImage}"
                                LargeIcon="{DynamicResource view_asDrawingImage}"
+                               Margin="4,0"
                                SizeDefinition="Large,Large,Small">
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="View As"
@@ -1766,11 +1772,13 @@
             </Fluent:RibbonGroupBox>
             <Fluent:RibbonGroupBox Header="Experimental Features">
                 <Fluent:Button Header="Open Connection" x:Name="OpenConnection" Size="Middle"
+                               Margin="4,0"
                                cal:Message.Attach="[Event Click] = [Action OpenConnection()]">
 
 
                 </Fluent:Button>
                 <Fluent:Button Header="Close Connection" x:Name="CloseConnection" Size="Middle"
+                               Margin="4,0"
                                cal:Message.Attach="[Event Click] = [Action CloseConnection()]">
 
                 </Fluent:Button>
@@ -1780,6 +1788,7 @@
             </Fluent:RibbonGroupBox>
             <Fluent:RibbonGroupBox Header="Testing">
                 <Fluent:Button Header="Discover Query Dependencies" x:Name="DiscoverQueryDependencies" Size="Large"
+                               Margin="4,0"
                                cal:Message.Attach="[Event Click] = [Action DiscoverQueryDependencies()]"
                                Icon="{DynamicResource query_dependenciesDrawingImage}"
                                LargeIcon="{DynamicResource query_dependenciesDrawingImage}">
@@ -1790,7 +1799,7 @@
             
         <!-- Help Tab -->
         <Fluent:RibbonTabItem Header="Help" KeyTip="P">
-            <Fluent:RibbonGroupBox Header="Resources" Margin="0,0,4,0">
+            <Fluent:RibbonGroupBox Header="Resources">
                 <Fluent:Button Name="helpDaxStudioWiki"
                                Header="Documentation"
                                KeyTip="D"
@@ -1898,7 +1907,7 @@
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
             </Fluent:RibbonGroupBox>
-            <Fluent:RibbonGroupBox Header="" Margin="0,0,4,0">
+            <Fluent:RibbonGroupBox Header="">
                 <Fluent:Button Name="hlpDonate"
                                Header="Donate"
                                KeyTip="N"
