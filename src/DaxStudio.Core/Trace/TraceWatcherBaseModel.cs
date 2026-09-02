@@ -75,10 +75,10 @@ namespace DaxStudio.Core.Trace
         /// <summary>
         /// Set by <see cref="ProcessResults"/> when the events seen so far do not yet make up a
         /// complete result (e.g. the only QueryEnd belonged to a DAX Studio internal query such as the
-        /// session-refresh run after clearing the cache). When true <see cref="ProcessAllEvents"/>
-        /// suppresses the <see cref="QueryTraceCompletedEvent"/> so consumers waiting on the trace -
-        /// notably the comment-script performance assertions - keep waiting for the user's real query
-        /// instead of reading empty or partial metrics.
+        /// session-refresh run after clearing the cache). When true the subclass returns from
+        /// ProcessResults before publishing its completion event (e.g. ServerTimingsEvent) so consumers
+        /// waiting on the trace - notably the comment-script performance assertions - keep waiting for
+        /// the user's real query instead of reading empty or partial metrics.
         /// </summary>
         protected bool ResultsIncomplete { get; set; }
 
@@ -99,7 +99,7 @@ namespace DaxStudio.Core.Trace
             // do not signal completion, so anything awaiting the trace waits for the user's real query.
             if (ResultsIncomplete)
             {
-                Log.Verbose("{class} {method} {message}", GetSubclassName(), nameof(ProcessAllEvents), "results incomplete, not raising QueryTraceCompletedEvent");
+                Log.Verbose("{class} {method} {message}", GetSubclassName(), nameof(ProcessAllEvents), "results incomplete, trace completion event not raised");
                 return;
             }
 

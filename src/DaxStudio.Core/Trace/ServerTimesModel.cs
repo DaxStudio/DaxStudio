@@ -1289,7 +1289,7 @@ namespace DaxStudio.Core.Trace
         public struct TooltipStruct
         {
             public string Line => "This is the order the events occurred in the trace.";
-            public string Subclass => "The subclass of the event, which indicates the type of operation.";
+            public string Subclass => "The subclass of the event, which indicates the type of operation."; 
             public string Duration => "The total duration of the operation in milliseconds.";
             public string Cpu => "The CPU time consumed by the event in milliseconds.";
             public string Parallelism => "The parallelism factor indicates how many threads were used to process the event. A value of 1 means single-threaded execution, while higher values indicate multi-threaded execution.";

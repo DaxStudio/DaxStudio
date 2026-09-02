@@ -126,7 +126,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<SetFocusEvent>
         , IHandle<ToggleCommentEvent>
         , IHandle<PasteServerTimingsEvent>
-        , IHandle<DaxStudio.Core.Events.QueryTraceCompletedEvent>
+        , IHandle<DaxStudio.Core.Events.ServerTimingsEvent>
         , IHandle<DaxStudio.Core.Events.QueryBatchStartedEvent>
         , IDropTarget
         , IQueryRunner
@@ -3266,13 +3266,14 @@ namespace DaxStudio.UI.ViewModels
             return results;
         }
 
-        public Task HandleAsync(DaxStudio.Core.Events.QueryTraceCompletedEvent message, CancellationToken cancellationToken)
+        public Task HandleAsync(DaxStudio.Core.Events.ServerTimingsEvent message, CancellationToken cancellationToken)
         {
-            // The Server Timings trace has finished aggregating its results (ProcessResults has run,
-            // so metrics such as the SE query count are now populated); release any pending
-            // performance-assertion wait (both the whole-run wait and the current per-batch wait).
+            // The Server Timings trace has finished aggregating its results (ServerTimesModel.ProcessResults
+            // only publishes this once metrics such as the SE query count are populated, and skips it when
+            // ResultsIncomplete is set); release any pending performance-assertion wait (both the whole-run
+            // wait and the current per-batch wait).
             // This is the same completion event the benchmark uses.
-            if (message?.Trace is ServerTimesViewModel)
+            if (message?.Source is ServerTimesViewModel)
             {
                 _serverTimingsAssertionTcs?.TrySetResult(true);
                 _perBatchServerTimingsTcs?.TrySetResult(true);

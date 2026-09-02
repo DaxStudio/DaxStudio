@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Globalization;
 using System.IO;
@@ -283,39 +284,9 @@ namespace DaxStudio.UI.ViewModels
         {
             try
             {
-                Log.Information("{class} {method} Extracting table names from {count} SE events",
-                    nameof(ServerTimesViewModel), nameof(ShowInModelDiagram), AllStorageEngineEvents.Count);
-
-                IXmSqlParser parser = Options.UseAntlrParser
-                    ? (IXmSqlParser)new AntlrXmSqlParser()
-                    : new XmSqlParser();
-                var analysis = new XmSqlAnalysis(RemapColumnNames, RemapTableNames);
-
-                foreach (var evt in AllStorageEngineEvents)
-                {
-                    if (evt.IsInternalEvent) continue;
-
-                    var metrics = new XmSqlParser.SeEventMetrics
-                    {
-                        EstimatedRows = evt.EstimatedRows,
-                        DurationMs = evt.Duration,
-                        IsCacheHit = evt.Class == DaxStudioTraceEventClass.VertiPaqSEQueryCacheMatch,
-                        CpuTimeMs = evt.CpuTime
-                    };
-
-                    if (evt.IsDirectQueryEvent)
-                    {
-                        var sqlText = !string.IsNullOrWhiteSpace(evt.TextData) ? evt.TextData : evt.Query;
-                        if (!string.IsNullOrWhiteSpace(sqlText))
-                            parser.ParseDirectQuerySql(sqlText, analysis, metrics);
-                    }
-                    else if (evt.IsScanEvent && !string.IsNullOrWhiteSpace(evt.Query))
-                    {
-                        parser.ParseQueryWithMetrics(evt.Query, analysis, metrics);
-                    }
-                }
-
-                var tableNames = analysis.Tables.Keys.ToList();
+                var tableNames = GetQueryDependencyTables();
+                if (tableNames.Count == 0)
+                    tableNames = GetStorageEngineEventTables();
 
                 if (tableNames.Count == 0)
                 {
@@ -338,6 +309,66 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error,
                     $"Error showing tables in Model Diagram\n{ex.Message}"));
             }
+        }
+
+        private List<string> GetQueryDependencyTables()
+        {
+            if (Document?.Connection == null || !Document.Connection.IsConnected || string.IsNullOrWhiteSpace(CommandText))
+                return new List<string>();
+
+            try
+            {
+                var tableNames = (Document.Connection.GetQueryDependencyTables(CommandText) ?? new List<string>())
+                    .Where(tableName => !string.IsNullOrWhiteSpace(tableName))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+                Log.Information("{class} {method} Found {count} tables from query dependencies",
+                    nameof(ServerTimesViewModel), nameof(GetQueryDependencyTables), tableNames.Count);
+                return tableNames;
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, Common.Constants.LogMessageTemplate, nameof(ServerTimesViewModel),
+                    nameof(GetQueryDependencyTables), "Error discovering query dependencies; falling back to Storage Engine events");
+                return new List<string>();
+            }
+        }
+
+        private List<string> GetStorageEngineEventTables()
+        {
+            Log.Information("{class} {method} Extracting table names from {count} SE events",
+                nameof(ServerTimesViewModel), nameof(GetStorageEngineEventTables), AllStorageEngineEvents.Count);
+
+            IXmSqlParser parser = Options.UseAntlrParser
+                ? (IXmSqlParser)new AntlrXmSqlParser()
+                : new XmSqlParser();
+            var analysis = new XmSqlAnalysis(RemapColumnNames, RemapTableNames);
+
+            foreach (var evt in AllStorageEngineEvents)
+            {
+                if (evt.IsInternalEvent) continue;
+
+                var metrics = new XmSqlParser.SeEventMetrics
+                {
+                    EstimatedRows = evt.EstimatedRows,
+                    DurationMs = evt.Duration,
+                    IsCacheHit = evt.Class == DaxStudioTraceEventClass.VertiPaqSEQueryCacheMatch,
+                    CpuTimeMs = evt.CpuTime
+                };
+
+                if (evt.IsDirectQueryEvent)
+                {
+                    var sqlText = !string.IsNullOrWhiteSpace(evt.TextData) ? evt.TextData : evt.Query;
+                    if (!string.IsNullOrWhiteSpace(sqlText))
+                        parser.ParseDirectQuerySql(sqlText, analysis, metrics);
+                }
+                else if (evt.IsScanEvent && !string.IsNullOrWhiteSpace(evt.Query))
+                {
+                    parser.ParseQueryWithMetrics(evt.Query, analysis, metrics);
+                }
+            }
+
+            return analysis.Tables.Keys.ToList();
         }
 
         /// <summary>

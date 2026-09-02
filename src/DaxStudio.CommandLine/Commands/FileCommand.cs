@@ -114,7 +114,6 @@ namespace DaxStudio.CommandLine.Commands
                         break;
                     case ".parquet":
                         settings.FileType = TextFileType.PARQUET;
-                        target = new ResultsTargetParquet();
                         break;
                     default:
                         settings.FileType = (TextFileType)runner.Options.DefaultTextFileType;
@@ -842,7 +841,7 @@ namespace DaxStudio.CommandLine.Commands
 
         // Signals when the Server Timings trace has finished aggregating for the current query,
         // mirroring BenchmarkCommand's handler. Shared by the SAVEAS capture and the assertion run.
-        private class TraceCompletedHandler : IHandle<QueryTraceCompletedEvent>
+        private class TraceCompletedHandler : IHandle<ServerTimingsEvent>
         {
             private readonly ITraceWatcher _traceWatcher;
             private readonly System.Action _callback;
@@ -851,9 +850,9 @@ namespace DaxStudio.CommandLine.Commands
                 _traceWatcher = traceWatcher;
                 _callback = callback;
             }
-            public Task HandleAsync(QueryTraceCompletedEvent message, CancellationToken cancellationToken)
+            public Task HandleAsync(ServerTimingsEvent message, CancellationToken cancellationToken)
             {
-                if (!ReferenceEquals(message.Trace, _traceWatcher)) return Task.CompletedTask;
+                if (!ReferenceEquals(message.Source, _traceWatcher)) return Task.CompletedTask;
                 _callback();
                 return Task.CompletedTask;
             }
