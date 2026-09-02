@@ -267,7 +267,7 @@ namespace DaxStudio.UI.ViewModels
         // Called by the parent DocumentViewModel so this editor does not need its own options subscription.
         internal void RefreshIntellisenseProvider()
         {
-            var shouldUseAntlr = Options.UseAntlrCodeCompletion;
+            var shouldUseAntlr = Options.UseNewDaxParser;
             var isUsingAntlr = IntellisenseProvider is AntlrIntellisenseProvider;
             if (shouldUseAntlr == isUsingAntlr) return;
 

@@ -142,9 +142,7 @@ namespace DaxStudio.Interfaces
 
         bool UseAntlrParser { get; set; }
 
-        bool UseNewPreprocessor { get; set; }
-
-        bool UseAntlrCodeCompletion { get; set; }
+        bool UseNewDaxParser { get; set; }
 
         bool HighlightXmSqlCallbacks { get; set; }
         bool SimplifyXmSqlSyntax { get; set; }

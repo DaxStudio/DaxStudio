@@ -36,7 +36,7 @@ namespace DaxStudio.Core.Model
             rawQuery = queryText;
             _parameters = new Dictionary<string, QueryParameter>(StringComparer.OrdinalIgnoreCase );
 
-            if (!(options != null && options.UseNewPreprocessor && TryPreProcessWithAntlrParser(queryText, eventAggregator)))
+            if (!(options != null && options.UseNewDaxParser && TryPreProcessWithAntlrParser(queryText, eventAggregator)))
             {
                 DaxHelper.PreProcessQuery(this, rawQuery, eventAggregator);
                 BuildBatchesFromRegexResult();

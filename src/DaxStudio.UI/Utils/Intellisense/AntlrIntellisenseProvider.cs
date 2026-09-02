@@ -30,7 +30,7 @@ namespace DaxStudio.UI.Utils.Intellisense
     /// <summary>
     /// Preview code-completion provider backed by the new ANTLR grammar-based DAX parser
     /// (<see cref="DaxParserService"/>) and the comment-script command grammar. It is used in place of
-    /// <see cref="DaxIntellisenseProvider"/> when the <c>UseAntlrCodeCompletion</c> preview option is enabled.
+    /// <see cref="DaxIntellisenseProvider"/> when the <c>UseNewDaxParser</c> preview option is enabled.
     /// </summary>
     public class AntlrIntellisenseProvider :
         IDaxIntellisenseProvider,

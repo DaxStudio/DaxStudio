@@ -25,7 +25,7 @@ namespace DaxStudio.Tests.ResultsTargets
         private static IGlobalOptions NewParserOptions()
         {
             var options = Substitute.For<IGlobalOptions>();
-            options.UseNewPreprocessor.Returns(true);
+            options.UseNewDaxParser.Returns(true);
             return options;
         }
 

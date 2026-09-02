@@ -11,12 +11,12 @@ namespace DaxStudio.Tests
     public class IntellisenseProviderFactoryTests
     {
         [TestMethod]
-        public void Create_WhenAntlrCodeCompletionEnabled_ReturnsAntlrProvider()
+        public void Create_WhenNewDaxParserEnabled_ReturnsAntlrProvider()
         {
             var doc = Substitute.For<IDaxDocument>();
             var eventAggregator = Substitute.For<IEventAggregator>();
             var options = Substitute.For<IGlobalOptions>();
-            options.UseAntlrCodeCompletion.Returns(true);
+            options.UseNewDaxParser.Returns(true);
 
             var provider = IntellisenseProviderFactory.Create(doc, eventAggregator, options);
 
@@ -24,12 +24,12 @@ namespace DaxStudio.Tests
         }
 
         [TestMethod]
-        public void Create_WhenAntlrCodeCompletionDisabled_ReturnsRegexProvider()
+        public void Create_WhenNewDaxParserDisabled_ReturnsRegexProvider()
         {
             var doc = Substitute.For<IDaxDocument>();
             var eventAggregator = Substitute.For<IEventAggregator>();
             var options = Substitute.For<IGlobalOptions>();
-            options.UseAntlrCodeCompletion.Returns(false);
+            options.UseNewDaxParser.Returns(false);
 
             var provider = IntellisenseProviderFactory.Create(doc, eventAggregator, options);
 

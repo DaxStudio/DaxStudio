@@ -1851,39 +1851,22 @@ namespace DaxStudio.Core.Options
             }
         }
 
-        private bool _useNewPreprocessor;
+        private bool _useNewDaxParser;
         [DataMember, DefaultValue(false)]
         [Category("Preview")]
         [Subcategory("Editor")]
-        [DisplayName("Use New Query Preprocessor")]
-        [Description("Use the new grammar-based preprocessor instead of the regex-based one when preparing queries for execution.\nParameter handling (@name prompting and <Parameters> blocks) is preserved and comment-script commands (such as CONNECT, USE, PARAMETER, SET, GO, TRACE, RESULTS, SHOW, EXPORT, SAVEAS, CLEARCACHE, TEST, BASELINE and the ASSERT commands) are executed.\nWARNING: this is a preview feature and its behaviour may change before the final release.")]
-        public bool UseNewPreprocessor
+        [DisplayName("Use New DAX Parser")]
+        [Description("Use the new grammar-based DAX parser for code completion, signature help and query preprocessing.\nParameter handling (@name prompting and <Parameters> blocks) is preserved and comment-script commands (such as CONNECT, USE, PARAMETER, SET, GO, TRACE, RESULTS, SHOW, EXPORT, SAVEAS, CLEARCACHE, TEST, BASELINE and the ASSERT commands) are completed and executed.\nWARNING: this is a preview feature and its behaviour may change before the final release.")]
+        public bool UseNewDaxParser
         {
-            get => _useNewPreprocessor;
+            get => _useNewDaxParser;
 
             set
             {
-                _useNewPreprocessor = value;
-                SettingProvider.SetValue(nameof(UseNewPreprocessor), value, _isInitializing, this);
-                NotifyOfPropertyChange(() => UseNewPreprocessor);
-            }
-        }
-
-        private bool _useAntlrCodeCompletion;
-        [DataMember, DefaultValue(false)]
-        [Category("Preview")]
-        [Subcategory("Editor")]
-        [DisplayName("Use New Code Completion Engine")]
-        [Description("Use the new grammar-based (ANTLR) engine for editor code completion, signature help and comment-script command completion instead of the current regex-based engine.\nThe new engine applies to newly opened query windows.\nWARNING: this is a preview feature and its behaviour may change before the final release.")]
-        public bool UseAntlrCodeCompletion
-        {
-            get => _useAntlrCodeCompletion;
-
-            set
-            {
-                _useAntlrCodeCompletion = value;
-                SettingProvider.SetValue(nameof(UseAntlrCodeCompletion), value, _isInitializing, this);
-                NotifyOfPropertyChange(() => UseAntlrCodeCompletion);
+                _useNewDaxParser = value;
+                _eventAggregator.PublishAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(UseNewDaxParser), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => UseNewDaxParser);
             }
         }
         #endregion

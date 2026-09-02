@@ -141,7 +141,7 @@ namespace DaxStudio.CommandLine.Commands
             // this separate parse without affecting the file-export path above.
             try
             {
-                runner.Options.UseNewPreprocessor = true;
+                runner.Options.UseNewDaxParser = true;
                 var queryInfo = new QueryInfo(settings.Query, new EventAggregator(), runner.Options);
                 var batches = queryInfo.ScriptBatches;
 

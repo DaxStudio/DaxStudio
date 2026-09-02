@@ -1178,11 +1178,11 @@ namespace DaxStudio.UI.ViewModels
             IntellisenseProvider?.CloseCompletionWindow();
         }
 
-        // Swaps the intellisense provider when the "Use New Code Completion Engine" option is toggled so
+        // Swaps the intellisense provider when the "Use New DAX Parser" option is toggled so
         // that already open query windows pick up the change without having to be re-opened.
         private void RefreshIntellisenseProvider()
         {
-            var shouldUseAntlr = Options.UseAntlrCodeCompletion;
+            var shouldUseAntlr = Options.UseNewDaxParser;
             var isUsingAntlr = IntellisenseProvider is AntlrIntellisenseProvider;
             if (shouldUseAntlr == isUsingAntlr) return;
 
@@ -2663,7 +2663,7 @@ namespace DaxStudio.UI.ViewModels
         private async Task<bool> TryAutoConnectFromCommentScriptAsync()
         {
             // The comment-script commands are only parsed on the new pre-processor path.
-            if (Options == null || !Options.UseNewPreprocessor) return false;
+            if (Options == null || !Options.UseNewDaxParser) return false;
 
             var text = EditorText;
             if (string.IsNullOrWhiteSpace(text)) return false;
@@ -2829,7 +2829,7 @@ namespace DaxStudio.UI.ViewModels
                 if (TestResultsPane == null || _editor == null) return;
                 // Don't disturb the pane while a run is populating / has just populated it.
                 if (IsQueryRunning) return;
-                if (Options == null || !Options.UseNewPreprocessor) return;
+                if (Options == null || !Options.UseNewDaxParser) return;
 
                 var text = _editor.Text;
 
