@@ -17,6 +17,7 @@
     <GenerateNeutralResourcesLanguageAttribute>false</GenerateNeutralResourcesLanguageAttribute>
     <Copyright>Copyright © $([System.DateTime]::UtcNow.Year) DAX Studio ($([System.DateTime]::UtcNow.ToString("s")))</Copyright>
     <LangVersion>8.0</LangVersion>
+    <DefineConstants Condition="'$(PreviewBuild)' == 'true'">$(DefineConstants);PREVIEW</DefineConstants>
     <Deterministic>true</Deterministic>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <!-- Suppress NU1202 for Humanizer satellite resource packages which falsely report

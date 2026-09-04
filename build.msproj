@@ -27,6 +27,7 @@
   <PropertyGroup>
     <ReleaseTFM Condition="'$(ReleaseTFM)' == ''">net472</ReleaseTFM>
     <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
+    <PreviewBuild Condition="'$(PreviewBuild)' == '' And $([System.String]::Copy('$(DefineConstants)').Contains('PREVIEW'))">true</PreviewBuild>
     <ReleaseDirectory>.\Release</ReleaseDirectory>
   </PropertyGroup>
 
@@ -49,11 +50,11 @@
     <Message Text="Building DaxStudio for $(ReleaseTFM)" Importance="High" />
     <!-- Use dotnet msbuild which has updated SDK targets that correctly handle
          satellite resource packages in WPF temp projects -->
-    <Exec Command='dotnet msbuild ".\src\DaxStudio.NoAddin.slnf" /t:Build /p:Configuration=$(Configuration) /p:TargetFrameworks=$(ReleaseTFM) /restore' />
+      <Exec Command='dotnet msbuild ".\src\DaxStudio.NoAddin.slnf" /t:Build /p:Configuration=$(Configuration) /p:TargetFrameworks=$(ReleaseTFM) /p:PreviewBuild=$(PreviewBuild) /restore' />
     <!-- Build ExcelAddin separately with VS MSBuild (VSTO requires it) -->
     <MSBuild Projects=".\src\DaxStudio.ExcelAddin\DaxStudio.ExcelAddin.csproj" 
              Targets="Build" 
-             Properties="Configuration=$(Configuration)" />
+         Properties="Configuration=$(Configuration);PreviewBuild=$(PreviewBuild)" />
   </Target>
 
   <Target Name="BuildTests" DependsOnTargets="Clean">
