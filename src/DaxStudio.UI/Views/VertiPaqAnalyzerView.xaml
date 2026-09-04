@@ -1323,7 +1323,9 @@
                                Width="48"  Grid.RowSpan="1" VerticalAlignment="Top"
                                Margin="16 24 16 16"/>
                         <DockPanel Grid.Column="1" Grid.ColumnSpan="5">
-                            <Menu DockPanel.Dock="Right">
+                            <Menu DockPanel.Dock="Right"
+                                  IsMainMenu="False"
+                                  KeyboardNavigation.TabNavigation="None">
                                 <MenuItem Header="...">
                                     <MenuItem Header="Export .bim file" cal:Message.Attach="[Event Click]=[ExportBimFile()]"/>
                                     <MenuItem Header="Export Measures" cal:Message.Attach="[Event Click]=[ExportMeasures()]"/>
