@@ -4,7 +4,7 @@ namespace ADOTabular.Extensions
 {
     public static class AccessTokenExtensions
     {
-#if NET472
+#if NETFRAMEWORK
         public static bool IsNotNull(this Adomd.AccessToken token)
         {
             return !token.Equals(default(Adomd.AccessToken));
@@ -16,7 +16,7 @@ namespace ADOTabular.Extensions
             return !token.Equals(default(Tom.AccessToken));
         }
 
-#if NET472
+#if NETFRAMEWORK
         public static Tom.AccessToken ToTomAccessToken(this Adomd.AccessToken token)
         {
             return new Tom.AccessToken(token.Token, token.ExpirationTime, token.UserContext);
