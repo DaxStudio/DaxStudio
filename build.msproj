@@ -53,7 +53,7 @@
     <!-- Build ExcelAddin separately with VS MSBuild (VSTO requires it) -->
     <MSBuild Projects=".\src\DaxStudio.ExcelAddin\DaxStudio.ExcelAddin.csproj" 
              Targets="Build" 
-             Properties="Configuration=$(Configuration)" />
+         Properties="Configuration=$(Configuration);PreviewBuild=$(PreviewBuild);TargetFramework=$(ReleaseTFM)" />
   </Target>
 
   <Target Name="BuildTests" DependsOnTargets="Clean">
