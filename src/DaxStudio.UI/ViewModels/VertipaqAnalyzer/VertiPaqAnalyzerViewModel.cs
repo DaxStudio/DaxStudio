@@ -97,6 +97,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => GroupedPartitions);
                 NotifyOfPropertyChange(() => SummaryViewModel);
                 IsBusy = false;
+                NotifyOfPropertyChange(() => IsExportMeasuresEnabled);
                 // Pass the VpaModel in the event so other views can enrich their data
                 _eventAggregator.PublishAsync(new ViewMetricsCompleteEvent(_viewModel));
             }
@@ -349,8 +350,11 @@ namespace DaxStudio.UI.ViewModels
             {
                 _isBusy = value;
                 NotifyOfPropertyChange(nameof(IsBusy));
+                NotifyOfPropertyChange(nameof(IsExportMeasuresEnabled));
             }
         }
+
+        public bool IsExportMeasuresEnabled => !IsBusy && ViewModel?.Model != null;
 
         public string BusyMessage => "Loading Model Metrics";
 
@@ -455,6 +459,8 @@ namespace DaxStudio.UI.ViewModels
 
         public void ExportMeasures()
         {
+            if (!IsExportMeasuresEnabled) return;
+
             var filename = "measures.csv";
             var saveAsDlg = new SaveFileDialog()
             {
@@ -483,11 +489,13 @@ namespace DaxStudio.UI.ViewModels
                     // write out measures
                     foreach (var t in ViewModel.Model.Tables)
                     {
+                        if (t == null || t.Measures == null) continue;
+
                         foreach (var m in t.Measures)
                         {
-                            csvWriter.WriteField(m.Table.TableName);
-                            csvWriter.WriteField(m.MeasureName);
-                            csvWriter.WriteField(m.MeasureExpression?.Expression ?? string.Empty);
+                            csvWriter.WriteField(m?.Table?.TableName?.ToString() ?? "<unknown>");
+                            csvWriter.WriteField(m?.MeasureName?.ToString() ?? "<unknown>");
+                            csvWriter.WriteField(m?.MeasureExpression?.Expression ?? string.Empty);
                             csvWriter.NextRecord();
                         }
                     }

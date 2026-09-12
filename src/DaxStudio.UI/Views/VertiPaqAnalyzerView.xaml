@@ -1328,7 +1328,7 @@
                                   KeyboardNavigation.TabNavigation="None">
                                 <MenuItem Header="...">
                                     <MenuItem Header="Export .bim file" cal:Message.Attach="[Event Click]=[ExportBimFile()]"/>
-                                    <MenuItem Header="Export Measures" cal:Message.Attach="[Event Click]=[ExportMeasures()]"/>
+                                    <MenuItem Header="Export Measures" IsEnabled="{Binding IsExportMeasuresEnabled}" cal:Message.Attach="[Event Click]=[ExportMeasures()]"/>
                                 </MenuItem>
                                 
                             </Menu>
