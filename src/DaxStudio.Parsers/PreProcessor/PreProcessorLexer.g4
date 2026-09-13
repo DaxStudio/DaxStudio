@@ -247,6 +247,9 @@ CS_OFF:                   'OFF';
 CS_RESULTS:               'RESULTS';
 
 CS_METRICS:               'METRICS';
+CS_TESTRESULTS:           'TESTRESULTS';
+CS_JUNIT:                 'JUNIT';
+CS_TRX:                   'TRX';
 CS_EXPORT:                'EXPORT';
 
 CS_SHOW:                  'SHOW';

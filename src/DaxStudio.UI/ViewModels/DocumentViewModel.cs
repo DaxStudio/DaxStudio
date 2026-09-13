@@ -2911,6 +2911,11 @@ namespace DaxStudio.UI.ViewModels
         {
             var batches = queryProvider?.QueryInfo?.ScriptBatches;
             if (batches == null || batches.Count == 0) return;
+            var testReportCommands = batches
+                .SelectMany(b => b.Commands)
+                .OfType<CommentScript.ExportCommand>()
+                .Where(c => c.Target == CommentScript.ExportTarget.TestResults)
+                .ToList();
 
             // "--> SAVEAS" runs after the query so a .daxx snapshot captures the query results and
             // (when Server Timings is active) the server-timing / query-plan traces. Handle it before
@@ -2931,7 +2936,12 @@ namespace DaxStudio.UI.ViewModels
             }
 
             // Only touch the pane when there is at least one assertion to evaluate across all batches.
-            if (!batches.Any(BatchHasAsserts)) return;
+            if (!batches.Any(BatchHasAsserts))
+            {
+                if (testReportCommands.Count > 0)
+                    OutputError("--> EXPORT TESTRESULTS requires at least one assertion.");
+                return;
+            }
 
             // Fallback: evaluate any assert batch the per-batch hook did not cover. Performance
             // assertions in such a batch fall back to the whole-run trace wait (armed before the query).
@@ -2996,6 +3006,22 @@ namespace DaxStudio.UI.ViewModels
                 OutputWarning(summary);
             else
                 OutputMessage(summary);
+
+            foreach (var command in testReportCommands)
+            {
+                try
+                {
+                    var fileName = command.FileName;
+                    if (!Path.IsPathRooted(fileName) && !string.IsNullOrEmpty(AssertionBaseDirectory))
+                        fileName = Path.Combine(AssertionBaseDirectory, fileName);
+                    DaxStudio.Core.Assertions.TestReportWriter.Write(TestResultsPane.Results.ToList(), command.ReportFormat.Value, fileName, FileName);
+                    OutputMessage($"Test report written: {fileName}");
+                }
+                catch (Exception ex)
+                {
+                    OutputError($"--> EXPORT TESTRESULTS failed: {ex.Message}");
+                }
+            }
 
             await Task.CompletedTask;
         }

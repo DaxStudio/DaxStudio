@@ -147,6 +147,52 @@ namespace DaxStudio.Parsers.Tests.CommentScript
             Assert.AreEqual("myfile", cmd.FileName);
         }
 
+        [TestMethod]
+        public void ExportTestResultsWithQuotedFilename()
+        {
+            var input = "--> EXPORT TESTRESULTS JUNIT \"results.xml\"\n" +
+                "EVALUATE { 1 }\n";
+
+            List<Error> errors = new List<Error>();
+            var tree = Helpers.ConfigureLexerAndParser(input, ref errors);
+
+            Assert.IsNull(tree.exception);
+            Assert.IsEmpty(errors, "Should have no errors");
+
+            var batch = new List<ScriptBatch>();
+            var listener = new PreProcessorListener(new Dictionary<string, List<string>>(), batch);
+            new ParseTreeWalker().Walk(listener, tree);
+
+            var cmd = batch[0].Commands[0] as ExportCommand;
+            Assert.IsNotNull(cmd);
+            Assert.AreEqual(ExportTarget.TestResults, cmd.Target);
+            Assert.AreEqual(TestReportFormat.Junit, cmd.ReportFormat);
+            Assert.AreEqual("results.xml", cmd.FileName);
+        }
+
+        [TestMethod]
+        public void ExportTestResultsWithUnquotedFilename()
+        {
+            var input = "--> EXPORT TESTRESULTS JSON myfile\n" +
+                "EVALUATE { 1 }\n";
+
+            List<Error> errors = new List<Error>();
+            var tree = Helpers.ConfigureLexerAndParser(input, ref errors);
+
+            Assert.IsNull(tree.exception);
+            Assert.IsEmpty(errors, "Should have no errors");
+
+            var batch = new List<ScriptBatch>();
+            var listener = new PreProcessorListener(new Dictionary<string, List<string>>(), batch);
+            new ParseTreeWalker().Walk(listener, tree);
+
+            var cmd = batch[0].Commands[0] as ExportCommand;
+            Assert.IsNotNull(cmd);
+            Assert.AreEqual(ExportTarget.TestResults, cmd.Target);
+            Assert.AreEqual(TestReportFormat.Json, cmd.ReportFormat);
+            Assert.AreEqual("myfile", cmd.FileName);
+        }
+
         #endregion
 
         #region ASSERT ROWCOUNT Tests

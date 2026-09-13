@@ -111,6 +111,8 @@
                                 <Image Source="{DynamicResource copy_toolbarDrawingImage}"/>
                             </MenuItem.Icon>
                         </MenuItem>
+                        <MenuItem Header="Save Test Report"
+                                  Command="{Binding ExportTestReport}" />
                         <Separator/>
                         <MenuItem Header="Go To Line"
                                   Command="{Binding GotoLocation}"

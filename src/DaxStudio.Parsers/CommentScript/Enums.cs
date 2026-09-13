@@ -26,6 +26,14 @@ namespace DaxStudio.Parsers.CommentScript
     public enum ExportTarget
     {
         Metrics,
+        TestResults,
+    }
+
+    public enum TestReportFormat
+    {
+        Junit,
+        Trx,
+        Json,
     }
 
     public enum AssertTableMode

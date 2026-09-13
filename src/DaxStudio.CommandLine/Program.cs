@@ -157,6 +157,11 @@ namespace DaxStudio.CommandLine
                 .WithExample(new[] { "file", "c:\\temp\\export\\myresults.csv", "-s", "localhost\\tabular", "-d", "\"Adventure Works\"", "-q", "\"EVALUATE 'Product Categories'\"" })
                 .WithExample(new[] { "file", "c:\\temp\\export\\myresults.parquet", "-s", "localhost\\tabular", "-d", "\"Adventure Works\"", "-q", "\"EVALUATE 'Product Categories'\"" });
 
+            config.AddCommand<TestCommand>("test")
+                .WithDescription("Runs comment-script assertions and optionally writes a test report")
+                .WithExample(new[] { "test", "-f", "assertions.dax", "-s", "localhost\\tabular", "-d", "\"Adventure Works\"" })
+                .WithExample(new[] { "test", "-f", "assertions.dax", "--test-report", "test-results.xml", "-s", "localhost\\tabular", "-d", "\"Adventure Works\"" });
+
             config.AddCommand<XlsxCommand>("xlsx")
                 .WithDescription("Writes query results out to an .xlsx file")
                 .WithExample(new[] { "xlsx", "c:\\temp\\export\\myresults.xlsx" , "-s", "localhost\\tabular", "-d", "\"Adventure Works\"", "-q", "\"EVALUATE 'Product Categories'\""});

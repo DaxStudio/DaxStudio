@@ -9,7 +9,14 @@ namespace DaxStudio.Parsers.CommentScript
             FileName = fileName;
         }
 
+        public ExportCommand(TestReportFormat reportFormat, string fileName)
+            : this(ExportTarget.TestResults, fileName)
+        {
+            ReportFormat = reportFormat;
+        }
+
         public ExportTarget Target { get; }
         public string FileName { get; set; }
+        public TestReportFormat? ReportFormat { get; }
     }
 }

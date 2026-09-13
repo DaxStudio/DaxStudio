@@ -189,6 +189,34 @@ clicking **Export Metrics** in the ribbon. In the `dscmd` command line this runs
 actually writes the file, which is useful for capturing metrics as part of a CI/CD run. The
 `<filename>` may be a quoted string or a bare identifier and supports `$(...)` variable expansion.
 
+### Test Results
+
+```
+--> EXPORT TESTRESULTS JUNIT "results.xml"
+--> EXPORT TESTRESULTS TRX "results.trx"
+--> EXPORT TESTRESULTS JSON "results.json"
+```
+
+Writes the completed `ASSERT` outcomes as a CI-compatible report. `JUNIT` is the recommended
+cross-platform format, `TRX` is the Visual Studio test-results format, and `JSON` retains DAX
+Studio-specific fields such as the assertion kind, expected value, actual value, source line, and
+batch index. The report is written only after every assertion has completed. A test-results export
+without an assertion is an error.
+
+In the UI, completed results can also be saved manually from the Test Results pane. In `dscmd`, use
+`--test-report <file>` to choose a run-specific destination; `.xml`, `.trx`, and `.json` select
+JUnit, TRX, and JSON respectively. The command-line destination overrides any embedded
+`EXPORT TESTRESULTS` command, which keeps scripts portable between developer machines and CI jobs.
+
+```text
+dscmd test -f assertions.dax -s localhost -d "Model" --test-report artifacts\results.xml
+dscmd file query-results.csv -f assertions.dax -s localhost -d "Model" --test-report results.trx
+```
+
+When no `--test-report` option is supplied, `dscmd test` uses the embedded destination when one is
+present; otherwise it writes the normal console summary only. Relative embedded paths are resolved
+from the script file's directory.
+
 ## Show
 
 ```

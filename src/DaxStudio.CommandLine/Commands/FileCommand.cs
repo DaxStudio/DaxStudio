@@ -54,6 +54,10 @@ namespace DaxStudio.CommandLine.Commands
             [CommandOption("-m|--parameter <PARAMETER=VALUE>")]
             public IDictionary<string, string> Parameters { get; set; } = new Dictionary<string, string>();
 
+            [CommandOption("--test-report <file>")]
+            [Description("Writes assertion results to a .xml (JUnit), .trx, or .json test report")]
+            public string TestReport { get; set; }
+
             private List<AdomdParameter> _parameters = new List<AdomdParameter>();
             public List<AdomdParameter> ParameterCollection { get 
                 {
@@ -190,8 +194,18 @@ namespace DaxStudio.CommandLine.Commands
                 }
 
                 var assertBatches = batches?.Where(BatchHasAsserts).ToList() ?? new List<ScriptBatch>();
+                var reportCommands = batches?
+                    .SelectMany(b => b.Commands)
+                    .OfType<ExportCommand>()
+                    .Where(c => c.Target == ExportTarget.TestResults)
+                    .ToList() ?? new List<ExportCommand>();
                 if (assertBatches.Count == 0)
                 {
+                    if (!string.IsNullOrWhiteSpace(settings.TestReport) || reportCommands.Count > 0)
+                    {
+                        AnsiConsole.MarkupLine("[red]No assertions were found; no test report was written.[/]");
+                        return 2;
+                    }
                     return 0;
                 }
 
@@ -241,12 +255,37 @@ namespace DaxStudio.CommandLine.Commands
                 AnsiConsole.MarkupLine($"[bold]{passed} passed, {failed} failed, {errored} errors[/]");
                 Log.Information("Test results: {passed} passed, {failed} failed, {errored} errors", passed, failed, errored);
 
+                WriteTestReports(results, settings.TestReport, reportCommands, assertBaseDir, settings.File);
+
                 return (failed == 0 && errored == 0) ? 0 : 1;
             }
             catch (Exception ex)
             {
                 Log.Error(ex, "{class} {method} Unexpected error while evaluating comment-script assertions", nameof(FileCommand), nameof(ExecuteAsync));
                 return 2;
+            }
+        }
+
+        internal static void WriteTestReports(IReadOnlyList<TestResult> results, string commandLineReport, IReadOnlyList<ExportCommand> reportCommands, string scriptDirectory, string sourceName)
+        {
+            if (!string.IsNullOrWhiteSpace(commandLineReport))
+            {
+                if (reportCommands.Count > 0)
+                    Log.Information("Ignoring {count} embedded EXPORT TESTRESULTS command(s) because --test-report was specified", reportCommands.Count);
+
+                var format = TestReportWriter.GetFormatFromFileName(commandLineReport);
+                TestReportWriter.Write(results, format, commandLineReport, sourceName);
+                AnsiConsole.MarkupLine($"[green]Test report written:[/] {Markup.Escape(commandLineReport)}");
+                return;
+            }
+
+            foreach (var command in reportCommands)
+            {
+                var path = command.FileName;
+                if (!Path.IsPathRooted(path) && !string.IsNullOrEmpty(scriptDirectory))
+                    path = Path.Combine(scriptDirectory, path);
+                TestReportWriter.Write(results, command.ReportFormat.Value, path, sourceName);
+                AnsiConsole.MarkupLine($"[green]Test report written:[/] {Markup.Escape(path)}");
             }
         }
 
@@ -293,7 +332,7 @@ namespace DaxStudio.CommandLine.Commands
         /// Timings slice). Runs on a dedicated traced connection, mirroring what the UI does.</item>
         /// </list>
         /// </remarks>
-        private async Task<List<TestResult>> EvaluateAssertionsAsync(
+        internal async Task<List<TestResult>> EvaluateAssertionsAsync(
             QueryRunner runner, Settings settings, IReadOnlyList<ScriptBatch> batches,
             string assertBaseDir, CancellationToken cancellationToken)
         {
@@ -581,7 +620,7 @@ namespace DaxStudio.CommandLine.Commands
             BaselineStore baselines, string assertBaseDir)
         {
             var results = new List<TestResult>();
-            var testName = batch.Commands.OfType<TestCommand>().FirstOrDefault()?.TestName;
+            var testName = batch.Commands.OfType<DaxStudio.Parsers.CommentScript.TestCommand>().FirstOrDefault()?.TestName;
             var rowCount = dt?.Rows.Count ?? 0;
 
             foreach (var cmd in batch.Commands.OfType<AssertRowcountCommand>())
@@ -616,7 +655,7 @@ namespace DaxStudio.CommandLine.Commands
 
         private static List<TestResult> AssertionErrors(ScriptBatch batch, string description, string message)
         {
-            var testName = batch.Commands.OfType<TestCommand>().FirstOrDefault()?.TestName;
+            var testName = batch.Commands.OfType<DaxStudio.Parsers.CommentScript.TestCommand>().FirstOrDefault()?.TestName;
             var results = new List<TestResult>();
 
             foreach (var cmd in batch.Commands.Where(c =>

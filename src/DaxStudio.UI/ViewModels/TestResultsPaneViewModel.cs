@@ -8,6 +8,8 @@ using System.ComponentModel.Composition;
 using System.IO.Packaging;
 using System.Linq;
 using System.Windows.Input;
+using Microsoft.Win32;
+using System.Windows;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -188,6 +190,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(RunningCount));
             NotifyOfPropertyChange(nameof(AllPassed));
             NotifyOfPropertyChange(nameof(HasFailures));
+            NotifyOfPropertyChange(nameof(CanExportTestReport));
             NotifyOfPropertyChange(nameof(SummaryText));
         }
 
@@ -201,6 +204,40 @@ namespace DaxStudio.UI.ViewModels
 
         /// <summary>True when at least one test has failed or errored (used to colour the summary red).</summary>
         public bool HasFailures => FailedCount > 0 || ErrorCount > 0;
+        public bool CanExportTestReport => TotalCount > 0 && PendingCount == 0 && RunningCount == 0;
+
+        private ICommand _exportTestReport;
+        public ICommand ExportTestReport
+        {
+            get
+            {
+                if (_exportTestReport == null)
+                    _exportTestReport = new Utils.RelayCommand(_ => SaveTestReport(), _ => CanExportTestReport);
+                return _exportTestReport;
+            }
+        }
+
+        private void SaveTestReport()
+        {
+            var dialog = new SaveFileDialog
+            {
+                AddExtension = true,
+                DefaultExt = ".xml",
+                Filter = "JUnit XML|*.xml|Visual Studio Test Results|*.trx|JSON|*.json",
+                Title = "Save Test Report"
+            };
+            if (dialog.ShowDialog() != true) return;
+
+            try
+            {
+                var format = TestReportWriter.GetFormatFromFileName(dialog.FileName);
+                TestReportWriter.Write(_results.ToList(), format, dialog.FileName);
+            }
+            catch (System.Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Save Test Report", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
 
         public string SummaryText
         {

@@ -663,9 +663,24 @@ namespace DaxStudio.Parsers.Dax
 
         public override void ExitExport([NotNull] ExportContext context)
         {
-            // export: CS_EXPORT CS_METRICS (CS_STRING_LITERAL | CS_IDENTIFIER)
-            var fileName = context.children[2].GetText();
-            var cmd = new ExportCommand(ExportTarget.Metrics, fileName);
+            var targetNode = context.children[1] as ITerminalNode;
+            ExportCommand cmd;
+            if (targetNode?.Symbol.Type == CS_TESTRESULTS)
+            {
+                var formatNode = context.children[2] as ITerminalNode;
+                var reportFormat = formatNode?.Symbol.Type switch
+                {
+                    CS_JUNIT => TestReportFormat.Junit,
+                    CS_TRX => TestReportFormat.Trx,
+                    CS_JSON => TestReportFormat.Json,
+                    _ => throw new CommentScriptCommandException("Invalid TESTRESULTS export format. Use JUNIT, TRX, or JSON.", context.Start.Line, context.Start.Column),
+                };
+                cmd = new ExportCommand(reportFormat, context.children[3].GetText());
+            }
+            else
+            {
+                cmd = new ExportCommand(ExportTarget.Metrics, context.children[2].GetText());
+            }
             _currentBatch.Commands.Add(cmd);
 
             OutputCommand(_currentBatch.Output, context);
