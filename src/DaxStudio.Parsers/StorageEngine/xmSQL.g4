@@ -135,6 +135,7 @@ whereClause
 
 filterPredicate
     : tableColumnRef comparisonOp filterValue                        // 'T'[C] = value
+    | NOT? (EXPR_AT_REF | EXPR_REF) IS NULL                          // NOT @$Expr0 IS NULL
     | tableColumnRef IN LPAREN valueList RPAREN                     // 'T'[C] IN (v1, v2)
     | tableColumnRef NIN LPAREN valueList RPAREN                    // 'T'[C] NIN (v1, v2)
     | tableColumnRef BETWEEN filterValue AND filterValue            // 'T'[C] BETWEEN v1 AND v2
@@ -242,6 +243,9 @@ INNER       : [iI][nN][nN][eE][rR] ;
 JOIN        : [jJ][oO][iI][nN] ;
 ON          : [oO][nN] ;
 WHERE       : [wW][hH][eE][rR][eE] ;
+NOT         : [nN][oO][tT] ;
+IS          : [iI][sS] ;
+NULL        : [nN][uU][lL][lL] ;
 IN          : [iI][nN] ;
 NIN         : [nN][iI][nN] ;
 BETWEEN     : [bB][eE][tT][wW][eE][eE][nN] ;

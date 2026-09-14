@@ -83,6 +83,30 @@ namespace DaxStudio.Parsers.Tests
         }
 
         [TestMethod]
+        public void Formatter_NotExpressionReferenceIsNull_PreservesPredicate()
+        {
+            string xmSql = "SET DC_KIND=\"AUTO\";\r\n"
+                + "WITH\r\n"
+                + "\t$Expr0 := [CallbackDataID(IF ( Trip[passenger_count]] = 1, Trip[fare_amount]] ))](PFDATAID( [Trip (5608)].[passenger count (5638)] ), PFDATAID( [Trip (5608)].[fare amount (5645)] ))\r\n"
+                + "SELECT\r\n"
+                + "[Pickup Location (1678)].[Pickup Zone (1684)] AS [Pickup Location (1678)$Pickup Zone (1684)],\r\n"
+                + "SUM(@$Expr0) AS [$Measure0], SUM((@$Expr0 = @$Expr0)) AS [$Measure1]\r\n"
+                + "FROM [Trip (5608)]\r\n"
+                + "\tLEFT OUTER JOIN [Pickup Location (1678)] ON [Trip (5608)].[PULocationID (5642)]=[Pickup Location (1678)].[PickupLocationID (1682)]\r\n"
+                + "WHERE\r\n"
+                + "\tNOT @$Expr0 IS NULL;\r\n\r\n"
+                + "[Estimated size (volume, marshalling bytes): 265, 6360]";
+
+            var result = AntlrXmSqlFormatter.Format(
+                xmSql,
+                format: true,
+                simplify: true,
+                out _, out _, out _);
+
+            StringAssert.Contains(result, "WHERE\r\n    NOT @$Expr0 IS NULL");
+        }
+
+        [TestMethod]
         public void Formatter_EstimatedSize_ExtractsValues()
         {
             string xmSql = "SELECT\r\n"

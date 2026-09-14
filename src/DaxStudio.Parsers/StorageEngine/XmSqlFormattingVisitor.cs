@@ -745,6 +745,15 @@ namespace DaxStudio.Parsers.StorageEngine
 
         private void AppendFilterPredicate(xmSQLParser.FilterPredicateContext ctx)
         {
+            var expressionReference = ctx.EXPR_AT_REF() ?? ctx.EXPR_REF();
+            if (expressionReference != null && ctx.IS() != null && ctx.NULL() != null)
+            {
+                if (ctx.NOT() != null)
+                    _sb.Append("NOT ");
+                _sb.Append(expressionReference.GetText()).Append(" IS NULL");
+                return;
+            }
+
             // Parenthesized predicate: (filterPredicate)
             var nested = ctx.filterPredicate();
             if (nested != null)
