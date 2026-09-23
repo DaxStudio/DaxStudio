@@ -19,10 +19,44 @@ namespace ADOTabular
     public class ADOTabularConnection : IDisposable, IADOTabularConnection
     {
         private AdomdCommand _runningCommand;
+        public Guid DiagnosticId { get; } = Guid.NewGuid();
+
+        private void TraceOperation(string operation, Action action)
+        {
+            TraceOperation(operation, () =>
+            {
+                action();
+                return true;
+            });
+        }
+
+        private TResult TraceOperation<TResult>(string operation, Func<TResult> action)
+        {
+            if (!Serilog.Log.IsEnabled(Serilog.Events.LogEventLevel.Debug)) return action();
+
+            var operationId = Guid.NewGuid();
+            Serilog.Log.Debug("{class} Connection timing start: ConnectionId={ConnectionId} OperationId={OperationId} Operation={Operation} ThreadId={ThreadId}",
+                nameof(ADOTabularConnection), DiagnosticId, operationId, operation, System.Threading.Thread.CurrentThread.ManagedThreadId);
+            var stopwatch = Stopwatch.StartNew();
+            var succeeded = false;
+            try
+            {
+                var result = action();
+                succeeded = true;
+                return result;
+            }
+            finally
+            {
+                stopwatch.Stop();
+                Serilog.Log.Debug("{class} Connection timing end: ConnectionId={ConnectionId} OperationId={OperationId} Operation={Operation} ElapsedMs={ElapsedMs} Succeeded={Succeeded} ThreadId={ThreadId}",
+                    nameof(ADOTabularConnection), DiagnosticId, operationId, operation, stopwatch.ElapsedMilliseconds, succeeded, System.Threading.Thread.CurrentThread.ManagedThreadId);
+            }
+        }
 
         public event EventHandler ConnectionChanged;
         private AdomdConnection _adomdConn;
         private string _currentDatabase;
+        private bool _metadataInitializationPending;
         private readonly Regex _LocaleIdRegex = new Regex("Locale Identifier\\s*=\\s*(\\d+)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         private readonly object connectionLock = new object();
 
@@ -178,7 +212,7 @@ namespace ADOTabular
 
                     if (string.IsNullOrWhiteSpace(_currentDatabase) && _adomdConn.State == ConnectionState.Open) _currentDatabase = _adomdConn.Database;
 
-                    if (!dd.ContainsKey(_currentDatabase))
+                    if (!string.IsNullOrEmpty(_currentDatabase) && !dd.ContainsKey(_currentDatabase))
                     {
                         dd = Databases.GetDatabaseDictionary(this.SPID, true);
                     }
@@ -188,13 +222,14 @@ namespace ADOTabular
                         // return an empty database object if there is no current database or no databases on the server
                         return new ADOTabularDatabase(this, "", "", DateTime.MinValue, "", "", "");
                     }
-                    // The Power BI XMLA endpoint does not set a default database, so we have a collection of database, but no current database
-                    // in this case we just set the current database to the first in the list
                     if (string.IsNullOrEmpty(_currentDatabase) && dd.Count > 0)
                     {
                         var details = dd.First().Value;
                         _db = new ADOTabularDatabase(this, details.Name, details.Id, details.LastUpdate, details.CompatibilityLevel, details.Roles, details.Description);
-                        ChangeDatabase(details.Name);
+                        if (dd.Count == 1)
+                            _currentDatabase = details.Name;
+                        else
+                            ChangeDatabase(details.Name);
 
                     }
 
@@ -222,25 +257,77 @@ namespace ADOTabular
             await Task.Run(() => Open()).ConfigureAwait(true);
         }
 
+        public async Task OpenAsync(bool initializeMetadata)
+        {
+            await Task.Run(() => Open(initializeMetadata)).ConfigureAwait(true);
+        }
+
         public void Open()
         {
-            if (_adomdConn.State == ConnectionState.Open)
+            Open(true);
+        }
+
+        private void Open(bool initializeMetadata)
+        {
+            if (_adomdConn.State != ConnectionState.Open)
             {
-                return;
+                TraceOperation("Adomd.Open", () => _adomdConn.Open());
+                TraceOperation(nameof(CacheDatabases), CacheDatabases);
+                if (initializeMetadata)
+                    ChangeDatabase(_adomdConn.Database);
+                else
+                    _currentDatabase = _adomdConn.Database;
+                _metadataInitializationPending = true;
             }
-            _adomdConn.Open();
-            CacheDatabases();
-            ChangeDatabase(_adomdConn.Database);
-            CacheKeywords();
-            CacheFunctionGroups();
+            if (initializeMetadata && _metadataInitializationPending)
+                InitializeMetadata();
+        }
+
+        public void InitializeMetadata()
+        {
+            InitializeMetadata(null);
+        }
+
+        public void SetLanguageMetadata(ADOTabularKeywordCollection keywords, ADOTabularFunctionGroupCollection functionGroups)
+        {
+            if (keywords == null) throw new ArgumentNullException(nameof(keywords));
+            if (functionGroups == null) throw new ArgumentNullException(nameof(functionGroups));
+            lock (_languageMetadataLock)
+            {
+                _keywords = keywords;
+                _functionGroups = functionGroups;
+            }
+        }
+
+        public void InitializeMetadata(ADOTabularConnection metadataSource)
+        {
+            if (metadataSource != null && metadataSource != this
+                && Type == metadataSource.Type && ServerType == metadataSource.ServerType
+                && string.Equals(ConnectionString, metadataSource.ConnectionString, StringComparison.Ordinal)
+                && string.Equals(_currentDatabase, metadataSource._currentDatabase, StringComparison.Ordinal))
+            {
+                var keywords = TraceOperation(nameof(CacheKeywords), () => metadataSource.Keywords);
+                var functionGroups = TraceOperation(nameof(CacheFunctionGroups), () => metadataSource.FunctionGroups);
+                lock (_languageMetadataLock)
+                {
+                    _keywords = keywords;
+                    _functionGroups = functionGroups;
+                }
+            }
+            else
+            {
+                TraceOperation(nameof(CacheKeywords), CacheKeywords);
+                TraceOperation(nameof(CacheFunctionGroups), CacheFunctionGroups);
+            }
             try
             {
-                UpdateServerProperties();
+                TraceOperation(nameof(UpdateServerProperties), UpdateServerProperties);
             }
             catch
             {
                 Debug.WriteLine("Unable to update server properties");
             }
+            _metadataInitializationPending = false;
             // We do not cache DaxMetadata intentionally - it is saved manually, there is no need to read them every time
         }
 
@@ -249,14 +336,22 @@ namespace ADOTabular
             this.Databases.GetDatabaseDictionary(this.SPID);
         }
 
+        private readonly object _languageMetadataLock = new object();
+
         private void CacheFunctionGroups()
         {
-            _functionGroups ??= new ADOTabularFunctionGroupCollection(this);
+            lock (_languageMetadataLock)
+            {
+                _functionGroups ??= new ADOTabularFunctionGroupCollection(this);
+            }
         }
 
         private void CacheKeywords()
         {
-            _keywords ??= new ADOTabularKeywordCollection(this);
+            lock (_languageMetadataLock)
+            {
+                _keywords ??= new ADOTabularKeywordCollection(this);
+            }
         }
 
         /*       public void Open(string connectionString)
@@ -273,18 +368,18 @@ namespace ADOTabular
             if (_adomdConn == null) return; // if we have opened a vpax file the connection object will be null
             if (_adomdConn.State != ConnectionState.Open)
             {
-                _adomdConn.Open();
+                TraceOperation("Adomd.Open", () => _adomdConn.Open());
             }
 
             //if (_adomdConn.Database != database)
             //{
-            _adomdConn.ChangeDatabase(database);
+            TraceOperation("Adomd.ChangeDatabase", () => _adomdConn.ChangeDatabase(database));
             //}
 
             if (string.IsNullOrEmpty(database) && this.Databases.Count > 0)
             {
                 _currentDatabase = Databases[0];
-                _adomdConn.ChangeDatabase(_currentDatabase);
+                TraceOperation("Adomd.ChangeDatabase.DefaultCatalog", () => _adomdConn.ChangeDatabase(_currentDatabase));
             }
 
             _spid = 0; // reset the spid to 0 so that it will get re-evaluated
@@ -417,8 +512,8 @@ namespace ADOTabular
 
         public DataSet GetSchemaDataSet(string dataSet)
         {
-            if (_adomdConn?.State != ConnectionState.Open && _adomdConn != null) _adomdConn.Open();
-            return _adomdConn?.GetSchemaDataSet(dataSet, null, true);
+            if (_adomdConn?.State != ConnectionState.Open && _adomdConn != null) TraceOperation("Adomd.Open", () => _adomdConn.Open());
+            return TraceOperation("GetSchemaDataSet:" + dataSet, () => _adomdConn?.GetSchemaDataSet(dataSet, null, true));
         }
 
 
@@ -426,18 +521,18 @@ namespace ADOTabular
         {
             if (_adomdConn.State != ConnectionState.Open)
             {
-                _adomdConn.Open();
+                TraceOperation("Adomd.Open", () => _adomdConn.Open());
             }
-            return _adomdConn.GetSchemaDataSet(dataSet, restrictions, true);
+            return TraceOperation("GetSchemaDataSet:" + dataSet, () => _adomdConn.GetSchemaDataSet(dataSet, restrictions, true));
         }
 
         public DataSet GetSchemaDataSet(string dataSet, AdomdRestrictionCollection restrictions, bool throwOnErrors)
         {
             if (_adomdConn.State != ConnectionState.Open)
             {
-                _adomdConn.Open();
+                TraceOperation("Adomd.Open", () => _adomdConn.Open());
             }
-            return _adomdConn.GetSchemaDataSet(dataSet, restrictions, throwOnErrors);
+            return TraceOperation("GetSchemaDataSet:" + dataSet, () => _adomdConn.GetSchemaDataSet(dataSet, restrictions, throwOnErrors));
 
         }
 
@@ -702,12 +797,10 @@ namespace ADOTabular
         {
             get
             {
-                if (_dmvCollection == null)
+                lock (connectionLock)
                 {
-                    _dmvCollection = new ADOTabularDynamicManagementViewCollection(this);
+                    return _dmvCollection ??= new ADOTabularDynamicManagementViewCollection(this);
                 }
-
-                return _dmvCollection;
             }
         }
 
@@ -768,30 +861,7 @@ namespace ADOTabular
         {
             try
             {
-                var ds = _adomdConn.GetSchemaDataSet("DISCOVER_XML_METADATA",
-                                                     new AdomdRestrictionCollection
-                                                         {
-                                                         new AdomdRestriction("ObjectExpansion", "ReferenceOnly")
-                                                         }, true);
-                string metadata = ds.Tables[0].Rows[0]["METADATA"].ToString();
-
-                using (XmlTextReader rdr = new XmlTextReader(new StringReader(metadata)) { DtdProcessing = DtdProcessing.Prohibit })
-                {
-                    if (rdr.NameTable != null)
-                    {
-                        var eSvrMode = rdr.NameTable.Add("ServerMode");
-
-                        while (rdr.Read())
-                        {
-                            if (rdr.NodeType == XmlNodeType.Element
-                                && rdr.LocalName == eSvrMode)
-                            {
-                                return rdr.ReadElementContentAsString();
-                            }
-
-                        }
-                    }
-                }
+                return ServerProperties.Mode;
             }
             catch { }
             return "Unknown";
@@ -813,32 +883,7 @@ namespace ADOTabular
 
         private string GetServerId()
         {
-
-            var ds = _adomdConn.GetSchemaDataSet("DISCOVER_XML_METADATA",
-                                                 new AdomdRestrictionCollection
-                                                     {
-                                                         new AdomdRestriction("ObjectExpansion", "ReferenceOnly")
-                                                     }, true);
-            string metadata = ds.Tables[0].Rows[0]["METADATA"].ToString();
-
-            using (XmlTextReader rdr = new XmlTextReader(new StringReader(metadata)) { DtdProcessing = DtdProcessing.Prohibit })
-            {
-                if (rdr.NameTable != null)
-                {
-                    var eSvrMode = rdr.NameTable.Add("ID");
-
-                    while (rdr.Read())
-                    {
-                        if (rdr.NodeType == XmlNodeType.Element
-                            && rdr.LocalName == eSvrMode)
-                        {
-                            return rdr.ReadElementContentAsString();
-                        }
-
-                    }
-                }
-            }
-            return "Unknown";
+            return ServerProperties.Id;
         }
 
         private int _spid;
@@ -1035,41 +1080,48 @@ namespace ADOTabular
 
         public bool IsTestingRls { get; private set; } 
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "These properties are not critical so we just set them to empty strings on any exception")]
-        private void UpdateServerProperties()
+        private readonly object _serverPropertiesLock = new object();
+        private ADOTabularServerProperties _serverProperties;
+
+        public ADOTabularServerProperties ServerProperties
+        {
+            get
+            {
+                lock (_serverPropertiesLock)
+                {
+                    return _serverProperties ??= new ADOTabularServerProperties(DiscoverServerMetadata);
+                }
+            }
+            set
+            {
+                if (value == null) throw new ArgumentNullException(nameof(value));
+                lock (_serverPropertiesLock)
+                {
+                    if (ReferenceEquals(_serverProperties, value)) return;
+                    _serverProperties = value;
+                    _serverMode = null;
+                    _serverId = null;
+                    ServerLocation = null;
+                    ServerEdition = null;
+                }
+            }
+        }
+
+        private string DiscoverServerMetadata()
         {
             var res = new AdomdRestrictionCollection
             {
                 new AdomdRestriction("ObjectExpansion", "ReferenceOnly")
             };
-            var props = _adomdConn.GetSchemaDataSet("DISCOVER_XML_METADATA", res, true);
-            var xmla = props.Tables[0].Rows[0][0].ToString();
-            var xdoc = new XmlDocument() { XmlResolver = null };
-            var oMgr = new XmlNamespaceManager(xdoc.NameTable);
-            oMgr.AddNamespace("d", "http://schemas.microsoft.com/analysisservices/2003/engine");
-            oMgr.AddNamespace("ddl400", "http://schemas.microsoft.com/analysisservices/2012/engine/400");
-            System.IO.StringReader sreader = new System.IO.StringReader(xmla);
-            using (XmlReader reader = XmlReader.Create(sreader, new XmlReaderSettings() { XmlResolver = null }))
-            {
-                xdoc.Load(reader);
-            }
+            var props = TraceOperation("GetSchemaDataSet:DISCOVER_XML_METADATA.ReferenceOnly",
+                () => _adomdConn.GetSchemaDataSet("DISCOVER_XML_METADATA", res, true));
+            return props.Tables[0].Rows[0][0].ToString();
+        }
 
-            try
-            {
-                ServerLocation = xdoc.SelectSingleNode("//ddl400:ServerLocation", oMgr).InnerText ?? "";
-            }
-            catch
-            {
-                ServerLocation = "";
-            }
-            try
-            {
-                ServerEdition = xdoc.SelectSingleNode("//d:Edition", oMgr).InnerText ?? "";
-            }
-            catch
-            {
-                ServerEdition = "";
-            }
+        private void UpdateServerProperties()
+        {
+            ServerLocation = ServerProperties.Location;
+            ServerEdition = ServerProperties.Edition;
         }
 
         public ADOTabularConnection Clone(bool sameSession)

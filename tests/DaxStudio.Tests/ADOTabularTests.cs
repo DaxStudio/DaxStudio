@@ -14,6 +14,8 @@ using ADOTabular.Interfaces;
 using ADOTabular.AdomdClientWrappers;
 using System.IO;
 using NSubstitute;
+using System.Threading;
+using System.Collections.Concurrent;
 
 namespace DaxStudio.Tests
 {
@@ -28,6 +30,387 @@ namespace DaxStudio.Tests
         ///information about and functionality for the current test run.
         ///</summary>
         public TestContext TestContext { get; set; }
+
+        internal const string ServerPropertiesXml =
+            "<Server xmlns='http://schemas.microsoft.com/analysisservices/2003/engine' " +
+            "xmlns:ddl400='http://schemas.microsoft.com/analysisservices/2012/engine/400'>" +
+            "<ID>TestServer</ID><ServerMode>Tabular</ServerMode><Edition>Enterprise</Edition>" +
+            "<ddl400:ServerLocation>Cloud</ddl400:ServerLocation></Server>";
+
+        [TestMethod]
+        public void ServerPropertiesConcurrentReadersDiscoverOnce()
+        {
+            var requests = 0;
+            var properties = new ADOTabularServerProperties(() =>
+            {
+                Interlocked.Increment(ref requests);
+                return ServerPropertiesXml;
+            });
+
+            System.Threading.Tasks.Parallel.For(0, 32, index =>
+            {
+                Assert.AreEqual("Enterprise", properties.Edition);
+                Assert.AreEqual("Cloud", properties.Location);
+                Assert.AreEqual("Tabular", properties.Mode);
+                Assert.AreEqual("TestServer", properties.Id);
+            });
+
+            Assert.AreEqual(1, requests);
+        }
+
+        [TestMethod]
+        public void ServerPropertiesMissingFieldsPreserveFallbacks()
+        {
+            var requests = 0;
+            var properties = new ADOTabularServerProperties(() =>
+            {
+                requests++;
+                return "<Server xmlns='http://schemas.microsoft.com/analysisservices/2003/engine'/>";
+            });
+
+            Assert.AreEqual(string.Empty, properties.Edition);
+            Assert.AreEqual(string.Empty, properties.Location);
+            Assert.AreEqual("Unknown", properties.Mode);
+            Assert.AreEqual("Unknown", properties.Id);
+            Assert.AreEqual(1, requests);
+        }
+
+        [TestMethod]
+        public void ServerPropertiesRetriesInvalidXmlWithoutCachingIt()
+        {
+            var requests = 0;
+            var properties = new ADOTabularServerProperties(() =>
+                ++requests == 1 ? "<Server>" : ServerPropertiesXml);
+
+            Assert.ThrowsExactly<System.Xml.XmlException>(() => { _ = properties.Edition; });
+            Assert.AreEqual("Enterprise", properties.Edition);
+            Assert.AreEqual("TestServer", properties.Id);
+            Assert.AreEqual(2, requests);
+        }
+
+        [TestMethod]
+        public void InitializeMetadataRetriesFailedServerPropertiesDiscovery()
+        {
+            using var connection = new ADOTabularConnection(string.Empty, ADOTabular.Enums.AdomdType.AnalysisServices);
+            connection.Visitor = Substitute.For<IMetaDataVisitor>();
+            var requests = 0;
+            connection.ServerProperties = new ADOTabularServerProperties(() =>
+            {
+                if (++requests == 1) throw new InvalidOperationException("Discovery failed.");
+                return ServerPropertiesXml;
+            });
+
+            connection.InitializeMetadata();
+            Assert.IsNull(connection.ServerEdition);
+            connection.InitializeMetadata();
+
+            Assert.AreEqual("Enterprise", connection.ServerEdition);
+            Assert.AreEqual("Cloud", connection.ServerLocation);
+            Assert.AreEqual("Tabular", connection.ServerMode);
+            Assert.AreEqual("TestServer", connection.ServerId);
+            Assert.AreEqual(2, requests);
+        }
+
+        [TestMethod]
+        public void ConcurrentDmvAccessReusesConnectionCollection()
+        {
+            using var connection = new ADOTabularConnection(string.Empty, ADOTabular.Enums.AdomdType.AnalysisServices);
+            var collections = new ConcurrentBag<ADOTabularDynamicManagementViewCollection>();
+
+            System.Threading.Tasks.Parallel.For(0, 32, index => collections.Add(connection.DynamicManagementViews));
+
+            foreach (var collection in collections)
+                Assert.AreSame(connection.DynamicManagementViews, collection);
+        }
+
+        [TestMethod]
+        public void ConcurrentDmvConsumersDiscoverSchemaRowsetsOnce()
+        {
+            var connection = Substitute.For<IADOTabularConnection>();
+            var table = new DataTable();
+            table.Columns.Add("SchemaName", typeof(string));
+            table.Rows.Add("TMSCHEMA_MEASURES");
+            table.Rows.Add("TMSCHEMA_CALENDARS");
+            var rowsets = new DataSet();
+            rowsets.Tables.Add(table);
+            connection.GetSchemaDataSet("DISCOVER_SCHEMA_ROWSETS").Returns(rowsets);
+            var dmvs = new ADOTabularDynamicManagementViewCollection(connection);
+
+            System.Threading.Tasks.Parallel.For(0, 32, index =>
+                Assert.IsTrue(dmvs.Contains("TMSCHEMA_MEASURES")));
+            CollectionAssert.AreEqual(new[] { "TMSCHEMA_CALENDARS", "TMSCHEMA_MEASURES" },
+                dmvs.Select(dmv => dmv.Name).ToArray());
+            Assert.IsFalse(dmvs.Contains("MISSING_ROWSET"));
+            connection.Received(1).GetSchemaDataSet("DISCOVER_SCHEMA_ROWSETS");
+        }
+
+        private static ADOTabularDatabaseCollection CreateCatalogCollection(ADOTabularConnection connection,
+            Func<string, AdomdRestrictionCollection, DataSet> schemaReader)
+        {
+            return (ADOTabularDatabaseCollection)Activator.CreateInstance(typeof(ADOTabularDatabaseCollection),
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic,
+                null, new object[] { connection, schemaReader }, null);
+        }
+
+        private static DataSet CreateCatalogResponse(params string[] names)
+        {
+            var table = new DataTable();
+            table.Columns.Add("CATALOG_NAME", typeof(string));
+            table.Columns.Add("DATE_MODIFIED", typeof(string));
+            foreach (var name in names) table.Rows.Add(name, "2026-09-19");
+            var response = new DataSet();
+            response.Tables.Add(table);
+            return response;
+        }
+
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void CatalogTableAndDictionaryShareOneRequest(bool dictionaryFirst)
+        {
+            using var connection = new ADOTabularConnection(string.Empty, ADOTabular.Enums.AdomdType.AnalysisServices);
+            var requests = 0;
+            var catalogs = CreateCatalogCollection(connection, (schema, restrictions) =>
+            {
+                Assert.AreEqual("DBSCHEMA_CATALOGS", schema);
+                Interlocked.Increment(ref requests);
+                return CreateCatalogResponse("Zulu", "Alpha");
+            });
+
+            if (dictionaryFirst) Assert.AreEqual(2, catalogs.GetDatabaseDictionary(-1).Count);
+            else Assert.AreEqual(2, catalogs.Count);
+
+            System.Threading.Tasks.Parallel.For(0, 32, index =>
+            {
+                Assert.AreEqual(2, catalogs.GetDatabaseDictionary(-1).Count);
+                Assert.AreEqual(2, catalogs.Count);
+            });
+            Assert.AreEqual("Zulu", catalogs[0]);
+            CollectionAssert.AreEqual(new[] { "Zulu", "Alpha" }, catalogs.Select(catalog => catalog.Name).ToArray());
+            Assert.IsTrue(catalogs.Contains("Alpha"));
+            Assert.AreEqual(1, requests);
+        }
+
+        [TestMethod]
+        public void CatalogRefreshUpdatesSharedResponseAndRetriesAfterFailure()
+        {
+            using var connection = new ADOTabularConnection(string.Empty, ADOTabular.Enums.AdomdType.AnalysisServices);
+            var requests = 0;
+            var catalogs = CreateCatalogCollection(connection, (schema, restrictions) =>
+            {
+                requests++;
+                if (requests == 2) throw new InvalidOperationException("Discovery failed.");
+                return requests == 1 ? CreateCatalogResponse("Original") : CreateCatalogResponse("Replacement", "New");
+            });
+
+            var dictionary = catalogs.GetDatabaseDictionary(-1);
+            Assert.ThrowsExactly<InvalidOperationException>(() => catalogs.GetDatabaseDictionary(-1, true));
+            Assert.AreEqual("Original", catalogs[0]);
+            Assert.IsTrue(dictionary.ContainsKey("Original"));
+
+            Assert.AreSame(dictionary, catalogs.GetDatabaseDictionary(-1, true));
+            Assert.IsFalse(dictionary.ContainsKey("Original"));
+            Assert.IsTrue(dictionary.ContainsKey("Replacement"));
+            Assert.AreEqual(2, catalogs.Count);
+            Assert.AreEqual("Replacement", catalogs[0]);
+            Assert.IsTrue(catalogs.Contains("New"));
+            Assert.AreEqual(3, requests);
+        }
+
+        [TestMethod]
+        public void InitializeMetadataSharesCollectionsDuringConcurrentInitialization()
+        {
+            using var source = new ADOTabularConnection(string.Empty, ADOTabular.Enums.AdomdType.AnalysisServices);
+            using var target = new ADOTabularConnection(string.Empty, ADOTabular.Enums.AdomdType.AnalysisServices);
+            var sourceVisitor = Substitute.For<IMetaDataVisitor>();
+            var targetVisitor = Substitute.For<IMetaDataVisitor>();
+            source.Visitor = sourceVisitor;
+            target.Visitor = targetVisitor;
+
+            System.Threading.Tasks.Parallel.Invoke(source.InitializeMetadata, () => target.InitializeMetadata(source));
+
+            Assert.AreSame(source.Keywords, target.Keywords);
+            Assert.AreSame(source.FunctionGroups, target.FunctionGroups);
+            sourceVisitor.Received(1).Visit(Arg.Any<ADOTabularKeywordCollection>());
+            sourceVisitor.Received(1).Visit(Arg.Any<ADOTabularFunctionGroupCollection>());
+            targetVisitor.DidNotReceive().Visit(Arg.Any<ADOTabularKeywordCollection>());
+            targetVisitor.DidNotReceive().Visit(Arg.Any<ADOTabularFunctionGroupCollection>());
+
+            using var replacement = new ADOTabularConnection(string.Empty, ADOTabular.Enums.AdomdType.AnalysisServices);
+            replacement.Visitor = Substitute.For<IMetaDataVisitor>();
+            replacement.InitializeMetadata();
+            Assert.AreNotSame(source.Keywords, replacement.Keywords);
+            Assert.AreNotSame(source.FunctionGroups, replacement.FunctionGroups);
+        }
+
+        [TestMethod]
+        [DataRow("Data Source=TestServer", "OtherCatalog")]
+        [DataRow("Data Source=TestServer;Roles=Restricted", null)]
+        [DataRow("Data Source=OtherServer", null)]
+        public void InitializeMetadataDoesNotShareAcrossDifferentContexts(string targetConnectionString, string targetCatalog)
+        {
+            using var source = new ADOTabularConnection("Data Source=TestServer", ADOTabular.Enums.AdomdType.AnalysisServices);
+            using var target = new ADOTabularConnection(targetConnectionString, ADOTabular.Enums.AdomdType.AnalysisServices);
+            var sourceVisitor = Substitute.For<IMetaDataVisitor>();
+            var targetVisitor = Substitute.For<IMetaDataVisitor>();
+            source.Visitor = sourceVisitor;
+            target.Visitor = targetVisitor;
+            if (targetCatalog != null)
+                typeof(ADOTabularConnection).GetField("_currentDatabase",
+                    System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(target, targetCatalog);
+
+            target.InitializeMetadata(source);
+
+            sourceVisitor.DidNotReceive().Visit(Arg.Any<ADOTabularKeywordCollection>());
+            sourceVisitor.DidNotReceive().Visit(Arg.Any<ADOTabularFunctionGroupCollection>());
+            targetVisitor.Received(1).Visit(Arg.Any<ADOTabularKeywordCollection>());
+            targetVisitor.Received(1).Visit(Arg.Any<ADOTabularFunctionGroupCollection>());
+            Assert.AreNotSame(source.Keywords, target.Keywords);
+            Assert.AreNotSame(source.FunctionGroups, target.FunctionGroups);
+        }
+
+        [TestMethod]
+        public void InitializeMetadataSharingRetriesFailedDiscovery()
+        {
+            using var source = new ADOTabularConnection(string.Empty, ADOTabular.Enums.AdomdType.AnalysisServices);
+            using var target = new ADOTabularConnection(string.Empty, ADOTabular.Enums.AdomdType.AnalysisServices);
+            var sourceVisitor = Substitute.For<IMetaDataVisitor>();
+            var targetVisitor = Substitute.For<IMetaDataVisitor>();
+            source.Visitor = sourceVisitor;
+            target.Visitor = targetVisitor;
+            var attempts = 0;
+            sourceVisitor.When(visitor => visitor.Visit(Arg.Any<ADOTabularFunctionGroupCollection>()))
+                .Do(call =>
+                {
+                    if (++attempts == 1) throw new InvalidOperationException("Discovery failed.");
+                });
+
+            Assert.ThrowsExactly<InvalidOperationException>(() => target.InitializeMetadata(source));
+            target.InitializeMetadata(source);
+
+            Assert.AreSame(source.Keywords, target.Keywords);
+            Assert.AreSame(source.FunctionGroups, target.FunctionGroups);
+            sourceVisitor.Received(1).Visit(Arg.Any<ADOTabularKeywordCollection>());
+            sourceVisitor.Received(2).Visit(Arg.Any<ADOTabularFunctionGroupCollection>());
+            targetVisitor.DidNotReceive().Visit(Arg.Any<ADOTabularKeywordCollection>());
+            targetVisitor.DidNotReceive().Visit(Arg.Any<ADOTabularFunctionGroupCollection>());
+        }
+
+        [TestMethod]
+        public void InitializeMetadataPopulatesAndReusesKeywordAndFunctionCaches()
+        {
+            using var connection = new ADOTabularConnection(string.Empty, ADOTabular.Enums.AdomdType.AnalysisServices);
+            var visitor = Substitute.For<IMetaDataVisitor>();
+            connection.Visitor = visitor;
+
+            visitor.DidNotReceive().Visit(Arg.Any<ADOTabularKeywordCollection>());
+            visitor.DidNotReceive().Visit(Arg.Any<ADOTabularFunctionGroupCollection>());
+
+            connection.InitializeMetadata();
+            var keywords = connection.Keywords;
+            var functions = connection.FunctionGroups;
+            connection.InitializeMetadata();
+
+            Assert.AreSame(keywords, connection.Keywords);
+            Assert.AreSame(functions, connection.FunctionGroups);
+            Received.InOrder(() =>
+            {
+                visitor.Visit(Arg.Any<ADOTabularKeywordCollection>());
+                visitor.Visit(Arg.Any<ADOTabularFunctionGroupCollection>());
+            });
+            visitor.Received(1).Visit(Arg.Any<ADOTabularKeywordCollection>());
+            visitor.Received(1).Visit(Arg.Any<ADOTabularFunctionGroupCollection>());
+        }
+
+        [TestMethod]
+        public void InitializeMetadataRetriesFailedFunctionDiscovery()
+        {
+            using var connection = new ADOTabularConnection(string.Empty, ADOTabular.Enums.AdomdType.AnalysisServices);
+            var visitor = Substitute.For<IMetaDataVisitor>();
+            connection.Visitor = visitor;
+            var attempts = 0;
+            visitor.When(metadata => metadata.Visit(Arg.Any<ADOTabularFunctionGroupCollection>()))
+                .Do(call =>
+                {
+                    if (++attempts == 1) throw new InvalidOperationException("Discovery failed.");
+                });
+
+            Assert.ThrowsExactly<InvalidOperationException>(() => connection.InitializeMetadata());
+            connection.InitializeMetadata();
+
+            Assert.IsNotNull(connection.FunctionGroups);
+            visitor.Received(1).Visit(Arg.Any<ADOTabularKeywordCollection>());
+            visitor.Received(2).Visit(Arg.Any<ADOTabularFunctionGroupCollection>());
+        }
+
+        [TestMethod]
+        public void ModelCollectionConcurrentReadsDiscoverOnce()
+        {
+            var connection = Substitute.For<IADOTabularConnection>();
+            var visitor = Substitute.For<IMetaDataVisitor>();
+            connection.Visitor.Returns(visitor);
+            var models = new ADOTabularModelCollection(connection, null);
+            using var discoveryStarted = new ManualResetEventSlim();
+            using var releaseDiscovery = new ManualResetEventSlim();
+            var failures = new ConcurrentQueue<Exception>();
+            var discoveryCount = 0;
+            visitor.Visit(models).Returns(call =>
+            {
+                Interlocked.Increment(ref discoveryCount);
+                discoveryStarted.Set();
+                if (!releaseDiscovery.Wait(TimeSpan.FromSeconds(10)))
+                    throw new TimeoutException("Model discovery was not released.");
+                return new SortedDictionary<string, ADOTabularModel>();
+            });
+            void ReadModels()
+            {
+                try { Assert.AreEqual(0, models.Count); }
+                catch (Exception exception) { failures.Enqueue(exception); }
+            }
+            var firstReader = new Thread(ReadModels) { IsBackground = true };
+            var secondReader = new Thread(ReadModels) { IsBackground = true };
+            firstReader.Start();
+            try
+            {
+                Assert.IsTrue(discoveryStarted.Wait(TimeSpan.FromSeconds(5)));
+                Assert.IsFalse(models.IsMaterialized);
+                secondReader.Start();
+                Assert.IsTrue(SpinWait.SpinUntil(
+                    () => (secondReader.ThreadState & ThreadState.WaitSleepJoin) != 0,
+                    TimeSpan.FromSeconds(5)));
+                Assert.AreEqual(1, Volatile.Read(ref discoveryCount));
+            }
+            finally
+            {
+                releaseDiscovery.Set();
+                firstReader.Join(TimeSpan.FromSeconds(5));
+                if ((secondReader.ThreadState & ThreadState.Unstarted) == 0)
+                    secondReader.Join(TimeSpan.FromSeconds(5));
+            }
+            Assert.IsTrue(failures.IsEmpty);
+            Assert.IsTrue(models.IsMaterialized);
+            Assert.AreEqual(0, models.Count);
+            visitor.Received(1).Visit(models);
+        }
+
+        [TestMethod]
+        public void ModelCollectionRetriesFailedDiscovery()
+        {
+            var connection = Substitute.For<IADOTabularConnection>();
+            var visitor = Substitute.For<IMetaDataVisitor>();
+            connection.Visitor.Returns(visitor);
+            var models = new ADOTabularModelCollection(connection, null);
+            visitor.Visit(models).Returns(
+                call => throw new InvalidOperationException("Discovery failed."),
+                call => new SortedDictionary<string, ADOTabularModel>());
+
+            Assert.ThrowsExactly<InvalidOperationException>(() => { var count = models.Count; });
+            Assert.IsFalse(models.IsMaterialized);
+            Assert.AreEqual(0, models.Count);
+            Assert.IsTrue(models.IsMaterialized);
+            visitor.Received(2).Visit(models);
+        }
+
         //private static string ConnectionString { get; set; }
         //private IADOTabularConnection connection;
         private static DataSet keywordDataSet;

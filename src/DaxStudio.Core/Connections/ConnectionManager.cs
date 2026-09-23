@@ -156,7 +156,8 @@ namespace DaxStudio.Core.Connections
             ConfigureRetryPolicy();
         }
 
-        public IEnumerable<string> AllFunctions => _connection.AllFunctions;
+        public IEnumerable<string> AllFunctions => FunctionGroups?
+            .SelectMany(group => group.Functions).Select(function => function.Caption) ?? Enumerable.Empty<string>();
 
         public IEnumerable<string> Keywords => _keywords;
         public string ApplicationName => _connection?.ApplicationName ?? "DAX Studio";
@@ -220,6 +221,8 @@ namespace DaxStudio.Core.Connections
                             _connection.OnAccessTokenExpired = onAccessTokenExpiredCopy;
                         }
                         _connection.ChangeDatabase(currentDb);
+                        EnsureLanguageMetadata();
+                        EnsureServerProperties();
 
                         _eventAggregator.PublishAsync(new ReconnectEvent(_connection.SessionId));
                         var msg =
@@ -253,6 +256,8 @@ namespace DaxStudio.Core.Connections
                             _dmvConnection.OnAccessTokenExpired = onAccessTokenExpiredCopy;
                         }
                         _dmvConnection.ChangeDatabase(currentDb);
+                        EnsureLanguageMetadata();
+                        EnsureServerProperties();
 
                         _eventAggregator.PublishAsync(new ReconnectEvent(_dmvConnection.SessionId));
                         var msg =
@@ -484,15 +489,7 @@ namespace DaxStudio.Core.Connections
             }
         }
 
-        private ADOTabularDynamicManagementViewCollection _dynamicManagementViews;
-        public ADOTabularDynamicManagementViewCollection DynamicManagementViews
-        {
-            get
-            {
-                if (_dynamicManagementViews == null && _dmvConnection != null) _dynamicManagementViews = new ADOTabularDynamicManagementViewCollection(_dmvConnection);
-                return _dynamicManagementViews;
-            }
-        }
+        public ADOTabularDynamicManagementViewCollection DynamicManagementViews => _dmvConnection?.DynamicManagementViews;
 
         #endregion
 
@@ -608,15 +605,59 @@ namespace DaxStudio.Core.Connections
             }
         }
 
-        private ADOTabularFunctionGroupCollection _functionGroups;
         private DateTime _lastSchemaUpdate;
+
+        private readonly object _languageMetadataLock = new object();
+        private ADOTabularConnection _languageMetadataConnection;
+        private ADOTabularKeywordCollection _languageKeywords;
+        private ADOTabularFunctionGroupCollection _languageFunctionGroups;
 
         public ADOTabularFunctionGroupCollection FunctionGroups
         {
             get
             {
-                if (_functionGroups == null && _dmvConnection != null) _functionGroups = new ADOTabularFunctionGroupCollection(_dmvConnection);
-                return _functionGroups;
+                EnsureLanguageMetadata();
+                return _languageFunctionGroups;
+            }
+        }
+
+        internal void EnsureLanguageMetadata()
+        {
+            lock (_languageMetadataLock)
+            {
+                if (_languageMetadataConnection != _dmvConnection)
+                {
+                    _languageMetadataConnection = _dmvConnection;
+                    _languageKeywords = null;
+                    _languageFunctionGroups = null;
+                }
+                if (_dmvConnection == null) return;
+
+                _languageKeywords ??= _dmvConnection.Keywords;
+                _languageFunctionGroups ??= _dmvConnection.FunctionGroups;
+                _dmvConnection.SetLanguageMetadata(_languageKeywords, _languageFunctionGroups);
+                _connection?.SetLanguageMetadata(_languageKeywords, _languageFunctionGroups);
+            }
+        }
+
+        private readonly object _serverPropertiesLock = new object();
+        private ADOTabularConnection _serverPropertiesConnection;
+        private ADOTabularServerProperties _serverProperties;
+
+        internal void EnsureServerProperties()
+        {
+            lock (_serverPropertiesLock)
+            {
+                if (_serverPropertiesConnection != _connection)
+                {
+                    _serverPropertiesConnection = _connection;
+                    _serverProperties = null;
+                }
+                if (_connection == null) return;
+
+                _serverProperties ??= _connection.ServerProperties;
+                _connection.ServerProperties = _serverProperties;
+                if (_dmvConnection != null) _dmvConnection.ServerProperties = _serverProperties;
             }
         }
 
@@ -907,6 +948,27 @@ namespace DaxStudio.Core.Connections
             Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(SetSelectedModelAsync), "End");
         }
 
+        internal static Task ChangeDatabasesAsync(string databaseName,
+            Action<string> changeQueryDatabase, Action<string> changeDmvDatabase)
+        {
+            return Task.WhenAll(
+                Task.Run(() => changeQueryDatabase(databaseName)),
+                Task.Run(() => changeDmvDatabase(databaseName)));
+        }
+
+        private async Task ChangeDatabasesAsync(string databaseName)
+        {
+            var queryConnection = _connection;
+            var dmvConnection = _dmvConnection;
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            await ChangeDatabasesAsync(databaseName,
+                name => queryConnection?.ChangeDatabase(name),
+                name => dmvConnection?.ChangeDatabase(name)).ConfigureAwait(false);
+            stopwatch.Stop();
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(ChangeDatabasesAsync),
+                $"ChangeDatabase '{databaseName}' complete (parallel elapsed: {stopwatch.ElapsedMilliseconds}ms)");
+        }
+
         public void SetSelectedDatabase(ADOTabularDatabase database)
         {
             if (_connection != null)
@@ -916,8 +978,7 @@ namespace DaxStudio.Core.Connections
                     if (Database != null && database != null && _connection.Database.Name != database.Name) 
                     {
                         Log.Debug("{Class} {Event} {selectedDatabase}", "MetadataPaneViewModel", "SelectedDatabase:Set (changing)", database.Name);
-                        _connection.ChangeDatabase(database.Name);
-                        _dmvConnection.ChangeDatabase(database.Name);
+                        ChangeDatabasesAsync(database.Name).GetAwaiter().GetResult();
 
                     }
                     if (_dmvConnection.Database != null)
@@ -931,8 +992,7 @@ namespace DaxStudio.Core.Connections
             {
                 if (Database != null)
                 {
-                    _connection?.ChangeDatabase(Database.Name);
-                    _dmvConnection?.ChangeDatabase(Database.Name);
+                    ChangeDatabasesAsync(Database.Name).GetAwaiter().GetResult();
                 }
 
                 if (_connection?.Database != null)
@@ -952,12 +1012,7 @@ namespace DaxStudio.Core.Connections
                     if (Database != null && !string.IsNullOrEmpty( databaseName) && _connection.Database.Name != databaseName) 
                     {
                         Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(SetSelectedDatabase), $"{databaseName} (thread {System.Threading.Thread.CurrentThread.ManagedThreadId})");
-                        var sw = System.Diagnostics.Stopwatch.StartNew();
-                        _connection.ChangeDatabase(databaseName);
-                        var queryMs = sw.ElapsedMilliseconds;
-                        _dmvConnection.ChangeDatabase(databaseName);
-                        sw.Stop();
-                        Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(SetSelectedDatabase), $"ChangeDatabase '{databaseName}' complete (query conn: {queryMs}ms, dmv conn: {sw.ElapsedMilliseconds - queryMs}ms)");
+                        ChangeDatabasesAsync(databaseName).GetAwaiter().GetResult();
                     }
                     else
                     {
@@ -2264,12 +2319,7 @@ namespace DaxStudio.Core.Connections
                 _retry.Execute(ctx =>
                 {
                     if (database != null) {
-                        var sw = System.Diagnostics.Stopwatch.StartNew();
-                        _dmvConnection?.ChangeDatabase(database.Name);
-                        var dmvMs = sw.ElapsedMilliseconds;
-                        _connection?.ChangeDatabase(database.Name);
-                        sw.Stop();
-                        Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(SetSelectedDatabase), $"ChangeDatabase '{database.Name}' complete (dmv conn: {dmvMs}ms, query conn: {sw.ElapsedMilliseconds - dmvMs}ms)");
+                        ChangeDatabasesAsync(database.Name).GetAwaiter().GetResult();
                     }
                     //Database = _dmvConnection.Database;
                     ModelList = _dmvConnection.Database?.Models;
@@ -2288,7 +2338,9 @@ namespace DaxStudio.Core.Connections
             ConnectAsync(msg, id).GetAwaiter().GetResult();
         }
 
-        internal async Task ConnectAsync(ConnectEvent message, Guid uniqueId)
+        internal async Task ConnectAsync(ConnectEvent message, Guid uniqueId,
+            Func<ADOTabularDatabaseCollection, Task<string>> selectDatabase = null,
+            IStatusBarMessage status = null)
         {
             IsConnecting = true;
             // the supported trace events/columns, the DMV list and the function list are all engine
@@ -2306,10 +2358,11 @@ namespace DaxStudio.Core.Connections
             }
             else
             {
-                await OpenOnlineConnectionAsync(message, uniqueId);
+                await OpenOnlineConnectionAsync(message, uniqueId, selectDatabase, status);
                 await _eventAggregator.PublishAsync(new ConnectionOpenedEvent(this));
             }
 
+            status?.Update("Preparing DMV and function lists...");
             await _eventAggregator.PublishAsync(new DmvsLoadedEvent(DynamicManagementViews));
             await _eventAggregator.PublishAsync(new FunctionsLoadedEvent(FunctionGroups));
 
@@ -2340,7 +2393,9 @@ namespace DaxStudio.Core.Connections
 
         public Dictionary<string, ADOTabularColumn> Columns => _dmvConnection?.Columns;
 
-        private async Task OpenOnlineConnectionAsync(ConnectEvent message, Guid uniqueId)
+        private async Task OpenOnlineConnectionAsync(ConnectEvent message, Guid uniqueId,
+            Func<ADOTabularDatabaseCollection, Task<string>> selectDatabase,
+            IStatusBarMessage status)
         {
             var connectionString = UpdateApplicationName(message.ConnectionString, uniqueId);
             _connection = new ADOTabularConnection(connectionString, AdomdType.AnalysisServices);
@@ -2365,27 +2420,64 @@ namespace DaxStudio.Core.Connections
             FileName = message.FileName;
             IsPowerPivot = message.PowerPivotModeSelected;
 
-            // open the DMV connection          
-            var openDmvConnTask = _dmvConnection.OpenAsync();
-
-            // Open the main query connection
-            var openConnTask = _connection.OpenAsync();
-
+            Log.Debug("{class} {method} Connection timing roles: QueryConnectionId={QueryConnectionId} DmvConnectionId={DmvConnectionId}",
+                nameof(ConnectionManager), nameof(OpenOnlineConnectionAsync), _connection.DiagnosticId, _dmvConnection.DiagnosticId);
             Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OpenOnlineConnectionAsync), "Start open connections");
             var swOpen = System.Diagnostics.Stopwatch.StartNew();
+
+            status?.Update("Opening connections and discovering databases...");
+            // open the DMV connection          
+            var openDmvConnTask = _dmvConnection.OpenAsync(initializeMetadata: false);
+
+            // Open the main query connection
+            var openConnTask = _connection.OpenAsync(initializeMetadata: false);
+
             await Task.WhenAll(openConnTask, openDmvConnTask);
             swOpen.Stop();
             Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OpenOnlineConnectionAsync), $"End open connections (duration: {swOpen.ElapsedMilliseconds}ms)");
 
-            // Change to the requested database after both connections are fully open
-            if (!string.IsNullOrEmpty(message.DatabaseName))
+            string selectedDatabaseName;
+            try
             {
-                _connection.ChangeDatabase(message.DatabaseName);
-                _dmvConnection.ChangeDatabase(message.DatabaseName);
+                selectedDatabaseName = await SelectInitialDatabaseAsync(message.DatabaseName, _dmvConnection.Databases, selectDatabase);
+            }
+            catch (OperationCanceledException)
+            {
+                _connection.Close();
+                _dmvConnection.Close();
+                throw;
             }
 
+            if (!string.IsNullOrEmpty(selectedDatabaseName))
+            {
+                status?.Update("Selecting database...");
+                await ChangeDatabasesAsync(selectedDatabaseName);
+            }
+
+            status?.Update("Loading keywords, functions and server properties...");
+            await Task.WhenAll(
+                Task.Run(() => _connection.Database),
+                Task.Run(() => _dmvConnection.Database));
+            await Task.Run(() => EnsureLanguageMetadata());
+            EnsureServerProperties();
+            await Task.WhenAll(
+                Task.Run(() => _connection.InitializeMetadata()),
+                Task.Run(() => _dmvConnection.InitializeMetadata()));
             SetSelectedDatabase(_dmvConnection.Database);
 
+        }
+
+        internal static async Task<string> SelectInitialDatabaseAsync(string requestedDatabase,
+            ADOTabularDatabaseCollection databases,
+            Func<ADOTabularDatabaseCollection, Task<string>> selectDatabase)
+        {
+            if (!string.IsNullOrEmpty(requestedDatabase)) return requestedDatabase;
+            if (databases.Count <= 1) return null;
+            if (selectDatabase == null) return databases[0];
+
+            var selectedDatabase = await selectDatabase(databases);
+            if (string.IsNullOrEmpty(selectedDatabase)) throw new OperationCanceledException();
+            return selectedDatabase;
         }
 
 #if NET8_0_OR_GREATER
@@ -2519,9 +2611,9 @@ namespace DaxStudio.Core.Connections
                     {
                         GetTables();
                         IsConnecting = false;
-                        _eventAggregator.PublishAsync(new TablesRefreshedEvent(this));
                     });
                 });
+                await _eventAggregator.PublishAsync(new TablesRefreshedEvent(this));
             }
             catch (Exception ex)
             {
@@ -2610,9 +2702,18 @@ namespace DaxStudio.Core.Connections
         private void ClearConnectionCaches()
         {
             ClearSupportedTraceEventClassesIfServerChanged();
+            lock (_languageMetadataLock)
+            {
+                _languageMetadataConnection = null;
+                _languageKeywords = null;
+                _languageFunctionGroups = null;
+            }
+            lock (_serverPropertiesLock)
+            {
+                _serverPropertiesConnection = null;
+                _serverProperties = null;
+            }
             // these are built from _dmvConnection which gets replaced when we connect
-            _dynamicManagementViews = null;
-            _functionGroups = null;
             _userDefinedFunctions = null;
         }
 

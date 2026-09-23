@@ -173,6 +173,36 @@ namespace DaxStudio.UI.ViewModels
             ShowMetadataRefreshPrompt = false;
         }
 
+        private Task _modelSelectionTask = Task.CompletedTask;
+        private Task _databaseSelectionTask = Task.CompletedTask;
+
+        internal async Task WaitForMetadataLoadAsync()
+        {
+            Task databaseSelection;
+            Task modelSelection;
+            do
+            {
+                databaseSelection = _databaseSelectionTask;
+                await databaseSelection;
+                modelSelection = _modelSelectionTask;
+                await modelSelection;
+            }
+            while (databaseSelection != _databaseSelectionTask || modelSelection != _modelSelectionTask);
+        }
+
+        private async Task SelectModelAsync(ADOTabularModel model)
+        {
+            try
+            {
+                await _metadataProvider.SetSelectedModelAsync(model);
+                NotifyOfPropertyChange(nameof(Tables));
+            }
+            finally
+            {
+                SetBusy(false);
+            }
+        }
+
         public ADOTabularModel SelectedModel
         {
             get => _selectedModel;
@@ -189,22 +219,9 @@ namespace DaxStudio.UI.ViewModels
                     _treeViewTables = null;
                     NotifyOfPropertyChange(nameof(Tables));
 
-                    _metadataProvider.SetSelectedModelAsync(SelectedModel).ContinueWith((prev) => {
-                        Log.Verbose(Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), "SelectedModel.Set", "Clearing IsBusy in continuation");
-                        try
-                        {
-                            NotifyOfPropertyChange(nameof(Tables));
-                        }
-                        finally
-                        {
-                            // Always clear the busy state even if the notification
-                            // above throws, otherwise the loading overlay would be
-                            // orphaned over already-loaded metadata.
-                            SetBusy(false);
-                        }
-                    }
-                    ).SafeFireAndForget(onException: ex =>
-                        Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), "SelectedModel.Set", "Error in SetSelectedModelAsync continuation"));
+                    _modelSelectionTask = SelectModelAsync(value);
+                    _modelSelectionTask.SafeFireAndForget(onException: ex =>
+                        Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), "SelectedModel.Set", "Error loading selected model"));
                     
                 }
                 Log.Debug(Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), nameof(SelectedModel), "Set End");
@@ -413,35 +430,41 @@ namespace DaxStudio.UI.ViewModels
                     if (_selectedDatabase == null) return;
                     NotifyOfPropertyChange(nameof(SelectedDatabase));
                     var _step = "start";
-                    Task.Run(() => {
+                    _databaseSelectionTask = Task.Run(() => {
                         SetBusy(true);
-                        _step = "step 1";
-                        _metadataProvider.SetSelectedDatabase(_selectedDatabase);
-                        _step = "step 2";
-                        NotifyOfPropertyChange(nameof(SelectedDatabaseObject));
-                        _step = "step 3";
-                        NotifyOfPropertyChange(nameof(SelectedDatabaseCaption));
-                        _step = "step 4";
-                        NotifyOfPropertyChange(nameof(SelectedDatabaseDescription));
-                        _step = "step 5";
-                        NotifyOfPropertyChange(nameof(SelectedDatabaseCulture));
-                        _step = "step 6";
-                        NotifyOfPropertyChange(nameof(SelectedDatabaseIsAdmin));
-                        _step = "step 7";
-                        NotifyOfPropertyChange(nameof(SelectedDatabaseRoles));
-                        _step = "step 8";
-                        NotifyOfPropertyChange(nameof(SelectedDatabaseDurationSinceUpdate));
-                        _step = "step 9";
-                        NotifyOfPropertyChange(nameof(SelectedDatabaseLastUpdateLocalTime));
-                        _step = "step 10";
-                        ModelList = _metadataProvider.GetModels();
-                        _step = "step 11";
-                        SetBusy( false);
-                    }).SafeFireAndForget(onException: ex =>
+                        try
+                        {
+                            _step = "step 1";
+                            _metadataProvider.SetSelectedDatabase(_selectedDatabase);
+                            _step = "step 2";
+                            NotifyOfPropertyChange(nameof(SelectedDatabaseObject));
+                            _step = "step 3";
+                            NotifyOfPropertyChange(nameof(SelectedDatabaseCaption));
+                            _step = "step 4";
+                            NotifyOfPropertyChange(nameof(SelectedDatabaseDescription));
+                            _step = "step 5";
+                            NotifyOfPropertyChange(nameof(SelectedDatabaseCulture));
+                            _step = "step 6";
+                            NotifyOfPropertyChange(nameof(SelectedDatabaseIsAdmin));
+                            _step = "step 7";
+                            NotifyOfPropertyChange(nameof(SelectedDatabaseRoles));
+                            _step = "step 8";
+                            NotifyOfPropertyChange(nameof(SelectedDatabaseDurationSinceUpdate));
+                            _step = "step 9";
+                            NotifyOfPropertyChange(nameof(SelectedDatabaseLastUpdateLocalTime));
+                            _step = "step 10";
+                            ModelList = _metadataProvider.GetModels();
+                            _step = "step 11";
+                        }
+                        finally
+                        {
+                            SetBusy(false);
+                        }
+                    });
+                    _databaseSelectionTask.SafeFireAndForget(onException: ex =>
                     {
                         Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), nameof(SelectedDatabase), $"error setting Selected Database ({_step})");
                         EventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error setting selected database ({_step}): {ex.Message} "));
-                        SetBusy( false);
                     });
 
                 }

@@ -12,6 +12,8 @@ namespace ADOTabular
     public class ADOTabularModelCollection:IEnumerable<ADOTabularModel>
     {
         private readonly IADOTabularConnection _adoTabConn;
+        private readonly Guid _diagnosticId = Guid.NewGuid();
+        private readonly object _modelsLock = new object();
 
         public ADOTabularModelCollection(IADOTabularConnection adoTabConn, ADOTabularDatabase database)
         {
@@ -28,24 +30,42 @@ namespace ADOTabular
         {
             get
             {
-                if (_models == null)
+                lock (_modelsLock)
                 {
-                    var sw = System.Diagnostics.Stopwatch.StartNew();
-                    _models = _adoTabConn.Visitor.Visit(this);
-                    sw.Stop();
-                    Log.Debug("{class} {method} {message}", nameof(ADOTabularModelCollection), nameof(InternalModelCollection),
-                        $"Materialized model collection via DISCOVER (duration: {sw.ElapsedMilliseconds}ms, thread {System.Threading.Thread.CurrentThread.ManagedThreadId})");
+                    if (_models == null)
+                    {
+                        var operationId = Guid.NewGuid();
+                        var connectionId = (_adoTabConn as ADOTabularConnection)?.DiagnosticId;
+                        Log.Debug("{class} {method} Model discovery start: CollectionId={CollectionId} ConnectionId={ConnectionId} OperationId={OperationId} ThreadId={ThreadId}",
+                            nameof(ADOTabularModelCollection), nameof(InternalModelCollection), _diagnosticId, connectionId, operationId, System.Threading.Thread.CurrentThread.ManagedThreadId);
+                        var sw = System.Diagnostics.Stopwatch.StartNew();
+                        var succeeded = false;
+                        try
+                        {
+                            _models = _adoTabConn.Visitor.Visit(this);
+                            succeeded = true;
+                        }
+                        finally
+                        {
+                            sw.Stop();
+                            Log.Debug("{class} {method} Model discovery end: CollectionId={CollectionId} ConnectionId={ConnectionId} OperationId={OperationId} ElapsedMs={ElapsedMs} Succeeded={Succeeded} ThreadId={ThreadId}",
+                                nameof(ADOTabularModelCollection), nameof(InternalModelCollection), _diagnosticId, connectionId, operationId, sw.ElapsedMilliseconds, succeeded, System.Threading.Thread.CurrentThread.ManagedThreadId);
+                        }
+                    }
+                    return _models;
                 }
-                return _models;
             }
         }
 
         public void Add(ADOTabularModel model)
         {
             if (model == null) throw new ArgumentNullException(nameof(model));
-            if (_models == null)
-                _models = new SortedDictionary<string, ADOTabularModel>();
-            _models.Add(model.Name, model);
+            lock (_modelsLock)
+            {
+                if (_models == null)
+                    _models = new SortedDictionary<string, ADOTabularModel>();
+                _models.Add(model.Name, model);
+            }
         }
 
         public ADOTabularDatabase Database { get; }
@@ -91,7 +111,7 @@ namespace ADOTabular
             return GetEnumerator(); 
         }
 
-        private SortedDictionary<string,ADOTabularModel> _models;  
+        private volatile SortedDictionary<string,ADOTabularModel> _models;
 
         public IEnumerator<ADOTabularModel> GetEnumerator()
         {
@@ -104,7 +124,10 @@ namespace ADOTabular
 
         public void Clear()
         {
-            InternalModelCollection.Clear();
+            lock (_modelsLock)
+            {
+                InternalModelCollection.Clear();
+            }
             //throw new NotImplementedException();
         }
     }

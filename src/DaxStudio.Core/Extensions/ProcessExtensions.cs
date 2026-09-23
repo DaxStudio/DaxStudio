@@ -266,7 +266,7 @@ namespace DaxStudio.Core.Extensions
             }
             catch (Exception ex)
             {
-                Log.Verbose(ex, "{class} {method} {message}", nameof(ProcessExtensions), nameof(TryGetStartTime), $"Could not read the start time of process {process.Id}: {ex.Message}");
+                Log.Verbose(ex, "{class} {method} {message}", nameof(ProcessExtensions), nameof(TryGetStartTime), $"Could not read the start time of process {process.Id}");
                 return null;
             }
         }

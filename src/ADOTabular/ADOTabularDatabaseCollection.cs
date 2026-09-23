@@ -48,36 +48,47 @@ namespace ADOTabular
     {
         private DataSet _dsDatabases;
         private readonly ADOTabularConnection _adoTabConn;
+        private readonly Func<string, AdomdRestrictionCollection, DataSet> _getSchemaDataSet;
         public ADOTabularDatabaseCollection(ADOTabularConnection adoTabConn)
+            : this(adoTabConn, (schema, restrictions) => adoTabConn.GetSchemaDataSet(schema, restrictions))
         {
-            _adoTabConn = adoTabConn;
-            
         }
 
-        private DataTable GetDatabaseTable()
+        internal ADOTabularDatabaseCollection(ADOTabularConnection adoTabConn,
+            Func<string, AdomdRestrictionCollection, DataSet> getSchemaDataSet)
         {
-            if (_dsDatabases == null )
-            {
-                if (_adoTabConn.ServerType == Enums.ServerType.Offline)
-                {
-                    var dt = new DataTable();
-                    dt.Columns.Add("CATALOG_NAME", typeof(string));
-                    dt.Columns.Add("DATE_MODIFIED", typeof(string));
-                    dt.Rows.Add((_adoTabConn.Database.Name));
-                    _dsDatabases = new DataSet();
-                    _dsDatabases.Tables.Add(dt);
-                }
-                else
-                {
-                    _dsDatabases = _adoTabConn.GetSchemaDataSet("DBSCHEMA_CATALOGS");
-                    
-                }
-                _dsDatabases.Tables[0].PrimaryKey = new[] {
-                    _dsDatabases.Tables[0].Columns["CATALOG_NAME"]
-                };
-            }
+            _adoTabConn = adoTabConn;
+            _getSchemaDataSet = getSchemaDataSet;
+        }
 
-            return _dsDatabases.Tables[0];
+        private DataTable GetDatabaseTable(bool refresh = false)
+        {
+            lock (_getDatabaseLock)
+            {
+                if (_dsDatabases == null || refresh)
+                {
+                    DataSet databases;
+                    if (_adoTabConn.ServerType == Enums.ServerType.Offline)
+                    {
+                        var dt = new DataTable();
+                        dt.Columns.Add("CATALOG_NAME", typeof(string));
+                        dt.Columns.Add("DATE_MODIFIED", typeof(string));
+                        dt.Rows.Add((_adoTabConn.Database.Name));
+                        databases = new DataSet();
+                        databases.Tables.Add(dt);
+                    }
+                    else
+                    {
+                        databases = _getSchemaDataSet("DBSCHEMA_CATALOGS", null);
+                    }
+                    databases.Tables[0].PrimaryKey = new[] {
+                        databases.Tables[0].Columns["CATALOG_NAME"]
+                    };
+                    _dsDatabases = databases;
+                }
+
+                return _dsDatabases.Tables[0];
+            }
         }
 
 
@@ -110,7 +121,7 @@ namespace ADOTabular
                 if (spid != -1)
                 {
                     tmpDatabaseDict = GetDatabaseDictionaryFromXml();
-                    var tmpDatabaseDmvDict = GetDatabaseDictionaryFromDMV();
+                    var tmpDatabaseDmvDict = GetDatabaseDictionaryFromDMV(refresh);
                     foreach (var db in tmpDatabaseDict.Values)
                     {
                         db.CompatibilityLevel = tmpDatabaseDmvDict[db.Name].CompatibilityLevel;
@@ -120,7 +131,7 @@ namespace ADOTabular
                     }
                 }
                 else
-                    tmpDatabaseDict = GetDatabaseDictionaryFromDMV();
+                    tmpDatabaseDict = GetDatabaseDictionaryFromDMV(refresh);
 
                 if (_databaseDictionary == null) _databaseDictionary = tmpDatabaseDict;
                 else MergeDatabaseDictionaries(tmpDatabaseDict);
@@ -158,11 +169,10 @@ namespace ADOTabular
             }
         }
 
-        private IDictionary<string, DatabaseDetails> GetDatabaseDictionaryFromDMV()
+        private IDictionary<string, DatabaseDetails> GetDatabaseDictionaryFromDMV(bool refresh)
         {
             var databaseDictionary = new SortedDictionary<string, DatabaseDetails>(StringComparer.OrdinalIgnoreCase);
-            var ds = _adoTabConn.GetSchemaDataSet("DBSCHEMA_CATALOGS", null);
-            foreach( DataRow row in ds.Tables[0].Rows)
+            foreach( DataRow row in GetDatabaseTable(refresh).Rows)
             {
                 databaseDictionary.Add(row["CATALOG_NAME"].ToString(), new DatabaseDetails(
                     row["CATALOG_NAME"].ToString(),
@@ -184,7 +194,7 @@ namespace ADOTabular
             
             var databaseDictionary = new SortedDictionary<string, DatabaseDetails>(StringComparer.OrdinalIgnoreCase);
 
-            var ds = _adoTabConn.GetSchemaDataSet("DISCOVER_XML_METADATA",
+            var ds = _getSchemaDataSet("DISCOVER_XML_METADATA",
                                                  new AdomdRestrictionCollection
                                                      {
                                                          new AdomdRestriction("ObjectExpansion", "ExpandObject")

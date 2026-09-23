@@ -1499,17 +1499,16 @@ namespace DaxStudio.UI.ViewModels
         public ConnectionManager Connection { get; }
         DaxStudio.Core.Connections.ConnectionManager IQueryRunner.Connection => Connection;
 
-        private async Task UpdateConnectionsAsync(ConnectEvent message)
+        private async Task<bool> UpdateConnectionsAsync(ConnectEvent message, IStatusBarMessage status)
         {
             _logger.Info("In UpdateConnections");
             OutputPane.AddInformation("Establishing Connection");
             Log.Debug("{Class} {Event} {Connection}", "DocumentViewModel", "UpdateConnections", message?.ConnectionString ?? "<null>");
 
-            using (NewStatusBarMessage("Refreshing Metadata..."))
             {
                 try
                 {
-                    if (message == null) return;
+                    if (message == null) return false;
                     MetadataPane.SetBusy(true);
 
                     await Task.Run(async () =>
@@ -1517,9 +1516,14 @@ namespace DaxStudio.UI.ViewModels
 
                         Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(UpdateConnectionsAsync), "Starting Connect");
 
-                        await Connection.ConnectAsync(message, this.UniqueID);
+                        await Connection.ConnectAsync(message, this.UniqueID,
+                            Options.ShowDatabaseDialogOnConnect
+                                ? new Func<ADOTabularDatabaseCollection, Task<string>>(databases => SelectConnectionDatabaseAsync(databases, status))
+                                : null,
+                            status);
                         Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(UpdateConnectionsAsync), "Finished Connect");
 
+                        status.Update("Configuring editor and traces...");
                         UpdateViewAsDescription(message.ConnectionString);
 
                         NotifyOfPropertyChange(() => IsAdminConnection);
@@ -1575,6 +1579,12 @@ namespace DaxStudio.UI.ViewModels
 
                     });
                 }
+                catch (OperationCanceledException)
+                {
+                    await _eventAggregator.PublishAsync(new ConnectFailedEvent());
+                    MetadataPane.SetBusy(false);
+                    return false;
+                }
                 catch (Exception ex)
                 {
                     await _eventAggregator.PublishAsync(new ConnectFailedEvent());
@@ -1598,7 +1608,7 @@ namespace DaxStudio.UI.ViewModels
 
                     // if there was an error we bail out here
                     MetadataPane.SetBusy(false);
-                    return;
+                    return false;
                 }
             }
             if (Connection.Databases.Count == 0)
@@ -1612,6 +1622,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 OutputMessage("Connected");
             }
+            return true;
         }
 
         private void UpdateViewAsDescription(string connectionString)
@@ -4939,14 +4950,15 @@ namespace DaxStudio.UI.ViewModels
             {
                 using (var msg = NewStatusBarMessage("Connecting..."))
                 {
-                    await Task.Run(async () =>
+                    var connected = await Task.Run(async () =>
                         {
                             if (message.RefreshDatabases) await RefreshConnectionFilenameAsync(message);
 
-                            await SetupConnectionAsync(message);
+                            return await SetupConnectionAsync(message, msg);
 
                         }, cancellationToken);
 
+                    if (!connected) return;
 
                     var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
                     await _eventAggregator.PublishAsync(new DocumentConnectionUpdateEvent(Connection, Databases, activeTrace), cancellationToken);//,IsPowerPivotConnection));
@@ -5031,11 +5043,33 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private async Task SetupConnectionAsync(ConnectEvent message) //, ADOTabularConnection cnn)
+        private async Task<string> SelectConnectionDatabaseAsync(ADOTabularDatabaseCollection databases, IStatusBarMessage status)
+        {
+            status.Update("Waiting for database selection...");
+            Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(SetupConnectionAsync), "Start Showing Database Dialog");
+            try
+            {
+                return await await Application.Current.Dispatcher.InvokeAsync(async () =>
+                {
+                    var dialog = new DatabaseDialogViewModel(databases);
+                    await _windowManager.ShowDialogBoxAsync(dialog);
+                    return dialog.Result == System.Windows.Forms.DialogResult.OK
+                        ? dialog.SelectedDatabase?.Name
+                        : null;
+                });
+            }
+            finally
+            {
+                Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(SetupConnectionAsync), "End Showing Database Dialog");
+            }
+        }
+
+        private async Task<bool> SetupConnectionAsync(ConnectEvent message, IStatusBarMessage status)
         {
             Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(SetupConnectionAsync), "Starting");
 
-            await UpdateConnectionsAsync(message);
+            if (!await UpdateConnectionsAsync(message, status)) return false;
+            status.Update("Loading model metadata...");
 
             Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(SetupConnectionAsync), "Notifying of Property Changes");
             NotifyOfPropertyChange(() => IsConnected);
@@ -5073,53 +5107,6 @@ namespace DaxStudio.UI.ViewModels
                         ServerVersion = Connection.ServerVersion;
                     }
 
-                    // Determine the correct database BEFORE publishing ConnectionChangedEvent
-                    // so that metadata loads for the database the user actually wants
-                    string selectedDatabaseName = message.DatabaseName;
-
-                    if (string.IsNullOrEmpty(selectedDatabaseName)
-                        && Connection.Databases.Count > 1
-                        && Options.ShowDatabaseDialogOnConnect)
-                    {
-                        Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(SetupConnectionAsync), "Start Showing Database Dialog");
-                        try
-                        {
-                            // The DatabaseDialogViewModel constructor creates a CollectionView via
-                            // CollectionViewSource.GetDefaultView(...). A CollectionView takes on the
-                            // Dispatcher affinity of the thread that creates it, so it MUST be created on
-                            // the UI thread. SetupConnectionAsync can resume on a thread-pool thread after
-                            // its 'await Task.Run(...)' calls, so construct the dialog inside the UI
-                            // Dispatcher to guarantee the view is bound to the UI thread.
-                            DatabaseDialogViewModel dialog = null;
-                            await Application.Current.Dispatcher.InvokeAsync(async () =>
-                            {
-                                dialog = new DatabaseDialogViewModel(Connection.Databases);
-                                await _windowManager.ShowDialogBoxAsync(dialog);
-                            });
-
-                            if (dialog.Result == System.Windows.Forms.DialogResult.OK && dialog.SelectedDatabase != null)
-                            {
-                                selectedDatabaseName = dialog.SelectedDatabase.Name;
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            await _eventAggregator.PublishAsync(new ConnectFailedEvent());
-                            var msg = $"The following error occurred while setting the active database: {ex.Message}";
-                            Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(SetupConnectionAsync), msg);
-                            OutputError(msg);
-                            ActivateOutput();
-                        }
-                        Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(SetupConnectionAsync), "End Showing Database Dialog");
-                    }
-
-                    // Switch connections to the selected database before metadata loads
-                    if (!string.IsNullOrEmpty(selectedDatabaseName))
-                    {
-                        // SetSelectedDatabase reads the Connection.Database getter which can run the
-                        // DBSCHEMA_CATALOGS DMV, so run it on a background thread to avoid blocking the UI.
-                        await Task.Run(() => Connection.SetSelectedDatabase(selectedDatabaseName));
-                    }
                 }
             }
 
@@ -5144,7 +5131,10 @@ namespace DaxStudio.UI.ViewModels
                 }
             }
 
+            await MetadataPane.WaitForMetadataLoadAsync();
+
             Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(SetupConnectionAsync), "Finished");
+            return true;
         }
 
 

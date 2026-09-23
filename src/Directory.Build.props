@@ -15,7 +15,7 @@
     <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
     <GenerateAssemblyTrademarkAttribute>false</GenerateAssemblyTrademarkAttribute>
     <GenerateNeutralResourcesLanguageAttribute>false</GenerateNeutralResourcesLanguageAttribute>
-    <Copyright>Copyright © $([System.DateTime]::UtcNow.Year) DAX Studio ($([System.DateTime]::UtcNow.ToString("s")))</Copyright>
+    <Copyright>Copyright © $([System.DateTime]::UtcNow.Year) DAX Studio</Copyright>
     <LangVersion>8.0</LangVersion>
     <DefineConstants Condition="'$(PreviewBuild)' == 'true'">$(DefineConstants);PREVIEW</DefineConstants>
     <Deterministic>true</Deterministic>

@@ -93,7 +93,9 @@ namespace DaxStudio.Tests
             var clearCaches = typeof(ConnectionManager).GetMethod("ClearConnectionCaches", BindingFlags.Instance | BindingFlags.NonPublic);
             Assert.IsNotNull(clearCaches, "the ClearConnectionCaches method could not be found");
 
-            var cachedFields = new[] { "_supportedTraceEventClasses", "_dynamicManagementViews", "_functionGroups" };
+            var cachedFields = new[] { "_supportedTraceEventClasses", "_userDefinedFunctions",
+                "_languageMetadataConnection", "_languageKeywords", "_languageFunctionGroups",
+                "_serverPropertiesConnection", "_serverProperties" };
             foreach (var fieldName in cachedFields)
             {
                 var field = typeof(ConnectionManager).GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
