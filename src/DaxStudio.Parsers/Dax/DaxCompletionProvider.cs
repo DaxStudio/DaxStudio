@@ -33,7 +33,7 @@ namespace DaxStudio.Parsers.Dax
 
                 case Metadata.EditState.PartialColumn:
                 case Metadata.EditState.PartialMeasure:
-                    return GetColumnAndMeasureCompletions(state.CurrentTable, state.PartialText);
+                    return GetColumnAndMeasureCompletions(state);
 
                 case Metadata.EditState.FunctionArgument:
                 case Metadata.EditState.NextArgument:
@@ -140,14 +140,15 @@ namespace DaxStudio.Parsers.Dax
             return items;
         }
 
-        private IReadOnlyList<CompletionItem> GetColumnAndMeasureCompletions(string tableName, string partialText)
+        private IReadOnlyList<CompletionItem> GetColumnAndMeasureCompletions(Metadata.DaxState state)
         {
             var items = new List<CompletionItem>();
             // Strip quotes from table name and brackets from partial text
-            var cleanTable = tableName?.Trim('\'');
-            var cleanPartial = partialText?.TrimStart('[');
+            var cleanTable = state.CurrentTable?.Trim('\'');
+            var cleanPartial = state.PartialText?.TrimStart('[');
 
-            // Qualified reference (Table[...]) — only that table's columns are valid in this context.
+            // Qualified reference (Table[...]) — include that table's columns and any query-scoped
+            // measures declared on the same table.
             if (!string.IsNullOrEmpty(cleanTable))
             {
                 var columns = _metadata.GetColumns(cleanTable);
@@ -160,6 +161,25 @@ namespace DaxStudio.Parsers.Dax
                             CompletionItemKind.Column,
                             $"{col.DataType} - {col.Description}",
                             $"[{col.Name}]"));
+                    }
+                }
+
+                if (state.DefinedMeasures != null && state.DefinedMeasureTables != null)
+                {
+                    foreach (var measureName in state.DefinedMeasures)
+                    {
+                        if (!state.DefinedMeasureTables.TryGetValue(measureName, out var measureTable)
+                            || !string.Equals(measureTable, cleanTable, StringComparison.OrdinalIgnoreCase)
+                            || (cleanPartial != null && !measureName.StartsWith(cleanPartial, StringComparison.OrdinalIgnoreCase)))
+                        {
+                            continue;
+                        }
+
+                        items.Add(new CompletionItem(
+                            measureName,
+                            CompletionItemKind.Measure,
+                            "Defined measure",
+                            $"[{measureName}]"));
                     }
                 }
                 return items;
@@ -176,6 +196,25 @@ namespace DaxStudio.Parsers.Dax
                         CompletionItemKind.Measure,
                         m.Description,
                         $"[{m.Name}]"));
+                }
+            }
+
+            if (state.DefinedMeasures != null)
+            {
+                var existingMeasureNames = new HashSet<string>(
+                    items.Where(i => i.Kind == CompletionItemKind.Measure).Select(i => i.Label),
+                    StringComparer.OrdinalIgnoreCase);
+                foreach (var measureName in state.DefinedMeasures)
+                {
+                    if ((cleanPartial == null || measureName.StartsWith(cleanPartial, StringComparison.OrdinalIgnoreCase))
+                        && existingMeasureNames.Add(measureName))
+                    {
+                        items.Add(new CompletionItem(
+                            measureName,
+                            CompletionItemKind.Measure,
+                            "Defined measure",
+                            $"[{measureName}]"));
+                    }
                 }
             }
 

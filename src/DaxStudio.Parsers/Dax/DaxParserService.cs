@@ -154,12 +154,25 @@ namespace DaxStudio.Parsers.Dax
         /// </summary>
         public IReadOnlyList<FoldRange> GetFoldings(string input)
         {
-            var result = Parse(input);
-            if (result.Tree == null) return new List<FoldRange>();
+            var foldings = new List<FoldRange>();
+            foreach (var chunk in DaxStructuralChunker.GetChunks(input))
+            {
+                if (string.IsNullOrWhiteSpace(chunk.Text)) continue;
 
-            var collector = new FoldingCollector();
-            Antlr4.Runtime.Tree.ParseTreeWalker.Default.Walk(collector, result.Tree);
-            return collector.Foldings;
+                var result = Parse(chunk.Text);
+                if (result.Tree == null) continue;
+
+                var collector = new FoldingCollector();
+                Antlr4.Runtime.Tree.ParseTreeWalker.Default.Walk(collector, result.Tree);
+                foreach (var folding in collector.Foldings)
+                {
+                    foldings.Add(new FoldRange(
+                        folding.StartOffset + chunk.StartOffset,
+                        folding.EndOffset + chunk.StartOffset,
+                        folding.Kind));
+                }
+            }
+            return foldings;
         }
 
         /// <summary>

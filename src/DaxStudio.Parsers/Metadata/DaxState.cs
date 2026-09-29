@@ -98,6 +98,9 @@ namespace DaxStudio.Parsers.Metadata
         /// <summary>In-scope DEFINE measures at the cursor position.</summary>
         public IReadOnlyList<string> DefinedMeasures { get; set; }
 
+        /// <summary>Owning table for each in-scope DEFINE measure, keyed by measure name.</summary>
+        public IReadOnlyDictionary<string, string> DefinedMeasureTables { get; set; }
+
         /// <summary>In-scope DEFINE FUNCTION names (with parameters) at the cursor position.</summary>
         public IReadOnlyList<DefinedFunctionInfo> DefinedFunctions { get; set; }
 
@@ -110,6 +113,7 @@ namespace DaxStudio.Parsers.Metadata
             ArgumentIndex = -1;
             Variables = new List<string>();
             DefinedMeasures = new List<string>();
+            DefinedMeasureTables = new Dictionary<string, string>();
             DefinedFunctions = new List<DefinedFunctionInfo>();
         }
 
@@ -123,6 +127,7 @@ namespace DaxStudio.Parsers.Metadata
             PartialText = partialText;
             Variables = new List<string>();
             DefinedMeasures = new List<string>();
+            DefinedMeasureTables = new Dictionary<string, string>();
             DefinedFunctions = new List<DefinedFunctionInfo>();
         }
     }

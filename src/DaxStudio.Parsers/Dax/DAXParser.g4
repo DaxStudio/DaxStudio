@@ -23,7 +23,7 @@ definition
     ;
 
 measureDefinition
-    : MEASURE tableRef COLUMN_OR_MEASURE EQUALS expression
+    : MEASURE definitionTableRef COLUMN_OR_MEASURE EQUALS expression
     ;
 
 variableDefinition
@@ -35,7 +35,13 @@ tableDefinition
     ;
 
 columnDefinition
-    : COLUMN_KW tableRef COLUMN_OR_MEASURE EQUALS expression
+    : COLUMN_KW definitionTableRef COLUMN_OR_MEASURE EQUALS expression
+    ;
+
+definitionTableRef
+    : tableRef
+    | identifierOrKeyword
+    | builtInFunction
     ;
 
 functionDefinition

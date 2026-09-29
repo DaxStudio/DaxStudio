@@ -3,6 +3,7 @@ using Antlr4.Runtime.Tree;
 using DaxStudio.Parsers.Dax;
 using DaxStudio.Parsers.Dax;
 using DaxStudio.Parsers.CommentScript;
+using DaxStudio.Parsers.PreProcessor;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
@@ -908,6 +909,21 @@ namespace DaxStudio.Parsers.Tests.CommentScript
 
             Assert.IsFalse(result.HasCommandErrors);
             Assert.IsNull(result.Batches[0].DelayAfterMilliseconds);
+        }
+
+        [TestMethod]
+        public void GoSegments_PreserveTextAndSourceOffsets()
+        {
+            var input = "EVALUATE { 1 }\r\n--> GO DELAY 2s\r\nDEFINE\r\nVAR x = 1\r\nEVALUATE { x }";
+            var segments = AntlrPreProcessor.SplitOnGo(input);
+
+            Assert.AreEqual(2, segments.Count);
+            Assert.AreEqual("EVALUATE { 1 }\r", segments[0].Text);
+            Assert.AreEqual(0, segments[0].StartOffset);
+            Assert.AreEqual(input.IndexOf("--> GO", StringComparison.Ordinal), segments[0].EndOffset);
+            Assert.AreEqual(input.IndexOf("DEFINE", StringComparison.Ordinal), segments[1].StartOffset);
+            Assert.AreEqual(input.Length, segments[1].EndOffset);
+            StringAssert.StartsWith(segments[1].Text, "DEFINE");
         }
 
         [TestMethod]

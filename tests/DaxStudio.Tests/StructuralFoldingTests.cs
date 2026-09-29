@@ -178,5 +178,36 @@ namespace DaxStudio.Tests
 
             Assert.IsNotNull(foldings);
         }
+
+        [TestMethod]
+        public void GoSeparatedDefineQueryProducesStructuralFolds()
+        {
+            var doc = Doc(
+                "DEFINE",
+                "    MEASURE T[First] =",
+                "        1",
+                "EVALUATE",
+                "    { [First] }",
+                "--> GO",
+                "DEFINE",
+                "    MEASURE T[Second] =",
+                "        2",
+                "EVALUATE",
+                "    SUMMARIZECOLUMNS(",
+                "        \"Value\", [Second]",
+                "    )");
+            var foldings = new StructuralFoldingStrategy().CreateNewFoldings(doc).ToList();
+
+            var secondDefineLine = doc.GetLineByNumber(7);
+            var secondMeasureLine = doc.GetLineByNumber(8);
+            var secondEvaluateLine = doc.GetLineByNumber(10);
+
+            Assert.IsTrue(foldings.Any(f => f.StartOffset == secondDefineLine.EndOffset),
+                "The second DEFINE should start a fold");
+            Assert.IsTrue(foldings.Any(f => f.StartOffset == secondMeasureLine.EndOffset),
+                "The second batch's measure should start a fold");
+            Assert.IsTrue(foldings.Any(f => f.StartOffset == secondEvaluateLine.EndOffset),
+                "The second batch's EVALUATE should start a fold");
+        }
     }
 }

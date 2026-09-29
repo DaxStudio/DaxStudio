@@ -9,6 +9,20 @@ using System.Linq;
 
 namespace DaxStudio.Parsers.PreProcessor
 {
+    internal struct SourceTextSegment
+    {
+        public int StartOffset { get; }
+        public int EndOffset { get; }
+        public string Text { get; }
+
+        public SourceTextSegment(int startOffset, int endOffset, string text)
+        {
+            StartOffset = startOffset;
+            EndOffset = endOffset;
+            Text = text ?? string.Empty;
+        }
+    }
+
     /// <summary>
     /// Result of running the ANTLR based pre-processor over a query body.
     /// </summary>
@@ -136,34 +150,42 @@ namespace DaxStudio.Parsers.PreProcessor
             var segments = SplitOnGo(text ?? string.Empty);
             for (int i = 0; i < batches.Count; i++)
             {
-                var segment = i < segments.Count ? segments[i] : string.Empty;
+                var segment = i < segments.Count ? segments[i].Text : string.Empty;
                 batches[i].QueryText = StripCommentScriptLines(segment);
             }
         }
 
-        // Splits text into segments delimited by GO lines, including GO DELAY boundaries.
-        // The GO lines themselves are dropped.
-        private static List<string> SplitOnGo(string text)
+        // Splits text into source segments delimited by GO lines, including GO DELAY boundaries.
+        // Text preserves the existing preprocessor output, while offsets identify each segment in
+        // the original document for structural consumers.
+        internal static IReadOnlyList<SourceTextSegment> SplitOnGo(string text)
         {
-            var segments = new List<string>();
+            text = text ?? string.Empty;
+            var segments = new List<SourceTextSegment>();
             var current = new List<string>();
-            foreach (var line in text.Split('\n'))
+            var segmentStart = 0;
+            var lineStart = 0;
+            var lines = text.Split('\n');
+            for (int i = 0; i < lines.Length; i++)
             {
+                var line = lines[i];
                 if (IsGoLine(line))
                 {
-                    segments.Add(string.Join("\n", current));
+                    segments.Add(new SourceTextSegment(segmentStart, lineStart, string.Join("\n", current)));
                     current.Clear();
+                    segmentStart = lineStart + line.Length + (i < lines.Length - 1 ? 1 : 0);
                 }
                 else
                 {
                     current.Add(line);
                 }
+                lineStart += line.Length + (i < lines.Length - 1 ? 1 : 0);
             }
-            segments.Add(string.Join("\n", current));
+            segments.Add(new SourceTextSegment(segmentStart, text.Length, string.Join("\n", current)));
             return segments;
         }
 
-        private static bool IsGoLine(string line)
+        internal static bool IsGoLine(string line)
         {
             var trimmed = line.Trim();
             if (!trimmed.StartsWith("-->")) return false;

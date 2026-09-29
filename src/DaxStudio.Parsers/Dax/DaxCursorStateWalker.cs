@@ -20,6 +20,8 @@ namespace DaxStudio.Parsers.Dax
         // DEFINE-level variables (always in scope after declaration)
         private readonly List<string> _defineVariables = new List<string>();
         private readonly List<string> _definedMeasures = new List<string>();
+        private readonly Dictionary<string, string> _definedMeasureTables =
+            new Dictionary<string, string>(System.StringComparer.OrdinalIgnoreCase);
         private readonly List<Metadata.DefinedFunctionInfo> _definedFunctions = new List<Metadata.DefinedFunctionInfo>();
 
         // Scope stack for VAR/RETURN blocks — each entry is variables declared in that scope
@@ -84,6 +86,18 @@ namespace DaxStudio.Parsers.Dax
                 {
                     walker._result.Variables = walker._cursorScopeVariables;
                 }
+                if ((walker._result.DefinedMeasures == null || walker._result.DefinedMeasures.Count == 0)
+                    && walker._definedMeasures.Count > 0)
+                {
+                    walker._result.DefinedMeasures = walker._definedMeasures.ToList();
+                    walker._result.DefinedMeasureTables =
+                        new Dictionary<string, string>(walker._definedMeasureTables, System.StringComparer.OrdinalIgnoreCase);
+                }
+                if ((walker._result.DefinedFunctions == null || walker._result.DefinedFunctions.Count == 0)
+                    && walker._definedFunctions.Count > 0)
+                {
+                    walker._result.DefinedFunctions = walker._definedFunctions.ToList();
+                }
                 return walker.RefinePartialReference(walker._result);
             }
 
@@ -96,6 +110,8 @@ namespace DaxStudio.Parsers.Dax
                 fallbackState.Variables = walker._cursorScopeVariables ?? new List<string>(walker._defineVariables);
             if (fallbackState.DefinedMeasures == null || fallbackState.DefinedMeasures.Count == 0)
                 fallbackState.DefinedMeasures = walker._definedMeasures.ToList();
+            if (fallbackState.DefinedMeasureTables == null || fallbackState.DefinedMeasureTables.Count == 0)
+                fallbackState.DefinedMeasureTables = new Dictionary<string, string>(walker._definedMeasureTables, System.StringComparer.OrdinalIgnoreCase);
             if (fallbackState.DefinedFunctions == null || fallbackState.DefinedFunctions.Count == 0)
                 fallbackState.DefinedFunctions = walker._definedFunctions.ToList();
             return fallbackState;
@@ -112,14 +128,12 @@ namespace DaxStudio.Parsers.Dax
 
         /// <summary>
         /// Returns the slice of the editor text that should be parsed to determine the completion
-        /// state at the cursor: the text from the start of the query containing the cursor up to the
-        /// cursor itself. A DAX query is "[DEFINE ...] EVALUATE ... [EVALUATE ...]*", and DEFINE must be
-        /// the first keyword, so every top-level DEFINE keyword starts a new query; the slice therefore
-        /// begins at the DEFINE at or before the cursor (or the start of the text when the cursor
-        /// precedes the first DEFINE). The slice always ends at the cursor so that text after the cursor
-        /// - which is frequently invalid while the user edits the middle of a query - is never parsed.
-        /// Comments and string literals are ignored because their "DEFINE" text is not tokenised as a
-        /// DEFINE keyword.
+        /// state at the cursor: the text from the last GO execution boundary or top-level DEFINE up to
+        /// the cursor itself. A GO command starts a new execution batch, and DEFINE starts a new query
+        /// within that batch. The slice always ends at the cursor so that text after the cursor - which
+        /// is frequently invalid while the user edits the middle of a query - is never parsed. Comments
+        /// and string literals are ignored because their "DEFINE" text is not tokenised as a DEFINE
+        /// keyword.
         /// </summary>
         internal static StatementChunk ExtractStatementChunk(string input, int cursorOffset)
         {
@@ -134,46 +148,20 @@ namespace DaxStudio.Parsers.Dax
             if (cursorOffset < 0) cursorOffset = 0;
             if (cursorOffset > input.Length) cursorOffset = input.Length;
 
-            var defineOffsets = new List<int>();
             try
             {
-                ICharStream chars = new DAXCharStream(input);
-                var lexer = new DAXLexer(chars);
-                lexer.RemoveErrorListeners();
-                var tokenStream = new CommonTokenStream(lexer);
-                tokenStream.Fill();
-                foreach (var token in tokenStream.GetTokens())
+                var chunk = DaxStructuralChunker.GetChunkAtCursor(input, cursorOffset);
+                return new StatementChunk
                 {
-                    if (token.Type == DAXLexer.Eof) break;
-                    if (token.Channel != 0) continue;
-                    if (token.Type == DAXLexer.DEFINE)
-                        defineOffsets.Add(token.StartIndex);
-                }
+                    Text = chunk.Text,
+                    CursorOffset = cursorOffset - chunk.StartOffset
+                };
             }
             catch
             {
                 // If lexing fails for any reason fall back to parsing the text up to the cursor.
                 return new StatementChunk { Text = input.Substring(0, cursorOffset), CursorOffset = cursorOffset };
             }
-
-            // Chunk starts at the last DEFINE at or before the cursor (0 if the cursor precedes them all).
-            // A DAX query is "[DEFINE ...] EVALUATE ...", and DEFINE must be the first keyword, so every
-            // top-level DEFINE keyword starts a new query. Comments and string literals are ignored
-            // because their "DEFINE" text is not tokenised as a DEFINE keyword.
-            int chunkStart = 0;
-            foreach (var offset in defineOffsets)
-            {
-                if (offset <= cursorOffset) chunkStart = offset;
-                else break;
-            }
-
-            // The chunk ends at the cursor. Because the cursor is at or before any later DEFINE, this
-            // also naturally excludes any following DEFINE-separated query.
-            return new StatementChunk
-            {
-                Text = input.Substring(chunkStart, cursorOffset - chunkStart),
-                CursorOffset = cursorOffset - chunkStart
-            };
         }
 
         private bool CursorIsWithin(ParserRuleContext ctx)
@@ -290,7 +278,10 @@ namespace DaxStudio.Parsers.Dax
         {
             if (ctx.COLUMN_OR_MEASURE() != null)
             {
-                _definedMeasures.Add(ctx.COLUMN_OR_MEASURE().GetText());
+                var measureName = ctx.COLUMN_OR_MEASURE().GetText();
+                _definedMeasures.Add(measureName);
+                if (ctx.definitionTableRef() != null)
+                    _definedMeasureTables[measureName] = ctx.definitionTableRef().GetText().Trim('\'');
             }
 
             ResetCursorScopeIfPastDefinition(ctx);
@@ -480,6 +471,7 @@ namespace DaxStudio.Parsers.Dax
             _result = new Metadata.DaxState(state);
             _result.Variables = GetInScopeVariables();
             _result.DefinedMeasures = _definedMeasures.ToList();
+            _result.DefinedMeasureTables = new Dictionary<string, string>(_definedMeasureTables, System.StringComparer.OrdinalIgnoreCase);
             _result.DefinedFunctions = _definedFunctions.ToList();
             _resolved = true;
         }
@@ -489,6 +481,7 @@ namespace DaxStudio.Parsers.Dax
             if (_resolved) return;
             state.Variables = GetInScopeVariables();
             state.DefinedMeasures = _definedMeasures.ToList();
+            state.DefinedMeasureTables = new Dictionary<string, string>(_definedMeasureTables, System.StringComparer.OrdinalIgnoreCase);
             state.DefinedFunctions = _definedFunctions.ToList();
             _result = state;
             _resolved = true;
@@ -537,7 +530,8 @@ namespace DaxStudio.Parsers.Dax
 
             if (token.Type == DAXLexer.PARTIAL_TABLE)
             {
-                return new Metadata.DaxState(Metadata.EditState.PartialTable, partialText: token.Text);
+                return CopyScope(state,
+                    new Metadata.DaxState(Metadata.EditState.PartialTable, partialText: token.Text));
             }
 
             if (token.Type == DAXLexer.PARTIAL_COLUMN_OR_MEASURE)
@@ -546,10 +540,19 @@ namespace DaxStudio.Parsers.Dax
                 var precedingTable = FindPrecedingTableRef(_tokenStream.GetTokens(), token);
                 var pcState = new Metadata.DaxState(Metadata.EditState.PartialColumn, partialText: token.Text);
                 pcState.CurrentTable = precedingTable;
-                return pcState;
+                return CopyScope(state, pcState);
             }
 
             return state;
+        }
+
+        private static Metadata.DaxState CopyScope(Metadata.DaxState source, Metadata.DaxState target)
+        {
+            target.Variables = source.Variables;
+            target.DefinedMeasures = source.DefinedMeasures;
+            target.DefinedMeasureTables = source.DefinedMeasureTables;
+            target.DefinedFunctions = source.DefinedFunctions;
+            return target;
         }
 
         // Returns the default-channel token that contains the cursor, or the last token before it.

@@ -1097,6 +1097,90 @@ ORDER BY 'Sales'[Amount] DESC";
                 "Measure defined in the cursor's statement should be offered even when a separate EVALUATE precedes it");
         }
 
+        [TestMethod]
+        public void Chunk_AfterGoExcludesEarlierBatch()
+        {
+            var doc = "DEFINE\r\nVAR earlier = 1\r\nEVALUATE { earlier }\r\n--> GO\r\nEVALUATE { ";
+            var chunk = DaxCursorStateWalker.ExtractStatementChunk(doc, doc.Length);
+
+            Assert.AreEqual("EVALUATE { ", chunk.Text);
+            Assert.IsFalse(chunk.Text.Contains("earlier"), "Definitions from before GO must not cross the batch boundary");
+            Assert.AreEqual(chunk.Text.Length, chunk.CursorOffset);
+        }
+
+        [TestMethod]
+        public void CursorState_AfterGoDoesNotSeeEarlierVariable()
+        {
+            var doc = "DEFINE\r\nVAR earlier = 1\r\nEVALUATE { earlier }\r\n--> GO DELAY 1s\r\nEVALUATE { ";
+            var state = DaxCursorStateWalker.GetStateAtCursor(doc, doc.Length);
+
+            Assert.IsFalse(state.Variables.Contains("earlier"),
+                "Query-scoped variables from an earlier execution batch must not be visible");
+        }
+
+        [TestMethod]
+        public void CursorState_QualifiedPartialReferenceTracksDefinedMeasureTable()
+        {
+            var doc =
+                "DEFINE\r\n" +
+                "MEASURE Trip[Fare Direct] = 1\r\n" +
+                "MEASURE Trip[Slow - Fare Via Context Transition] = [Fare Direct] * 1.1\r\n" +
+                "EVALUATE ROW(\"Increased fare\", 'Trip'[s";
+            var state = DaxCursorStateWalker.GetStateAtCursor(doc, doc.Length);
+
+            Assert.AreEqual(EditState.PartialColumn, state.State);
+            Assert.AreEqual("Trip", state.CurrentTable);
+            CollectionAssert.Contains(state.DefinedMeasures.ToList(), "Slow - Fare Via Context Transition");
+            Assert.AreEqual("Trip", state.DefinedMeasureTables["Slow - Fare Via Context Transition"]);
+        }
+
+        [TestMethod]
+        public void CursorState_UnqualifiedPartialReferenceRetainsDefinedMeasures()
+        {
+            var doc =
+                "DEFINE\r\n" +
+                "MEASURE Trip[Fare Direct] = 1\r\n" +
+                "MEASURE Trip[Slow - Fare Via Context Transition] = [Fare Direct] * 1.1\r\n" +
+                "EVALUATE ROW(\"Increased fare\", [s";
+            var state = DaxCursorStateWalker.GetStateAtCursor(doc, doc.Length);
+
+            Assert.AreEqual(EditState.PartialColumn, state.State);
+            Assert.IsNull(state.CurrentTable);
+            CollectionAssert.Contains(state.DefinedMeasures.ToList(), "Slow - Fare Via Context Transition");
+        }
+
+        [TestMethod]
+        public void StructuralChunks_IgnoreDefineInCommentsAndStrings()
+        {
+            var doc = "EVALUATE ROW(\"DEFINE\", 1)\r\n// DEFINE\r\nDEFINE\r\nVAR current = 1\r\nEVALUATE { current }";
+            var chunks = DaxStructuralChunker.GetChunks(doc);
+
+            Assert.AreEqual(2, chunks.Count);
+            StringAssert.StartsWith(chunks[1].Text, "DEFINE");
+        }
+
+        [TestMethod]
+        public void Foldings_IncludeSecondDefineWithAndWithoutGo()
+        {
+            const string firstQuery = "DEFINE\r\nMEASURE T[First] =\r\n    1\r\nEVALUATE\r\n    { [First] }\r\n";
+            const string secondQuery = "DEFINE\r\nMEASURE T[Second] =\r\n    2\r\nEVALUATE\r\n    { [Second] }";
+            var service = new DaxParserService(null);
+
+            foreach (var separator in new[] { string.Empty, "--> GO\r\n" })
+            {
+                var doc = firstQuery + separator + secondQuery;
+                var secondDefine = doc.LastIndexOf("DEFINE", System.StringComparison.Ordinal);
+                var foldings = service.GetFoldings(doc);
+
+                Assert.IsTrue(foldings.Any(f => f.Kind == "Define" && f.StartOffset == secondDefine),
+                    $"Expected a DEFINE folding after separator '{separator}'");
+                Assert.IsTrue(foldings.Any(f => f.Kind == "Measure" && f.StartOffset > secondDefine),
+                    "Expected the second batch's measure folding");
+                Assert.IsTrue(foldings.Any(f => f.Kind == "Evaluate" && f.StartOffset > secondDefine),
+                    "Expected the second batch's EVALUATE folding");
+            }
+        }
+
         #endregion
     }
 }

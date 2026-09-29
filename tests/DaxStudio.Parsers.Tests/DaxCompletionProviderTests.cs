@@ -11,7 +11,7 @@ namespace DaxStudio.Parsers.Tests
 {
     /// <summary>
     /// Unit tests for <see cref="DaxCompletionProvider"/> covering keyword completions, table-name
-    /// quoting and the "only columns for a qualified table reference" behaviour.
+    /// quoting and qualified table reference behaviour.
     /// </summary>
     [TestClass]
     public class DaxCompletionProviderQuotingTests
@@ -203,6 +203,26 @@ namespace DaxStudio.Parsers.Tests
         }
 
         [TestMethod]
+        public void QualifiedPartialColumn_IncludesDefinedMeasureForThatTable()
+        {
+            var state = new DaxState(EditState.PartialColumn, currentTable: "'Sales'", partialText: "[Que")
+            {
+                DefinedMeasures = new[] { "Query Sales", "Query Inventory" },
+                DefinedMeasureTables = new Dictionary<string, string>
+                {
+                    ["Query Sales"] = "Sales",
+                    ["Query Inventory"] = "Inventory"
+                }
+            };
+            var completions = _provider.GetCompletions(state);
+
+            Assert.Contains(c => c.Kind == CompletionItemKind.Measure
+                && c.Label == "Query Sales"
+                && c.InsertText == "[Query Sales]", completions);
+            Assert.IsFalse(completions.Any(c => c.Label == "Query Inventory"));
+        }
+
+        [TestMethod]
         public void UnqualifiedColumnReference_ReturnsMeasures()
         {
             // [  (no preceding table) -> measures
@@ -210,6 +230,58 @@ namespace DaxStudio.Parsers.Tests
             var completions = _provider.GetCompletions(state);
 
             Assert.Contains(c => c.Kind == CompletionItemKind.Measure && c.InsertText == "[Total Sales]" && c.Label == "Total Sales", completions);
+        }
+
+        [TestMethod]
+        public void UnqualifiedPartialReference_IncludesDefinedMeasures()
+        {
+            var state = new DaxState(EditState.PartialColumn, partialText: "[Sl")
+            {
+                DefinedMeasures = new[] { "Slow - Fare Via Context Transition", "Fare Direct" }
+            };
+            var completions = _provider.GetCompletions(state);
+
+            Assert.Contains(c => c.Kind == CompletionItemKind.Measure
+                && c.Label == "Slow - Fare Via Context Transition"
+                && c.InsertText == "[Slow - Fare Via Context Transition]", completions);
+            Assert.IsFalse(completions.Any(c => c.Label == "Fare Direct"));
+        }
+
+        [TestMethod]
+        public void ParserService_UnqualifiedBracketReturnsDefinedMeasure()
+        {
+            var doc =
+                "DEFINE\r\n" +
+                "MEASURE Sales[Slow - Fare Via Context Transition] = 1\r\n" +
+                "EVALUATE ROW(\"Increased fare\", [Sl";
+            var service = new DaxParserService(_metadata);
+            var state = service.GetEditState(doc, doc.Length);
+            var completions = service.GetCompletions(doc, doc.Length);
+
+            Assert.AreEqual(EditState.PartialColumn, state.State);
+            CollectionAssert.Contains(state.DefinedMeasures.ToList(), "Slow - Fare Via Context Transition");
+            Assert.Contains(c => c.Kind == CompletionItemKind.Measure
+                && c.Label == "Slow - Fare Via Context Transition"
+                && c.InsertText == "[Slow - Fare Via Context Transition]", completions);
+        }
+
+        [TestMethod]
+        public void ParserService_QualifiedBracketReturnsDefinedMeasure()
+        {
+            var doc =
+                "DEFINE\r\n" +
+                "MEASURE Sales[Slow - Fare Via Context Transition] = 1\r\n" +
+                "EVALUATE ROW(\"Increased fare\", 'Sales'[Sl";
+            var service = new DaxParserService(_metadata);
+            var state = service.GetEditState(doc, doc.Length);
+            var completions = service.GetCompletions(doc, doc.Length);
+
+            Assert.AreEqual(EditState.PartialColumn, state.State);
+            Assert.AreEqual("Sales", state.CurrentTable);
+            CollectionAssert.Contains(state.DefinedMeasures.ToList(), "Slow - Fare Via Context Transition");
+            Assert.Contains(c => c.Kind == CompletionItemKind.Measure
+                && c.Label == "Slow - Fare Via Context Transition"
+                && c.InsertText == "[Slow - Fare Via Context Transition]", completions);
         }
     }
 }
