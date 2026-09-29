@@ -495,12 +495,9 @@ namespace DaxStudio.Common
                 var authInfo = GetAuthenticationInformationFromUri(new Uri(defaultServerName));
                 
                 IEnumerable<string> scope = GetScope(tokenScope);
-
-                // Override the scope if the authentication information contains a ResourceId, except for
-                // the storage scope which must be preserved for OneLake connections. Without this guard a
-                // storage context is built holding the Power BI scope, which is then used to renew the
-                // token - producing a Power BI token that OneLake rejects.
-                if (!string.IsNullOrEmpty(authInfo.ResourceId) && tokenScope != AccessTokenScope.Storage)
+                
+                // Override the scope if the authentication information contains a ResourceId
+                if (!string.IsNullOrEmpty(authInfo.ResourceId))
                     scope = authInfo.GetDefaultScopes();
                 
                 var context = new AccessTokenContext
@@ -899,8 +896,6 @@ namespace DaxStudio.Common
             var context = token.UserContext;
             if (context == null) throw new EntraAuthenticationException("Cannot renew an access token that has no authentication context.");
 
-            // A caller can force silent-only renewal (e.g. a trace drop running synchronously on the
-            // UI thread) on top of whatever the context already allows.
             var silentOnly = forceSilent || context.RenewalMode == TokenRenewalMode.SilentOnly;
 
             var accountIdentifier = context.AccountIdentifier ?? string.Empty;
