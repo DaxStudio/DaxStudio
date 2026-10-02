@@ -1284,9 +1284,22 @@ namespace DaxStudio.UI.ViewModels
                 if (foldingManager == null)
                 {
                     foldingStrategy = CreateFoldingStrategy();
-                    foldingManager = FoldingManager.Install(this.GetEditor().TextArea);
+                    InstallFoldingManager();
                 }
             }
+        }
+
+        private void InstallFoldingManager()
+        {
+            var editor = this.GetEditor();
+            if (editor == null || foldingManager != null) return;
+
+            foldingManager = FoldingManager.Install(editor.TextArea);
+            paddedFoldingElementGenerator =
+                new PaddedFoldingElementGenerator(foldingManager);
+            editor.TextArea.TextView.ElementGenerators.Insert(
+                0,
+                paddedFoldingElementGenerator);
         }
 
         /// <summary>
@@ -1307,6 +1320,15 @@ namespace DaxStudio.UI.ViewModels
             if (foldingManager == null) return;
             foldingUpdateTimer.Stop();
             foldingManager?.Clear();
+
+            var editor = this.GetEditor();
+            if (editor != null && paddedFoldingElementGenerator != null)
+            {
+                editor.TextArea.TextView.ElementGenerators.Remove(
+                    paddedFoldingElementGenerator);
+            }
+            paddedFoldingElementGenerator = null;
+
             FoldingManager.Uninstall(foldingManager);
             foldingManager = null;
         }
@@ -1354,6 +1376,7 @@ namespace DaxStudio.UI.ViewModels
 
         private Model.IFoldingStrategy foldingStrategy;
         private FoldingManager foldingManager;
+        private PaddedFoldingElementGenerator paddedFoldingElementGenerator;
         private void UpdateFoldings()
         {
             try
@@ -1361,7 +1384,7 @@ namespace DaxStudio.UI.ViewModels
                 if (foldingManager == null)
                 {
                     foldingStrategy = CreateFoldingStrategy();
-                    foldingManager = FoldingManager.Install(this.GetEditor().TextArea);
+                    InstallFoldingManager();
                 }
 
                 if (foldingStrategy != null)

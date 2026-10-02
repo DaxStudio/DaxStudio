@@ -93,13 +93,14 @@ namespace DAXEditorControl
         private WordHighlighTransformer _wordHighlighter;
         private SelectionBackgroundRenderer _selectionBackgroundRenderer;
         private readonly TextMarkerService _textMarkerService;
-        private readonly CommentScriptChipRenderer _commentScriptChipRenderer;
+        private readonly CommentScriptLineRenderer _commentScriptLineRenderer;
         private readonly AssertTableRowRenderer _assertTableRowRenderer;
         private readonly LineSpacingElementGenerator _lineSpacingGenerator;
         private ToolTip _toolTip;
         private bool _syntaxErrorDisplayed;
         private IHighlighter _documentHighlighter;
         private FontSizeConverter _fontSizeConverter = new FontSizeConverter();
+        internal event EventHandler CommentScriptStylesChanged;
 
         static DAXEditor()
         {
@@ -131,9 +132,10 @@ namespace DAXEditorControl
             textView.LineTransformers.Add(_textMarkerService);
             textView.Services.AddService(typeof(TextMarkerService), _textMarkerService);
 
-            // Add Comment Script directive keyword chip renderer
-            _commentScriptChipRenderer = new CommentScriptChipRenderer(this);
-            textView.BackgroundRenderers.Add(_commentScriptChipRenderer);
+            // Add category-specific Comment Script row backgrounds. Margin indicators are provided
+            // by a non-layout overlay in the editor control template.
+            _commentScriptLineRenderer = new CommentScriptLineRenderer(this);
+            textView.BackgroundRenderers.Add(_commentScriptLineRenderer);
 
             // Add faint full-width tint behind "-->>" assert-table rows
             _assertTableRowRenderer = new AssertTableRowRenderer(this);
@@ -248,12 +250,15 @@ namespace DAXEditorControl
                     if (baseColor != null)
                     {
                         baseColor.Foreground = syntaxHighlight.Foreground;
-                        // copy the background too so themed highlights (eg. the Comment Script
-                        // directive keyword "chip") can use a different background per theme
+                        // Copy backgrounds too so themed Comment Script row renderers can use
+                        // different fills per theme.
                         baseColor.Background = syntaxHighlight.Background;
                     }
                 }
             }
+
+            TextArea.TextView.Redraw();
+            CommentScriptStylesChanged?.Invoke(this, EventArgs.Empty);
 
             //var funcCol = SyntaxHighlighting.NamedHighlightingColors.FirstOrDefault(c => c.Name == "Function");
             //var hex = "Blue";

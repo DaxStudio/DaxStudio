@@ -209,5 +209,126 @@ namespace DaxStudio.Tests
             Assert.IsTrue(foldings.Any(f => f.StartOffset == secondEvaluateLine.EndOffset),
                 "The second batch's EVALUATE should start a fold");
         }
+
+        [TestMethod]
+        public void ConsecutiveCommentScriptCommandsFoldUnderFirstCommand()
+        {
+            var doc = Doc(
+                "--> TEST \"Demo\"",
+                "--> CLEARCACHE",
+                "--> TRACE QUERYPLAN");
+            var foldings = new StructuralFoldingStrategy().CreateNewFoldings(doc).ToList();
+
+            Assert.AreEqual(1, foldings.Count);
+            Assert.AreEqual(doc.GetLineByNumber(1).EndOffset, foldings[0].StartOffset);
+            Assert.AreEqual(doc.GetLineByNumber(3).EndOffset, foldings[0].EndOffset);
+            Assert.AreEqual(" \u2026 2 more commands", foldings[0].Name);
+        }
+
+        [TestMethod]
+        public void TwoCommentScriptCommandsUseSingularHiddenCount()
+        {
+            var doc = Doc(
+                "--> TEST \"Demo\"",
+                "--> CLEARCACHE");
+            var foldings = new StructuralFoldingStrategy().CreateNewFoldings(doc).ToList();
+
+            Assert.AreEqual(1, foldings.Count);
+            Assert.AreEqual(" \u2026 1 more command", foldings[0].Name);
+        }
+
+        [TestMethod]
+        public void SingleCommentScriptCommandIsNotFolded()
+        {
+            var doc = Doc("--> TEST \"Demo\"");
+            var foldings = new StructuralFoldingStrategy().CreateNewFoldings(doc).ToList();
+
+            Assert.AreEqual(0, foldings.Count);
+        }
+
+        [TestMethod]
+        public void NonCommandLinesBreakCommentScriptCommandRuns()
+        {
+            var doc = Doc(
+                "--> TEST \"One\"",
+                "",
+                "--> CLEARCACHE",
+                "-- regular comment",
+                "--> TRACE QUERYPLAN",
+                "--> UNKNOWN value",
+                "--> RESULTS OFF",
+                "EVALUATE ROW(\"Value\", 1)",
+                "--> SHOW TIMING");
+            var foldings = new StructuralFoldingStrategy().CreateNewFoldings(doc).ToList();
+
+            Assert.AreEqual(0, foldings.Count);
+        }
+
+        [TestMethod]
+        public void GoRemainsVisibleAndStartsNewCommandRun()
+        {
+            var doc = Doc(
+                "--> TEST \"Demo\"",
+                "--> CLEARCACHE",
+                "--> GO",
+                "--> TRACE QUERYPLAN",
+                "--> RESULTS OFF",
+                "EVALUATE ROW(\"Value\", 1)");
+            var foldings = new StructuralFoldingStrategy().CreateNewFoldings(doc).ToList();
+
+            var commandFoldings = foldings.Where(f => f.Name?.Contains("more command") == true).ToList();
+            Assert.AreEqual(2, commandFoldings.Count);
+
+            Assert.AreEqual(doc.GetLineByNumber(1).EndOffset, commandFoldings[0].StartOffset);
+            Assert.AreEqual(doc.GetLineByNumber(2).EndOffset, commandFoldings[0].EndOffset);
+            Assert.IsTrue(commandFoldings[0].EndOffset < doc.GetLineByNumber(3).Offset,
+                "GO must not be hidden in the preceding command fold");
+
+            Assert.AreEqual(doc.GetLineByNumber(3).EndOffset, commandFoldings[1].StartOffset);
+            Assert.AreEqual(doc.GetLineByNumber(5).EndOffset, commandFoldings[1].EndOffset);
+            Assert.AreEqual(" \u2026 2 more commands", commandFoldings[1].Name);
+        }
+
+        [TestMethod]
+        public void CommentCommandFoldContainsNestedAssertTableFold()
+        {
+            var doc = Doc(
+                "--> TEST \"Demo\"",
+                "--> ASSERT TABLE",
+                "-->> | A | B |",
+                "-->> | 1 | 2 |",
+                "-->> | 3 | 4 |");
+            var foldings = new StructuralFoldingStrategy().CreateNewFoldings(doc).ToList();
+
+            Assert.AreEqual(2, foldings.Count);
+            var commandFold = foldings.Single(f => f.Name == " \u2026 1 more command");
+            var tableFold = foldings.Single(f => f.Name == " [A, B] (2x2)");
+
+            Assert.AreEqual(doc.GetLineByNumber(1).EndOffset, commandFold.StartOffset);
+            Assert.AreEqual(doc.GetLineByNumber(5).EndOffset, commandFold.EndOffset);
+            Assert.AreEqual(doc.GetLineByNumber(2).EndOffset, tableFold.StartOffset);
+            Assert.AreEqual(commandFold.EndOffset, tableFold.EndOffset);
+            Assert.IsTrue(commandFold.StartOffset < tableFold.StartOffset,
+                "The ASSERT TABLE row fold must be nested inside the command block fold");
+        }
+
+        [TestMethod]
+        public void PaddedFoldingGeneratorHandlesCommandAndDaxFolds()
+        {
+            var document = new ICSharpCode.AvalonEdit.Document.TextDocument("01234567890123456789");
+            var manager = new ICSharpCode.AvalonEdit.Folding.FoldingManager(document);
+            var commandFold = manager.CreateFolding(1, 5);
+            commandFold.Title = " \u2026 1 more command";
+            commandFold.IsFolded = true;
+            var daxFold = manager.CreateFolding(8, 12);
+            daxFold.Title = "...";
+            daxFold.IsFolded = true;
+
+            var generator = new PaddedFoldingElementGenerator(manager);
+
+            Assert.AreEqual(1, generator.GetFirstInterestedOffset(0));
+            Assert.IsNotNull(generator.ConstructElement(commandFold.StartOffset));
+            Assert.IsNotNull(generator.ConstructElement(daxFold.StartOffset));
+        }
     }
 }

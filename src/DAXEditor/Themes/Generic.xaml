@@ -4,7 +4,9 @@
     xmlns:local="clr-namespace:DAXEditorControl"
     xmlns:ae="http://icsharpcode.net/sharpdevelop/avalonedit"
     xmlns:editing="clr-namespace:ICSharpCode.AvalonEdit.Editing;assembly=ICSharpCode.AvalonEdit"
+    xmlns:folding="clr-namespace:ICSharpCode.AvalonEdit.Folding;assembly=ICSharpCode.AvalonEdit"
     xmlns:rendering="clr-namespace:ICSharpCode.AvalonEdit.Rendering;assembly=ICSharpCode.AvalonEdit"
+    xmlns:renderers="clr-namespace:DAXEditorControl.Renderers"
     xmlns:AEComplete="clr-namespace:ICSharpCode.AvalonEdit.CodeCompletion;assembly=ICSharpCode.AvalonEdit"
     xmlns:unit="clr-namespace:UnitComboLib;assembly=UnitComboLib"
     xmlns:ui="http://schemas.modernwpf.com/2019"
@@ -94,6 +96,10 @@
                                 <Setter Property="Margin" Value="4,0,6,0" />
                             </Style>
 
+                            <Style TargetType="{x:Type folding:FoldingMargin}">
+                                <Setter Property="Margin" Value="0,0,6,0" />
+                            </Style>
+
                             <Style TargetType="{x:Type rendering:TextView}">
                                 <Setter Property="NonPrintableCharacterBrush" Value="{DynamicResource NonPrintableCharacterBrush}" />
                                 <Setter Property="LinkTextForegroundBrush"    Value="{DynamicResource LinkTextForegroundBrush}" />
@@ -151,6 +157,16 @@
                                                         CanVerticallyScroll="True"
 						                                Content="{Binding RelativeSource={RelativeSource AncestorType={x:Type local:DAXEditor}}, Path=TextArea}"
                                             />
+
+                                            <renderers:CommentScriptIndicatorOverlay
+                                                x:Name="PART_CommentScriptIndicatorOverlay"
+                                                Grid.Column="0"
+                                                Grid.Row="0"
+                                                Panel.ZIndex="10"
+                                                HorizontalAlignment="Stretch"
+                                                VerticalAlignment="Stretch"
+                                                IsHitTestVisible="False"
+                                                Editor="{Binding RelativeSource={RelativeSource AncestorType={x:Type local:DAXEditor}}}"/>
 
                                             <!-- Display Vertical Scrollbar to the right -->
                                             <ScrollBar Name="PART_VerticalScrollBar"

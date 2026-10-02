@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using DaxStudio.Parsers.Dax;
+using DAXEditorControl.Renderers;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Folding;
 
@@ -10,8 +11,8 @@ namespace DaxStudio.UI.Model
     /// Produces editor foldings from the structure of the DAX code (via the ANTLR parser) rather than
     /// from indentation. It folds the DEFINE block and its definitions, VAR/RETURN blocks, EVALUATE
     /// blocks and their ORDER BY clause, and multi-line bracket pairs. In addition it folds runs of
-    /// consecutive comment-script ASSERT TABLE continuation lines (lines beginning with <c>--&gt;&gt;</c>),
-    /// which the DAX lexer treats as ordinary comments.
+    /// consecutive recognized comment-script commands and ASSERT TABLE continuation lines (lines
+    /// beginning with <c>--&gt;&gt;</c>), which the DAX lexer treats as ordinary comments.
     /// </summary>
     public class StructuralFoldingStrategy : IFoldingStrategy
     {
@@ -39,6 +40,7 @@ namespace DaxStudio.UI.Model
             var seen = new HashSet<long>();
 
             AddParserFoldings(document, foldings, seen);
+            AddCommentScriptCommandFoldings(document, foldings, seen);
             AddAssertTableFoldings(document, foldings, seen);
 
             foldings.Sort((a, b) =>
@@ -79,6 +81,72 @@ namespace DaxStudio.UI.Model
 
                 AddFold(foldings, seen, foldStart, end, null);
             }
+        }
+
+        /// <summary>
+        /// Folds runs of two or more consecutive recognized comment-script commands beneath the
+        /// first command. GO always starts a new run so the batch boundary remains visible.
+        /// ASSERT TABLE continuation rows are included in an enclosing command fold while retaining
+        /// their more specific nested fold.
+        /// </summary>
+        private static void AddCommentScriptCommandFoldings(
+            TextDocument document,
+            List<NewFolding> foldings,
+            HashSet<long> seen)
+        {
+            DocumentLine runStart = null;
+            DocumentLine lastCommand = null;
+            DocumentLine continuationEnd = null;
+            int commandCount = 0;
+            bool lastCommandIsAssertTable = false;
+
+            void Flush()
+            {
+                if (commandCount >= 2 && runStart != null && lastCommand != null)
+                {
+                    var foldEnd = continuationEnd ?? lastCommand;
+                    int hiddenCount = commandCount - 1;
+                    string suffix = hiddenCount == 1 ? "command" : "commands";
+                    AddFold(
+                        foldings,
+                        seen,
+                        runStart.EndOffset,
+                        foldEnd.EndOffset,
+                        $" \u2026 {hiddenCount} more {suffix}");
+                }
+
+                runStart = null;
+                lastCommand = null;
+                continuationEnd = null;
+                commandCount = 0;
+                lastCommandIsAssertTable = false;
+            }
+
+            foreach (DocumentLine line in document.Lines)
+            {
+                var text = document.GetText(line.Offset, line.Length);
+                if (CommentScriptCommandStyle.TryClassify(text, out var style))
+                {
+                    if (continuationEnd != null || style.IsBatchSeparator)
+                        Flush();
+
+                    if (runStart == null) runStart = line;
+                    lastCommand = line;
+                    commandCount++;
+                    lastCommandIsAssertTable = IsAssertTableHeaderLine(document, line);
+                    continue;
+                }
+
+                if (lastCommandIsAssertTable && IsAssertTableLine(document, line))
+                {
+                    continuationEnd = line;
+                    continue;
+                }
+
+                Flush();
+            }
+
+            Flush();
         }
 
         /// <summary>
