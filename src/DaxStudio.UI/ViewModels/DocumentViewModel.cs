@@ -1894,6 +1894,37 @@ namespace DaxStudio.UI.ViewModels
         }
         public Dictionary<string, QueryParameter> QueryParameters => QueryInfo?.Parameters ?? new Dictionary<string, QueryParameter>();
 
+        public async Task<bool> PromptForBatchParametersAsync(QueryInfo queryInfo, int batchIndex)
+        {
+            if (queryInfo == null) throw new ArgumentNullException(nameof(queryInfo));
+            if (!queryInfo.BatchNeedsParameterValues(batchIndex)) return true;
+
+            if (!Application.Current.Dispatcher.CheckAccess())
+            {
+                var promptTask = await Application.Current.Dispatcher.InvokeAsync(
+                    () => PromptForBatchParametersAsync(queryInfo, batchIndex));
+                return await promptTask;
+            }
+
+            var parameters = queryInfo.GetBatchParameters(batchIndex).Values;
+            var paramDialog = new QueryParametersDialogViewModel(this, queryInfo, parameters, false);
+            await _windowManager.ShowDialogBoxAsync(paramDialog, settings: new Dictionary<string, object>
+            {
+                { "WindowStyle", WindowStyle.None },
+                { "ShowInTaskbar", false },
+                { "ResizeMode", ResizeMode.NoResize },
+                { "Background", Brushes.Transparent },
+                { "AllowsTransparency", true }
+            });
+
+            if (paramDialog.DialogResult != DialogResult.Cancel) return true;
+
+            _queryRunCancellationTokenSource?.Cancel();
+            QueryCompleted(true);
+            OutputWarning($"Query execution cancelled while requesting parameters for batch {batchIndex + 1}.");
+            return false;
+        }
+
         public string EditorText
         {
             set

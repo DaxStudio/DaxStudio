@@ -66,6 +66,11 @@ namespace DaxStudio.Parsers.Dax
             var condition = customDaxFilterParts.children[4].GetText();
             var datatype = customDaxFilterParts.children[10].GetText();
 
+            if (!_arrayParameters.ContainsKey(parameter))
+                throw new CommentScriptCommandException(
+                    $"The parameter {parameter} was not supplied with any values in this query batch.",
+                    context.Start.Line, context.Start.Column);
+
             var daxColumn = $"'{table}'[{column}]";
 
             var predicate = GeneratePredicate(daxColumn, parameter, condition, datatype == "String");
@@ -88,9 +93,10 @@ namespace DaxStudio.Parsers.Dax
             var parameter = context.children[2].GetText();
             var datatype = context.children[4].GetText();
 
-            
-
-            if (!_arrayParameters.ContainsKey(parameter)) throw new ArgumentException($"The parameter {parameter} was not supplied with any values");
+            if (!_arrayParameters.ContainsKey(parameter))
+                throw new CommentScriptCommandException(
+                    $"The parameter {parameter} was not supplied with any values in this query batch.",
+                    context.Start.Line, context.Start.Column);
 
             var values = _arrayParameters[parameter];
 
@@ -829,6 +835,7 @@ namespace DaxStudio.Parsers.Dax
             }
 
             FinalizeBatch(_currentBatch);
+            _arrayParameters.Clear();
             _currentBatch = new ScriptBatch();
             _scriptBatches.Add(_currentBatch);
         }

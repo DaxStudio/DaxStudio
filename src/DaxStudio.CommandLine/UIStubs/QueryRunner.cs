@@ -196,6 +196,15 @@ namespace DaxStudio.CommandLine.UIStubs
         public System.Threading.Tasks.Task ProcessBatchPreQueryCommandsAsync(int batchIndex)
             => System.Threading.Tasks.Task.CompletedTask;
 
+        public System.Threading.Tasks.Task<bool> PromptForBatchParametersAsync(QueryInfo queryInfo, int batchIndex)
+        {
+            if (!queryInfo.BatchNeedsParameterValues(batchIndex))
+                return System.Threading.Tasks.Task.FromResult(true);
+
+            OutputError($"Query batch {batchIndex + 1} contains parameters without supplied values.");
+            return System.Threading.Tasks.Task.FromResult(false);
+        }
+
         public System.Threading.Tasks.Task WaitForBatchDelayAsync(int milliseconds)
             => milliseconds > 0
                 ? System.Threading.Tasks.Task.Delay(milliseconds)

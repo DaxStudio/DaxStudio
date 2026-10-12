@@ -130,6 +130,108 @@ namespace DaxStudio.Tests.ResultsTargets
         }
 
         [TestMethod]
+        public void BatchParameterCollectionsContainOnlyCurrentBatchValues()
+        {
+            var provider = BuildProvider(
+                "--> PARAMETER @Color = Red\n" +
+                "EVALUATE { @Color }\n" +
+                "--> GO\n" +
+                "--> PARAMETER @Size = Large\n" +
+                "EVALUATE { @Size }");
+
+            var first = ResultsTargetGrid.GetBatchParameterCollection(provider.QueryInfo, 0);
+            var second = ResultsTargetGrid.GetBatchParameterCollection(provider.QueryInfo, 1);
+
+            Assert.AreEqual(1, first.Count);
+            Assert.AreEqual("Color", first[0].ParameterName);
+            Assert.AreEqual("Red", first[0].Value);
+            Assert.AreEqual(1, second.Count);
+            Assert.AreEqual("Size", second[0].ParameterName);
+            Assert.AreEqual("Large", second[0].Value);
+        }
+
+        [TestMethod]
+        public async System.Threading.Tasks.Task CancellingSecondBatchParameterPromptStopsExecution()
+        {
+            var provider = BuildProvider(
+                "EVALUATE { @First }\n" +
+                "--> GO\n" +
+                "EVALUATE { @Second }");
+            provider.QueryInfo.GetBatchParameters(0)["First"].Value = "one";
+
+            var runner = Substitute.For<IQueryRunner>();
+            runner.PromptForBatchParametersAsync(provider.QueryInfo, 1)
+                .Returns(System.Threading.Tasks.Task.FromResult(false));
+            var target = new ResultsTargetGrid(_eventAggregator, NewParserOptions());
+
+            await Assert.ThrowsExactlyAsync<System.OperationCanceledException>(
+                () => target.OutputResultsAsync(runner, provider, null));
+
+            runner.Received(1).ExecuteDataReaderQuery(
+                Arg.Is<string>(q => q.Contains("@First")),
+                Arg.Is<System.Collections.Generic.List<Microsoft.AnalysisServices.AdomdClient.AdomdParameter>>(
+                    p => p.Count == 1 && p[0].ParameterName == "First"));
+            runner.DidNotReceive().ExecuteDataReaderQuery(
+                Arg.Is<string>(q => q.Contains("@Second")),
+                Arg.Any<System.Collections.Generic.List<Microsoft.AnalysisServices.AdomdClient.AdomdParameter>>());
+        }
+
+        [TestMethod]
+        public async System.Threading.Tasks.Task SameNamedParameterPromptsAndExecutesIndependentlyPerBatch()
+        {
+            var provider = BuildProvider(
+                "EVALUATE { @Color }\n" +
+                "--> GO\n" +
+                "EVALUATE { @Color }");
+            var runner = Substitute.For<IQueryRunner>();
+            runner.PromptForBatchParametersAsync(provider.QueryInfo, Arg.Any<int>())
+                .Returns(call =>
+                {
+                    var batchIndex = call.ArgAt<int>(1);
+                    provider.QueryInfo.GetBatchParameters(batchIndex)["Color"].Value =
+                        batchIndex == 0 ? "Red" : "Blue";
+                    return System.Threading.Tasks.Task.FromResult(true);
+                });
+            var target = new ResultsTargetGrid(_eventAggregator, NewParserOptions());
+
+            await target.OutputResultsAsync(runner, provider, null);
+
+            await runner.Received(1).PromptForBatchParametersAsync(provider.QueryInfo, 0);
+            await runner.Received(1).PromptForBatchParametersAsync(provider.QueryInfo, 1);
+            runner.Received(1).ExecuteDataReaderQuery(
+                Arg.Any<string>(),
+                Arg.Is<System.Collections.Generic.List<Microsoft.AnalysisServices.AdomdClient.AdomdParameter>>(
+                    p => p.Count == 1 && (string)p[0].Value == "Red"));
+            runner.Received(1).ExecuteDataReaderQuery(
+                Arg.Any<string>(),
+                Arg.Is<System.Collections.Generic.List<Microsoft.AnalysisServices.AdomdClient.AdomdParameter>>(
+                    p => p.Count == 1 && (string)p[0].Value == "Blue"));
+        }
+
+        [TestMethod]
+        public async System.Threading.Tasks.Task CommandOnlyFirstBatchUsesLaterBatchParameters()
+        {
+            var provider = BuildProvider(
+                "--> SET Environment = dev\n" +
+                "--> GO\n" +
+                "--> PARAMETER @Color = Blue\n" +
+                "EVALUATE { @Color }");
+            var processedQuery = provider.QueryInfo.ProcessedQuery;
+            provider.QueryText.Returns(processedQuery);
+            Assert.AreEqual(2, provider.QueryInfo.ScriptBatches.Count);
+            Assert.AreEqual("Blue", provider.QueryInfo.GetBatchParameters(1)["Color"].Value);
+            var runner = Substitute.For<IQueryRunner>();
+            var target = new ResultsTargetGrid(_eventAggregator, NewParserOptions());
+
+            await target.OutputResultsAsync(runner, provider, null);
+
+            runner.Received(1).ExecuteDataReaderQuery(
+                Arg.Is<string>(q => q.Contains("@Color")),
+                Arg.Is<System.Collections.Generic.List<Microsoft.AnalysisServices.AdomdClient.AdomdParameter>>(
+                    p => p.Count == 1 && p[0].ParameterName == "Color" && (string)p[0].Value == "Blue"));
+        }
+
+        [TestMethod]
         public async System.Threading.Tasks.Task GoDelay_WaitsBetweenExecutableBatchesInOrder()
         {
             var provider = BuildProvider("EVALUATE { 1 }\n--> GO DELAY 25ms\nEVALUATE { 2 }");

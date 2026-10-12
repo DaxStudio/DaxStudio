@@ -15,6 +15,8 @@ namespace DaxStudio.Core.Model
     {
         private string rawQuery;
         private Dictionary<string,QueryParameter> _parameters;
+        private readonly List<Dictionary<string, QueryParameter>> _batchParameters =
+            new List<Dictionary<string, QueryParameter>>();
         // Set (non-null) only when the ANTLR pre-processor path has successfully produced the
         // processed query text. When null the classic regex behaviour is used.
         private string _newProcessedQuery;
@@ -57,7 +59,7 @@ namespace DaxStudio.Core.Model
         }
 
         public string QueryText { get; set; }
-        public bool HasParameters { get { return Parameters.Count > 0; } }
+        public bool HasParameters { get { return Parameters.Count > 0 || _batchParameters.Any(p => p.Count > 0); } }
 
         /// <summary>
         /// The text to record in the query-history pane. On the ANTLR pre-processor path this is the
@@ -92,6 +94,19 @@ namespace DaxStudio.Core.Model
         }
         public Dictionary<string,QueryParameter> Parameters { get { return _parameters; } }
 
+        public IReadOnlyDictionary<string, QueryParameter> GetBatchParameters(int batchIndex)
+        {
+            if (batchIndex < 0 || batchIndex >= _batchParameters.Count)
+                throw new ArgumentOutOfRangeException(nameof(batchIndex));
+
+            return _batchParameters[batchIndex];
+        }
+
+        public bool BatchNeedsParameterValues(int batchIndex)
+        {
+            return GetBatchParameters(batchIndex).Values.Any(p => p.Value == null);
+        }
+
         /// <summary>
         /// The batch structures produced by the pre-processor. Both the classic (regex) and the
         /// new (ANTLR) pre-processors populate this so downstream consumers can be uniform.
@@ -105,11 +120,7 @@ namespace DaxStudio.Core.Model
         {
             try
             {
-                // The XMLA <Parameters> block is handled by the proven regex/XML code for both paths
-                // (the grammar's XMLA tokens are case-sensitive), so only the query body is fed to ANTLR.
-                DaxHelper.SplitParametersBlock(query, out var body, out var paramsBlock);
-
-                var result = AntlrPreProcessor.Parse(body);
+                var result = AntlrPreProcessor.Parse(query);
 
                 // A malformed comment-script command (e.g. "--> USE" with no database) is a mistake in
                 // an explicit command the user typed. Surface it as a hard, user-facing error and do NOT
@@ -148,26 +159,19 @@ namespace DaxStudio.Core.Model
                 _newProcessedQuery = processed;
                 QueryText = processed;
 
-                // Record the body WITH the comment-script commands intact for the history pane
-                // (the <Parameters> block has already been split off by SplitParametersBlock above).
-                _historyText = body;
+                // Keep comment commands in history, but exclude batch-local XMLA parameter blocks.
+                _historyText = result.HistoryText;
 
-                // Discovered @name parameters -> populate so the parameter-values dialog still triggers.
-                foreach (var name in result.DiscoveredParameters.Keys)
-                {
-                    if (!_parameters.ContainsKey(name))
-                        _parameters.Add(name, new QueryParameter(name));
-                }
+                BuildBatchParameters(result.Batches, eventAggregator);
 
-                // Supplied values from an XMLA <Parameters> block (reuse the proven parser).
-                if (paramsBlock.Length > 0)
-                    DaxHelper.ParseParams(paramsBlock, _parameters, eventAggregator);
+                // Preserve the existing single-batch dialog/API surface. Multi-batch scripts prompt
+                // independently immediately before each batch executes.
+                if (_batchParameters.Count == 1)
+                    _parameters = _batchParameters[0];
+                else
+                    _parameters.Clear();
 
-                // Execute the PARAMETER command subset: apply their supplied values.
-                var hasParameterCommand = ApplyParameterCommands(result.Batches);
-
-                var hasSuppliedValues = paramsBlock.Length > 0 || hasParameterCommand;
-                NeedsParameterValues = _parameters.Count > 0 && !hasSuppliedValues;
+                NeedsParameterValues = _batchParameters.Count == 1 && BatchNeedsParameterValues(0);
 
                 return true;
             }
@@ -181,30 +185,34 @@ namespace DaxStudio.Core.Model
                 _newProcessedQuery = null;
                 _historyText = null;
                 _scriptBatches.Clear();
+                _batchParameters.Clear();
                 _parameters.Clear();
                 return false;
             }
         }
 
-        // Applies any PARAMETER commands produced by the new pre-processor to the parameter
-        // dictionary. Returns true if at least one PARAMETER command supplied a value.
-        private bool ApplyParameterCommands(IEnumerable<ScriptBatch> batches)
+        private void BuildBatchParameters(IEnumerable<ScriptBatch> batches, IEventAggregator eventAggregator)
         {
-            var applied = false;
+            _batchParameters.Clear();
             foreach (var batch in batches)
             {
+                var parameters = new Dictionary<string, QueryParameter>(StringComparer.OrdinalIgnoreCase);
+                foreach (var name in batch.DiscoveredParameters.Keys)
+                    parameters.Add(name, new QueryParameter(name));
+
+                if (!string.IsNullOrWhiteSpace(batch.ParameterXml))
+                    DaxHelper.ParseParams(batch.ParameterXml, parameters, eventAggregator);
+
                 foreach (var cmd in batch.Commands.OfType<ParameterCommand>())
                 {
-                    // The comment-script PARAMETER command keeps the leading '@' on the name; strip it
-                    // so it lines up with the discovered parameters and the substitution regex.
                     var name = cmd.ParameterName != null && cmd.ParameterName.StartsWith("@")
                         ? cmd.ParameterName.Substring(1)
                         : cmd.ParameterName;
-                    _parameters[name] = new QueryParameter(name, cmd.Value, NormalizeTypeName(cmd.TypeName));
-                    applied = true;
+                    parameters[name] = new QueryParameter(name, cmd.Value, NormalizeTypeName(cmd.TypeName));
                 }
+
+                _batchParameters.Add(parameters);
             }
-            return applied;
         }
 
         // Maps the comment-script type names to the xsd type names understood by QueryParameter.
@@ -239,9 +247,12 @@ namespace DaxStudio.Core.Model
             foreach (var p in _parameters.Values)
             {
                 batch.Commands.Add(new ParameterCommand(p.Name, p.Value, p.TypeName));
+                batch.DiscoveredParameters[p.Name] = false;
             }
             _scriptBatches.Clear();
             _scriptBatches.Add(batch);
+            _batchParameters.Clear();
+            _batchParameters.Add(_parameters);
         }
     }
 }

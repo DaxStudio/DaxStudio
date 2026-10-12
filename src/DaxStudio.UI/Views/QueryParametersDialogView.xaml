@@ -128,7 +128,9 @@
 
                 </DataGrid.Resources>
             </DataGrid>
-            <Button x:Name="WriteParameterXml" IsDefault="False" Grid.Row="3" Margin="9,7" Width="140" HorizontalAlignment="Left" TabIndex="4" Style="{DynamicResource DefaultButtonStyle}">_Write Parameter XML</Button>
+            <Button x:Name="WriteParameterXml" IsDefault="False" Grid.Row="3" Margin="9,7" Width="140" HorizontalAlignment="Left" TabIndex="4"
+                    Style="{DynamicResource DefaultButtonStyle}"
+                    Visibility="{Binding CanWriteParameterXml, Converter={StaticResource BoolToCollapsedConverter}}">_Write Parameter XML</Button>
             <StackPanel Orientation="Horizontal" Grid.Row="3" Margin="7,5" HorizontalAlignment="Right">
                 
                 <Button x:Name="OK" IsDefault="True" TabIndex="1" Style="{DynamicResource AccentButtonStyle}" MinWidth="65" Margin="8 0">Ok</Button>

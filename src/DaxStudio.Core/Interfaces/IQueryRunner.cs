@@ -1,6 +1,7 @@
 using ADOTabular.AdomdClientWrappers;
 using DaxStudio.Interfaces;
 using DaxStudio.Core.Events;
+using DaxStudio.Core.Model;
 using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
@@ -67,6 +68,12 @@ namespace DaxStudio.Core.Interfaces
         /// the whole-script pre-query pass, so this is a no-op for the first batch.
         /// </summary>
         Task ProcessBatchPreQueryCommandsAsync(int batchIndex);
+
+        /// <summary>
+        /// Prompts for any unresolved parameters belonging to the specified batch. Returns false when
+        /// the user cancels, in which case the caller must stop the remaining batch execution.
+        /// </summary>
+        Task<bool> PromptForBatchParametersAsync(QueryInfo queryInfo, int batchIndex);
 
         /// <summary>
         /// Waits at a delayed <c>--&gt; GO</c> boundary. Implementations should cancel the wait when

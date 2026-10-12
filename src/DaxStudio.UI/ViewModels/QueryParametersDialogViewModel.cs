@@ -6,6 +6,7 @@ using DaxStudio.UI.Utils;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
+using System.Linq;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -25,13 +26,24 @@ namespace DaxStudio.UI.ViewModels
         private readonly DocumentViewModel _document;
         [ImportingConstructor]
         public QueryParametersDialogViewModel(DocumentViewModel document, QueryInfo queryInfo)
+            : this(document, queryInfo, queryInfo.Parameters.Values, true)
+        {
+        }
+
+        internal QueryParametersDialogViewModel(
+            DocumentViewModel document,
+            QueryInfo queryInfo,
+            IEnumerable<QueryParameter> parameters,
+            bool canWriteParameterXml)
         {
             _document = document;
             _queryInfo = queryInfo;
-            Parameters = new ObservableCollection<QueryParameter>(queryInfo.Parameters.Values);
+            Parameters = new ObservableCollection<QueryParameter>(parameters ?? Enumerable.Empty<QueryParameter>());
+            CanWriteParameterXml = canWriteParameterXml;
         }
 
         public ObservableCollection<QueryParameter> Parameters { get; private set; }
+        public bool CanWriteParameterXml { get; }
 
         public DialogResult DialogResult { get; set; }
 

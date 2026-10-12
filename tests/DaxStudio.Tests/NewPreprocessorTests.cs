@@ -110,6 +110,96 @@ namespace DaxStudio.Tests
         }
 
         [TestMethod]
+        public void ParameterCommandsAreScopedToTheirBatch()
+        {
+            var query =
+                "--> PARAMETER @Color = Red\n" +
+                "EVALUATE { @Color }\n" +
+                "--> GO\n" +
+                "--> PARAMETER @Color = Blue\n" +
+                "EVALUATE { @Color }";
+
+            var info = new QueryInfo(query, _eventAggregator, NewParserOptions());
+
+            Assert.AreEqual("Red", info.GetBatchParameters(0)["Color"].Value);
+            Assert.AreEqual("Blue", info.GetBatchParameters(1)["Color"].Value);
+            Assert.IsFalse(info.BatchNeedsParameterValues(0));
+            Assert.IsFalse(info.BatchNeedsParameterValues(1));
+        }
+
+        [TestMethod]
+        public void PromptedParameterValuesAreNotSharedAcrossBatches()
+        {
+            var query =
+                "EVALUATE { @Color }\n" +
+                "--> GO\n" +
+                "EVALUATE { @Color }";
+
+            var info = new QueryInfo(query, _eventAggregator, NewParserOptions());
+            var first = info.GetBatchParameters(0)["Color"];
+            var second = info.GetBatchParameters(1)["Color"];
+
+            Assert.AreNotSame(first, second);
+            first.Value = "Red";
+
+            Assert.IsFalse(info.BatchNeedsParameterValues(0));
+            Assert.IsTrue(info.BatchNeedsParameterValues(1));
+            Assert.IsNull(second.Value);
+            Assert.IsFalse(info.NeedsParameterValues, "multi-batch prompts are deferred until each batch executes");
+        }
+
+        [TestMethod]
+        public void ParameterDeclarationDoesNotSatisfyLaterBatchReference()
+        {
+            var query =
+                "--> PARAMETER @Color = Red\n" +
+                "EVALUATE { @Color }\n" +
+                "--> GO DELAY 1ms\n" +
+                "EVALUATE { @Color }";
+
+            var info = new QueryInfo(query, _eventAggregator, NewParserOptions());
+
+            Assert.AreEqual("Red", info.GetBatchParameters(0)["Color"].Value);
+            Assert.IsNull(info.GetBatchParameters(1)["Color"].Value);
+            Assert.IsTrue(info.BatchNeedsParameterValues(1));
+        }
+
+        [TestMethod]
+        public void XmlParametersAreScopedToTheirBatch()
+        {
+            var secondParamBlock = ParamBlock.Replace("hello", "goodbye");
+            var query =
+                "EVALUATE { @param }\n" +
+                ParamBlock + "\n" +
+                "--> GO\n" +
+                "EVALUATE { @param }\n" +
+                secondParamBlock;
+
+            var info = new QueryInfo(query, _eventAggregator, NewParserOptions());
+
+            Assert.AreEqual("hello", info.GetBatchParameters(0)["param"].Value);
+            Assert.AreEqual("goodbye", info.GetBatchParameters(1)["param"].Value);
+            Assert.IsFalse(info.ScriptBatches[0].QueryText.Contains("<Parameters"));
+            Assert.IsFalse(info.ScriptBatches[1].QueryText.Contains("<Parameters"));
+        }
+
+        [TestMethod]
+        public void XmlParameterDoesNotSatisfyLaterBatchReference()
+        {
+            var query =
+                "EVALUATE { @param }\n" +
+                ParamBlock + "\n" +
+                "--> GO\n" +
+                "EVALUATE { @param }";
+
+            var info = new QueryInfo(query, _eventAggregator, NewParserOptions());
+
+            Assert.AreEqual("hello", info.GetBatchParameters(0)["param"].Value);
+            Assert.IsNull(info.GetBatchParameters(1)["param"].Value);
+            Assert.IsTrue(info.BatchNeedsParameterValues(1));
+        }
+
+        [TestMethod]
         public void GoSeparatorProducesTwoBatchesEachWithExecutableText()
         {
             var query = "EVALUATE\nROW( \"a\", 1 )\n--> GO\nEVALUATE\nROW( \"b\", 2 )";

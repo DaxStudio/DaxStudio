@@ -52,6 +52,12 @@ namespace DaxStudio.Parsers.PreProcessor
         public string ProcessedText { get; internal set; } = string.Empty;
 
         /// <summary>
+        /// The original script with XMLA parameter blocks blanked out but comment-script commands
+        /// retained for query history.
+        /// </summary>
+        public string HistoryText { get; internal set; } = string.Empty;
+
+        /// <summary>
         /// The <c>@name</c> parameters discovered in the query, keyed by name (without the
         /// leading <c>@</c>). The value indicates whether the parameter was used as an array.
         /// </summary>
@@ -77,8 +83,10 @@ namespace DaxStudio.Parsers.PreProcessor
             var result = new PreProcessResult();
             var errors = result.Errors;
             var errorListener = new PreProcessorErrorListener(ref errors);
+            var xmlParameters = ExtractXmlParameterBlocks(queryText ?? string.Empty, result.CommandErrors);
+            var parserText = xmlParameters.Text;
 
-            ICharStream chars = new DAXCharStream(queryText ?? string.Empty);
+            ICharStream chars = new DAXCharStream(parserText);
             var lexer = new PreProcessorLexer(chars);
             lexer.RemoveErrorListeners();
             lexer.AddErrorListener(errorListener);
@@ -113,7 +121,7 @@ namespace DaxStudio.Parsers.PreProcessor
             // Promote any syntax error reported on a comment-script command ("-->") line to a command
             // error: those are mistakes in an explicit command (e.g. "--> BOGUS", "--> TRACE X") and
             // should be surfaced, not treated as a soft DAX-body parse error that falls back silently.
-            PromoteCommandLineErrors(queryText, result);
+            PromoteCommandLineErrors(parserText, result);
 
             // The lexer records every @name token it encounters (keyed with the leading '@').
             // Strip the '@' so the names line up with the values expected by QueryInfo.
@@ -124,12 +132,14 @@ namespace DaxStudio.Parsers.PreProcessor
                     result.DiscoveredParameters.Add(name, kvp.Value);
             }
 
-            result.ProcessedText = StripCommentScriptLines(queryText);
+            result.ProcessedText = StripCommentScriptLines(parserText);
+            result.HistoryText = parserText;
 
             // Assign the whitespace-preserved executable DAX to each batch by splitting the raw
             // input on the '--> GO' separator lines (the grammar guarantees GO is COMMENT_SCRIPT
             // CS_GO). This aligns one text segment per batch produced by the listener.
-            AssignBatchQueryText(queryText, result.Batches);
+            AssignBatchQueryText(parserText, result.Batches);
+            AssignBatchParameterMetadata(result.Batches, xmlParameters.Blocks);
 
             // Resolve any "ASSERT ... PREVIOUS" operands now that QueryText is known - PREVIOUS means
             // the previous batch that actually RUNS A QUERY, which cannot be determined during the
@@ -137,6 +147,123 @@ namespace DaxStudio.Parsers.PreProcessor
             PreviousReferenceResolver.Resolve(result.Batches, result.CommandErrors);
 
             return result;
+        }
+
+        private sealed class XmlParameterExtraction
+        {
+            public string Text { get; set; } = string.Empty;
+            public Dictionary<int, string> Blocks { get; } = new Dictionary<int, string>();
+        }
+
+        private static XmlParameterExtraction ExtractXmlParameterBlocks(string text, ICollection<Error> commandErrors)
+        {
+            var result = new XmlParameterExtraction();
+            var output = new List<string>();
+            var block = new System.Text.StringBuilder();
+            var lines = (text ?? string.Empty).Split('\n');
+            var batchIndex = 0;
+            var blockBatchIndex = -1;
+            var blockStartLine = 0;
+
+            for (var i = 0; i < lines.Length; i++)
+            {
+                var line = lines[i];
+                var trimmed = line.Trim();
+
+                if (blockBatchIndex < 0)
+                {
+                    if (trimmed.StartsWith("<Parameters", StringComparison.OrdinalIgnoreCase))
+                    {
+                        blockBatchIndex = batchIndex;
+                        blockStartLine = i + 1;
+                        block.Append(line);
+                        output.Add(string.Empty);
+
+                        if (trimmed.EndsWith("</Parameters>", StringComparison.OrdinalIgnoreCase))
+                        {
+                            AddXmlParameterBlock(result.Blocks, commandErrors, blockBatchIndex, block.ToString(), blockStartLine);
+                            block.Clear();
+                            blockBatchIndex = -1;
+                        }
+                    }
+                    else
+                    {
+                        output.Add(line);
+                        if (IsGoLine(line))
+                            batchIndex++;
+                    }
+                }
+                else
+                {
+                    if (block.Length > 0)
+                        block.Append('\n');
+                    block.Append(line);
+                    output.Add(string.Empty);
+
+                    if (trimmed.EndsWith("</Parameters>", StringComparison.OrdinalIgnoreCase))
+                    {
+                        AddXmlParameterBlock(result.Blocks, commandErrors, blockBatchIndex, block.ToString(), blockStartLine);
+                        block.Clear();
+                        blockBatchIndex = -1;
+                    }
+                }
+            }
+
+            if (blockBatchIndex >= 0)
+            {
+                commandErrors.Add(new Error
+                {
+                    Msg = "The XMLA <Parameters> block is missing its closing </Parameters> tag.",
+                    Line = blockStartLine,
+                    Column = 0
+                });
+            }
+
+            result.Text = string.Join("\n", output);
+            return result;
+        }
+
+        private static void AddXmlParameterBlock(
+            IDictionary<int, string> blocks,
+            ICollection<Error> commandErrors,
+            int batchIndex,
+            string xml,
+            int line)
+        {
+            if (blocks.ContainsKey(batchIndex))
+            {
+                commandErrors.Add(new Error
+                {
+                    Msg = "Only one XMLA <Parameters> block is allowed in each query batch.",
+                    Line = line,
+                    Column = 0
+                });
+                return;
+            }
+
+            blocks.Add(batchIndex, xml);
+        }
+
+        private static void AssignBatchParameterMetadata(
+            IReadOnlyList<ScriptBatch> batches,
+            IReadOnlyDictionary<int, string> xmlBlocks)
+        {
+            for (var batchIndex = 0; batchIndex < batches.Count; batchIndex++)
+            {
+                var batch = batches[batchIndex];
+                if (xmlBlocks.TryGetValue(batchIndex, out var xml))
+                    batch.ParameterXml = xml;
+
+                var lexer = new PreProcessorLexer(new DAXCharStream(batch.QueryText ?? string.Empty));
+                lexer.RemoveErrorListeners();
+                lexer.GetAllTokens();
+                foreach (var parameter in lexer.Parameters)
+                {
+                    var name = parameter.Key.StartsWith("@") ? parameter.Key.Substring(1) : parameter.Key;
+                    if (!batch.DiscoveredParameters.ContainsKey(name))
+                        batch.DiscoveredParameters.Add(name, parameter.Value);
+                }
+            }
         }
 
         // Splits the raw input into one segment per '--> GO' line and assigns the stripped

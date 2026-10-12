@@ -111,6 +111,7 @@ namespace DaxStudio.UI.ResultsTargets
             for (var executableBatchIndex = 0; executableBatchIndex < batches.Count; executableBatchIndex++)
             {
                 var (batchIndex, dq) = batches[executableBatchIndex];
+                var parameters = await PrepareBatchParametersAsync(runner, textProvider.QueryInfo, batchIndex);
                 // Comment-script commands that change the document state (e.g. "--> CONNECT")
                 // are dispatched in DocumentViewModel.RunQueryInternalAsync before we get here.
                 // Future per-batch commands (CLEAR CACHE, TRACE, USE, ...) would hook in here.
@@ -128,7 +129,7 @@ namespace DaxStudio.UI.ResultsTargets
 
                 var batchIsSessionsDmv = dq.Contains(Common.Constants.SessionsDmv, StringComparison.OrdinalIgnoreCase);
                 var batchTables = new System.Collections.Generic.List<System.Data.DataTable>();
-                using (var dataReader = runner.ExecuteDataReaderQuery(dq, textProvider.ParameterCollection))
+                using (var dataReader = runner.ExecuteDataReaderQuery(dq, parameters))
                 {
                     if (dataReader != null)
                     {
@@ -271,6 +272,8 @@ namespace DaxStudio.UI.ResultsTargets
                     continue;
                 }
 
+                var parameters = await PrepareBatchParametersAsync(runner, textProvider.QueryInfo, batchIndex);
+
                 // Run any per-batch comment-script commands (e.g. "--> CLEARCACHE") before the query.
                 await runner.ProcessBatchPreQueryCommandsAsync(batchIndex);
 
@@ -283,7 +286,7 @@ namespace DaxStudio.UI.ResultsTargets
 
                 var batchIsSessionsDmv = dax.Contains(Common.Constants.SessionsDmv, StringComparison.OrdinalIgnoreCase);
                 var batchTables = new System.Collections.Generic.List<DataTable>();
-                using (var dataReader = runner.ExecuteDataReaderQuery(dax, textProvider.ParameterCollection))
+                using (var dataReader = runner.ExecuteDataReaderQuery(dax, parameters))
                 {
                     if (dataReader != null)
                     {
@@ -633,7 +636,12 @@ namespace DaxStudio.UI.ResultsTargets
                 var list = batches.Select((b, idx) => (BatchIndex: idx, QueryText: b.QueryText))
                                   .Where(t => !string.IsNullOrWhiteSpace(t.QueryText))
                                   .ToList();
-                if (list.Count > 1) return list;
+                if (list.Count == 1)
+                    return new System.Collections.Generic.List<(int, string)>
+                    {
+                        (list[0].BatchIndex, textProvider.QueryText)
+                    };
+                return list;
             }
 
             // Single-batch / classic path: run the whole processed query text, but only if it
@@ -643,6 +651,29 @@ namespace DaxStudio.UI.ResultsTargets
             return string.IsNullOrWhiteSpace(queryText)
                 ? new System.Collections.Generic.List<(int, string)>()
                 : new System.Collections.Generic.List<(int, string)> { (0, queryText) };
+        }
+
+        private static async Task<System.Collections.Generic.List<Microsoft.AnalysisServices.AdomdClient.AdomdParameter>>
+            PrepareBatchParametersAsync(IQueryRunner runner, QueryInfo queryInfo, int batchIndex)
+        {
+            if (queryInfo.ScriptBatches.Count > 1
+                && queryInfo.BatchNeedsParameterValues(batchIndex)
+                && !await runner.PromptForBatchParametersAsync(queryInfo, batchIndex))
+                throw new OperationCanceledException("Query execution was cancelled while requesting batch parameters.");
+
+            return GetBatchParameterCollection(queryInfo, batchIndex);
+        }
+
+        internal static System.Collections.Generic.List<Microsoft.AnalysisServices.AdomdClient.AdomdParameter>
+            GetBatchParameterCollection(QueryInfo queryInfo, int batchIndex)
+        {
+            if (queryInfo == null) throw new ArgumentNullException(nameof(queryInfo));
+
+            return queryInfo.GetBatchParameters(batchIndex)
+                .Values
+                .Select(p => new Microsoft.AnalysisServices.AdomdClient.AdomdParameter(
+                    p.Name, p.Value ?? string.Empty))
+                .ToList();
         }
 
         // Moves the tables from a single batch's result DataSet into the accumulating DataSet,

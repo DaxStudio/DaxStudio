@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,6 +10,13 @@ namespace DaxStudio.Parsers.CommentScript
     {
         public List<ScriptCommand> Commands { get; } = new List<ScriptCommand>();
         public StringBuilder Output { get;  } = new StringBuilder();
+        public Dictionary<string, bool> DiscoveredParameters { get; } =
+            new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// The XMLA parameter block declared in this batch, if any.
+        /// </summary>
+        public string ParameterXml { get; set; } = string.Empty;
 
         /// <summary>
         /// Delay requested on the <c>--&gt; GO</c> boundary after this batch, in milliseconds.

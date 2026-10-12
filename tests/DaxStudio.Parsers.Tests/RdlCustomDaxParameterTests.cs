@@ -3,6 +3,7 @@ using Antlr4.Runtime;
 using DaxStudio.Parsers.Dax;
 using DaxStudio.Parsers.CommentScript;
 using DaxStudio.Parsers.Dax;
+using DaxStudio.Parsers.PreProcessor;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,21 @@ namespace DaxStudio.Parsers.Tests
     [TestClass]
     public  class RdlCustomDaxParameterTests
     {
+        [TestMethod]
+        public void ArrayParameterDoesNotCrossGoBoundary()
+        {
+            var input =
+                "--> PARAMETER @Param_Product_Color = {\"Red\",\"Blue\"}\n" +
+                "EVALUATE { RdlCustomDaxParameter(@Param_Product_Color,String) }\n" +
+                "--> GO\n" +
+                "EVALUATE { RdlCustomDaxParameter(@Param_Product_Color,String) }";
+
+            var result = AntlrPreProcessor.Parse(input);
+
+            Assert.IsTrue(result.HasCommandErrors);
+            StringAssert.Contains(result.CommandErrors[0].Msg, "not supplied with any values in this query batch");
+        }
+
         [TestMethod]
         public void RdlCustomParameterStringArrayTest()
         {
