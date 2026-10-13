@@ -737,8 +737,17 @@
                                                         HorizontalAlignment="Left"
                                                         VerticalAlignment="Top"
                                                         IsHitTestVisible="False"
-                                                        Margin="{Binding UseIndentCodeFolding , Converter={StaticResource BoolToLeftThicknessConverter}, ConverterParameter=24.0}"
                                                         >
+                                            <ContentControl.Style>
+                                                <Style TargetType="ContentControl">
+                                                    <Setter Property="Margin" Value="{Binding UseIndentCodeFolding, Converter={StaticResource BoolToLeftThicknessConverter}, ConverterParameter=32.0}"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding UseStructuralCodeFolding}" Value="True">
+                                                            <Setter Property="Margin" Value="32,0,0,0"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </ContentControl.Style>
                                             <ContentControl.LayoutTransform>
                                                 <ScaleTransform ScaleX="{Binding SizeUnitLabel.StringValue, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource StringPercentToDoubleConverter}}" 
                                                                 ScaleY="{Binding SizeUnitLabel.StringValue, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource StringPercentToDoubleConverter}}">
