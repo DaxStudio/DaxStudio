@@ -2472,8 +2472,8 @@ namespace DaxStudio.Core.Connections
             Func<ADOTabularDatabaseCollection, Task<string>> selectDatabase)
         {
             if (!string.IsNullOrEmpty(requestedDatabase)) return requestedDatabase;
-            if (databases.Count <= 1) return null;
-            if (selectDatabase == null) return databases[0];
+            if (databases.Count == 0) return null;
+            if (databases.Count == 1 || selectDatabase == null) return databases[0];
 
             var selectedDatabase = await selectDatabase(databases);
             if (string.IsNullOrEmpty(selectedDatabase)) throw new OperationCanceledException();

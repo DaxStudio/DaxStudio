@@ -170,19 +170,31 @@ namespace DaxStudio.Tests
         }
 
         [TestMethod]
-        [DataRow(0, false)]
-        [DataRow(0, true)]
-        [DataRow(1, false)]
-        [DataRow(1, true)]
-        public async Task AtMostOneDatabaseDoesNotSwitchOrShowPicker(int count, bool pickerEnabled)
+        [DataRow(false)]
+        [DataRow(true)]
+        public async Task NoDatabasesDoesNotSwitchOrShowPicker(bool pickerEnabled)
         {
-            var databases = count == 0 ? CreateDatabaseList() : CreateDatabaseList("Only database");
+            var databases = CreateDatabaseList();
             Func<ADOTabularDatabaseCollection, Task<string>> picker = available =>
                 throw new AssertFailedException("The picker should not be invoked.");
 
             var selected = await ConnectionManager.SelectInitialDatabaseAsync(null, databases, pickerEnabled ? picker : null);
 
             Assert.IsNull(selected);
+        }
+
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public async Task SingleDatabaseSelectsCatalogWithoutShowingPicker(bool pickerEnabled)
+        {
+            var databases = CreateDatabaseList("Only database");
+            Func<ADOTabularDatabaseCollection, Task<string>> picker = available =>
+                throw new AssertFailedException("The picker should not be invoked.");
+
+            var selected = await ConnectionManager.SelectInitialDatabaseAsync(null, databases, pickerEnabled ? picker : null);
+
+            Assert.AreEqual("Only database", selected);
         }
 
         [TestMethod]
