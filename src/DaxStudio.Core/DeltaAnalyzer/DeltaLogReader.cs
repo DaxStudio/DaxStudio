@@ -5,6 +5,7 @@ using Parquet.Schema;
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -116,6 +117,7 @@ namespace DaxStudio.Core.DeltaAnalyzer
         public bool LiquidClusteringEnabled { get; set; }
         public string ClusteringColumns { get; set; }
         public string Error { get; set; }
+        internal bool LogDirectoryFound { get; set; }
 
         private long? _lastModifiedMillis;
 
@@ -176,19 +178,36 @@ namespace DaxStudio.Core.DeltaAnalyzer
 
     /// <summary>
     /// Reads and interprets a Delta table's <c>_delta_log</c> (checkpoint + commit files) directly from
-    /// OneLake. Everything is best-effort and defensive: a parsing failure on any single commit or the
-    /// checkpoint is logged and skipped so a partial result can still be returned.
+    /// OneLake, including V1 multipart and V2 JSON/Parquet checkpoints with sidecars. An incomplete
+    /// snapshot is reported as an error without publishing a partial active-file set.
     /// </summary>
     public class DeltaLogReader
     {
-        private static readonly Regex CommitFileRegex = new Regex(@"(\d{20})\.json$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        private static readonly Regex CheckpointFileRegex = new Regex(@"(\d{20})\.checkpoint.*\.parquet$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex CommitFileRegex = new Regex(@"^(\d{20})\.json$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex CheckpointFileRegex = new Regex(
+            @"^(\d{20})\.checkpoint(?:\.(?<part>\d{10})\.(?<parts>\d{10})|\.(?<uuid>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}))?\.(?<format>parquet|json)$",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        private readonly OneLakeHttpClient _client;
+        private readonly Func<string, string, CancellationToken, Task<List<OneLakePathItem>>> _listPaths;
+        private readonly Func<string, CancellationToken, Task<string>> _readText;
+        private readonly Func<string, CancellationToken, Stream> _openRead;
 
         public DeltaLogReader(OneLakeHttpClient client)
         {
-            _client = client ?? throw new ArgumentNullException(nameof(client));
+            if (client == null) throw new ArgumentNullException(nameof(client));
+            _listPaths = (filesystem, directory, ct) => client.ListPathsAsync(filesystem, directory, false, ct);
+            _readText = client.ReadTextAsync;
+            _openRead = (url, ct) => HttpRangeStream.Create(client, url, ct);
+        }
+
+        internal DeltaLogReader(
+            Func<string, string, CancellationToken, Task<List<OneLakePathItem>>> listPaths,
+            Func<string, CancellationToken, Task<string>> readText,
+            Func<string, CancellationToken, Stream> openRead)
+        {
+            _listPaths = listPaths ?? throw new ArgumentNullException(nameof(listPaths));
+            _readText = readText ?? throw new ArgumentNullException(nameof(readText));
+            _openRead = openRead ?? throw new ArgumentNullException(nameof(openRead));
         }
 
         public async Task<DeltaLogResult> ReadAsync(string tableDfsUrl, CancellationToken ct)
@@ -197,86 +216,203 @@ namespace DaxStudio.Core.DeltaAnalyzer
             var location = OneLakeLocation.Parse(tableDfsUrl);
             var deltaLogDir = $"{location.Directory.TrimEnd('/')}/_delta_log";
 
-            List<OneLakePathItem> logFiles;
             try
             {
-                logFiles = await _client.ListPathsAsync(location.FilesystemUrl, deltaLogDir, false, ct).ConfigureAwait(false);
+                ct.ThrowIfCancellationRequested();
+                var logFiles = await _listPaths(location.FilesystemUrl, deltaLogDir, ct).ConfigureAwait(false);
+                result.LogDirectoryFound = true;
+                var activeFiles = new Dictionary<string, DeltaAddFile>(StringComparer.Ordinal);
+                var lastCheckpoint = logFiles.FirstOrDefault(f => LeafName(f.Name) == "_last_checkpoint");
+                JObject pointer = null;
+                if (lastCheckpoint != null)
+                {
+                    pointer = JObject.Parse(await _readText(location.BuildFileUrl(lastCheckpoint.Name), ct).ConfigureAwait(false));
+                }
+                var checkpointVersion = pointer != null
+                    ? pointer.Value<long?>("version") ?? throw new InvalidDataException("Missing checkpoint version.")
+                    : logFiles.Select(f => ExtractVersion(CheckpointFileRegex, LeafName(f.Name))).DefaultIfEmpty(-1).Max();
+                if (pointer != null && checkpointVersion < 0)
+                    throw new InvalidDataException("Invalid checkpoint version.");
+
+                if (checkpointVersion >= 0)
+                {
+                    var checkpoints = SelectCheckpoint(logFiles, pointer, checkpointVersion, location, deltaLogDir);
+                    var state = new CheckpointState(checkpointVersion);
+                    foreach (var url in checkpoints)
+                    {
+                        ct.ThrowIfCancellationRequested();
+                        if (url.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+                            ApplyCommitJson(await _readText(url, ct).ConfigureAwait(false), activeFiles, result, state);
+                        else
+                            await ReadCheckpointAsync(url, activeFiles, result, state, ct).ConfigureAwait(false);
+                    }
+
+                    var uuidNamed = checkpoints.Any(url => CheckpointFileRegex.Match(LeafName(url)).Groups["uuid"].Success);
+                    state.Validate(uuidNamed);
+                    var sidecarUrls = new HashSet<string>(StringComparer.Ordinal);
+                    foreach (var sidecar in state.Sidecars)
+                    {
+                        ct.ThrowIfCancellationRequested();
+                        var url = ResolveCheckpointPath(location, deltaLogDir, sidecar, true);
+                        if (!sidecarUrls.Add(url)) throw new InvalidDataException($"Duplicate checkpoint sidecar: {sidecar}");
+                        await ReadCheckpointAsync(url, activeFiles, result, null, ct).ConfigureAwait(false);
+                    }
+                }
+
+                var commits = logFiles
+                    .Select(f => new { File = f, Version = ExtractVersion(CommitFileRegex, LeafName(f.Name)) })
+                    .Where(x => x.Version > checkpointVersion)
+                    .OrderBy(x => x.Version)
+                    .ToList();
+                var expectedVersion = checkpointVersion + 1;
+                foreach (var commit in commits)
+                {
+                    ct.ThrowIfCancellationRequested();
+                    if (commit.Version != expectedVersion)
+                        throw new InvalidDataException($"Missing Delta commit {expectedVersion}; cannot reconstruct a complete snapshot.");
+                    var text = await _readText(location.BuildFileUrl(commit.File.Name), ct).ConfigureAwait(false);
+                    ApplyCommitJson(text, activeFiles, result);
+                    expectedVersion++;
+                }
+                if (checkpointVersion < 0 && commits.Count == 0)
+                    throw new InvalidDataException("No Delta checkpoint or commits were found.");
+                result.ActiveFiles.AddRange(activeFiles.Values);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
-                Log.Warning(ex, Constants.LogMessageTemplate, nameof(DeltaLogReader), nameof(ReadAsync), $"Unable to list _delta_log for {tableDfsUrl}");
+                Log.Warning(ex, Constants.LogMessageTemplate, nameof(DeltaLogReader), nameof(ReadAsync), $"Unable to reconstruct Delta snapshot for {tableDfsUrl}");
                 result.Error = $"Unable to read _delta_log: {ex.Message}";
-                return result;
             }
-
-            // Active file state keyed by (url-decoded) path.
-            var activeFiles = new Dictionary<string, DeltaAddFile>(StringComparer.Ordinal);
-            long checkpointVersion = -1;
-
-            // 1. Read _last_checkpoint (if present) to find the checkpoint version.
-            var lastCheckpoint = logFiles.FirstOrDefault(f => f.Name != null && f.Name.EndsWith("_last_checkpoint", StringComparison.OrdinalIgnoreCase));
-            if (lastCheckpoint != null)
-            {
-                try
-                {
-                    var text = await _client.ReadTextAsync(location.BuildFileUrl(lastCheckpoint.Name), ct).ConfigureAwait(false);
-                    var obj = JObject.Parse(text);
-                    checkpointVersion = obj.Value<long?>("version") ?? -1;
-                }
-                catch (Exception ex)
-                {
-                    Log.Warning(ex, Constants.LogMessageTemplate, nameof(DeltaLogReader), nameof(ReadAsync), "Unable to parse _last_checkpoint, falling back to full commit replay");
-                    checkpointVersion = -1;
-                }
-            }
-
-            // 2. Read the checkpoint parquet for that version.
-            if (checkpointVersion >= 0)
-            {
-                var checkpointParts = logFiles
-                    .Where(f => f.Name != null && CheckpointFileRegex.IsMatch(f.Name) && ExtractVersion(CheckpointFileRegex, f.Name) == checkpointVersion)
-                    .ToList();
-
-                foreach (var part in checkpointParts)
-                {
-                    ct.ThrowIfCancellationRequested();
-                    try
-                    {
-                        await ReadCheckpointAsync(location.BuildFileUrl(part.Name), activeFiles, result, ct).ConfigureAwait(false);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Warning(ex, Constants.LogMessageTemplate, nameof(DeltaLogReader), nameof(ReadAsync), $"Error reading checkpoint {part.Name}");
-                        result.Error = AppendError(result.Error, $"checkpoint parse error: {ex.Message}");
-                    }
-                }
-            }
-
-            // 3. Replay commit json files with version > checkpointVersion (ascending).
-            var commits = logFiles
-                .Where(f => f.Name != null && CommitFileRegex.IsMatch(f.Name))
-                .Select(f => new { File = f, Version = ExtractVersion(CommitFileRegex, f.Name) })
-                .Where(x => x.Version > checkpointVersion)
-                .OrderBy(x => x.Version)
-                .ToList();
-
-            foreach (var commit in commits)
-            {
-                ct.ThrowIfCancellationRequested();
-                try
-                {
-                    var text = await _client.ReadTextAsync(location.BuildFileUrl(commit.File.Name), ct).ConfigureAwait(false);
-                    ApplyCommitJson(text, activeFiles, result);
-                }
-                catch (Exception ex)
-                {
-                    Log.Warning(ex, Constants.LogMessageTemplate, nameof(DeltaLogReader), nameof(ReadAsync), $"Error reading commit {commit.File.Name}");
-                    result.Error = AppendError(result.Error, $"commit {commit.Version} parse error: {ex.Message}");
-                }
-            }
-
-            result.ActiveFiles.AddRange(activeFiles.Values);
             return result;
+        }
+
+        private static string LeafName(string path) => path?.Substring(path.LastIndexOf('/') + 1) ?? string.Empty;
+
+        private static List<string> SelectCheckpoint(List<OneLakePathItem> files, JObject pointer, long version,
+            OneLakeLocation location, string logDirectory)
+        {
+            if (pointer?["v2Checkpoint"] != null && pointer["v2Checkpoint"].Type != JTokenType.Null
+                && !(pointer["v2Checkpoint"] is JObject))
+                throw new InvalidDataException("Invalid V2 checkpoint reference.");
+            if (pointer?["v2Checkpoint"] is JObject v2)
+            {
+                var url = ResolveCheckpointPath(location, logDirectory, v2.Value<string>("path"), false);
+                var match = CheckpointFileRegex.Match(LeafName(url));
+                if (!match.Success || !match.Groups["uuid"].Success || ExtractVersion(CheckpointFileRegex, LeafName(url)) != version)
+                    throw new InvalidDataException("The V2 checkpoint reference does not match its version or filename format.");
+                return new List<string> { url };
+            }
+
+            var names = new HashSet<string>(files.Select(f => LeafName(f.Name)), StringComparer.Ordinal);
+            var prefix = version.ToString("D20", System.Globalization.CultureInfo.InvariantCulture) + ".checkpoint";
+            var parts = pointer?.Value<int?>("parts");
+            if (parts.HasValue && parts.Value <= 0)
+                throw new InvalidDataException("Invalid multipart checkpoint part count.");
+            if (!parts.HasValue && names.Contains(prefix + ".parquet"))
+                return new List<string> { location.BuildFileUrl(logDirectory + "/" + prefix + ".parquet") };
+
+            if (!parts.HasValue)
+            {
+                var matches = names.Select(n => CheckpointFileRegex.Match(n))
+                    .Where(m => m.Success && m.Value.StartsWith(prefix + ".", StringComparison.Ordinal))
+                    .ToList();
+                var uuid = matches.Where(m => m.Groups["uuid"].Success)
+                    .OrderBy(m => m.Value, StringComparer.Ordinal).FirstOrDefault();
+                if (uuid != null)
+                    return new List<string> { location.BuildFileUrl(logDirectory + "/" + uuid.Value) };
+                var partCounts = matches.Where(m => m.Groups["parts"].Success && m.Groups["format"].Value == "parquet")
+                    .Select(m => int.Parse(m.Groups["parts"].Value, System.Globalization.CultureInfo.InvariantCulture))
+                    .Distinct().OrderBy(count => count);
+                foreach (var count in partCounts)
+                {
+                    if (count > 0 && count <= names.Count &&
+                        Enumerable.Range(1, count).All(part => names.Contains(CheckpointPartName(prefix, part, count))))
+                    {
+                        parts = count;
+                        break;
+                    }
+                }
+            }
+
+            if (!parts.HasValue || parts.Value <= 0 || parts.Value > names.Count)
+                throw new InvalidDataException($"No complete checkpoint was found for version {version}.");
+            var urls = new List<string>();
+            for (var part = 1; part <= parts.Value; part++)
+            {
+                var name = CheckpointPartName(prefix, part, parts.Value);
+                if (!names.Contains(name))
+                    throw new InvalidDataException($"Missing checkpoint part: {name}");
+                urls.Add(location.BuildFileUrl(logDirectory + "/" + name));
+            }
+            return urls;
+        }
+
+        private static string CheckpointPartName(string prefix, int part, int count)
+        {
+            return string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0}.{1:D10}.{2:D10}.parquet", prefix, part, count);
+        }
+
+        private static string ResolveCheckpointPath(OneLakeLocation location, string logDirectory, string path, bool sidecar)
+        {
+            if (string.IsNullOrWhiteSpace(path)) throw new InvalidDataException("Missing checkpoint file path.");
+            var decoded = Uri.UnescapeDataString(path);
+            if (decoded.Contains("\\") || decoded.Split('/').Any(p => p == "." || p == ".."))
+                throw new InvalidDataException($"Invalid checkpoint file path: {path}");
+
+            var directory = logDirectory + (sidecar ? "/_sidecars" : string.Empty);
+            var baseUrl = location.BuildFileUrl(directory) + "/";
+            string name;
+            if (Uri.TryCreate(path, UriKind.Absolute, out var absolute))
+            {
+                if (absolute.Query.Length != 0 || absolute.Fragment.Length != 0)
+                    throw new InvalidDataException($"Invalid checkpoint file URL: {path}");
+                if (absolute.Scheme == "abfss")
+                {
+                    absolute = new Uri($"https://{absolute.Host}/{absolute.UserInfo}{absolute.AbsolutePath}");
+                }
+                if (!absolute.AbsoluteUri.StartsWith(baseUrl, StringComparison.Ordinal))
+                    throw new InvalidDataException($"Checkpoint file must reside in {directory}: {path}");
+                name = Uri.UnescapeDataString(absolute.AbsoluteUri.Substring(baseUrl.Length));
+            }
+            else
+            {
+                name = decoded;
+                if (sidecar && name.StartsWith("_sidecars/", StringComparison.Ordinal))
+                    name = name.Substring("_sidecars/".Length);
+            }
+            if (string.IsNullOrEmpty(name) || name.Contains("/") || name.Contains("\\") ||
+                (sidecar && !name.EndsWith(".parquet", StringComparison.OrdinalIgnoreCase)))
+                throw new InvalidDataException($"Invalid checkpoint file name: {path}");
+            return location.BuildFileUrl(directory + "/" + name);
+        }
+
+        private sealed class CheckpointState
+        {
+            public CheckpointState(long version) { Version = version; }
+            public long Version { get; }
+            public int SchemaCount { get; set; }
+            public int MetadataCount { get; private set; }
+            public bool HasFileActions { get; set; }
+            public List<string> Sidecars { get; } = new List<string>();
+
+            public void TrackMetadata(long? version)
+            {
+                if (version != Version) throw new InvalidDataException("Checkpoint metadata version does not match the selected checkpoint.");
+                MetadataCount++;
+            }
+
+            public void Validate(bool uuidNamed)
+            {
+                if (SchemaCount != 1) throw new InvalidDataException("A checkpoint must contain exactly one table schema.");
+                if (MetadataCount > 1 || ((uuidNamed || Sidecars.Count > 0) && MetadataCount != 1))
+                    throw new InvalidDataException("A V2 checkpoint must contain exactly one checkpointMetadata action.");
+                if (Sidecars.Count > 0 && HasFileActions)
+                    throw new InvalidDataException("A V2 checkpoint cannot mix inline file actions and sidecars.");
+            }
         }
 
         private static long ExtractVersion(Regex regex, string name)
@@ -287,17 +423,26 @@ namespace DaxStudio.Core.DeltaAnalyzer
         }
 
         /// <summary>Applies the actions in one commit json file (one JSON object per line).</summary>
-        private void ApplyCommitJson(string text, Dictionary<string, DeltaAddFile> activeFiles, DeltaLogResult result)
+        private void ApplyCommitJson(string text, Dictionary<string, DeltaAddFile> activeFiles, DeltaLogResult result, CheckpointState checkpoint = null)
         {
-            if (string.IsNullOrWhiteSpace(text)) return;
+            if (string.IsNullOrWhiteSpace(text)) throw new InvalidDataException("Empty Delta log file.");
             var lines = text.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
             foreach (var rawLine in lines)
             {
                 var line = rawLine.Trim();
                 if (line.Length == 0) continue;
-                JObject action;
-                try { action = JObject.Parse(line); }
-                catch { continue; }
+                var action = JObject.Parse(line);
+
+                if (checkpoint != null)
+                {
+                    if (action["checkpointMetadata"] is JObject checkpointMetadata)
+                        checkpoint.TrackMetadata(checkpointMetadata.Value<long?>("version"));
+                    if (action["sidecar"] is JObject sidecar)
+                        checkpoint.Sidecars.Add(sidecar.Value<string>("path"));
+                    if (action["add"] is JObject || action["remove"] is JObject)
+                        checkpoint.HasFileActions = true;
+                    if (action["metaData"] is JObject) checkpoint.SchemaCount++;
+                }
 
                 var add = action["add"] as JObject;
                 if (add != null)
@@ -322,7 +467,8 @@ namespace DaxStudio.Core.DeltaAnalyzer
                 if (commitInfo != null) result.TrackModified(commitInfo.Value<long?>("timestamp"));
 
                 var remove = action["remove"] as JObject;
-                if (remove != null)
+                // Checkpoint removes are tombstones, not ordered changes to the active add set.
+                if (remove != null && checkpoint == null)
                 {
                     var path = DecodePath(remove.Value<string>("path"));
                     if (!string.IsNullOrEmpty(path)) activeFiles.Remove(path);
@@ -343,7 +489,8 @@ namespace DaxStudio.Core.DeltaAnalyzer
         {
             // Parse the table schema first so column-mapping physical names can be translated.
             var schemaString = metaData.Value<string>("schemaString");
-            if (!string.IsNullOrEmpty(schemaString)) ApplySchemaString(schemaString, result);
+            if (string.IsNullOrEmpty(schemaString)) throw new InvalidDataException("Delta metadata is missing schemaString.");
+            ApplySchemaString(schemaString, result);
 
             var partitionCols = metaData["partitionColumns"] as JArray;
             if (partitionCols != null)
@@ -362,25 +509,22 @@ namespace DaxStudio.Core.DeltaAnalyzer
         /// </summary>
         private void ApplySchemaString(string schemaString, DeltaLogResult result)
         {
-            try
+            var schema = JObject.Parse(schemaString);
+            if (!(schema["fields"] is JArray fields)) throw new InvalidDataException("Delta schema is missing fields.");
+            var mapping = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (var token in fields)
             {
-                var schema = JObject.Parse(schemaString);
-                if (!(schema["fields"] is JArray fields)) return;
-                foreach (var field in fields.OfType<JObject>())
+                if (!(token is JObject field)) throw new InvalidDataException("Delta schema contains an invalid field.");
+                var logicalName = field.Value<string>("name");
+                if (string.IsNullOrEmpty(logicalName)) throw new InvalidDataException("Delta schema contains an unnamed field.");
+                var physicalName = (field["metadata"] as JObject)?.Value<string>("delta.columnMapping.physicalName");
+                if (!string.IsNullOrEmpty(physicalName))
                 {
-                    var logicalName = field.Value<string>("name");
-                    if (string.IsNullOrEmpty(logicalName)) continue;
-                    var physicalName = (field["metadata"] as JObject)?.Value<string>("delta.columnMapping.physicalName");
-                    if (!string.IsNullOrEmpty(physicalName))
-                    {
-                        result.PhysicalToLogicalColumn[physicalName] = logicalName;
-                    }
+                    mapping.Add(physicalName, logicalName);
                 }
             }
-            catch (Exception ex)
-            {
-                Log.Warning(ex, Constants.LogMessageTemplate, nameof(DeltaLogReader), nameof(ApplySchemaString), "Error parsing delta schemaString for column mapping");
-            }
+            result.PhysicalToLogicalColumn.Clear();
+            foreach (var entry in mapping) result.PhysicalToLogicalColumn.Add(entry.Key, entry.Value);
         }
 
         private void ApplyConfiguration(JObject config, DeltaLogResult result)
@@ -472,29 +616,31 @@ namespace DaxStudio.Core.DeltaAnalyzer
             catch { return path; }
         }
 
-        private static string AppendError(string existing, string message)
-        {
-            return string.IsNullOrEmpty(existing) ? message : existing + "; " + message;
-        }
-
         /// <summary>
-        /// Reads a checkpoint parquet file. Scalar add/remove fields are aligned by row index to
-        /// reconstruct the active file set; list/map fields (partitionColumns, features, configuration)
-        /// are read as flattened value sets for best-effort clustering / partition detection.
+        /// Reads V1/V2 checkpoint metadata and active files, or file actions from a V2 sidecar.
+        /// Schemas are shared with JSON replay so later metadata replaces checkpoint mappings.
+        /// List/map fields are read as flattened values for partition/clustering detection.
         /// </summary>
-        private async Task ReadCheckpointAsync(string url, Dictionary<string, DeltaAddFile> activeFiles, DeltaLogResult result, CancellationToken ct)
+        private async Task ReadCheckpointAsync(string url, Dictionary<string, DeltaAddFile> activeFiles,
+            DeltaLogResult result, CheckpointState checkpoint, CancellationToken ct)
         {
-            using (var stream = HttpRangeStream.Create(_client, url, ct))
+            using (var stream = _openRead(url, ct))
             using (var reader = await ParquetReader.CreateAsync(stream, null, false, ct).ConfigureAwait(false))
             {
                 var dataFields = reader.Schema.GetDataFields();
                 var addPathField = FindField(dataFields, "add", "path");
                 var addSizeField = FindField(dataFields, "add", "size");
                 var addStatsField = FindField(dataFields, "add", "stats");
+                var addNumRecordsField = FindField(dataFields, "add", "stats_parsed", "numRecords");
                 var addModTimeField = FindField(dataFields, "add", "modificationtime");
                 var addDvStorageField = FindField(dataFields, "add", "deletionvector", "storagetype");
                 var addDvCardField = FindField(dataFields, "add", "deletionvector", "cardinality");
                 var removePathField = FindField(dataFields, "remove", "path");
+                var schemaField = FindField(dataFields, "metaData", "schemaString");
+                var sidecarField = FindField(dataFields, "sidecar", "path");
+                var checkpointVersionField = FindField(dataFields, "checkpointMetadata", "version");
+                if (checkpoint == null && addPathField == null && removePathField == null)
+                    throw new InvalidDataException("A checkpoint sidecar must contain file actions.");
 
                 var partitionFields = dataFields.Where(f => PathContains(f, "partitioncolumns")).ToList();
                 var featureFields = dataFields.Where(f => PathContains(f, "writerfeatures") || PathContains(f, "readerfeatures")).ToList();
@@ -512,10 +658,33 @@ namespace DaxStudio.Core.DeltaAnalyzer
                         var addPath = await ReadDataAsync(rowGroup, addPathField, ct).ConfigureAwait(false);
                         var addSize = await ReadDataAsync(rowGroup, addSizeField, ct).ConfigureAwait(false);
                         var addStats = await ReadDataAsync(rowGroup, addStatsField, ct).ConfigureAwait(false);
+                        var addNumRecords = await ReadDataAsync(rowGroup, addNumRecordsField, ct).ConfigureAwait(false);
                         var addModTime = await ReadDataAsync(rowGroup, addModTimeField, ct).ConfigureAwait(false);
                         var addDvStorage = await ReadDataAsync(rowGroup, addDvStorageField, ct).ConfigureAwait(false);
                         var addDvCard = await ReadDataAsync(rowGroup, addDvCardField, ct).ConfigureAwait(false);
                         var removePath = await ReadDataAsync(rowGroup, removePathField, ct).ConfigureAwait(false);
+                        var schemas = await ReadDataAsync(rowGroup, schemaField, ct).ConfigureAwait(false);
+                        var sidecars = await ReadDataAsync(rowGroup, sidecarField, ct).ConfigureAwait(false);
+                        var versions = await ReadDataAsync(rowGroup, checkpointVersionField, ct).ConfigureAwait(false);
+
+                        foreach (var schema in NonNullValues(schemas))
+                        {
+                            if (checkpoint == null) throw new InvalidDataException("A sidecar cannot contain table metadata.");
+                            ApplySchemaString((string)schema, result);
+                            checkpoint.SchemaCount++;
+                        }
+                        foreach (var sidecar in NonNullValues(sidecars))
+                        {
+                            if (checkpoint == null) throw new InvalidDataException("A sidecar cannot reference another sidecar.");
+                            checkpoint.Sidecars.Add((string)sidecar);
+                        }
+                        foreach (var version in NonNullValues(versions))
+                        {
+                            if (checkpoint == null) throw new InvalidDataException("A sidecar cannot contain checkpoint metadata.");
+                            checkpoint.TrackMetadata(Convert.ToInt64(version));
+                        }
+                        if (checkpoint != null && (NonNullValues(addPath).Any() || NonNullValues(removePath).Any()))
+                            checkpoint.HasFileActions = true;
 
                         if (addPath != null)
                         {
@@ -530,20 +699,12 @@ namespace DaxStudio.Core.DeltaAnalyzer
                                 {
                                     Path = decoded,
                                     Size = ToLong(addSize, i),
-                                    NumRecords = ExtractNumRecords(GetAt(addStats, i) as string),
+                                    NumRecords = ExtractNumRecords(GetAt(addStats, i) as string)
+                                        ?? (GetAt(addNumRecords, i) == null ? (long?)null : ToLong(addNumRecords, i)),
                                     HasDeletionVector = hasDv,
                                     DeletionVectorCardinality = hasDv ? ToLong(addDvCard, i) : 0
                                 };
                                 result.TrackModified(ToLong(addModTime, i));
-                            }
-                        }
-
-                        if (removePath != null)
-                        {
-                            foreach (var r in removePath)
-                            {
-                                var p = r as string;
-                                if (!string.IsNullOrEmpty(p)) activeFiles.Remove(DecodePath(p));
                             }
                         }
 
@@ -568,6 +729,11 @@ namespace DaxStudio.Core.DeltaAnalyzer
             }
         }
 
+        private static IEnumerable<object> NonNullValues(Array data)
+        {
+            return data == null ? Enumerable.Empty<object>() : data.Cast<object>().Where(value => value != null);
+        }
+
         private static void CollectStrings(List<DataField> fields, Parquet.ParquetRowGroupReader rowGroup, List<string> target, CancellationToken ct)
         {
             foreach (var f in fields)
@@ -584,16 +750,8 @@ namespace DaxStudio.Core.DeltaAnalyzer
         private static async Task<Array> ReadDataAsync(Parquet.ParquetRowGroupReader rowGroup, DataField field, CancellationToken ct)
         {
             if (field == null) return null;
-            try
-            {
-                var col = await rowGroup.ReadColumnAsync(field, ct).ConfigureAwait(false);
-                return col?.Data;
-            }
-            catch (Exception ex)
-            {
-                Log.Warning(ex, Constants.LogMessageTemplate, nameof(DeltaLogReader), nameof(ReadDataAsync), $"Error reading checkpoint column {field?.Path}");
-                return null;
-            }
+            var col = await rowGroup.ReadColumnAsync(field, ct).ConfigureAwait(false);
+            return col.Data;
         }
 
         private static object GetAt(Array array, int index)
@@ -606,7 +764,7 @@ namespace DaxStudio.Core.DeltaAnalyzer
         {
             var v = GetAt(array, index);
             if (v == null) return 0;
-            try { return Convert.ToInt64(v); } catch { return 0; }
+            return Convert.ToInt64(v);
         }
 
         private static DataField FindField(DataField[] fields, params string[] parts)

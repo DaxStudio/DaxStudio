@@ -99,7 +99,8 @@ namespace DaxStudio.Core.DeltaAnalyzer
                         ct.ThrowIfCancellationRequested();
                         logResult = await logReader.ReadAsync(candidate, ct).ConfigureAwait(false);
                         usedPath = candidate;
-                        if (!IsPathNotFound(logResult.Error)) break;
+                        // A missing checkpoint/sidecar is not evidence that the table path is wrong.
+                        if (logResult.LogDirectoryFound || !IsPathNotFound(logResult.Error)) break;
                     }
                     analysis.OneLakePath = usedPath;
 

@@ -168,7 +168,8 @@ namespace DAXEditorControl
 
         private void RegisterKeyBindings()
         {
-            
+            TextArea.InputBindings.Add(new KeyBinding(EditingCommands.EnterParagraphBreak, Key.Enter, ModifierKeys.Alt));
+
             //InputBindings.Add(new InputBinding( new HotKeyCommand(MoveLineUp) , new KeyGesture(Key.Up, ModifierKeys.Control | ModifierKeys.Shift)));
             //InputBindings.Add(new InputBinding(new HotKeyCommand(MoveLineDown), new KeyGesture(Key.Down, ModifierKeys.Control | ModifierKeys.Shift)));
 
