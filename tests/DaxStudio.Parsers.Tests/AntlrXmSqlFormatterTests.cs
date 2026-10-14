@@ -45,6 +45,29 @@ namespace DaxStudio.Parsers.Tests
             Assert.IsNotNull(result, "Formatter should return a non-null result");
         }
 
+        [DataTestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void Formatter_WithCallbackAndMultipleDefinitions_ParsesWithoutRecovery(bool parenthesized)
+        {
+            string callback = "[CallbackDataID(ROUND ( Flights[Seats]], 0 ))](PFDATAID( [FlightData (10)].[Seats (16615)] ))";
+            string xmSql = "WITH $Expr0 := " + (parenthesized ? "(" + callback + ")" : callback)
+                + "\r\n$Expr1 := (PFDATAID( [FlightData (10)].[Seats (16615)] ))"
+                + "\r\nSELECT SUM(@$Expr0), SUM(@$Expr1) FROM [FlightData (10)];";
+            var lexer = new xmSQLLexer(new AntlrInputStream(xmSql));
+            var parser = new xmSQLParser(new CommonTokenStream(lexer));
+            var tree = parser.query();
+            Assert.AreEqual(0, parser.NumberOfSyntaxErrors, "Valid WITH definitions must not rely on error recovery.");
+
+            var visitor = new XmSqlFormattingVisitor(simplify: true, format: true);
+            visitor.Visit(tree);
+            var result = visitor.GetFormattedText();
+            StringAssert.Contains(result, "[CallbackDataID(ROUND ( Flights[Seats], 0 ))] ( PFDATAID");
+            StringAssert.Contains(result, "$Expr1 := (PFDATAID");
+            StringAssert.Contains(result, "SUM ( @$Expr0 )");
+            StringAssert.Contains(result, "SUM ( @$Expr1 )");
+        }
+
         [TestMethod]
         public void Formatter_BracketTableRef_DoesNotThrow()
         {
@@ -215,7 +238,7 @@ namespace DaxStudio.Parsers.Tests
             Assert.IsNotNull(result, "Formatter should return a non-null result");
             Assert.IsTrue(result.Contains("MinMaxColumnPositionCallback"), "Should contain callback function name");
             Assert.IsFalse(result.Contains("'MinMaxColumnPositionCallback'"), "Callback should not be wrapped in single quotes");
-            Assert.IsFalse(result.Contains("[MinMaxColumnPositionCallback]"), "Callback should not be wrapped in brackets");
+            Assert.IsTrue(result.Contains("[MinMaxColumnPositionCallback]"), "Callback brackets should be preserved");
             Assert.IsTrue(result.Contains("MAX"), "Should contain MAX aggregation");
             Assert.IsTrue(result.Contains("PFDATAID"), "Should contain PFDATAID function");
         }

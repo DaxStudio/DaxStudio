@@ -56,12 +56,13 @@ selectQueryStatement
     ;
 
 // WITH $Expr0 := (expr) [$Expr1 := (expr) ...]
+// Callback expressions can also appear without surrounding parentheses.
 withClause
     : WITH exprDefinition+
     ;
 
 exprDefinition
-    : EXPR_REF ASSIGN LPAREN expression RPAREN
+    : EXPR_REF ASSIGN (LPAREN expression RPAREN | expression)
     ;
 
 // The core select body (shared by top-level and DEFINE TABLE)

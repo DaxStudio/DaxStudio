@@ -40,6 +40,11 @@ namespace DaxStudio.Parsers.StorageEngine
         private static readonly Regex PremiumTagsPattern = new Regex(
             @"<pii>|</pii>|<ccon>|</ccon>", RegexOptions.Compiled);
 
+        // Keep in sync with XmSqlAnalysisVisitor and xmSQL.xshd.
+        private static readonly Regex CallbackNamePattern = new Regex(
+            @"^\s*(CallbackDataID|EncodeCallback|LogAbsValueCallback|RoundValueCallback|MinMaxColumnPositionCallback|Cond)\b",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
         private readonly Dictionary<string, string> _remapColumns;
         private readonly Dictionary<string, string> _remapTables;
 
@@ -454,9 +459,10 @@ namespace DaxStudio.Parsers.StorageEngine
                 if (!first) _sb.Append(" ");
                 first = false;
                 _sb.Append(expr.EXPR_REF().GetText());
-                _sb.Append(" := (");
+                _sb.Append(" := ");
+                if (expr.LPAREN() != null) _sb.Append("(");
                 AppendExpression(expr.expression());
-                _sb.Append(")");
+                if (expr.RPAREN() != null) _sb.Append(")");
             }
             return null;
         }
@@ -1148,8 +1154,8 @@ namespace DaxStudio.Parsers.StorageEngine
                 }
                 else
                 {
-                    // Function name is a QUOTED_TABLE_NAME (e.g. 'LogAbsValueCallback') or
-                    // BRACKETED_NAME (e.g. [MinMaxColumnPositionCallback]) — strip quotes/brackets
+                    // Strip quoted function names, but preserve brackets around callbacks:
+                    // the bracketed name can contain an entire DAX expression.
                     var quoted = ctx.QUOTED_TABLE_NAME();
                     if (quoted != null)
                     {
@@ -1161,7 +1167,11 @@ namespace DaxStudio.Parsers.StorageEngine
                         if (bracketed != null)
                         {
                             var name = bracketed.GetText();
-                            _sb.Append(UnescapeBrackets(name.Substring(1, name.Length - 2)));
+                            var innerName = UnescapeBrackets(name.Substring(1, name.Length - 2));
+                            bool isCallback = CallbackNamePattern.IsMatch(innerName);
+                            if (isCallback) _sb.Append("[");
+                            _sb.Append(innerName);
+                            if (isCallback) _sb.Append("]");
                         }
                     }
                 }
