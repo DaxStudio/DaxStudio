@@ -188,7 +188,7 @@
                                                 <Image Source="{DynamicResource ZoomDrawingImage}" Width="16" Margin="8,2,8 ,0"  ToolTip="Text Zoom"/>
                                                 <unit:UnitCombobox DataContext="{Binding SizeUnitLabel}"
                                                        FontSize="12"
-                                                       ItemsSource="{Binding SelectedItem.DefaultValues, Mode=OneTime, StringFormat='0%'}"
+                                                       ItemsSource="{Binding SelectedItem.DefaultValues, Mode=OneTime}"
                                                        ToolTip="{Binding ValueTip}"
                                                        HorizontalAlignment="Stretch" VerticalAlignment="Top"
                                                        Padding="0"
@@ -199,6 +199,11 @@
                                                     <unit:UnitCombobox.Text>
                                                         <Binding Path="Value" Mode="TwoWay" ValidatesOnDataErrors="True" StringFormat="0 '%'"/>
                                                     </unit:UnitCombobox.Text>
+                                                    <unit:UnitCombobox.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <TextBlock Text="{Binding StringFormat='{}{0}%'}"/>
+                                                        </DataTemplate>
+                                                    </unit:UnitCombobox.ItemTemplate>
                                                     <unit:UnitCombobox.Style>
                                                         <Style BasedOn="{StaticResource DefaultComboBoxStyle}" TargetType="{x:Type unit:UnitCombobox}"/>
                                                     </unit:UnitCombobox.Style>
