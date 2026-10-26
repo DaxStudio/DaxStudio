@@ -15,7 +15,7 @@ namespace DaxStudio.Parsers.StorageEngine
     /// </summary>
     public class AntlrXmSqlParser : IXmSqlParser
     {
-        // Shared stateless error listener singletons
+        // DirectQuery retains its existing silent listeners; xmSQL logs diagnostics.
         private static readonly SilentErrorListener _silentLexerListener = new SilentErrorListener();
         private static readonly SilentParseErrorListener _silentParserListener = new SilentParseErrorListener();
 
@@ -36,13 +36,13 @@ namespace DaxStudio.Parsers.StorageEngine
             var emptyStream = new AntlrInputStream(string.Empty);
             _xmLexer = new xmSQLLexer(emptyStream);
             _xmLexer.RemoveErrorListeners();
-            _xmLexer.AddErrorListener(_silentLexerListener);
+            _xmLexer.AddErrorListener(XmSqlErrorListener.Instance);
 
             _xmTokenStream = new CommonTokenStream(_xmLexer);
 
             _xmParser = new xmSQLParser(_xmTokenStream);
             _xmParser.RemoveErrorListeners();
-            _xmParser.AddErrorListener(_silentParserListener);
+            _xmParser.AddErrorListener(XmSqlErrorListener.Instance);
             _xmParser.Interpreter.PredictionMode = PredictionMode.SLL;
         }
 

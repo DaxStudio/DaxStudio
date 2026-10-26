@@ -12,6 +12,63 @@ namespace DaxStudio.Parsers.Tests
     [TestClass]
     public class AntlrXmSqlFormatterTests
     {
+        private const string MultilineCallbackName = "[CallbackDataID(IF (\r\n"
+            + "'Internet Sales'[Order Quantity]]* 'Internet Sales'[Unit Price]] > 1000,\r\n"
+            + "'Internet Sales'[Order Quantity]] * 'Internet Sales'[Unit Price]]\r\n"
+            + "))]";
+
+        private const string MultilineCallbackQuery = "SET DC_KIND=\"AUTO\";\r\nWITH\r\n\t$Expr0 := "
+            + MultilineCallbackName
+            + "(PFDATAID( [Internet Sales (43)].[Order Quantity (257)] ), PFDATAID( [Internet Sales (43)].[Unit Price (258)] ))\r\n"
+            + "SELECT\r\n[Date (16)].[Calendar Year (136)] AS [Date (16)$Calendar Year (136)],\r\n"
+            + "SUM(@$Expr0) AS [$Measure0]\r\nFROM [Internet Sales (43)]\r\n"
+            + "\tLEFT OUTER JOIN [Date (16)] ON [Internet Sales (43)].[OrderDateKey (247)]=[Date (16)].[DateKey (126)];";
+
+        [DataTestMethod]
+        [DataRow("\r\n")]
+        [DataRow("\n")]
+        [DataRow(" ")]
+        public void Formatter_CallbackIfExpression_ParsesWithoutRecovery(string newline)
+        {
+            var callback = MultilineCallbackName.Replace("\r\n", newline);
+            var lexer = new xmSQLLexer(new AntlrInputStream(callback));
+            var token = lexer.NextToken();
+            Assert.AreEqual(xmSQLLexer.BRACKETED_NAME, token.Type);
+            Assert.AreEqual(callback, token.Text, "The entire nested IF must be one bracketed function name.");
+            Assert.AreEqual(TokenConstants.EOF, lexer.NextToken().Type);
+
+            lexer = new xmSQLLexer(new AntlrInputStream(MultilineCallbackQuery.Replace("\r\n", newline)));
+            var parser = new xmSQLParser(new CommonTokenStream(lexer));
+            parser.query();
+            Assert.AreEqual(0, parser.NumberOfSyntaxErrors, "The callback query must not rely on error recovery.");
+        }
+
+        [DataTestMethod]
+        [DataRow(true, true)]
+        [DataRow(true, false)]
+        [DataRow(false, true)]
+        [DataRow(false, false)]
+        public void Formatter_MultilineCallbackIfExpression_IsPreserved(bool format, bool simplify)
+        {
+            var result = AntlrXmSqlFormatter.Format(
+                MultilineCallbackQuery + "\r\n\r\n[Estimated size (volume, marshalling bytes): 9, 144]",
+                format, simplify, out long rows, out long bytes, out bool hasSize);
+
+            Assert.IsNotNull(result);
+            StringAssert.Contains(result, "WITH $Expr0 := " + MultilineCallbackName.Replace("]]", "]"));
+            StringAssert.Contains(result, "PFDATAID ( " + (simplify
+                ? "'Internet Sales'[Order Quantity]" : "[Internet Sales (43)].[Order Quantity (257)]") + " )");
+            StringAssert.Contains(result, "PFDATAID ( " + (simplify
+                ? "'Internet Sales'[Unit Price]" : "[Internet Sales (43)].[Unit Price (258)]") + " )");
+            StringAssert.Contains(result, "SUM ( @$Expr0 )");
+            StringAssert.Contains(result, simplify ? "'Date'[Calendar Year]" : "[Date (16)].[Calendar Year (136)]");
+            StringAssert.Contains(result, simplify ? "LEFT OUTER JOIN 'Date'" : "LEFT OUTER JOIN [Date (16)]");
+            Assert.IsTrue(hasSize);
+            Assert.AreEqual(9L, rows);
+            Assert.AreEqual(144L, bytes);
+            StringAssert.Contains(result, "Estimated size: rows = 9  bytes = 144");
+        }
+
         /// <summary>
         /// Directly invokes the visitor (no try-catch wrapper) to verify it doesn't throw.
         /// </summary>

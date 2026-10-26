@@ -286,8 +286,9 @@ EXPR_AT_REF : '@$Expr' [0-9]+ ;
 EXPR_REF    : '$Expr' [0-9]+ ;
 
 // Table name in single quotes: 'Table Name' or '$TTable1'
+// Also used for filter literals; preserve embedded line breaks as token content.
 QUOTED_TABLE_NAME
-    : '\'' (~['\r\n])+ '\''
+    : '\'' (~['])+ '\''
     ;
 
 // Bracketed name: [ColumnName], [$SemijoinProjection], [CallbackDataID('T'[Col])], etc.
@@ -296,19 +297,21 @@ QUOTED_TABLE_NAME
 //     e.g. [CallbackDataID(Mod([CustomerKey]],100))]
 //   - the DAX ']]' escape sequence for a literal ']'
 //   - one level of nested brackets (legacy callback expressions)
+// Line breaks may occur anywhere inside the name, including around callback parentheses.
 BRACKETED_NAME
-    : '[' ( ']' ']' | PAREN_GROUP | ~('[' | ']' | '\r' | '\n') | '[' ~(']' | '\r' | '\n')* ']' )+ ']'
+    : '[' ( ']' ']' | PAREN_GROUP | ~('[' | ']') | '[' ~(']')* ']' )+ ']'
     ;
 
 // A balanced run of parentheses. Brackets are treated as ordinary characters
 // inside it, so a ']' nested in a function call does not terminate the name.
+// Callback DAX expressions can span lines inside these balanced groups.
 fragment PAREN_GROUP
-    : '(' ( PAREN_GROUP | ~('(' | ')' | '\r' | '\n') )* ')'
+    : '(' ( PAREN_GROUP | ~('(' | ')') )* ')'
     ;
 
-// String literals (double-quoted)
+// String literals (double-quoted), including embedded line breaks.
 QUOTED_STRING
-    : '"' (~["\r\n])* '"'
+    : '"' (~["])* '"'
     ;
 
 // Numbers (integer and decimal, with optional sign and scientific notation)

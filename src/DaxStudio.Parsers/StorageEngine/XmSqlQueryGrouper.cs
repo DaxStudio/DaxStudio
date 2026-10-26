@@ -3,7 +3,6 @@ using DaxStudio.Parsers.Grammars.Generated;
 using Serilog;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -232,12 +231,12 @@ namespace DaxStudio.Parsers.StorageEngine
                 var inputStream = new AntlrInputStream(xmSql);
                 var lexer = new xmSQLLexer(inputStream);
                 lexer.RemoveErrorListeners();
-                lexer.AddErrorListener(new SilentLexerErrorListener());
+                lexer.AddErrorListener(XmSqlErrorListener.Instance);
 
                 var tokenStream = new CommonTokenStream(lexer);
                 var parser = new xmSQLParser(tokenStream);
                 parser.RemoveErrorListeners();
-                parser.AddErrorListener(new SilentParserErrorListener());
+                parser.AddErrorListener(XmSqlErrorListener.Instance);
 
                 var tree = parser.query();
 
@@ -286,18 +285,5 @@ namespace DaxStudio.Parsers.StorageEngine
             return s.Length <= maxLen ? s : s.Substring(0, maxLen) + "...";
         }
 
-        /// <summary>Silent error listener for ANTLR lexer errors.</summary>
-        private class SilentLexerErrorListener : IAntlrErrorListener<int>
-        {
-            public void SyntaxError(TextWriter output, IRecognizer recognizer, int offendingSymbol,
-                int line, int charPositionInLine, string msg, RecognitionException e) { }
-        }
-
-        /// <summary>Silent error listener for ANTLR parser errors.</summary>
-        private class SilentParserErrorListener : IAntlrErrorListener<IToken>
-        {
-            public void SyntaxError(TextWriter output, IRecognizer recognizer, IToken offendingSymbol,
-                int line, int charPositionInLine, string msg, RecognitionException e) { }
-        }
     }
 }

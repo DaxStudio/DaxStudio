@@ -28,32 +28,9 @@
         <Setter Property="LineNumbersForeground" Value="{DynamicResource {x:Static reskeys:ResourceKeys.EditorLineNumbersForeground}}" />
         <Setter Property="EditorCurrentLineBackground" Value="{DynamicResource {x:Static reskeys:ResourceKeys.EditorCurrentLineBackgroundBrushKey}}" />
 
+        <Setter Property="FlowDirection" Value="LeftToRight"/>
+        <!-- AvalonEdit does not support RTL, so ensure we use LTR by default -->
 
-
-        <!--<Setter Property="EditorCurrentLineBorder" Value="{DynamicResource {x:Static reskeys:ResourceKeys.EditorCurrentLineBorderBrushKey}}" />
-        <Setter Property="EditorCurrentLineBorderThickness" Value="{DynamicResource {x:Static reskeys:ResourceKeys.EditorCurrentLineBorderThicknessKey}}" />-->
-        
-        
-        
-        <!--<Style TargetType="{x:Type ae:TextEditor}">-->
-        <!--
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="{x:Type local:DAXEditor}">
-                    <Border Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}">
-
-                    </Border>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-        -->
-        
-            <!--<Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.WindowTextBrushKey}}" />-->
-            <!--<Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" />-->
-            <Setter Property="FlowDirection" Value="LeftToRight"/>
-            <!-- AvalonEdit does not support RTL, so ensure we use LTR by default -->
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type local:DAXEditor}">
