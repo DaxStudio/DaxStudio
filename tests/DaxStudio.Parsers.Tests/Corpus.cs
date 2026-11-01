@@ -56,5 +56,16 @@ namespace DaxStudio.Parsers.Tests
             parser.query();
             return parser.NumberOfSyntaxErrors;
         }
+
+        /// <summary>Number of syntax errors the ANTLR DirectQuery SQL grammar reports for a query.</summary>
+        public static int AntlrDirectQuerySyntaxErrors(string sql)
+        {
+            var lexer = new DirectQuerySqlLexer(new AntlrInputStream(sql));
+            lexer.RemoveErrorListeners();
+            var parser = new DaxStudio.Parsers.Grammars.Generated.DirectQuerySqlParser(new CommonTokenStream(lexer));
+            parser.RemoveErrorListeners();
+            parser.query();
+            return parser.NumberOfSyntaxErrors;
+        }
     }
 }
