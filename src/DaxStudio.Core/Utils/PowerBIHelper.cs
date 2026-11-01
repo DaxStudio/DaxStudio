@@ -7,6 +7,7 @@ using System.Security.Principal;
 using DaxStudio.Common;
 using System.Threading.Tasks;
 using System.Linq;
+using System.Collections.Concurrent;
 
 namespace DaxStudio.Core.Utils
 {
@@ -79,63 +80,36 @@ namespace DaxStudio.Core.Utils
     public static class PowerBIHelper
     {
 
-        private static readonly List<PowerBIInstance> _instances = new List<PowerBIInstance>();
-        private static bool instancesLoaded = false;
-        private static readonly object _scanLock = new object();
-        private static DateTime _lastScanUtc = DateTime.MinValue;
-        private static bool _lastScanIncludedPBIRS = false;
-        // Coalesce force-refresh scans that occur within this window. The connection dialog
-        // triggers a scan from its constructor and again when it handles the
-        // ApplicationActivatedEvent that fires as the app gains focus at startup - both fire
-        // almost simultaneously, so without this we scan (and log) the msmdsrv processes twice.
-        private static readonly TimeSpan ScanThrottle = TimeSpan.FromSeconds(2);
+        private static readonly PowerBIInstanceCache _instanceCache = new PowerBIInstanceCache(ScanLocalInstances);
         const int MaxParallelInstanceScans = 5;
 
         public static List<PowerBIInstance> GetLocalInstances(bool includePBIRS, bool refreshList)
         {
-            if (!refreshList && instancesLoaded)
-            {
-                Log.Debug("{class} {method} Returning cached PowerBI instances", nameof(PowerBIHelper), nameof(GetLocalInstances));
-                return _instances;
-            }
+            return _instanceCache.GetInstances(includePBIRS, refreshList);
+        }
 
-            lock (_scanLock)
+        public static PowerBIInstance GetLocalInstance(int port)
+        {
+            return _instanceCache.FindByPort(port);
+        }
+
+        private static List<PowerBIInstance> ScanLocalInstances(bool includePBIRS)
+        {
+            var dict = ManagedIpHelper.GetExtendedTcpDictionary();
+            var msmdsrvProcesses = Process.GetProcessesByName("msmdsrv");
+            var instances = new ConcurrentBag<PowerBIInstance>();
+            var isAdmin = IsAdministrator();
+
+            msmdsrvProcesses.ParallelForEachAsync(async proc =>
             {
-                // Another thread may have completed a scan while we were waiting for the lock.
-                // Coalesce near-simultaneous force-refreshes (same scope) so we only scan the
-                // running msmdsrv processes once.
-                if (instancesLoaded
-                    && _lastScanIncludedPBIRS == includePBIRS
-                    && (DateTime.UtcNow - _lastScanUtc) < ScanThrottle)
+                var instance = await GetInstanceDetailsAsync(includePBIRS, dict, proc, isAdmin);
+                if (instance != null)
                 {
-                    Log.Debug("{class} {method} Returning recently scanned PowerBI instances (throttled)", nameof(PowerBIHelper), nameof(GetLocalInstances));
-                    return _instances;
+                    instances.Add(instance);
                 }
+            }, MaxParallelInstanceScans).Wait();
 
-                var dict = ManagedIpHelper.GetExtendedTcpDictionary();
-                var msmdsrvProcesses = Process.GetProcessesByName("msmdsrv");
-
-                Func<Process, Task> myfunc = async (proc) =>
-                {
-                    var instance = await GetInstanceDetailsAsync(includePBIRS, dict, proc, IsAdministrator());
-                    if (instance != null)
-                    {
-                        _instances.Add( instance);
-                    }
-                };
-
-                _instances.Clear(); // clear the list before we start
-
-                msmdsrvProcesses.ParallelForEachAsync(async proc => await myfunc(proc), MaxParallelInstanceScans).Wait();
-
-                _instances.Sort(); // order by name
-
-                instancesLoaded = true;
-                _lastScanUtc = DateTime.UtcNow;
-                _lastScanIncludedPBIRS = includePBIRS;
-
-                return _instances;
-            }
+            return instances.ToList();
         }
 
         private static async Task<PowerBIInstance> GetInstanceDetailsAsync(bool includePBIRS, Dictionary<int, TcpRow> tcpPorts, Process proc, bool isAdmin)

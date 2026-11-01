@@ -3682,6 +3682,7 @@ namespace DaxStudio.UI.ViewModels
 
         private void RefreshConnectionFilename(ConnectEvent message)
         {
+            message.FileName = String.Empty;
             try
             {
                 var server = ADOTabular.Utils.ConnectionStringParser.Parse(message.ConnectionString)["Data Source"];
@@ -3700,9 +3701,8 @@ namespace DaxStudio.UI.ViewModels
                     message.FileName = String.Empty;
                     return;
                 }
-                var instances = PowerBIHelper.GetLocalInstances(false,false);
-                var selectedInstance = instances.FirstOrDefault(i => i.Port == port);
-                message.FileName = selectedInstance.Name;
+                var selectedInstance = PowerBIHelper.GetLocalInstance(port);
+                message.FileName = selectedInstance?.Name ?? String.Empty;
             }
             catch (Exception ex)
             {

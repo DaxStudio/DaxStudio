@@ -73,3 +73,7 @@ DaxStudio.Standalone / ExcelAddin / CommandLine  (entry points)
 ## Connection Error Handling
 
 - When investigating transient connection errors, distinguish existing successful recovery from actual failures; do not propose replacing recovery behavior merely because an exception was logged.
+
+## Power BI Desktop Instance Discovery
+
+- When investigating Power BI Desktop instance discovery in DAX Studio, note that Power BI Desktop listens on one port. The issue is not likely related to IPv4 versus IPv6. Focus on discovery cache and timing behavior, particularly in relation to issue #1505.
