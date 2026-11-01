@@ -23,7 +23,7 @@ oracle that the tests compare Parlot against.
 | Benchmarks | `tests/DaxStudio.Parsers.Benchmarks` (BenchmarkDotNet, net8.0 and net10.0) |
 
 The Parlot package is the only new dependency of `DaxStudio.Parsers`, which stays C# 8 and still targets
-net472. The branch uses the preview `2.0.0-preview-1043` from the Parlot Feedz feed; the root `nuget.config`
+net472. The branch uses the preview `2.0.0-preview-1059` from the Parlot Feedz feed; the root `nuget.config`
 adds that feed and maps only the `Parlot` package to it (everything else still comes from nuget.org). Swap the
 feed out once the package is on nuget.org.
 
@@ -42,11 +42,23 @@ feed out once the package is on nuget.org.
   `IS [NOT] NULL` is a postfix with lower precedence than `AND`/`OR`, and ANTLR's left-recursive rule still
   continues with `OR ...` after it. `PrecedenceParser` only tries operators of the same or a looser level after a
   postfix, so `[Email] IS NULL OR [Phone] IS NOT NULL` stops after `IS NULL`. The DirectQuery grammar keeps its
-  own small precedence climber.
+  own small precedence climber. Preview 1059's valued levels (a postfix or binary factory that receives the
+  operator, such as `IS NOT NULL` against `IS NULL`) don't change that. The xmSQL `expression` rule is a flat
+  `atom (op atom)*` list with no precedence, so it has no use for a table either.
+- **Bounded recursion** (1059). Input nested too deeply for the thread's stack now fails the parse with a
+  `ParseException` instead of overflowing the stack, which ended the process. The entry points catch it and return
+  their fallback values (null text, a failed analysis). About 700 nested parentheses parse on a 1 MB stack, the
+  default of a Windows thread; real queries nest a few levels. `XmSqlGrammarTests` checks 100,000 levels.
+- **`WhiteSpaceSet.SpaceTabCrLf`** (1059) is exactly the `WS : [ \t\r\n]+` rule of both grammars, but it is not used.
+  ANTLR lexes any other white space char (`\f`, a non-breaking space) as `ANY_CHAR` and its error recovery mostly
+  drops it, which Parlot's default set, skipping it, reproduces better: with such a char injected into each corpus
+  query, 117 of 336 formatted outputs differ from ANTLR's with the default set, and 228 with `SpaceTabCrLf`. The
+  DirectQuery white space parser also skips the chars the lexer can't read, so a set can't replace it.
 
 The preview alone also made the parse faster and lighter than 2.1.0 with no grammar change (server timings,
 net8.0: 1,749 µs and 1,907 KB before; 1,630 µs and 1,836 KB in an A/B run on the same machine; LongInLists
-760 KB to 447 KB).
+760 KB to 447 KB). Preview 1059 is as fast as 1043 on every Parlot benchmark (within 1-2%, the run-to-run noise,
+in an A/B run), and allocates about 4 KB more per server timings batch.
 
 ## Correctness
 
@@ -106,7 +118,7 @@ The formatting, analysis and grouping benchmarks run the same code the applicati
 options (format, simplify, ISO dates on). Formatting includes the post-processing shared by all paths
 (`ExtractEstimatedSize`, `ContainsCallback`). The analysis and the grouping read the formatted text, as in the
 application. Ratios are against the net8.0 baseline. Apple M4 Pro, macOS 15.8, BenchmarkDotNet 0.15.8 default
-job, Parlot 2.0.0-preview-1043. The run waited for a quiet machine, but the ANTLR rows of the server timings
+job, Parlot 2.0.0-preview-1043 (1059 measures the same, see above). The run waited for a quiet machine, but the ANTLR rows of the server timings
 formatting and grouping moved by up to 25% between runs; the Parlot and regex rows are stable to a few percent.
 
 ### Formatting every SE event (`TraceStorageEngineEvent.FormatQuery`)
