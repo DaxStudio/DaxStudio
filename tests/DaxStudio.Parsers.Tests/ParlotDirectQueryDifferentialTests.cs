@@ -19,11 +19,22 @@ namespace DaxStudio.Parsers.Tests
     {
         public TestContext TestContext { get; set; }
 
+        /// <summary>
+        /// Queries where the Parlot grammar uses the T-SQL precedences of IS NULL and NOT and finds filters that ANTLR
+        /// loses: its rule makes IS NULL apply to everything before it, so the IS node's operand is not a column.
+        /// </summary>
+        private static readonly string[] PrecedenceDeviations =
+        {
+            "WHERE [t4].[Email] IS NULL OR [t4].[Phone] IS NOT NULL",
+            "WHERE [t4].[Age] = 40 AND [t4].[Email] IS NULL",
+            "([t4].[Stock] = 0 OR [t4].[Stock] IS NULL)",
+        };
+
         [TestMethod]
         public void DirectQueryAnalysisMatchesAntlr()
         {
             var report = new StringBuilder();
-            int clean = 0, withAntlrErrors = 0, mismatches = 0, mismatchesWithAntlrErrors = 0, parlotRejectsClean = 0, parlotAcceptsInvalid = 0;
+            int clean = 0, withAntlrErrors = 0, mismatches = 0, deviations = 0, mismatchesWithAntlrErrors = 0, parlotRejectsClean = 0, parlotAcceptsInvalid = 0;
 
             var antlrParser = new AntlrXmSqlParser();
             var antlrAll = new XmSqlAnalysis();
@@ -56,7 +67,8 @@ namespace DaxStudio.Parsers.Tests
                 var antlrResult = antlrParser.ParseDirectQuerySql(query, antlr, Metrics(i));
                 var parlotResult = ParlotDirectQuerySqlParser.Parse(query, parlot, Metrics(i));
 
-                if (antlrErrors == 0)
+                var deviates = PrecedenceDeviations.Any(query.Contains);
+                if (antlrErrors == 0 && !deviates)
                 {
                     antlrParser.ParseDirectQuerySql(query, antlrAll, Metrics(i));
                     ParlotDirectQuerySqlParser.Parse(query, parlotAll, Metrics(i));
@@ -66,8 +78,8 @@ namespace DaxStudio.Parsers.Tests
                 var actual = Dump(parlot);
                 if (antlrResult != parlotResult || expected != actual)
                 {
-                    if (antlrErrors > 0) mismatchesWithAntlrErrors++; else mismatches++;
-                    report.AppendLine($"#{i} antlrErrors={antlrErrors} antlr={antlrResult} parlot={parlotResult}");
+                    if (deviates) deviations++; else if (antlrErrors > 0) mismatchesWithAntlrErrors++; else mismatches++;
+                    report.AppendLine($"#{i} antlrErrors={antlrErrors} antlr={antlrResult} parlot={parlotResult}{(deviates ? " (precedence fix)" : "")}");
                     report.AppendLine("--- input");
                     report.AppendLine(query);
                     report.AppendLine("--- antlr");
@@ -78,7 +90,7 @@ namespace DaxStudio.Parsers.Tests
                 }
             }
 
-            // All the clean queries accumulated into one analysis (shared tables, relationship dedup, counters).
+            // All the clean queries but the precedence deviations accumulated into one analysis (shared tables, relationship dedup, counters).
             var expectedAll = Dump(antlrAll);
             var actualAll = Dump(parlotAll);
             if (expectedAll != actualAll)
@@ -100,6 +112,49 @@ namespace DaxStudio.Parsers.Tests
             Assert.AreEqual(0, parlotAcceptsInvalid, "queries with ANTLR syntax errors are accepted by the Parlot grammar");
             Assert.AreEqual(0, mismatches, $"{mismatches} queries analyse differently ({mismatchesWithAntlrErrors} more where ANTLR reports syntax errors)");
             Assert.IsTrue(allClean, "the accumulated analysis differs");
+            Assert.AreEqual(PrecedenceDeviations.Length, deviations, "each precedence deviation differs from ANTLR");
+        }
+
+        [TestMethod]
+        [DataRow("[t1].[a] IS NULL OR [t1].[b] IS NOT NULL", "(([t1].[a] IS NULL) OR ([t1].[b] IS NOT NULL))")]
+        [DataRow("[t1].[a] = 40 AND [t1].[b] IS NULL", "(([t1].[a] = 40) AND ([t1].[b] IS NULL))")]
+        [DataRow("[t1].[a] + 1 IS NULL", "(([t1].[a] + 1) IS NULL)")]
+        [DataRow("NOT [t1].[a] = 1 OR [t1].[b] = 2", "(NOT(([t1].[a] = 1)) OR ([t1].[b] = 2))")]
+        [DataRow("NOT [t1].[a] IS NULL AND [t1].[b] = 2", "(NOT(([t1].[a] IS NULL)) AND ([t1].[b] = 2))")]
+        [DataRow("[t1].[a] = 1 OR [t1].[b] = 2 AND [t1].[c] = 3", "(([t1].[a] = 1) OR (([t1].[b] = 2) AND ([t1].[c] = 3)))")]
+        public void ExpressionsUseTSqlPrecedence(string where, string expected)
+        {
+            var statement = DirectQuerySqlGrammar.Parse("SELECT [t1].[a] AS [c1] FROM [dbo].[A] AS [t1] WHERE " + where);
+
+            Assert.IsNotNull(statement);
+            Assert.AreEqual(expected, Show(statement.Where));
+        }
+
+        [TestMethod]
+        public void NullTestsAfterAndOrAreFilters()
+        {
+            var analysis = new XmSqlAnalysis();
+            ParlotDirectQuerySqlParser.Parse(
+                "SELECT [t1].[a] AS [c1] FROM [dbo].[A] AS [t1] WHERE [t1].[b] = 40 AND [t1].[c] IS NULL OR [t1].[d] IS NOT NULL",
+                analysis, new XmSqlParser.SeEventMetrics());
+
+            var columns = analysis.Tables["A"].Columns;
+            foreach (var name in new[] { "b", "c", "d" })
+            {
+                Assert.IsTrue(columns[name].UsageTypes.HasFlag(XmSqlColumnUsage.Filter), name);
+            }
+        }
+
+        private static string Show(DqExpression e)
+        {
+            switch (e.Kind)
+            {
+                case DqExpressionKind.Binary: return "(" + Show(e.Left) + " " + e.OperatorText + " " + Show(e.Right) + ")";
+                case DqExpressionKind.IsNull: return "(" + Show(e.Left) + (e.IsNot ? " IS NOT NULL)" : " IS NULL)");
+                case DqExpressionKind.Not: return "NOT(" + Show(e.Left) + ")";
+                case DqExpressionKind.Parenthesized: return "[" + Show(e.Left) + "]";
+                default: return e.Unary.Kind == DqUnaryKind.Literal ? e.Unary.Literal.ToString() : e.Unary.Name + "." + e.Unary.Column;
+            }
         }
 
         [TestMethod]

@@ -18,8 +18,8 @@ namespace DaxStudio.Parsers.DirectQuery
     /// <list type="bullet">
     /// <item>
     /// An expression is read as a flat chain of operands and operators, then turned into a tree with the
-    /// precedences of the ANTLR left-recursive rule (* / % 8, + - 7, comparisons 6, AND 5, OR 4, IS NULL 3, and
-    /// NOT applying to everything after it). In <c>joinCondition : expression EQUALS expression</c>, the first
+    /// T-SQL precedences (* / % 8, + - 7, comparisons and IS NULL 6, NOT 6 for its operand, AND 5, OR 4). The ANTLR
+    /// rule gives IS NULL and NOT the lowest precedence instead, which this grammar deliberately doesn't copy. In <c>joinCondition : expression EQUALS expression</c>, the first
     /// expression would otherwise take the '=' and the second expression any following <c>AND joinCondition</c>;
     /// ANTLR's greedy expression loops make the first expression end before the last '=' of the chain, so the
     /// chain is split there (and <c>(AND joinCondition)*</c> is never entered).
@@ -238,17 +238,21 @@ namespace DaxStudio.Parsers.DirectQuery
             }
         }
 
-        private const int IsNullPrecedence = 3;
-        private const int NotOperandPrecedence = 1;
+        // IS NULL binds like a comparison and NOT reads a comparison, as in T-SQL. The ANTLR rule lists both after OR,
+        // which makes IS NULL apply to the whole chain before it and NOT to the whole chain after it, so that
+        // "a IS NULL OR b IS NOT NULL" is "((a IS NULL) OR b) IS NOT NULL" there and its visitor finds no filter.
+        private const int IsNullPrecedence = 6;
+        private const int NotOperandPrecedence = 6;
 
-        /// <summary>Builds the tree ANTLR builds for the chain items in [start, end).</summary>
+        /// <summary>Builds the tree of the chain items in [start, end), with the T-SQL precedences.</summary>
         private static DqExpression BuildExpression(List<ChainItem> items, int start, int end)
         {
             var position = start;
             return BuildExpression(items, ref position, end, 0);
         }
 
-        // The ANTLR left-recursive rule: expression[_p] reads a primary, then each operator whose precedence is at least _p.
+        // Precedence climbing, as the ANTLR left-recursive rule: expression[_p] reads a primary, then each operator whose
+        // precedence is at least _p.
         private static DqExpression BuildExpression(List<ChainItem> items, ref int position, int end, int minPrecedence)
         {
             DqExpression left;
