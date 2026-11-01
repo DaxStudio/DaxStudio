@@ -38,6 +38,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="DaxStudio.Parsers.Tests" />
+    <InternalsVisibleTo Include="DaxStudio.Parsers.ParlotTests" />
     <InternalsVisibleTo Include="DaxStudio.Parsers.Benchmarks" />
   </ItemGroup>
 
