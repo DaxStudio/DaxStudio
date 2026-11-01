@@ -20,6 +20,13 @@ namespace DaxStudio.Parsers.XmSql
     {
         private static readonly Parser<IReadOnlyList<XmSqlStatement>> Query;
 
+        /// <summary>Stands for a skipped token in the statement list, until the list is cleaned up.</summary>
+        private static readonly SkippedText Skipped = new SkippedText();
+
+        private sealed class SkippedText : XmSqlStatement
+        {
+        }
+
         private static readonly IReadOnlyList<TextSpan> NoSpans = Array.Empty<TextSpan>();
         private static readonly IReadOnlyList<JoinClause> NoJoins = Array.Empty<JoinClause>();
 
@@ -305,12 +312,12 @@ namespace DaxStudio.Parsers.XmSql
                 });
 
             // statement+ EOF, recovering like ANTLR: a token that doesn't start a statement is skipped and reported.
-            // The formatter's own output also has an estimated size footer, and ", " between statements when it
-            // doesn't break lines, which are not errors.
-            var estimatedSizeFooter = Terms.Scan(XmSqlLexer.FormattedEstimatedSizeFooter, "E".AsSpan()).Then(default(XmSqlStatement));
+            // The estimated size footer of the trace or of the formatter, and the ", " the formatter writes between
+            // statements when it doesn't break lines, are not errors.
+            var estimatedSizeFooter = Terms.Scan(XmSqlLexer.EstimatedSizeFooter, "E[".AsSpan()).Then(default(XmSqlStatement));
             var separator = comma.Then(default(XmSqlStatement));
             var skippedToken = Terms.Scan(XmSqlLexer.AnyToken).Warning("Skipped text that does not start a statement")
-                .Then(default(XmSqlStatement));
+                .Then((XmSqlStatement)Skipped);
 
             Query = ZeroOrMany(statement.Or(estimatedSizeFooter).Or(separator).Or(skippedToken));
         }
@@ -412,11 +419,32 @@ namespace DaxStudio.Parsers.XmSql
         /// <summary>
         /// Parses an xmSQL query. Like the ANTLR parser with its default error strategy, text that is not
         /// a statement is skipped one token at a time and the statements around it are kept; the result's
-        /// <see cref="XmSqlQuery.HasErrors"/> tells whether that happened.
+        /// <see cref="XmSqlQuery.Diagnostics"/> tell what was skipped.
         /// </summary>
         public static XmSqlQuery Parse(string text)
         {
-            var context = new ParseContext(new Scanner(text), disableLoopDetection: true) { CollectDiagnostics = true };
+            // Collecting diagnostics has a cost in every choice, while they are only needed when text was skipped.
+            // Valid queries are parsed once without them, the others are parsed again to report what was skipped.
+            var statements = Parse(text, collectDiagnostics: false, out var cleanup, out var diagnostics);
+            if (cleanup != Cleanup.Skipped)
+            {
+                return new XmSqlQuery(text, cleanup == Cleanup.None ? statements : WithoutSeparators(statements), diagnostics);
+            }
+
+            statements = Parse(text, collectDiagnostics: true, out _, out diagnostics);
+            return new XmSqlQuery(text, WithoutSeparators(statements), diagnostics);
+        }
+
+        private enum Cleanup
+        {
+            None,
+            Separators,
+            Skipped,
+        }
+
+        private static IReadOnlyList<XmSqlStatement> Parse(string text, bool collectDiagnostics, out Cleanup cleanup, out IReadOnlyList<ParseDiagnostic> diagnostics)
+        {
+            var context = new ParseContext(new Scanner(text), disableLoopDetection: true) { CollectDiagnostics = collectDiagnostics };
 
             // Formatted queries carry "/* 2024-01-31 */" comments after dates, which xmSQL doesn't have.
             // Skipping them as white space only costs when there are some.
@@ -428,13 +456,52 @@ namespace DaxStudio.Parsers.XmSql
             var result = new ParseResult<IReadOnlyList<XmSqlStatement>>();
             Query.Parse(context, ref result);
 
-            var statements = new List<XmSqlStatement>(result.Value.Count);
+            cleanup = Cleanup.None;
             foreach (var statement in result.Value)
             {
-                if (statement != null) statements.Add(statement);
+                if (statement == Skipped || HasUnparsedPredicate(statement))
+                {
+                    cleanup = Cleanup.Skipped;
+                    break;
+                }
+
+                if (statement == null) cleanup = Cleanup.Separators;
             }
 
-            return new XmSqlQuery(text, statements, context.Diagnostics);
+            diagnostics = collectDiagnostics ? context.Diagnostics : Array.Empty<ParseDiagnostic>();
+            return result.Value;
+        }
+
+        private static bool HasUnparsedPredicate(XmSqlStatement statement)
+        {
+            SelectBody body;
+            switch (statement)
+            {
+                case SelectQuery select: body = select.Body; break;
+                case TempTableStatement temp: body = temp.Body; break;
+                default: return false;
+            }
+
+            if (body.Where == null) return false;
+            foreach (var predicate in body.Where.Predicates)
+            {
+                var p = predicate;
+                while (p.Kind == FilterKind.Parenthesized) p = p.Inner;
+                if (p.Kind == FilterKind.Unparsed) return true;
+            }
+
+            return false;
+        }
+
+        private static IReadOnlyList<XmSqlStatement> WithoutSeparators(IReadOnlyList<XmSqlStatement> statements)
+        {
+            var list = new List<XmSqlStatement>(statements.Count);
+            foreach (var statement in statements)
+            {
+                if (statement != null && statement != Skipped) list.Add(statement);
+            }
+
+            return list;
         }
 
         private static readonly Parser<TextSpan> WhiteSpaceAndComments = Literals.Scan(XmSqlLexer.WhiteSpaceAndComments);

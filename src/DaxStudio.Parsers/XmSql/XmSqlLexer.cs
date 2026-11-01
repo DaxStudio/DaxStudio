@@ -279,8 +279,17 @@ namespace DaxStudio.Parsers.XmSql
             return i;
         }
 
-        /// <summary>The estimated size footer the formatter appends after the query: the rest of the text.</summary>
-        public static int FormattedEstimatedSizeFooter(ReadOnlySpan<char> s) => FormattedEstimatedSize(s) > 0 ? s.Length : 0;
+        /// <summary>
+        /// The estimated size footer after the query: <c>[Estimated size (volume, marshalling bytes): 1, 2]</c> as traced,
+        /// or <c>Estimated size: rows = 1  bytes = 2</c> as formatted, up to the end of the text.
+        /// </summary>
+        public static int EstimatedSizeFooter(ReadOnlySpan<char> s)
+        {
+            if (FormattedEstimatedSize(s) > 0) return s.Length;
+            if (!s.StartsWith("[Estimated size".AsSpan(), StringComparison.OrdinalIgnoreCase)) return 0;
+            var length = BracketedName(s);
+            return length > 0 && s.Slice(length).IsWhiteSpace() ? s.Length : 0;
+        }
 
         /// <summary>
         /// Tokens that don't form a filter predicate, up to (and without) the next VAND, VOR, ',' or ';' outside

@@ -44,6 +44,15 @@ namespace DaxStudio.Parsers.Tests
         }
 
         [TestMethod]
+        public void TracedEstimatedSizeIsNotAnError()
+        {
+            var query = XmSqlGrammar.Parse("SELECT 'A'[X] FROM 'A';\r\n\r\n\r\n[Estimated size (volume, marshalling bytes): 37, 592]");
+
+            Assert.AreEqual(1, query.Statements.Count);
+            Assert.AreEqual(0, query.Diagnostics.Count);
+        }
+
+        [TestMethod]
         public void FormatterOutputIsNotAnError()
         {
             var text = "SELECT 'A'[D] FROM 'A' WHERE 'A'[D] IN ( 45714.000000 /* 2025-02-26 */, 45690.000000 /* 2025-02-02 */ ) ;, "
