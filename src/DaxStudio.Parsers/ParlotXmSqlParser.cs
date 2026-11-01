@@ -1,3 +1,4 @@
+using DaxStudio.Parsers.DirectQuery;
 using DaxStudio.Parsers.XmSql;
 using Serilog;
 using System;
@@ -10,9 +11,6 @@ namespace DaxStudio.Parsers
     /// </summary>
     public class ParlotXmSqlParser : IXmSqlParser
     {
-        // DirectQuery SQL is not ported to Parlot yet (done separately): it still goes through ANTLR.
-        private AntlrXmSqlParser _directQueryParser;
-
         /// <inheritdoc />
         public bool ParseQuery(string xmSql, XmSqlAnalysis analysis, long? estimatedRows = null, long? durationMs = null)
         {
@@ -79,10 +77,7 @@ namespace DaxStudio.Parsers
         /// <inheritdoc />
         public bool ParseDirectQuerySql(string sql, XmSqlAnalysis analysis, XmSqlParser.SeEventMetrics metrics)
         {
-            // Delegates to ANTLR until the DirectQuery grammar is ported to Parlot.
-            if (_directQueryParser == null)
-                _directQueryParser = new AntlrXmSqlParser();
-            return _directQueryParser.ParseDirectQuerySql(sql, analysis, metrics);
+            return ParlotDirectQuerySqlParser.Parse(sql, analysis, metrics);
         }
 
         /// <inheritdoc />
