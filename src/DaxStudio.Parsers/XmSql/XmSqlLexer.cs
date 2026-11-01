@@ -214,6 +214,116 @@ namespace DaxStudio.Parsers.XmSql
             return longest;
         }
 
+        /// <summary>White space and <c>/* */</c> comments. Returns 0 when there is neither.</summary>
+        public static int WhiteSpaceAndComments(ReadOnlySpan<char> s)
+        {
+            var i = 0;
+            while (i < s.Length)
+            {
+                if (char.IsWhiteSpace(s[i]))
+                {
+                    i++;
+                }
+                else if (s[i] == '/' && i + 1 < s.Length && s[i + 1] == '*')
+                {
+                    var end = s.Slice(i + 2).IndexOf("*/".AsSpan());
+                    if (end < 0) break;
+                    i += end + 4;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return i;
+        }
+
+        /// <summary>
+        /// Text between balanced parentheses, parentheses included, skipping quoted names and strings (a DAX
+        /// expression). 0 when the parentheses don't close.
+        /// </summary>
+        public static int ParenthesizedText(ReadOnlySpan<char> s)
+        {
+            if (s.Length == 0 || s[0] != '(') return 0;
+            var depth = 0;
+            for (var i = 0; i < s.Length; i++)
+            {
+                var c = s[i];
+                if (c == '\'' || c == '"')
+                {
+                    var close = s.Slice(i + 1).IndexOf(c);
+                    if (close < 0) return 0;
+                    i += close + 1;
+                }
+                else if (c == '(')
+                {
+                    depth++;
+                }
+                else if (c == ')' && --depth == 0)
+                {
+                    return i + 1;
+                }
+            }
+
+            return 0;
+        }
+
+        /// <summary>The estimated size the formatter writes in a truncated list: <c>Estimated size: rows = 1  bytes = 2</c>, up to the closing parenthesis.</summary>
+        public static int FormattedEstimatedSize(ReadOnlySpan<char> s)
+        {
+            if (!s.StartsWith("Estimated size:".AsSpan(), StringComparison.Ordinal)) return 0;
+            var i = 0;
+            while (i < s.Length && s[i] != ')' && s[i] != '\r' && s[i] != '\n') i++;
+            while (i > 0 && s[i - 1] == ' ') i--;
+            return i;
+        }
+
+        /// <summary>
+        /// Tokens that don't form a filter predicate, up to (and without) the next VAND, VOR, ',' or ';' outside
+        /// parentheses, a ')' closing an enclosing parenthesis, or a statement keyword. 0 when there are none.
+        /// </summary>
+        public static int UnparsedPredicate(ReadOnlySpan<char> s)
+        {
+            var i = 0;
+            var end = 0;
+            var depth = 0;
+            while (true)
+            {
+                while (i < s.Length && char.IsWhiteSpace(s[i])) i++;
+                if (i >= s.Length) break;
+
+                var rest = s.Slice(i);
+                var c = s[i];
+                if (depth == 0)
+                {
+                    if (c == ',' || c == ';' || c == ')') break;
+                    var word = Word(rest);
+                    if (word > 0 && IsStopWord(rest.Slice(0, word))) break;
+                }
+
+                if (c == '(' || c == '{') depth++;
+                else if ((c == ')' || c == '}') && depth > 0) depth--;
+
+                i += AnyToken(rest);
+                end = i;
+            }
+
+            return end;
+        }
+
+        private static readonly string[] StopWords = { "VAND", "VOR", "DEFINE", "CREATE", "REDUCED", "SELECT", "WITH", "SET" };
+
+        private static bool IsStopWord(ReadOnlySpan<char> word)
+        {
+            foreach (var stop in StopWords)
+            {
+                if (word.Equals(stop.AsSpan(), StringComparison.OrdinalIgnoreCase)) return true;
+            }
+
+            return false;
+        }
+
         /// <summary>Returns the length of the next token, as the ANTLR lexer would read it, or 1 for an unknown char.</summary>
         public static int AnyToken(ReadOnlySpan<char> s)
         {

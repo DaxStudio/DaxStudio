@@ -75,8 +75,12 @@ namespace DaxStudio.Parsers.XmSql
                 .Or(Keyword("PFCASTCOALESCE").Then(n => (FunctionNameKind.PfCastCoalesce, n)));
 
             var functionCall =
-                Keyword("PFCAST").AndSkip(lParen).And(expression).AndSkip(Kw("AS")).And(identifier).AndSkip(rParen)
-                    .Then(x => new FunctionCall { NameKind = FunctionNameKind.PfCast, Name = x.Item1, Arguments = new[] { x.Item2 }, CastType = x.Item3 })
+                // The formatter drops "AS type" when it simplifies; accept its output too.
+                Keyword("PFCAST").AndSkip(lParen).And(expression).And(Kw("AS").SkipAnd(identifier).Optional()).AndSkip(rParen)
+                    .Then(x => new FunctionCall { NameKind = FunctionNameKind.PfCast, Name = x.Item1, Arguments = new[] { x.Item2 }, CastType = x.Item3.HasValue ? x.Item3.Value : default })
+                .Or(Keyword("CALLBACKDATAID").Or(Keyword("ENCODECALLBACK")).And(Terms.Scan(XmSqlLexer.ParenthesizedText, "(".AsSpan()))
+                    .AndSkip(lParen).And(Separated(comma, expression).Optional()).AndSkip(rParen)
+                    .Then(x => new FunctionCall { NameKind = FunctionNameKind.InlineCallback, Name = x.Item1, CallbackExpression = x.Item2, Arguments = x.Item3.HasValue ? x.Item3.Value : null }))
                 .Or(functionName.AndSkip(lParen).And(Separated(comma, expression).Optional()).AndSkip(rParen)
                     .Then(x => new FunctionCall { NameKind = x.Item1.Item1, Name = x.Item1.Item2, Arguments = x.Item2.HasValue ? x.Item2.Value : null }));
 
@@ -149,7 +153,8 @@ namespace DaxStudio.Parsers.XmSql
 
             // ---------- WHERE ----------
 
-            var truncationIndicator = dotDot.SkipAnd(dot.Optional()).SkipAnd(bracketedName);
+            // The formatter writes the estimated size of a truncated list without brackets: '..Estimated size: rows = 1  bytes = 2 )'
+            var truncationIndicator = dotDot.SkipAnd(dot.Optional()).SkipAnd(bracketedName.Or(Terms.Scan(XmSqlLexer.FormattedEstimatedSize, "E".AsSpan())));
 
             var valueList = Separated(comma, filterValue).And(truncationIndicator.Optional())
                 .Then(x => new ValueList { Values = x.Item1, Truncation = x.Item2.HasValue ? x.Item2.Value : default });
@@ -223,6 +228,12 @@ namespace DaxStudio.Parsers.XmSql
                 .Or(tupleFilter)
                 .Or(NotContinuedAsExpression(Between(lParen, filterPredicate, rParen)).Then(p => new FilterPredicate { Kind = FilterKind.Parenthesized, Inner = p }))
                 .Or(expression.Then(e => new FilterPredicate { Kind = FilterKind.Expression, Expression = e }))
+                .Or(Terms.Scan(XmSqlLexer.UnparsedPredicate).Then((context, t) =>
+                {
+                    // Recovers within the WHERE clause, so that the other predicates of the statement are kept
+                    ((XmSqlParseContext)context).SetError(t.Offset);
+                    return new FilterPredicate { Kind = FilterKind.Unparsed };
+                }))
                 .Then((context, start, end, p) =>
                 {
                     p.Start = start;
@@ -398,10 +409,17 @@ namespace DaxStudio.Parsers.XmSql
         /// </summary>
         public static XmSqlQuery Parse(string text)
         {
-            var context = new ParseContext(new Scanner(text), disableLoopDetection: true);
+            var context = new XmSqlParseContext(new Scanner(text));
+
+            // Formatted queries carry "/* 2024-01-31 */" comments after dates, which xmSQL doesn't have.
+            // Skipping them as white space only costs when there are some.
+            if (text.IndexOf("/*", StringComparison.Ordinal) >= 0)
+            {
+                context.WhiteSpaceParser = WhiteSpaceAndComments;
+            }
+
             var cursor = context.Scanner.Cursor;
             var statements = new List<XmSqlStatement>();
-            var hasErrors = false;
             var result = new ParseResult<XmSqlStatement>();
 
             while (true)
@@ -409,18 +427,52 @@ namespace DaxStudio.Parsers.XmSql
                 context.SkipWhiteSpace();
                 if (cursor.Eof) break;
 
+                // The estimated size footer the formatter appends ends the query
+                if (statements.Count > 0 && XmSqlLexer.FormattedEstimatedSize(cursor.Span) > 0)
+                {
+                    break;
+                }
+
+                // Without line breaks, the formatter separates statements with ", " even after a ';'
+                if (cursor.Current == ',' && statements.Count > 0)
+                {
+                    cursor.Advance();
+                    continue;
+                }
+
                 if (Statement.Parse(context, ref result))
                 {
                     statements.Add(result.Value);
                 }
                 else
                 {
-                    hasErrors = true;
+                    context.SetError(cursor.Offset);
                     cursor.Advance(XmSqlLexer.AnyToken(cursor.Span));
                 }
             }
 
-            return new XmSqlQuery(text, statements, hasErrors || statements.Count == 0);
+            return new XmSqlQuery(text, statements, context.HasErrors || statements.Count == 0) { ErrorOffset = context.ErrorOffset };
+        }
+
+        private static readonly Parser<TextSpan> WhiteSpaceAndComments = Literals.Scan(XmSqlLexer.WhiteSpaceAndComments);
+
+        private sealed class XmSqlParseContext : ParseContext
+        {
+            public XmSqlParseContext(Scanner scanner) : base(scanner, disableLoopDetection: true)
+            {
+            }
+
+            /// <summary>Set when text was skipped to recover from a syntax error.</summary>
+            public bool HasErrors;
+
+            /// <summary>Where the first skipped text starts, or -1.</summary>
+            public int ErrorOffset = -1;
+
+            public void SetError(int offset)
+            {
+                if (!HasErrors) ErrorOffset = offset;
+                HasErrors = true;
+            }
         }
     }
 }

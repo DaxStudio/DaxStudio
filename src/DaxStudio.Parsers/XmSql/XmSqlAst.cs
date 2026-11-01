@@ -26,6 +26,9 @@ namespace DaxStudio.Parsers.XmSql
 
         /// <summary>True when parts of the text did not parse and were skipped.</summary>
         public bool HasErrors { get; }
+
+        /// <summary>Offset of the first text that did not parse, or -1.</summary>
+        public int ErrorOffset { get; set; } = -1;
     }
 
     internal abstract class XmSqlStatement
@@ -209,6 +212,8 @@ namespace DaxStudio.Parsers.XmSql
         Parenthesized,
         /// <summary><c>expression</c></summary>
         Expression,
+        /// <summary>Text that is not a predicate, skipped up to the next VAND or VOR to recover.</summary>
+        Unparsed,
     }
 
     internal sealed class FilterPredicate
@@ -302,6 +307,11 @@ namespace DaxStudio.Parsers.XmSql
         Coalesce,
         PfCastCoalesce,
         PfCast,
+        /// <summary>
+        /// A callback as the formatter writes it once simplified, <c>CallbackDataID ( DAX ) ( args )</c>:
+        /// <see cref="FunctionCall.Name"/> is the keyword and <see cref="FunctionCall.CallbackExpression"/> the DAX.
+        /// </summary>
+        InlineCallback,
     }
 
     /// <summary>
@@ -320,6 +330,9 @@ namespace DaxStudio.Parsers.XmSql
 
         /// <summary>The PFCAST target type.</summary>
         public TextSpan CastType;
+
+        /// <summary>The parenthesized DAX expression of an <see cref="FunctionNameKind.InlineCallback"/>.</summary>
+        public TextSpan CallbackExpression;
     }
 
     internal static class XmSqlText

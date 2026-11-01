@@ -801,6 +801,7 @@ namespace DaxStudio.Parsers.XmSql
                 case FunctionNameKind.Identifier: return ctx.Name.ToString();
                 case FunctionNameKind.Quoted: return Unwrap(ctx.Name);
                 case FunctionNameKind.Bracketed: return StripCallbackArguments(Unwrap(ctx.Name));
+                case FunctionNameKind.InlineCallback: return ctx.Name.ToString();
                 // PFCAST, COALESCE and PFCASTCOALESCE
                 default: return null;
             }

@@ -808,8 +808,13 @@ namespace DaxStudio.Parsers.XmSql
             {
                 _sb.Append("..");
                 var bracketedName = ctx.Truncation.ToString();
+                if (bracketedName[0] != '[')
+                {
+                    // An estimated size the formatter already wrote
+                    _sb.Append(bracketedName);
+                }
                 // Check if this is an estimated size annotation
-                if (!TryExtractEstimatedSize(bracketedName))
+                else if (!TryExtractEstimatedSize(bracketedName))
                 {
                     // Format total values if present
                     var inner = CleanColumnName(bracketedName);
@@ -886,7 +891,7 @@ namespace DaxStudio.Parsers.XmSql
             {
                 _sb.Append("PFCAST ( ");
                 AppendExpression(ctx.Arguments[0]);
-                if (!_simplify)
+                if (!_simplify && ctx.CastType.IsPresent())
                 {
                     _sb.Append(" AS ");
                     Append(ctx.CastType);
@@ -905,6 +910,11 @@ namespace DaxStudio.Parsers.XmSql
                     // BRACKETED_NAME (e.g. [MinMaxColumnPositionCallback]) — strip brackets
                     var name = ctx.Name;
                     _sb.Append(UnescapeBrackets(name.Buffer.Substring(name.Offset + 1, name.Length - 2)));
+                    break;
+                case FunctionNameKind.InlineCallback:
+                    Append(ctx.Name);
+                    _sb.Append(" ");
+                    Append(ctx.CallbackExpression);
                     break;
                 default:
                     Append(ctx.Name);

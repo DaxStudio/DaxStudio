@@ -47,9 +47,9 @@ namespace DaxStudio.Parsers.Tests
             var report = new StringBuilder();
             int mismatches = 0, mismatchesWithAntlrErrors = 0, comparisons = 0;
 
-            for (int i = 0; i < Corpus.XmSql.Count; i++)
+            for (int i = 0; i < Corpus.XmSqlRawAndFormatted.Count; i++)
             {
-                var query = Corpus.XmSql[i];
+                var query = Corpus.XmSqlRawAndFormatted[i];
                 var antlrErrors = Corpus.AntlrSyntaxErrors(query);
 
                 var cases = MetricsVariants()
@@ -87,11 +87,11 @@ namespace DaxStudio.Parsers.Tests
             var actualAnalysis = new XmSqlAnalysis();
             var variants = MetricsVariants().ToList();
 
-            for (int i = 0; i < Corpus.XmSql.Count; i++)
+            for (int i = 0; i < Corpus.XmSqlComparable.Count; i++)
             {
                 var metrics = variants[i % variants.Count].Metrics;
-                antlr.ParseQueryWithMetrics(Corpus.XmSql[i], expectedAnalysis, metrics);
-                parlot.ParseQueryWithMetrics(Corpus.XmSql[i], actualAnalysis, metrics);
+                antlr.ParseQueryWithMetrics(Corpus.XmSqlComparable[i], expectedAnalysis, metrics);
+                parlot.ParseQueryWithMetrics(Corpus.XmSqlComparable[i], actualAnalysis, metrics);
             }
 
             var expected = Dump(expectedAnalysis);
@@ -103,13 +103,13 @@ namespace DaxStudio.Parsers.Tests
                 TestContext.WriteLine(report.ToString());
             }
 
-            Assert.AreEqual(Corpus.XmSql.Count(q => !string.IsNullOrWhiteSpace(q)), expectedAnalysis.TotalSEQueriesAnalyzed);
+            Assert.AreEqual(Corpus.XmSqlComparable.Count(q => !string.IsNullOrWhiteSpace(q)), expectedAnalysis.TotalSEQueriesAnalyzed);
             Assert.IsTrue(expectedAnalysis.Tables.Count > 5 && expectedAnalysis.Relationships.Count > 0
                 && expectedAnalysis.Tables.Values.Any(t => t.Columns.Values.Any(c => c.FilterValues.Count > 0)), "the corpus exercises the analysis");
             Assert.AreEqual(expected, actual);
 
             // ParseQueries runs the same batch without metrics
-            Assert.AreEqual(Dump(antlr.ParseQueries(Corpus.XmSql)), Dump(parlot.ParseQueries(Corpus.XmSql)));
+            Assert.AreEqual(Dump(antlr.ParseQueries(Corpus.XmSqlComparable)), Dump(parlot.ParseQueries(Corpus.XmSqlComparable)));
         }
 
         [TestMethod]
@@ -120,9 +120,9 @@ namespace DaxStudio.Parsers.Tests
             var antlr = new XmSqlQueryGrouper();
             var parlot = new ParlotXmSqlQueryGrouper();
 
-            for (int i = 0; i < Corpus.XmSql.Count; i++)
+            for (int i = 0; i < Corpus.XmSqlRawAndFormatted.Count; i++)
             {
-                var query = Corpus.XmSql[i];
+                var query = Corpus.XmSqlRawAndFormatted[i];
                 var antlrErrors = Corpus.AntlrSyntaxErrors(query);
 
                 foreach (var text in new[] { query, XmSqlQueryGrouper.NormalizeQueryText(query) })
@@ -145,7 +145,7 @@ namespace DaxStudio.Parsers.Tests
         [TestMethod]
         public void GroupingMatchesAntlr()
         {
-            var queries = Corpus.XmSql.Select((q, i) => (i + 1, q)).ToList();
+            var queries = Corpus.XmSqlComparable.Select((q, i) => (i + 1, q)).ToList();
             var expected = Dump(new XmSqlQueryGrouper().GroupQueries(queries));
             var actual = Dump(new ParlotXmSqlQueryGrouper().GroupQueries(queries));
             Assert.AreEqual(expected, actual);
@@ -165,10 +165,10 @@ namespace DaxStudio.Parsers.Tests
 
         private void Finish(StringBuilder report, string name, int comparisons, int mismatches, int mismatchesWithAntlrErrors)
         {
-            report.Insert(0, $"{Corpus.XmSql.Count} queries, {comparisons} comparisons, {mismatches} mismatches, {mismatchesWithAntlrErrors} mismatches where ANTLR reports syntax errors\n");
+            report.Insert(0, $"{Corpus.XmSqlRawAndFormatted.Count} queries, {comparisons} comparisons, {mismatches} mismatches, {mismatchesWithAntlrErrors} mismatches where ANTLR reports syntax errors\n");
             TestContext.WriteLine(report.ToString());
             System.IO.File.WriteAllText(System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"parlot-{name}-diff.txt"), report.ToString());
-            Assert.IsTrue(Corpus.XmSql.Count > 100);
+            Assert.IsTrue(Corpus.XmSqlRawAndFormatted.Count > 100);
             Assert.AreEqual(0, mismatches, $"{mismatches} queries differ ({mismatchesWithAntlrErrors} more where ANTLR reports syntax errors)");
         }
 
