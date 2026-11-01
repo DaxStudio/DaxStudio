@@ -24,4 +24,7 @@
     <Compile Include="..\DaxStudio.Tests\XmSqlFingerprintTests.cs" Link="Shared\XmSqlFingerprintTests.cs" />
     <Compile Include="..\DaxStudio.Tests\ParserBenchmarkTests.cs" Link="Shared\ParserBenchmarkTests.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Corpus\*.jsonl" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>
