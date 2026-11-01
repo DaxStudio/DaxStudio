@@ -41,7 +41,31 @@ namespace DaxStudio.Parsers.Benchmarks
                 Console.WriteLine($"| {name} | {queries.Length} | {queries.Sum(q => q.Length) / 1024.0:N0} KB | {queries.Max(q => q.Length) / 1024.0:N1} KB | {antlrErrors} ({antlrErrorsWithoutFooter}) | {parlotErrors} | {same}/{queries.Length} |");
             }
 
+            // The analysis and the grouping read formatted text, which the ANTLR grammar only partly parses:
+            // these counts are informational, the tests compare the results in detail.
+            Console.WriteLine();
+            Console.WriteLine("| Workload | Analysis: tables / columns / joins (ANTLR, Parlot, regex) | Structural groups (ANTLR, Parlot) |");
+            Console.WriteLine("|---|---|---|");
+            foreach (var name in Workloads.All)
+            {
+                var formatted = Workloads.Get(name).Select(q => TraceEventFormatter.FormatQuery(Engine.Parlot, q)).ToArray();
+                var antlr = Analyze(new AntlrXmSqlParser(), formatted);
+                var parlot = Analyze(new ParlotXmSqlParser(), formatted);
+                var regex = Analyze(new XmSqlParser(), formatted);
+                var numbered = formatted.Select((q, i) => (i, q)).ToArray();
+                var antlrGroups = new XmSqlQueryGrouper().GroupQueries(numbered).StructuralGroups.Count;
+                var parlotGroups = new ParlotXmSqlQueryGrouper().GroupQueries(numbered).StructuralGroups.Count;
+                Console.WriteLine($"| {name} | {antlr}, {parlot}, {regex} | {antlrGroups}, {parlotGroups} |");
+            }
+
             return failures == 0 ? 0 : 1;
+        }
+
+        private static string Analyze(IXmSqlParser parser, string[] queries)
+        {
+            var analysis = new XmSqlAnalysis();
+            foreach (var query in queries) parser.ParseQueryWithMetrics(query, analysis, new XmSqlParser.SeEventMetrics());
+            return analysis.Tables.Count + " / " + analysis.Tables.Values.Sum(t => t.Columns.Count) + " / " + analysis.Relationships.Count;
         }
 
         private static readonly System.Text.RegularExpressions.Regex SizeFooter = new System.Text.RegularExpressions.Regex(
