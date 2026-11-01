@@ -1350,7 +1350,7 @@ namespace DaxStudio.UI.ViewModels
         {
             try
             {
-                var grouper = new XmSqlQueryGrouper();
+                var grouper = new ParlotXmSqlQueryGrouper();
                 var queries = events
                     .Where(e => e.IsScanEvent && !e.IsInternalEvent && !string.IsNullOrWhiteSpace(e.Query))
                     .Select(e => (e.RowNumber, e.Query));

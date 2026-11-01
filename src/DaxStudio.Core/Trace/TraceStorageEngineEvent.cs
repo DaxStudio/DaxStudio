@@ -231,33 +231,33 @@ namespace DaxStudio.Core.Trace
                 default:
                     if (Options.UseAntlrParser)
                     {
-                        // ANTLR-based formatting: single parse tree walk handles formatting, simplification, and estimated size extraction
-                        var antlrResult = AntlrXmSqlFormatter.Format(
+                        // Grammar-based formatting (Parlot): single parse tree walk handles formatting, simplification, and estimated size extraction
+                        var grammarResult = ParlotXmSqlFormatter.Format(
                             TextData,
                             Options.FormatXmSql,
                             Options.SimplifyXmSqlSyntax,
-                            out long antlrRows,
-                            out long antlrBytes,
-                            out bool antlrHasSize,
+                            out long grammarRows,
+                            out long grammarBytes,
+                            out bool grammarHasSize,
                             Options.ReplaceXmSqlDatesWithIsoFormat,
                             remapColumns,
                             remapTables,
                             dateColumnIds);
 
-                        if (antlrResult != null)
+                        if (grammarResult != null)
                         {
-                            Query = antlrResult;
+                            Query = grammarResult;
 
-                            if (antlrHasSize)
+                            if (grammarHasSize)
                             {
-                                EstimatedRows = antlrRows;
-                                EstimatedKBytes = 1 + antlrBytes / 1024;
+                                EstimatedRows = grammarRows;
+                                EstimatedKBytes = 1 + grammarBytes / 1024;
                             }
                             break;
                         }
 
-                        // Fall through to regex approach if ANTLR parsing failed
-                        Log.Warning(Constants.LogMessageTemplate, nameof(TraceStorageEngineEvent), nameof(FormatQuery), "ANTLR parsing of xmSQL failed, falling back to regex-based formatting. Query text: " + TextData);
+                        // Fall through to regex approach if grammar-based formatting failed
+                        Log.Warning(Constants.LogMessageTemplate, nameof(TraceStorageEngineEvent), nameof(FormatQuery), "Grammar-based parsing of xmSQL failed, falling back to regex-based formatting. Query text: " + TextData);
                     }
 
                     string rawText = Options.SimplifyXmSqlSyntax ? TextData.RemovePremiumTags() : TextData;

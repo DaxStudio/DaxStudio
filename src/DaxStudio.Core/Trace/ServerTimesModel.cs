@@ -552,7 +552,7 @@ namespace DaxStudio.Core.Trace
                     .Select(e => (e.RowNumber, e.Query))
                     .ToList();
 
-                var grouper = new XmSqlQueryGrouper();
+                var grouper = new ParlotXmSqlQueryGrouper();
                 var groupResult = await Task.Run(() => grouper.GroupQueries(queries));
 
                 foreach (var evt in AllStorageEngineEvents)
