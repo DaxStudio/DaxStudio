@@ -69,3 +69,7 @@ DaxStudio.Standalone / ExcelAddin / CommandLine  (entry points)
 - **Build output:** Debug builds output to `src\bin\Debug\`; Release builds output to `Release\bin\`.
 - **Versioning:** Assembly version is in `src\CommonAssemblyVersion.cs` (auto-incremented on CI). Release version tracked in `src\CurrentReleaseVersion.json`.
 - **Custom conventions:** Caliburn.Micro conventions are extended in `DaxStudio.UI\Conventions\` for AvalonDock and ModernWpf integration.
+
+## Connection Error Handling
+
+- When investigating transient connection errors, distinguish existing successful recovery from actual failures; do not propose replacing recovery behavior merely because an exception was logged.
