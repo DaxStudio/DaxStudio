@@ -36,6 +36,11 @@
     </Antlr4>
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="DaxStudio.Parsers.Tests" />
+    <InternalsVisibleTo Include="DaxStudio.Parsers.Benchmarks" />
+  </ItemGroup>
+
   <!-- NuGet package references -->
   <ItemGroup>
     <PackageReference Include="Antlr4.Runtime.Standard" />
