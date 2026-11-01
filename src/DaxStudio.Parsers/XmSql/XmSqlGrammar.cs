@@ -18,7 +18,7 @@ namespace DaxStudio.Parsers.XmSql
     /// </remarks>
     internal static class XmSqlGrammar
     {
-        private static readonly Parser<XmSqlStatement> Statement;
+        private static readonly Parser<IReadOnlyList<XmSqlStatement>> Query;
 
         private static readonly IReadOnlyList<TextSpan> NoSpans = Array.Empty<TextSpan>();
         private static readonly IReadOnlyList<JoinClause> NoJoins = Array.Empty<JoinClause>();
@@ -228,12 +228,9 @@ namespace DaxStudio.Parsers.XmSql
                 .Or(tupleFilter)
                 .Or(NotContinuedAsExpression(Between(lParen, filterPredicate, rParen)).Then(p => new FilterPredicate { Kind = FilterKind.Parenthesized, Inner = p }))
                 .Or(expression.Then(e => new FilterPredicate { Kind = FilterKind.Expression, Expression = e }))
-                .Or(Terms.Scan(XmSqlLexer.UnparsedPredicate).Then((context, t) =>
-                {
-                    // Recovers within the WHERE clause, so that the other predicates of the statement are kept
-                    ((XmSqlParseContext)context).SetError(t.Offset);
-                    return new FilterPredicate { Kind = FilterKind.Unparsed };
-                }))
+                // Recovers within the WHERE clause, so that the other predicates of the statement are kept
+                .Or(Terms.Scan(XmSqlLexer.UnparsedPredicate).Warning("Skipped a filter predicate that does not parse")
+                    .Then(_ => new FilterPredicate { Kind = FilterKind.Unparsed }))
                 .Then((context, start, end, p) =>
                 {
                     p.Start = start;
@@ -299,13 +296,23 @@ namespace DaxStudio.Parsers.XmSql
                     Terminator = x.Item3.HasValue ? x.Item3.Value : '\0',
                 });
 
-            Statement = defineTable.Or(createShallowRelation).Or(reducedBy).Or(selectQuery).Or(setDirective)
+            var statement = defineTable.Or(createShallowRelation).Or(reducedBy).Or(selectQuery).Or(setDirective)
                 .Then((context, start, end, s) =>
                 {
                     s.Start = start;
                     s.End = end;
                     return s;
                 });
+
+            // statement+ EOF, recovering like ANTLR: a token that doesn't start a statement is skipped and reported.
+            // The formatter's own output also has an estimated size footer, and ", " between statements when it
+            // doesn't break lines, which are not errors.
+            var estimatedSizeFooter = Terms.Scan(XmSqlLexer.FormattedEstimatedSizeFooter, "E".AsSpan()).Then(default(XmSqlStatement));
+            var separator = comma.Then(default(XmSqlStatement));
+            var skippedToken = Terms.Scan(XmSqlLexer.AnyToken).Warning("Skipped text that does not start a statement")
+                .Then(default(XmSqlStatement));
+
+            Query = ZeroOrMany(statement.Or(estimatedSizeFooter).Or(separator).Or(skippedToken));
         }
 
         /// <summary>A case-insensitive keyword, returning its canonical upper-case text.</summary>
@@ -409,7 +416,7 @@ namespace DaxStudio.Parsers.XmSql
         /// </summary>
         public static XmSqlQuery Parse(string text)
         {
-            var context = new XmSqlParseContext(new Scanner(text));
+            var context = new ParseContext(new Scanner(text), disableLoopDetection: true) { CollectDiagnostics = true };
 
             // Formatted queries carry "/* 2024-01-31 */" comments after dates, which xmSQL doesn't have.
             // Skipping them as white space only costs when there are some.
@@ -418,61 +425,18 @@ namespace DaxStudio.Parsers.XmSql
                 context.WhiteSpaceParser = WhiteSpaceAndComments;
             }
 
-            var cursor = context.Scanner.Cursor;
-            var statements = new List<XmSqlStatement>();
-            var result = new ParseResult<XmSqlStatement>();
+            var result = new ParseResult<IReadOnlyList<XmSqlStatement>>();
+            Query.Parse(context, ref result);
 
-            while (true)
+            var statements = new List<XmSqlStatement>(result.Value.Count);
+            foreach (var statement in result.Value)
             {
-                context.SkipWhiteSpace();
-                if (cursor.Eof) break;
-
-                // The estimated size footer the formatter appends ends the query
-                if (statements.Count > 0 && XmSqlLexer.FormattedEstimatedSize(cursor.Span) > 0)
-                {
-                    break;
-                }
-
-                // Without line breaks, the formatter separates statements with ", " even after a ';'
-                if (cursor.Current == ',' && statements.Count > 0)
-                {
-                    cursor.Advance();
-                    continue;
-                }
-
-                if (Statement.Parse(context, ref result))
-                {
-                    statements.Add(result.Value);
-                }
-                else
-                {
-                    context.SetError(cursor.Offset);
-                    cursor.Advance(XmSqlLexer.AnyToken(cursor.Span));
-                }
+                if (statement != null) statements.Add(statement);
             }
 
-            return new XmSqlQuery(text, statements, context.HasErrors || statements.Count == 0) { ErrorOffset = context.ErrorOffset };
+            return new XmSqlQuery(text, statements, context.Diagnostics);
         }
 
         private static readonly Parser<TextSpan> WhiteSpaceAndComments = Literals.Scan(XmSqlLexer.WhiteSpaceAndComments);
-
-        private sealed class XmSqlParseContext : ParseContext
-        {
-            public XmSqlParseContext(Scanner scanner) : base(scanner, disableLoopDetection: true)
-            {
-            }
-
-            /// <summary>Set when text was skipped to recover from a syntax error.</summary>
-            public bool HasErrors;
-
-            /// <summary>Where the first skipped text starts, or -1.</summary>
-            public int ErrorOffset = -1;
-
-            public void SetError(int offset)
-            {
-                if (!HasErrors) ErrorOffset = offset;
-                HasErrors = true;
-            }
-        }
     }
 }

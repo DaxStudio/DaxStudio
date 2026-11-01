@@ -12,11 +12,11 @@ namespace DaxStudio.Parsers.XmSql
     /// <summary>A complete xmSQL query: <c>statement+ EOF</c>.</summary>
     internal sealed class XmSqlQuery
     {
-        public XmSqlQuery(string text, IReadOnlyList<XmSqlStatement> statements, bool hasErrors)
+        public XmSqlQuery(string text, IReadOnlyList<XmSqlStatement> statements, IReadOnlyList<ParseDiagnostic> diagnostics)
         {
             Text = text;
             Statements = statements;
-            HasErrors = hasErrors;
+            Diagnostics = diagnostics;
         }
 
         /// <summary>The parsed text.</summary>
@@ -24,11 +24,14 @@ namespace DaxStudio.Parsers.XmSql
 
         public IReadOnlyList<XmSqlStatement> Statements { get; }
 
-        /// <summary>True when parts of the text did not parse and were skipped.</summary>
-        public bool HasErrors { get; }
+        /// <summary>What was skipped to recover from syntax errors, in text order.</summary>
+        public IReadOnlyList<ParseDiagnostic> Diagnostics { get; }
+
+        /// <summary>True when parts of the text did not parse and were skipped, or there is no statement.</summary>
+        public bool HasErrors => Diagnostics.Count > 0 || Statements.Count == 0;
 
         /// <summary>Offset of the first text that did not parse, or -1.</summary>
-        public int ErrorOffset { get; set; } = -1;
+        public int ErrorOffset => Diagnostics.Count > 0 ? Diagnostics[0].Position.Offset : -1;
     }
 
     internal abstract class XmSqlStatement

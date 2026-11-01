@@ -279,6 +279,9 @@ namespace DaxStudio.Parsers.XmSql
             return i;
         }
 
+        /// <summary>The estimated size footer the formatter appends after the query: the rest of the text.</summary>
+        public static int FormattedEstimatedSizeFooter(ReadOnlySpan<char> s) => FormattedEstimatedSize(s) > 0 ? s.Length : 0;
+
         /// <summary>
         /// Tokens that don't form a filter predicate, up to (and without) the next VAND, VOR, ',' or ';' outside
         /// parentheses, a ')' closing an enclosing parenthesis, or a statement keyword. 0 when there are none.
