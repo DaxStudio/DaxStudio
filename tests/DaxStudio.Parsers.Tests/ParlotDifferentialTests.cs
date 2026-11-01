@@ -13,8 +13,27 @@ namespace DaxStudio.Parsers.Tests
     {
         public TestContext TestContext { get; set; }
 
+        // Lineage ids and full names, as DaxColumnsRemap and the date column metadata provide them
+        private static readonly Dictionary<string, string> RemapColumns = BuildRemap("Column");
+        private static readonly Dictionary<string, string> RemapTables = BuildRemap("Table");
+        private static readonly HashSet<string> DateColumnIds = new HashSet<string> { "69", "71", "147", "Date" };
+
+        private static Dictionary<string, string> BuildRemap(string prefix)
+        {
+            var remap = new Dictionary<string, string>();
+            for (int i = 0; i < 200; i += 3) remap[i.ToString()] = prefix + " #" + i;
+            remap["Product"] = prefix + " Product";
+            remap["Sales Amount (142)"] = prefix + " Sales Amount";
+            return remap;
+        }
+
         [TestMethod]
-        public void FormatterMatchesAntlr()
+        public void FormatterMatchesAntlr() => CompareFormatters(null, null, null);
+
+        [TestMethod]
+        public void FormatterMatchesAntlrWithRemaps() => CompareFormatters(RemapColumns, RemapTables, DateColumnIds);
+
+        private void CompareFormatters(Dictionary<string, string> remapColumns, Dictionary<string, string> remapTables, HashSet<string> dateColumnIds)
         {
             var report = new StringBuilder();
             int mismatches = 0, mismatchesWithAntlrErrors = 0, withAntlrErrors = 0, withParlotErrors = 0, comparisons = 0;
@@ -29,9 +48,9 @@ namespace DaxStudio.Parsers.Tests
                 foreach (var simplify in new[] { true, false })
                 foreach (var convertDates in new[] { true, false })
                 {
-                    var expected = AntlrXmSqlFormatter.Format(query, format, simplify, out var r1, out var b1, out var h1, convertDates);
+                    var expected = AntlrXmSqlFormatter.Format(query, format, simplify, out var r1, out var b1, out var h1, convertDates, remapColumns, remapTables, dateColumnIds);
                     comparisons++;
-                    var actual = ParlotXmSqlFormatter.Format(query, format, simplify, out var r2, out var b2, out var h2, convertDates);
+                    var actual = ParlotXmSqlFormatter.Format(query, format, simplify, out var r2, out var b2, out var h2, convertDates, remapColumns, remapTables, dateColumnIds);
                     if (expected != actual || r1 != r2 || b1 != b2 || h1 != h2)
                     {
                         if (antlrErrors > 0) mismatchesWithAntlrErrors++; else mismatches++;
