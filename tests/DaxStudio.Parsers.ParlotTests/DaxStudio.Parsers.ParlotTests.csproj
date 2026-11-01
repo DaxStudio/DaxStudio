@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Runs the parser tests of DaxStudio.Tests against the Parlot implementations: the global
+       aliases below replace the ANTLR parser, formatter and query grouper in the linked files.
+       Tests that use the ANTLR generated grammar types directly still exercise ANTLR. -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <!-- Global using directives need C# 10 -->
+    <LangVersion>10.0</LangVersion>
+    <RunAnalyzersDuringBuild>False</RunAnalyzersDuringBuild>
+    <EnforceCodeStyleInBuild>False</EnforceCodeStyleInBuild>
+    <AnalysisLevel>latest-minimum</AnalysisLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="MSTest.TestAdapter" />
+    <PackageReference Include="MSTest.TestFramework" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\DaxStudio.Parsers\DaxStudio.Parsers.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\DaxStudio.Tests\AntlrXmSqlParserTests.cs" Link="Shared\AntlrXmSqlParserTests.cs" />
+    <Compile Include="..\DaxStudio.Tests\AntlrXmSqlFormatterTests.cs" Link="Shared\AntlrXmSqlFormatterTests.cs" />
+    <Compile Include="..\DaxStudio.Tests\XmSqlFingerprintTests.cs" Link="Shared\XmSqlFingerprintTests.cs" />
+  </ItemGroup>
+</Project>
