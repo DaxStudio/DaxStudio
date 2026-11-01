@@ -130,6 +130,9 @@
   <data name="MsdnForumsUrl" xml:space="preserve">
     <value>https://social.msdn.microsoft.com/forums/en-us/sqlanalysisservices/threads/</value>
   </data>
+  <data name="NewQuery" xml:space="preserve">
+    <value>New Query</value>
+  </data>
   <data name="Refreshing_Metadata" xml:space="preserve">
     <value>Refreshing Metadata...</value>
   </data>

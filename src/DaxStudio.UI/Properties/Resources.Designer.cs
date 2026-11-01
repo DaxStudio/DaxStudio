@@ -126,6 +126,15 @@ namespace DaxStudio.UI.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to New Query.
+        /// </summary>
+        public static string NewQuery {
+            get {
+                return ResourceManager.GetString("NewQuery", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Refreshing Metadata....
         /// </summary>
         public static string Refreshing_Metadata {

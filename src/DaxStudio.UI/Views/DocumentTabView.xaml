@@ -12,6 +12,7 @@
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:local="clr-namespace:DaxStudio.UI.Converters"
              xmlns:res="clr-namespace:DaxStudio.UI.Resources" 
+             xmlns:properties="clr-namespace:DaxStudio.UI.Properties"
              xmlns:views="clr-namespace:DaxStudio.UI.Views"
              xmlns:selectors="clr-namespace:DaxStudio.UI.TemplateSelectors"
              xmlns:utils="clr-namespace:DaxStudio.UI.Utils" 
@@ -46,6 +47,39 @@
 						BorderThickness="{TemplateBinding BorderThickness}">
                                 <ContentPresenter />
                             </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="NewDocumentButtonStyle" TargetType="Button">
+                <Setter Property="Background" Value="{DynamicResource {x:Static reskeys:ResourceKeys.DocumentWellTabUnselectedBackground}}"/>
+                <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Default.Fore}"/>
+                <Setter Property="BorderBrush" Value="Transparent"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="3">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="{DynamicResource {x:Static reskeys:ResourceKeys.DocumentWellTabSelectedActiveBackground}}"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter Property="Background" Value="{DynamicResource {x:Static reskeys:ResourceKeys.DocumentWellTabSelectedActiveBackground}}"/>
+                                </Trigger>
+                                <Trigger Property="IsKeyboardFocused" Value="True">
+                                    <Setter Property="BorderBrush" Value="{DynamicResource Theme.Brush.Accent}"/>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Opacity" Value="0.5"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
@@ -93,14 +127,26 @@
                                         </Border.Effect>
                                     </Border>
 
-                                    <avalonDockControls:DocumentPaneTabPanel 
-                                        x:Name="DocumentHeaderPanel" 
-                                        Grid.Column="1" 
-                                        Grid.Row="0"
-                                        IsItemsHost="true" 
-                                        Margin="2,0,2,6"  
-                                        Background="Transparent"
-                                        KeyboardNavigation.TabIndex="1"/>
+                                    <controls:DocumentTabStrip Grid.Column="1" Margin="2,0,2,6" ClipToBounds="True">
+                                        <controls:DocumentTabPanel
+                                            x:Name="DocumentHeaderPanel"
+                                            IsItemsHost="true"
+                                            Background="Transparent"
+                                            KeyboardNavigation.TabIndex="1"/>
+                                        <Button x:Name="NewDocumentButton"
+                                                Width="24" Height="24" Margin="4,0,0,6"
+                                                VerticalAlignment="Center"
+                                                Style="{StaticResource NewDocumentButtonStyle}"
+                                                ToolTip="{x:Static properties:Resources.NewQuery}"
+                                                AutomationProperties.Name="{x:Static properties:Resources.NewQuery}"
+                                                cal:Action.TargetWithoutContext="{Binding Source={StaticResource Proxy}, Path=Data}"
+                                                cal:Message.Attach="[Event Click] = [Action NewQuery]">
+                                            <Path Width="10" Height="10" Stretch="Uniform"
+                                                  Data="M 0,5 L 10,5 M 5,0 L 5,10"
+                                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                                  StrokeThickness="1"/>
+                                        </Button>
+                                    </controls:DocumentTabStrip>
                                     <avalonDockControls:DropDownButton
                                             x:Name="MenuDropDownButton"
                                             Style="{StaticResource {x:Static ToolBar.ToggleButtonStyleKey}}"

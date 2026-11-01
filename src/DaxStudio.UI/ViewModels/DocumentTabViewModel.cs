@@ -333,6 +333,11 @@ namespace DaxStudio.UI.ViewModels
             await ActiveDocument?.ChangeConnectionAsync();
         }
 
+        public Task NewQuery()
+        {
+            return Ribbon.NewQuery();
+        }
+
         public async Task HandleAsync(NewDocumentEvent message, CancellationToken cancellationToken)
         {
             if (ActiveDocument?.IsConnectionDialogOpen??false)
