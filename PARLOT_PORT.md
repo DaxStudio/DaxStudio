@@ -38,13 +38,14 @@ feed out once the package is on nuget.org.
   `CollectDiagnostics` only when it actually skipped something. Valid input pays nothing.
 - **Keywords.** `Keyword(text, identifierPart)` with letters, digits and `_` as the identifier part, so that
   `COUNT` doesn't match in `COUNT_BIG` (this already existed in 2.1.0).
-- **`Operators()`** was tried for the DirectQuery `WHERE` expressions and **not kept**. In `DirectQuerySql.g4`,
-  `IS [NOT] NULL` is a postfix with lower precedence than `AND`/`OR`, and ANTLR's left-recursive rule still
-  continues with `OR ...` after it. `PrecedenceParser` only tries operators of the same or a looser level after a
-  postfix, so `[Email] IS NULL OR [Phone] IS NOT NULL` stops after `IS NULL`. The DirectQuery grammar keeps its
-  own small precedence climber. Preview 1059's valued levels (a postfix or binary factory that receives the
-  operator, such as `IS NOT NULL` against `IS NULL`) don't change that. The xmSQL `expression` rule is a flat
-  `atom (op atom)*` list with no precedence, so it has no use for a table either.
+- **`Operators()`** is not used. It can't copy the ANTLR DirectQuery grammar, whose `IS [NOT] NULL` is a postfix
+  looser than `AND`/`OR` that ANTLR's left-recursive rule still lets `OR ...` follow. A precedence table rightly
+  can't: that ordering is a bug of the ANTLR grammar, which the Parlot grammar now fixes (see
+  [below](#a-bug-of-the-antlr-directquery-grammar-fixed-here)). With the T-SQL precedences a table would fit, but the
+  DirectQuery grammar reads each expression as a flat chain anyway, to split a join condition at its last `=` as
+  ANTLR does, and keeps its own small precedence climber over that chain. Preview 1059's valued levels (a factory that
+  receives the operator, such as `IS NOT NULL` against `IS NULL`) would have covered the rest. The xmSQL `expression`
+  rule is a flat `atom (op atom)*` list with no precedence, so it has no use for a table either.
 - **Bounded recursion** (1059). Input nested too deeply for the thread's stack now fails the parse with a
   `ParseException` instead of overflowing the stack, which ended the process. The entry points catch it and return
   their fallback values (null text, a failed analysis). About 700 nested parentheses parse on a 1 MB stack, the
@@ -74,8 +75,9 @@ Parlot is a PEG combinator library and ANTLR an ALL(*) generator, so the port is
   `XmSqlAnalysis` graph: **identical on every input ANTLR parses without errors** (1,248 comparisons). The same
   holds for a single batch over all of them, and for `ParseQueries`.
 - **Fingerprints and grouping:** identical on every input ANTLR parses without errors (435 comparisons).
-- **DirectQuery analysis:** identical on the 73 clean statements, alone and accumulated. Parlot accepts and
-  rejects exactly the statements ANTLR accepts and rejects.
+- **DirectQuery analysis:** identical on 70 of the 73 clean statements, alone and accumulated. The other 3 are the
+  `IS NULL` precedence fix described below, where Parlot finds filters ANTLR loses; the test lists them and checks
+  that they still differ. Parlot accepts and rejects exactly the statements ANTLR accepts and rejects.
 - **Lexer:** the token scanners are compared with the ANTLR lexer on 250,000 random strings built from the
   characters that matter (bracketed names with nested parentheses and `]]` escapes, quoted names, strings,
   numbers).
@@ -100,8 +102,39 @@ batch it finds 34 columns, where the regex parser finds 35 and ANTLR 31.
 For anything else that doesn't parse, ANTLR recovers inside a rule and Parlot skips to the next WHERE
 predicate or statement. The DirectQuery statements that use SQL the grammar doesn't cover (`CASE`,
 `CAST ... AS`, `SELECT DISTINCT`, nested `TOP`) still differ in what each recovery keeps (5 of 14). The ANTLR
-quirks that the visitors rely on are reproduced, not fixed. For example, a multi-column `ON` condition gives no
-relationship, and parenthesized predicates are not looked into.
+quirks that the visitors rely on are reproduced, with one exception below. For example, a multi-column `ON` condition
+gives no relationship, and parenthesized predicates are not looked into.
+
+### A bug of the ANTLR DirectQuery grammar, fixed here
+
+`DirectQuerySql.g4` lists `expression IS NOT? NULL_` and `NOT expression` after the `AND` and `OR` alternatives of its
+left-recursive `expression` rule, which gives them the lowest precedence: `IS NULL` applies to everything before it
+and `NOT` to everything after it. In T-SQL, `IS NULL` binds like a comparison, and `NOT` tighter than `AND`. So ANTLR
+reads
+
+```sql
+WHERE [t4].[Email] IS NULL OR [t4].[Phone] IS NOT NULL
+```
+
+as `(([Email] IS NULL) OR [Phone]) IS NOT NULL`. `DirectQuerySqlAnalysisVisitor` then sees an `IS` whose operand is not
+a column and records nothing: neither `Email` nor `Phone` is shown as a filtered column. This happens whenever an
+`IS [NOT] NULL` ends a chain of `AND`/`OR`, even `[Age] = 40 AND [Email] IS NULL`, which loses both filters. The shipping
+"Use New Parser for SE Queries" option has this bug (the default regex parser finds no table at all for these
+statements).
+
+The Parlot grammar uses the T-SQL precedences, so it records those filters, and 3 corpus statements analyse
+differently from ANTLR, each with more filtered columns:
+
+| Statement (WHERE clause) | ANTLR | Parlot |
+|---|---|---|
+| `[Email] IS NULL OR [Phone] IS NOT NULL` | no filter | `Email`, `Phone` |
+| `[Age] = 40 AND [Email] IS NULL` | no filter | `Age` (`= 40`), `Email` |
+| `[Price] * 2 > 100 AND ([Stock] = 0 OR [Stock] IS NULL) AND [Name] = NULL` | no `Stock` | `Stock` (`= 0`) |
+
+`NOT` reading only a comparison changes the tree (`NOT a = 1 OR b = 2` is `(NOT a = 1) OR b = 2`), but not the
+analysis, as the visitor looks inside `NOT` either way. The ANTLR grammar is left as it is, since it's the oracle of the
+differential tests; the fix there is to move the `IS NOT? NULL_` alternative next to the comparison one, and `NOT expression` between
+the comparison and `AND` alternatives, since ANTLR takes their precedence from their order.
 
 ## Benchmarks
 
