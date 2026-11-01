@@ -66,6 +66,9 @@ namespace DaxStudio.Parsers.XmSql
         // ==================== HELPERS ====================
 
         /// <summary>Cleans a table name (removes quotes/brackets, lineage, GUIDs, premium tags).</summary>
+        private string CleanTableName(TextSpan raw) => CleanTableName(StripDelimiters(raw, '\'', '\'', '[', ']'));
+
+        /// <summary>Cleans a table name (removes quotes/brackets, lineage, GUIDs, premium tags).</summary>
         private string CleanTableName(string raw)
         {
             if (raw == null) return "";
@@ -84,7 +87,7 @@ namespace DaxStudio.Parsers.XmSql
                     if (_remapTables.TryGetValue(raw, out var remapped))
                         return remapped;
 
-                    var lineageMatch = LineagePattern.Match(raw);
+                    var lineageMatch = MayHaveLineage(raw) ? LineagePattern.Match(raw) : Match.Empty;
                     if (lineageMatch.Success)
                     {
                         var id = lineageMatch.Value.Trim().Trim('(', ')').Trim();
@@ -92,20 +95,49 @@ namespace DaxStudio.Parsers.XmSql
                             return lineageRemapped;
                     }
                 }
-                raw = LineagePattern.Replace(raw, "");
+                if (MayHaveLineage(raw)) raw = LineagePattern.Replace(raw, "");
                 raw = RemoveGuids(raw);
-                raw = PremiumTagsPattern.Replace(raw, "");
+                if (MayHavePremiumTags(raw)) raw = PremiumTagsPattern.Replace(raw, "");
                 raw = raw.TrimEnd();
             }
             return raw;
         }
 
+        /// <summary>
+        /// Returns the text of a token without its surrounding delimiters (quotes, then brackets), allocating
+        /// one string instead of one per stripped pair.
+        /// </summary>
+        private static string StripDelimiters(TextSpan span, char open1, char close1, char open2, char close2)
+        {
+            var buffer = span.Buffer;
+            int start = span.Offset, length = span.Length;
+            if (length >= 2 && buffer[start] == open1 && buffer[start + length - 1] == close1)
+            {
+                start++;
+                length -= 2;
+            }
+            if (length >= 2 && buffer[start] == open2 && buffer[start + length - 1] == close2)
+            {
+                start++;
+                length -= 2;
+            }
+            return buffer.Substring(start, length);
+        }
+
+        // The patterns below cannot match without these chars: checking for them first skips most regex scans.
+        private static bool MayHaveLineage(string text) => text.IndexOf('(') >= 0;
+
+        private static bool MayHavePremiumTags(string text) => text.IndexOf('<') >= 0;
+
         /// <summary>Cleans a column name (removes brackets, lineage, GUIDs, RowNumber GUIDs).</summary>
-        private string CleanColumnName(string raw)
+        private string CleanColumnName(TextSpan raw) => CleanColumnName(StripDelimiters(raw, '[', ']', '\0', '\0'), stripped: true);
+
+        /// <summary>Cleans a column name (removes brackets, lineage, GUIDs, RowNumber GUIDs).</summary>
+        private string CleanColumnName(string raw, bool stripped = false)
         {
             if (raw == null) return "";
             // Strip surrounding brackets
-            if (raw.Length >= 2 && raw[0] == '[' && raw[raw.Length - 1] == ']')
+            if (!stripped && raw.Length >= 2 && raw[0] == '[' && raw[raw.Length - 1] == ']')
                 raw = raw.Substring(1, raw.Length - 2);
             raw = UnescapeBrackets(raw);
 
@@ -117,7 +149,7 @@ namespace DaxStudio.Parsers.XmSql
                     if (_remapColumns.TryGetValue(raw, out var remapped))
                         return remapped;
 
-                    var lineageMatch = LineagePattern.Match(raw);
+                    var lineageMatch = MayHaveLineage(raw) ? LineagePattern.Match(raw) : Match.Empty;
                     if (lineageMatch.Success)
                     {
                         var id = lineageMatch.Value.Trim().Trim('(', ')').Trim();
@@ -126,11 +158,11 @@ namespace DaxStudio.Parsers.XmSql
                     }
                 }
                 // Remove lineage IDs like " ( 123 ) "
-                raw = LineagePattern.Replace(raw, "");
+                if (MayHaveLineage(raw)) raw = LineagePattern.Replace(raw, "");
                 raw = RemoveGuids(raw);
                 // Simplify RowNumber GUIDs
-                raw = RowNumberGuidPattern.Replace(raw, "RowNumber");
-                raw = PremiumTagsPattern.Replace(raw, "");
+                if (raw.IndexOf("RowNumber ", StringComparison.Ordinal) >= 0) raw = RowNumberGuidPattern.Replace(raw, "RowNumber");
+                if (MayHavePremiumTags(raw)) raw = PremiumTagsPattern.Replace(raw, "");
                 raw = raw.TrimEnd();
             }
             return raw;
@@ -138,7 +170,8 @@ namespace DaxStudio.Parsers.XmSql
 
         private static string RemoveGuids(string text)
         {
-            return GuidPattern.Replace(text, "");
+            // A GUID has four '-'
+            return text.IndexOf('-') >= 0 ? GuidPattern.Replace(text, "") : text;
         }
 
         private static string UnescapeBrackets(string text)
@@ -223,8 +256,8 @@ namespace DaxStudio.Parsers.XmSql
 
             if (_simplify)
             {
-                _sb.Append("'").Append(CleanTableName(ctx.Table.Text.ToString())).Append("'");
-                _sb.Append("[").Append(CleanColumnName(ctx.Column.ToString())).Append("]");
+                _sb.Append("'").Append(CleanTableName(ctx.Table.Text)).Append("'");
+                _sb.Append("[").Append(CleanColumnName(ctx.Column)).Append("]");
             }
             else
             {
@@ -238,7 +271,7 @@ namespace DaxStudio.Parsers.XmSql
         {
             if (ctx == null) return;
             if (_simplify)
-                _sb.Append("'").Append(CleanTableName(ctx.Text.ToString())).Append("'");
+                _sb.Append("'").Append(CleanTableName(ctx.Text)).Append("'");
             else
                 Append(ctx.Text);
         }
@@ -683,7 +716,7 @@ namespace DaxStudio.Parsers.XmSql
             Append(ctx.Function);
             _sb.Append(" ( ");
 
-            string tableName = CleanTableName(ctx.Table.Text.ToString());
+            string tableName = CleanTableName(ctx.Table.Text);
             string rawColName = ctx.Column.ToString();
             string columnName = CleanColumnName(rawColName);
 
