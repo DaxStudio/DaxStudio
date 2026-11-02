@@ -1,3 +1,4 @@
+using DaxStudio.Parsers.StorageEngine;
 using DaxStudio.Core.Trace;
 using System.Collections.Generic;
 

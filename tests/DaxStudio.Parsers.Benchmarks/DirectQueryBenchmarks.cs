@@ -1,3 +1,4 @@
+using DaxStudio.Parsers.StorageEngine;
 using BenchmarkDotNet.Attributes;
 using System;
 using System.IO;

@@ -1,3 +1,4 @@
+using DaxStudio.Parsers.StorageEngine;
 using BenchmarkDotNet.Running;
 using DaxStudio.Parsers.StorageEngine.XmSql;
 using System;
