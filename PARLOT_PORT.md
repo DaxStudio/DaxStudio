@@ -23,7 +23,7 @@ oracle that the tests compare Parlot against.
 | Benchmarks | `tests/DaxStudio.Parsers.Benchmarks` (BenchmarkDotNet, net8.0 and net10.0) |
 
 The Parlot package is the only new dependency of `DaxStudio.Parsers`, which stays C# 8 and still targets
-net472. The branch uses the preview `2.0.0-preview-1059` from the Parlot Feedz feed; the root `nuget.config`
+net472. The branch uses the preview `2.0.0-preview.1077` from the Parlot Feedz feed; the root `nuget.config`
 adds that feed and maps only the `Parlot` package to it (everything else still comes from nuget.org). Swap the
 feed out once the package is on nuget.org.
 
@@ -55,6 +55,18 @@ feed out once the package is on nuget.org.
   drops it, which Parlot's default set, skipping it, reproduces better: with such a char injected into each corpus
   query, 117 of 336 formatted outputs differ from ANTLR's with the default set, and 228 with `SpaceTabCrLf`. The
   DirectQuery white space parser also skips the chars the lexer can't read, so a set can't replace it.
+- **`CommentsBuilder`** (1077) no longer builds a list each time it skips white space, so it now allocates exactly
+  what the hand-written xmSQL scanner of white space and `/* */` comments does (it added 320 KB per server timings
+  batch in 1059). It is still a few percent slower (1-4% on analysis and grouping, two A/B rounds), a choice between
+  two parsers in a loop against one loop over the chars, so the scanner stays.
+- **Pooled strings** (`ToPooledString()`, 1077) were tried for the table and column names, which the analysis and
+  grouping walkers turn into strings (one `Substring` per reference). The AST took them as pooled strings, and the
+  walkers read them. Allocations dropped by 335 KB per server timings batch for analysis and 268 KB for grouping
+  (about 10%), but every run got slower: parsing alone by 13-15%, with 100 KB more for the new fields, analysis by
+  about 5%, formatting by 2%. A pool lookup costs about what the short `Substring` it saves does, and the
+  formatter pays it for names it doesn't need, so the AST keeps text spans. The analysis results dedupe the names
+  in their own dictionaries, so pooling wouldn't shrink what they keep either.
+- **`Ternary`** (1059) has no use: neither grammar has a conditional operator (`CASE` is only a DirectQuery token).
 
 The preview alone also made the parse faster and lighter than 2.1.0 with no grammar change (server timings,
 net8.0: 1,749 µs and 1,907 KB before; 1,630 µs and 1,836 KB in an A/B run on the same machine; LongInLists
