@@ -23,9 +23,9 @@ oracle that the tests compare Parlot against.
 | Benchmarks | `tests/DaxStudio.Parsers.Benchmarks` (BenchmarkDotNet, net8.0 and net10.0) |
 
 The Parlot package is the only new dependency of `DaxStudio.Parsers`, which stays C# 8 and still targets
-net472. The branch uses `2.2.0` from nuget.org.
+net472. The branch uses `2.2.1` from nuget.org.
 
-### What Parlot 2.2.0 is used for
+### What Parlot 2.2.1 is used for
 
 - **Non-fatal errors.** Text the grammar skips is reported as a Parlot diagnostic (`.Warning(...)`), and
   `XmSqlQuery.Diagnostics` exposes them, with `HasErrors`/`ErrorOffset` derived from it. Two places skip text:
@@ -159,7 +159,7 @@ the comparison and `AND` alternatives, since ANTLR takes their precedence from t
 The formatting, analysis and grouping benchmarks run the same code the application runs, with the default
 options (format, simplify, ISO dates on). Formatting includes the post-processing shared by all paths
 (`ExtractEstimatedSize`, `ContainsCallback`). The analysis and the grouping read the formatted text, as in the
-application. Ratios are against the net8.0 baseline. Apple M4 Pro, macOS 15.8, BenchmarkDotNet 0.15.8, Parlot 2.2.0.
+application. Ratios are against the net8.0 baseline. Apple M4 Pro, macOS 15.8, BenchmarkDotNet 0.15.8, Parlot 2.2.0 (2.2.1 only changes `Operators()`, which these grammars don't use).
 These tables are one quick pass of one process per benchmark (`--launchCount 1 --warmupCount 8 --iterationCount 5
 --iterationTime 250`), so treat differences of a few percent as noise; the allocations are exact. The grouping table
 uses `--warmupCount 15 --iterationCount 10 --iterationTime 500`: with the shorter job its net8.0 LongInLists rows, ANTLR
