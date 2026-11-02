@@ -40,6 +40,11 @@ namespace DaxStudio.Parsers.StorageEngine.XmSql
         private static readonly Regex PremiumTagsPattern = new Regex(
             @"<pii>|</pii>|<ccon>|</ccon>", RegexOptions.Compiled);
 
+        // Keep in sync with XmSqlAnalysisWalker and xmSQL.xshd.
+        private static readonly Regex CallbackNamePattern = new Regex(
+            @"^\s*(CallbackDataID|EncodeCallback|LogAbsValueCallback|RoundValueCallback|MinMaxColumnPositionCallback|Cond)\b",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
         private readonly Dictionary<string, string> _remapColumns;
         private readonly Dictionary<string, string> _remapTables;
 
@@ -408,9 +413,10 @@ namespace DaxStudio.Parsers.StorageEngine.XmSql
                 if (!first) _sb.Append(" ");
                 first = false;
                 Append(expr.Name);
-                _sb.Append(" := (");
+                _sb.Append(" := ");
+                if (expr.IsParenthesized) _sb.Append("(");
                 AppendExpression(expr.Expression);
-                _sb.Append(")");
+                if (expr.IsParenthesized) _sb.Append(")");
             }
         }
 
@@ -907,9 +913,14 @@ namespace DaxStudio.Parsers.StorageEngine.XmSql
                     _sb.Append(ctx.Name.ToString().Trim('\''));
                     break;
                 case FunctionNameKind.Bracketed:
-                    // BRACKETED_NAME (e.g. [MinMaxColumnPositionCallback]) — strip brackets
+                    // BRACKETED_NAME — strip brackets, but preserve them around callbacks:
+                    // the bracketed name can contain an entire DAX expression.
                     var name = ctx.Name;
-                    _sb.Append(UnescapeBrackets(name.Buffer.Substring(name.Offset + 1, name.Length - 2)));
+                    var innerName = UnescapeBrackets(name.Buffer.Substring(name.Offset + 1, name.Length - 2));
+                    bool isCallback = CallbackNamePattern.IsMatch(innerName);
+                    if (isCallback) _sb.Append("[");
+                    _sb.Append(innerName);
+                    if (isCallback) _sb.Append("]");
                     break;
                 case FunctionNameKind.InlineCallback:
                     Append(ctx.Name);

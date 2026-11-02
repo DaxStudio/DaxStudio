@@ -111,3 +111,8 @@
 "SET DC_KIND=\u0022C32\u0022;\r\nSELECT \u0027Product\u0027[Color]\r\nFROM \u0027Product\u0027;"
 "SET DC_KIND=\u0022C64\u0022;\r\nSELECT\r\n    \u0027TI_Mime\u0027[CALENDAR_ID],\r\n    \u0027TI_Mime\u0027[PK_DATE],\r\n    \u0027TI_Mime\u0027[Period],\r\n    \u0027Period Definition ( SISO ) \u0027[Period]\r\nFROM \u0027TI_Mime\u0027\r\n    LEFT OUTER JOIN \u0027Period Definition ( SISO ) \u0027\r\n        ON \u0027TI_Mime\u0027[Period]=\u0027Period Definition ( SISO ) \u0027[Period]\r\nWHERE\r\n    \u0027TI_Mime\u0027[CALENDAR_NAME] = \u0027Aligned\u0027;"
 "SET DC_KIND=\u0022DENSE\u0022;\r\nSELECT \u0027Product\u0027[Color]\r\nFROM \u0027Product\u0027;"
+"WITH $Expr0 := [CallbackDataID(ROUND ( Flights[Seats]], 0 ))](PFDATAID( [FlightData (10)].[Seats (16615)] ))\r\n$Expr1 := (PFDATAID( [FlightData (10)].[Seats (16615)] ))\r\nSELECT SUM(@$Expr0), SUM(@$Expr1) FROM [FlightData (10)];"
+"SET DC_KIND=\"AUTO\";\r\nWITH\r\n\t$Expr0 := [CallbackDataID(ROUND ( Flights[Seats]], 0 ))](PFDATAID( [FlightData (10)].[Seats (16615)] ))\r\nSELECT\r\nSUM(@$Expr0) AS [$Measure0]\r\nFROM [FlightData (10)];\r\n\r\n[Estimated size (volume, marshalling bytes): 1, 16]"
+"WITH $Expr0 := ([CallbackDataID(ROUND ( Flights[Seats]], 0 ))](PFDATAID( [FlightData (10)].[Seats (16615)] )))\r\n$Expr1 := (PFDATAID( [FlightData (10)].[Seats (16615)] ))\r\nSELECT SUM(@$Expr0), SUM(@$Expr1) FROM [FlightData (10)];"
+"SET DC_KIND=\"AUTO\";\r\nWITH\r\n\t$Expr0 := ([CallbackDataID(ROUND ( Flights[Seats]], 0 ))](PFDATAID( [FlightData (10)].[Seats (16615)] )))\r\nSELECT\r\nSUM(@$Expr0) AS [$Measure0]\r\nFROM [FlightData (10)];\r\n\r\n[Estimated size (volume, marshalling bytes): 1, 16]"
+"WITH $Expr0 := (\u0027T\u0027[A] + \u0027T\u0027[B]) * 2\r\nSELECT SUM(@$Expr0) FROM \u0027T\u0027;"

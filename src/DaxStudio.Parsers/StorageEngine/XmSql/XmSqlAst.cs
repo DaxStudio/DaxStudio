@@ -85,6 +85,9 @@ namespace DaxStudio.Parsers.StorageEngine.XmSql
     {
         public TextSpan Name;
         public Expression Expression;
+
+        /// <summary>Whether <see cref="Expression"/> was written in parentheses. Callbacks can be written without.</summary>
+        public bool IsParenthesized;
     }
 
     /// <summary><c>SELECT selectList fromClause joinClause* whereClause?</c></summary>

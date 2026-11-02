@@ -290,8 +290,19 @@ namespace DaxStudio.Parsers.StorageEngine.XmSql
                     To = x.Item4,
                 });
 
-            var exprDefinition = exprRef.AndSkip(assign).AndSkip(lParen).And(expression).AndSkip(rParen)
-                .Then(x => new ExprDefinition { Name = x.Item1, Expression = x.Item2 });
+            // EXPR_REF ASSIGN (LPAREN expression RPAREN | expression): an expression that is one parenthesized
+            // atom is the first alternative, as `(a) + b` can only be told from `(a)` after reading it.
+            var exprDefinition = exprRef.AndSkip(assign).And(expression)
+                .Then(x =>
+                {
+                    var parenthesized = x.Item2.Atoms.Count == 1 ? x.Item2.Atoms[0].Parenthesized : null;
+                    return new ExprDefinition
+                    {
+                        Name = x.Item1,
+                        Expression = parenthesized ?? x.Item2,
+                        IsParenthesized = parenthesized != null,
+                    };
+                });
 
             var withClause = Kw("WITH").SkipAnd(OneOrMany(exprDefinition));
 
