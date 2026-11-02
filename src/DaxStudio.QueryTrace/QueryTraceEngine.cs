@@ -12,6 +12,7 @@ using Serilog;
 using DaxStudio.Common;
 using Polly;
 using ADOTabular.Enums;
+using ADOTabular.Utils;
 using Trace = Microsoft.AnalysisServices.Trace;
 using DaxStudio.Common.Enums;
 using DaxStudio.Common.Extensions;
@@ -198,7 +199,7 @@ namespace DaxStudio.QueryTrace
         {
             Log.Verbose("{class} {method} {event} ConnStr: {connectionString}", nameof(QueryTraceEngine), nameof(AdjustConnectionString), "Start", connectionString);
 
-            var connStrBuilder = new System.Data.OleDb.OleDbConnectionStringBuilder(connectionString);
+            var connStrBuilder = connectionString.ToConnectionStringBuilder();
             connStrBuilder.Remove("MDX Compatibility");
             connStrBuilder.Remove("Cell Error Mode");
             connStrBuilder.Remove("Roles");

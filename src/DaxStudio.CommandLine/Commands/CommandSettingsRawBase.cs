@@ -7,7 +7,7 @@ using Spectre.Console;
 using Spectre.Console.Cli;
 using System;
 using System.ComponentModel;
-using System.Data.OleDb;
+using ADOTabular.Utils;
 
 namespace DaxStudio.CommandLine.Commands
 {
@@ -70,7 +70,7 @@ namespace DaxStudio.CommandLine.Commands
             // here or the caller's choice of account would be silently discarded.
             if (!string.IsNullOrEmpty(ConnectionString))
             {
-                var supplied = new OleDbConnectionStringBuilder(ConnectionString);
+                var supplied = ConnectionString.ToConnectionStringBuilder();
                 if (supplied.ContainsKey("User ID")) return supplied["User ID"]?.ToString() ?? string.Empty;
                 if (supplied.ContainsKey("UID")) return supplied["UID"]?.ToString() ?? string.Empty;
             }
@@ -121,13 +121,11 @@ namespace DaxStudio.CommandLine.Commands
                 string user = ResolvedUserID;
                 string pass = ResolvedPassword;
 
-                // Always build the connection string through OleDbConnectionStringBuilder
+                // Always build the connection string through a DbConnectionStringBuilder
                 // so that values containing special characters (';', '=', '"', leading/
                 // trailing whitespace) are quoted correctly and any embedded single
                 // quotes are doubled per the connection-string grammar.
-                var builder = string.IsNullOrEmpty(ConnectionString)
-                    ? new OleDbConnectionStringBuilder()
-                    : new OleDbConnectionStringBuilder(ConnectionString);
+                var builder = ConnectionString.ToConnectionStringBuilder();
 
                 if (string.IsNullOrEmpty(ConnectionString))
                 {
@@ -139,7 +137,7 @@ namespace DaxStudio.CommandLine.Commands
                 // unchanged from previous releases.
                 var hasPassword = builder.ContainsKey("Password") || builder.ContainsKey("Pwd") || !string.IsNullOrEmpty(pass);
 
-                if (!hasPassword && builder.DataSource.RequiresEntraAuth())
+                if (!hasPassword && builder.GetDataSource().RequiresEntraAuth())
                 {
                     // Without a password the user id names which cached Entra account to get a
                     // token for; it is not a credential. Leaving it on the connection string makes
@@ -225,6 +223,9 @@ namespace DaxStudio.CommandLine.Commands
                 .SpinnerStyle(Style.Parse("green bold"))
                 .Start("Scanning for running instances of Power BI Desktop...", ctx =>
                 {
+                    // Spectre's CommandSettings.Validate() is synchronous, so we use the blocking
+                    // overload here. That is safe in the CLI host - a console app has no
+                    // SynchronizationContext to deadlock against.
                     var instances = PowerBIHelper.GetLocalInstances(false, true);
                 
                     foreach (var instance in instances)

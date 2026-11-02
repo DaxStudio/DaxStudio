@@ -93,6 +93,9 @@ namespace DAXEditorControl
         private WordHighlighTransformer _wordHighlighter;
         private SelectionBackgroundRenderer _selectionBackgroundRenderer;
         private readonly TextMarkerService _textMarkerService;
+        private readonly CommentScriptChipRenderer _commentScriptChipRenderer;
+        private readonly AssertTableRowRenderer _assertTableRowRenderer;
+        private readonly LineSpacingElementGenerator _lineSpacingGenerator;
         private ToolTip _toolTip;
         private bool _syntaxErrorDisplayed;
         private IHighlighter _documentHighlighter;
@@ -127,6 +130,18 @@ namespace DAXEditorControl
             textView.BackgroundRenderers.Add(_textMarkerService);
             textView.LineTransformers.Add(_textMarkerService);
             textView.Services.AddService(typeof(TextMarkerService), _textMarkerService);
+
+            // Add Comment Script directive keyword chip renderer
+            _commentScriptChipRenderer = new CommentScriptChipRenderer(this);
+            textView.BackgroundRenderers.Add(_commentScriptChipRenderer);
+
+            // Add faint full-width tint behind "-->>" assert-table rows
+            _assertTableRowRenderer = new AssertTableRowRenderer(this);
+            textView.BackgroundRenderers.Add(_assertTableRowRenderer);
+
+            // Add line spacing generator (opt-in via the LineSpacing property, default 0 = off)
+            _lineSpacingGenerator = new LineSpacingElementGenerator(0);
+            textView.ElementGenerators.Add(_lineSpacingGenerator);
             
             // add handlers for tooltip error display
             textView.MouseHover += TextEditorMouseHover;
@@ -233,7 +248,9 @@ namespace DAXEditorControl
                     if (baseColor != null)
                     {
                         baseColor.Foreground = syntaxHighlight.Foreground;
-                        
+                        // copy the background too so themed highlights (eg. the Comment Script
+                        // directive keyword "chip") can use a different background per theme
+                        baseColor.Background = syntaxHighlight.Background;
                     }
                 }
             }
@@ -423,6 +440,33 @@ namespace DAXEditorControl
             DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             ((DAXEditor)d).OnFontSizeInPointsPropertyChanged((double)e.NewValue);
+        }
+
+        public static readonly DependencyProperty LineSpacingProperty =
+            DependencyProperty.Register("LineSpacing", typeof(double), typeof(DAXEditor),
+                new PropertyMetadata(0.0, OnLineSpacingPropertyChanged));
+
+        /// <summary>
+        /// Extra vertical spacing (in device-independent pixels) added to each line.
+        /// 0 (the default) disables the line spacing generator.
+        /// </summary>
+        public double LineSpacing
+        {
+            get { return (double)GetValue(LineSpacingProperty); }
+            set { SetValue(LineSpacingProperty, value); }
+        }
+
+        private static void OnLineSpacingPropertyChanged(
+            DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var editor = (DAXEditor)d;
+            var value = (double)e.NewValue;
+            if (editor._lineSpacingGenerator != null)
+            {
+                editor._lineSpacingGenerator.ExtraSpacing = value < 0 ? 0 : value;
+                // Force the visual lines to be rebuilt so the new spacing takes effect.
+                editor.TextArea.TextView.Redraw();
+            }
         }
 
 
@@ -725,11 +769,19 @@ namespace DAXEditorControl
             }
         }
 
+        // Shows a completion window that was created outside the normal TextEntered flow (e.g. re-opening
+        // the DMV list immediately after the $SYSTEM keyword is completed) and tracks it so subsequent
+        // keystrokes filter/close it correctly.
+        public void ShowCompletionWindow(CompletionWindow window)
+        {
+            _completionWindow = window;
+            _completionWindow?.Show();
+        }
+
         public void DisableIntellisense()
         {
             IntellisenseProvider = new IntellisenseProviderStub();
         }
-
         public void EnableIntellisense(IIntellisenseProvider provider)
         {
             this.IntellisenseProvider = provider;

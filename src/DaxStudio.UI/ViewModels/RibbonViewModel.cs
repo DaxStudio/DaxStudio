@@ -55,7 +55,9 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<UpdateHotkeys>
         , IHandle<SetRunStyleEvent>
         , IHandle<ViewMetricsCompleteEvent>
-
+        , IHandle<OpenModelDiagramEvent>
+        , IHandle<OpenVertipaqAnalyzerEvent>
+        , IHandle<OpenDeltaAnalyzerEvent>
         //        , IViewAware
     {
         private readonly IDaxStudioHost _host;
@@ -1824,6 +1826,58 @@ namespace DaxStudio.UI.ViewModels
             // Notify that Model Diagram availability may have changed
             NotifyOfPropertyChange(() => CanShowModelDiagram);
             return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Handles the OpenModelDiagramEvent raised by the "--> SHOW DIAGRAM" comment-script command.
+        /// Opens (and loads) the Model Diagram via the same path as the ribbon button, then filters it
+        /// to the supplied tables (if any) reusing the Server-Timings table-subset mechanism.
+        /// </summary>
+        public async Task HandleAsync(OpenModelDiagramEvent message, CancellationToken cancellationToken)
+        {
+            await Execute.OnUIThreadAsync(async () =>
+            {
+                ShowModelDiagram();
+                if (message?.TableNames != null)
+                {
+                    await _eventAggregator.PublishAsync(
+                        new ShowTablesInModelDiagramEvent(message.TableNames, includeRelated: false));
+                }
+            });
+        }
+
+        /// <summary>
+        /// Handles the OpenVertipaqAnalyzerEvent raised by the "--> SHOW METRICS" comment-script command.
+        /// Opens the VertiPaq Analyzer (Metrics) view via the same path as the ribbon button.
+        /// </summary>
+        public async Task HandleAsync(OpenVertipaqAnalyzerEvent message, CancellationToken cancellationToken)
+        {
+            await Execute.OnUIThreadAsync(async () =>
+            {
+                if (ActiveDocument == null) return;
+                await ActiveDocument.ViewAnalysisDataAsync();
+            });
+        }
+
+        /// <summary>
+        /// Handles the OpenDeltaAnalyzerEvent raised by the "--> SHOW DELTA" comment-script command.
+        /// Opens the Delta Analyzer view via the same path as the ribbon button, respecting the
+        /// preview option; warns (rather than throwing) when the feature is disabled.
+        /// </summary>
+        public async Task HandleAsync(OpenDeltaAnalyzerEvent message, CancellationToken cancellationToken)
+        {
+            await Execute.OnUIThreadAsync(() =>
+            {
+                if (ActiveDocument == null) return Task.CompletedTask;
+                if (!CanShowDeltaAnalyzer)
+                {
+                    _eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning,
+                        "The Delta Analyzer is a preview feature and must be enabled in Options before it can be shown with '--> SHOW DELTA'."));
+                    return Task.CompletedTask;
+                }
+                ShowDeltaAnalyzer();
+                return Task.CompletedTask;
+            });
         }
     }
 }

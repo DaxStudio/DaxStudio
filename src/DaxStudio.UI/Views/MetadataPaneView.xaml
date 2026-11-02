@@ -374,6 +374,9 @@
                         <MenuItem Header="Full" cal:Message.Attach="[Event Click] = [Action ProcessDatabaseFull()]"></MenuItem>
                         <MenuItem Header="Recalculate" cal:Message.Attach="[Event Click] = [Action ProcessDatabaseRecalc()]"></MenuItem>
                     </MenuItem>
+                    <Separator/>
+                    <MenuItem Header="Show Last Updated" cal:Message.Attach="[Event Click] = [Action ShowLastUpdated()]"></MenuItem>
+                    <MenuItem Header="Show Max Updated" cal:Message.Attach="[Event Click] = [Action ShowMaxUpdated()]"></MenuItem>
                 </ContextMenu>
             </ComboBox.ContextMenu>
         </ComboBox>

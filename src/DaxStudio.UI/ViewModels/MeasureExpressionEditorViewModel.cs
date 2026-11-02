@@ -37,7 +37,7 @@ namespace DaxStudio.UI.ViewModels
         public IGlobalOptions Options { get; }
         public TextDocument MeasureExpression { get; set; } = new TextDocument();
         
-        public DaxIntellisenseProvider IntellisenseProvider { get; set; }
+        public IDaxIntellisenseProvider IntellisenseProvider { get; set; }
         public UnitViewModel SizeUnitLabel { get; set; }
 
         private string _measureName = string.Empty;
@@ -87,7 +87,7 @@ namespace DaxStudio.UI.ViewModels
             EventAggregator = eventAggregator;
             Document = document;
             Options = options;
-            IntellisenseProvider = new DaxIntellisenseProvider(Document, EventAggregator, Options);
+            IntellisenseProvider = IntellisenseProviderFactory.Create(Document, EventAggregator, Options);
             
             
             var items = new ObservableCollection<UnitComboLib.ViewModel.ListItem>(ScreenUnitsHelper.GenerateScreenUnitList());
@@ -261,6 +261,28 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(ConvertTabsToSpaces));
             NotifyOfPropertyChange(nameof(IndentationSize));
             NotifyOfPropertyChange(nameof(WordWrap));
+        }
+
+        // Swaps the intellisense provider when the "Use New Code Completion Engine" option is toggled.
+        // Called by the parent DocumentViewModel so this editor does not need its own options subscription.
+        internal void RefreshIntellisenseProvider()
+        {
+            var shouldUseAntlr = Options.UseNewDaxParser;
+            var isUsingAntlr = IntellisenseProvider is AntlrIntellisenseProvider;
+            if (shouldUseAntlr == isUsingAntlr) return;
+
+            var oldProvider = IntellisenseProvider;
+            oldProvider?.CloseCompletionWindow();
+            if (oldProvider != null) EventAggregator.Unsubscribe(oldProvider);
+
+            var newProvider = IntellisenseProviderFactory.Create(Document, EventAggregator, Options);
+            if (oldProvider != null) newProvider.SetCachedMetadata(oldProvider.Model, oldProvider.DMVs, oldProvider.FunctionGroups);
+            newProvider.Editor = _editor;
+            IntellisenseProvider = newProvider;
+
+            EventAggregator.SubscribeOnUIThread(newProvider);
+
+            UpdateSettings();
         }
 
         public void DragEnter(IDropInfo dropInfo)

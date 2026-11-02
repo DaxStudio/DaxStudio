@@ -247,9 +247,6 @@
                 </Trigger.ExitActions>
             </Trigger>
 
-            <Trigger Property="IsKeyboardFocused" Value="True">
-                <Setter TargetName="rootBorder" Property="BorderBrush" Value="{DynamicResource Fluent.Ribbon.Brushes.Black}" />
-            </Trigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>
 

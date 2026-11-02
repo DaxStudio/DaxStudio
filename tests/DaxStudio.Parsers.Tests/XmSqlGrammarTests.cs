@@ -1,5 +1,6 @@
-using DaxStudio.Parsers.DirectQuery;
-using DaxStudio.Parsers.XmSql;
+using DaxStudio.Parsers.StorageEngine;
+using DaxStudio.Parsers.StorageEngine.DirectQuery;
+using DaxStudio.Parsers.StorageEngine.XmSql;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
 using System.Threading;

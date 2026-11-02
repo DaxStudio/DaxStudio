@@ -36,8 +36,24 @@
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
     <Reference Include="System.Management" />
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
+  <!-- System.Management (WMI) is Windows-only; scope it to the Windows TFMs so a future plain
+       net8.0 (cross-platform) target never references it. -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0-windows'">
     <PackageReference Include="System.Management" />
+  </ItemGroup>
+
+  <!-- Windows-only Power BI Desktop discovery code (WMI / iphlpapi / user32 / WindowsPrincipal).
+       Forward-looking: these are excluded from a future plain net8.0 target, which instead
+       compiles PowerBIScannerFactory.Stub.cs. Today (net472; net8.0-windows only) these are
+       no-ops but they document intent and make the eventual net8.0 flip a one-line change. -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+    <Compile Remove="Extensions\ProcessExtensions.cs" />
+    <Compile Remove="Utils\ManagedIpHelper.cs" />
+    <Compile Remove="Utils\WindowsPowerBIInstanceScanner.cs" />
+    <Compile Remove="Utils\PowerBIScannerFactory.Windows.cs" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' != 'net8.0'">
+    <Compile Remove="Utils\PowerBIScannerFactory.Stub.cs" />
   </ItemGroup>
 
   <!-- Package references -->

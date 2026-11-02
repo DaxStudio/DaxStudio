@@ -1,5 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- Runs the parser tests of DaxStudio.Tests against the Parlot implementations: the global
+  <!-- Runs the parser tests of DaxStudio.Parsers.Tests against the Parlot implementations: the global
        aliases below replace the ANTLR parser, formatter and query grouper in the linked files.
        Tests that use the ANTLR generated grammar types directly still exercise ANTLR. -->
   <PropertyGroup>
@@ -20,8 +20,8 @@
     <ProjectReference Include="..\..\src\DaxStudio.Parsers\DaxStudio.Parsers.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\DaxStudio.Tests\AntlrXmSqlParserTests.cs" Link="Shared\AntlrXmSqlParserTests.cs" />
-    <Compile Include="..\DaxStudio.Tests\AntlrXmSqlFormatterTests.cs" Link="Shared\AntlrXmSqlFormatterTests.cs" />
-    <Compile Include="..\DaxStudio.Tests\XmSqlFingerprintTests.cs" Link="Shared\XmSqlFingerprintTests.cs" />
+    <Compile Include="..\DaxStudio.Parsers.Tests\AntlrXmSqlParserTests.cs" Link="Shared\AntlrXmSqlParserTests.cs" />
+    <Compile Include="..\DaxStudio.Parsers.Tests\AntlrXmSqlFormatterTests.cs" Link="Shared\AntlrXmSqlFormatterTests.cs" />
+    <Compile Include="..\DaxStudio.Parsers.Tests\XmSqlFingerprintTests.cs" Link="Shared\XmSqlFingerprintTests.cs" />
   </ItemGroup>
 </Project>

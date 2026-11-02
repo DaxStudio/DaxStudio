@@ -976,7 +976,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     var message = BuildFailureMessage(erroredTables);
                     SetStatus(message, true);
-                    _eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, message));
+                    await _eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, message));
                     return;
                 }
 

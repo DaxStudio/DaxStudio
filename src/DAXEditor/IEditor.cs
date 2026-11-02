@@ -27,6 +27,7 @@ namespace DAXEditorControl
 
         InsightWindow InsightWindow { get; set; }
         void DisposeCompletionWindow();
+        void ShowCompletionWindow(CompletionWindow window);
         ICSharpCode.AvalonEdit.Editing.TextArea TextArea { get;  }
         //TextDocument Document { get; }
 

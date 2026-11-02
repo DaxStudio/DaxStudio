@@ -6,7 +6,7 @@ using Serilog.Core;
 using Serilog.Events;
 using System;
 using System.Collections.Generic;
-using System.Data.OleDb;
+using ADOTabular.Utils;
 using System.Linq;
 
 namespace DaxStudio.CommandLine.Tests
@@ -199,7 +199,7 @@ namespace DaxStudio.CommandLine.Tests
                 UserID = "user@contoso.com"
             };
 
-            var builder = new OleDbConnectionStringBuilder(settings.FullConnectionString);
+            var builder = settings.FullConnectionString.ToConnectionStringBuilder();
 
             Assert.IsFalse(builder.ContainsKey("User ID"), settings.FullConnectionString);
             Assert.IsFalse(builder.ContainsKey("UID"), settings.FullConnectionString);
@@ -219,7 +219,7 @@ namespace DaxStudio.CommandLine.Tests
                 Password = "secret"
             };
 
-            var builder = new OleDbConnectionStringBuilder(settings.FullConnectionString);
+            var builder = settings.FullConnectionString.ToConnectionStringBuilder();
 
             Assert.AreEqual("user@contoso.com", builder["User ID"]);
         }
@@ -234,7 +234,7 @@ namespace DaxStudio.CommandLine.Tests
                 UserID = "testUser"
             };
 
-            var builder = new OleDbConnectionStringBuilder(settings.FullConnectionString);
+            var builder = settings.FullConnectionString.ToConnectionStringBuilder();
 
             Assert.AreEqual("testUser", builder["User ID"]);
         }
@@ -247,7 +247,7 @@ namespace DaxStudio.CommandLine.Tests
                 ConnectionString = $"Data Source={PowerBiServer};Initial Catalog=model;User ID=user@contoso.com"
             };
 
-            var builder = new OleDbConnectionStringBuilder(settings.FullConnectionString);
+            var builder = settings.FullConnectionString.ToConnectionStringBuilder();
 
             Assert.AreEqual("user@contoso.com", settings.ResolvedUserID, "a user id on the connection string still names the account");
             Assert.IsFalse(builder.ContainsKey("User ID"), settings.FullConnectionString);

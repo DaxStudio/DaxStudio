@@ -113,6 +113,11 @@ namespace DaxStudio.Tests.Mocks
             // do nothing
         }
 
+        public void ShowCompletionWindow(CompletionWindow window)
+        {
+            // do nothing
+        }
+
         public DocumentLine DocumentGetLineByNumber(int line)
         {
             throw new NotImplementedException();

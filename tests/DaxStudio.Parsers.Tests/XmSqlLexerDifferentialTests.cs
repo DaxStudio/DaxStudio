@@ -1,6 +1,7 @@
+using DaxStudio.Parsers.StorageEngine;
 using Antlr4.Runtime;
 using DaxStudio.Parsers.Grammars.Generated;
-using DaxStudio.Parsers.XmSql;
+using DaxStudio.Parsers.StorageEngine.XmSql;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Text;

@@ -1,5 +1,5 @@
 using BenchmarkDotNet.Running;
-using DaxStudio.Parsers.XmSql;
+using DaxStudio.Parsers.StorageEngine.XmSql;
 using System;
 using System.Linq;
 

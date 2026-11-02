@@ -10,6 +10,22 @@
   <Color name="Xmla"       foreground="#EE666666"  fontStyle="italic" />
   <Color name="Numbers"    foreground="#EE7F18" />
   <Color name="Parenthesis" foreground="#808080" />
+  <!-- Comment Script directive colors -->
+  <Color name="CsMarker"   foreground="#8A8F98" />
+  <Color name="CsTableMarker" foreground="#8250DF" />
+  <Color name="CsCommand"  foreground="#035ACA" />
+  <Color name="CsGo"       foreground="#39A03B" />
+  <Color name="CsText"     foreground="#333333" />
+  <!-- CsChipBackground is not referenced by any rule; it is drawn as a rounded
+       chip by the CommentScriptChipRenderer and theme-swapped like the others -->
+  <Color name="CsChipBackground" background="#E7EEF8" />
+  <!-- CsGoChipBackground is not referenced by any rule; it is drawn as a pale
+       green chip behind the GO keyword by the CommentScriptChipRenderer -->
+  <Color name="CsGoChipBackground" background="#E4F3E4" />
+  <!-- CsTableRowBackground is not referenced by any rule; it is drawn as a faint
+       full-width line tint behind assert-table continuation rows by the
+       AssertTableRowRenderer and theme-swapped like the others -->
+  <Color name="CsTableRowBackground" background="#EEF4FC" />
   
   <!-- Light theme colors-->
   <Color name="Light.Comment"    foreground="#39A03B" />
@@ -22,6 +38,14 @@
   <Color name="Light.Xmla"       foreground="#EE666666"  fontStyle="italic" />
   <Color name="Light.Numbers"    foreground="#EE7F18" />
   <Color name="Light.Parenthesis"      foreground="#808080" />
+  <Color name="Light.CsMarker"   foreground="#8A8F98" />
+  <Color name="Light.CsTableMarker" foreground="#8250DF" />
+  <Color name="Light.CsCommand"  foreground="#035ACA" />
+  <Color name="Light.CsGo"       foreground="#39A03B" />
+  <Color name="Light.CsText"     foreground="#333333" />
+  <Color name="Light.CsChipBackground" background="#E7EEF8" />
+  <Color name="Light.CsGoChipBackground" background="#E4F3E4" />
+  <Color name="Light.CsTableRowBackground" background="#EEF4FC" />
   
   <!-- dark theme colors-->
   <Color name="Dark.Comment"    foreground="#86C573" />
@@ -34,9 +58,61 @@
   <Color name="Dark.Xmla"       foreground="#808080"  fontStyle="italic" />
   <Color name="Dark.Numbers"    foreground="#EE7F18" />
   <Color name="Dark.Parenthesis"     foreground="#636363" />
+  <Color name="Dark.CsMarker"   foreground="#6E7681" />
+  <Color name="Dark.CsTableMarker" foreground="#C297FF" />
+  <Color name="Dark.CsCommand"  foreground="#0095FF" />
+  <Color name="Dark.CsGo"       foreground="#86C573" />
+  <Color name="Dark.CsText"     foreground="#FFFFFF" />
+  <Color name="Dark.CsChipBackground" background="#2C3E5B" />
+  <Color name="Dark.CsGoChipBackground" background="#263A26" />
+  <Color name="Dark.CsTableRowBackground" background="#22304A" />
   
   <RuleSet ignoreCase="true">
 	<!-- comments -->
+	<!-- Comment Script directives (the arrow-prefixed and continuation lines).
+	     Must precede the generic dash-dash comment span so the directive takes
+	     priority over a plain comment. The double-arrow continuation (assert-table
+	     row) marker is listed first (it is a prefix superset of the single-arrow
+	     directive marker) and coloured purple; the remaining row content is
+	     coloured as plain CsText. -->
+	<Span color="CsTableMarker" multiline="false">
+	  <Begin>--&gt;&gt;</Begin>
+	  <RuleSet>
+	    <Rule color="CsText">[^\s]+</Rule>
+	  </RuleSet>
+	</Span>
+	<Span color="CsMarker" multiline="false">
+	  <Begin>--&gt;</Begin>
+	  <RuleSet>
+	    <Keywords color="CsCommand">
+	      <Word>CONNECT</Word>
+	      <Word>USE</Word>
+	      <Word>OPEN</Word>
+	      <Word>PARAMETER</Word>
+	      <Word>SET</Word>
+	      <Word>OUTPUT</Word>
+	      <Word>TRACE</Word>
+	      <Word>CLEARCACHE</Word>
+	      <Word>SAVEAS</Word>
+	      <Word>METRICS</Word>
+	      <Word>SHOW</Word>
+	      <Word>ASSERT</Word>
+	      <Word>BASELINE</Word>
+	      <Word>PREVIOUS</Word>
+	      <Word>TEST</Word>
+	      <Word>RESULTS</Word>
+	      <Word>CSV</Word>
+	      <Word>TXT</Word>
+	      <Word>MD</Word>
+	      <Word>PARQUET</Word>
+	    </Keywords>
+	    <Keywords color="CsGo">
+	      <Word>GO</Word>
+	    </Keywords>
+	    <Rule color="Parameter">@([\w]+)</Rule>
+	    <Rule color="CsText">[^\s]+</Rule>
+	  </RuleSet>
+	</Span>
 	<Span color="Comment" multiline="false">
       <Begin>//</Begin>
     </Span>

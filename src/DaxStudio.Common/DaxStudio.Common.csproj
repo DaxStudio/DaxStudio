@@ -33,7 +33,7 @@
     <PackageReference Include="Microsoft.PowerBI.Api" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="Serilog" />
-    <PackageReference Include="System.Drawing.Common" Condition="'$(TargetFramework)' == 'net8.0-windows'" />
+
   </ItemGroup>
 
   <!-- Custom MSBuild task to extract ASAzureSecurityConfig.xml from AdomdClient (only run once, not per TFM) -->

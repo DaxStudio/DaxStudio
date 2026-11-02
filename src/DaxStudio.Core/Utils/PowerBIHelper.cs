@@ -1,87 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using Serilog;
-using DaxStudio.Core.Extensions;
-using System.Security.Principal;
-using DaxStudio.Common;
+using System.Threading;
 using System.Threading.Tasks;
-using System.Linq;
+using Serilog;
 
 namespace DaxStudio.Core.Utils
 {
-    public enum EmbeddedSSASIcon
-    {
-        PowerBI,
-        Devenv,
-        PowerBIReportServer,
-        Loading,
-        None
-    }
-    public class PowerBIInstance : IComparable<PowerBIInstance>
-    {
-        public static readonly string[] PBIDesktopMainWindowTitleSuffixes = new string[]
-        {
-            // Different characters are used as a separator in the PBIDesktop window title depending on the current UI culture/localization
-            // See https://github.com/sql-bi/Bravo/issues/476
-
-            " \u002D Power BI Desktop", // Dash Punctuation - minus hyphen
-            " \u2212 Power BI Desktop", // Math Symbol - minus sign
-            " \u2011 Power BI Desktop", // Dash Punctuation - non-breaking hyphen
-            " \u2013 Power BI Desktop", // Dash Punctuation - en dash
-            " \u2014 Power BI Desktop", // Dash Punctuation - em dash
-            " \u2015 Power BI Desktop", // Dash Punctuation - horizontal bar
-        };
-
-        public PowerBIInstance(string windowTitle, int port, EmbeddedSSASIcon icon)
-        {
-            Port = port;
-            Icon = icon;
-            try
-            {
-                // Strip "Power BI Designer" or "Power BI Desktop" off the end of the string
-                foreach (var suffix in PBIDesktopMainWindowTitleSuffixes)
-                {
-                    var index = windowTitle.LastIndexOf(suffix);
-                    if (index >= 1)
-                    {
-                        Name = windowTitle.Substring(0,index).Trim();
-                        break;
-                    }
-                }
-
-                if (string.IsNullOrEmpty(Name))
-                {
-                    if (port != -1)
-                    {
-                        Log.Verbose(Constants.LogMessageTemplate, nameof(PowerBIInstance), "ctor", $"Unable to find ' - Power BI Desktop' in Power BI title '{windowTitle}'");
-                    }
-                    Name = windowTitle; 
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex,Constants.LogMessageTemplate, nameof(PowerBIInstance), "ctor", ex.Message);
-                Name = windowTitle;
-            }
-        }
-        public int Port { get; private set; }
-        public string Name { get; private set; }
-
-        public EmbeddedSSASIcon Icon { get; private set; }
-
-        public int CompareTo(PowerBIInstance obj)
-        {
-            return Name.CompareTo(obj.Name);
-        }
-    }
-
     public static class PowerBIHelper
     {
-
         private static readonly List<PowerBIInstance> _instances = new List<PowerBIInstance>();
         private static bool instancesLoaded = false;
-        private static readonly object _scanLock = new object();
+        // SemaphoreSlim rather than lock() because the async path awaits the scan while holding it
+        private static readonly SemaphoreSlim _scanLock = new SemaphoreSlim(1, 1);
         private static DateTime _lastScanUtc = DateTime.MinValue;
         private static bool _lastScanIncludedPBIRS = false;
         // Coalesce force-refresh scans that occur within this window. The connection dialog
@@ -89,17 +19,44 @@ namespace DaxStudio.Core.Utils
         // ApplicationActivatedEvent that fires as the app gains focus at startup - both fire
         // almost simultaneously, so without this we scan (and log) the msmdsrv processes twice.
         private static readonly TimeSpan ScanThrottle = TimeSpan.FromSeconds(2);
-        const int MaxParallelInstanceScans = 5;
 
+        // The platform-specific scanner that performs the actual discovery of running instances.
+        // Defaulted at compile time via PowerBIScannerFactory (Windows scanner on Windows targets,
+        // a no-op stub on cross-platform builds). Settable so tests can inject a fake scanner.
+        public static IPowerBIInstanceScanner Scanner { get; set; } = PowerBIScannerFactory.Create();
+
+        /// <summary>
+        /// Returns the locally running Power BI Desktop / SSDT instances.
+        /// </summary>
+        /// <remarks>
+        /// Blocks on the async implementation, so it must not be called from the UI thread -
+        /// prefer <see cref="GetLocalInstancesAsync"/>.
+        /// The returned list is a snapshot; callers may freely mutate it without corrupting the
+        /// shared cache.
+        /// </remarks>
         public static List<PowerBIInstance> GetLocalInstances(bool includePBIRS, bool refreshList)
+        {
+            return GetLocalInstancesAsync(includePBIRS, refreshList, CancellationToken.None).GetAwaiter().GetResult();
+        }
+
+        /// <summary>
+        /// Returns the locally running Power BI Desktop / SSDT instances, scanning for them if the
+        /// cache is stale (or <paramref name="refreshList"/> is set).
+        /// </summary>
+        /// <remarks>
+        /// The returned list is a snapshot; callers may freely mutate it without corrupting the
+        /// shared cache.
+        /// </remarks>
+        public static async Task<List<PowerBIInstance>> GetLocalInstancesAsync(bool includePBIRS, bool refreshList, CancellationToken cancellationToken)
         {
             if (!refreshList && instancesLoaded)
             {
                 Log.Debug("{class} {method} Returning cached PowerBI instances", nameof(PowerBIHelper), nameof(GetLocalInstances));
-                return _instances;
+                return Snapshot();
             }
 
-            lock (_scanLock)
+            await _scanLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
             {
                 // Another thread may have completed a scan while we were waiting for the lock.
                 // Coalesce near-simultaneous force-refreshes (same scope) so we only scan the
@@ -109,106 +66,39 @@ namespace DaxStudio.Core.Utils
                     && (DateTime.UtcNow - _lastScanUtc) < ScanThrottle)
                 {
                     Log.Debug("{class} {method} Returning recently scanned PowerBI instances (throttled)", nameof(PowerBIHelper), nameof(GetLocalInstances));
-                    return _instances;
+                    return Snapshot();
                 }
 
-                var dict = ManagedIpHelper.GetExtendedTcpDictionary();
-                var msmdsrvProcesses = Process.GetProcessesByName("msmdsrv");
+                var scanned = await Scanner.ScanAsync(includePBIRS, cancellationToken).ConfigureAwait(false);
+                scanned.Sort(); // order by name
 
-                Func<Process, Task> myfunc = async (proc) =>
+                lock (_instances)
                 {
-                    var instance = await GetInstanceDetailsAsync(includePBIRS, dict, proc, IsAdministrator());
-                    if (instance != null)
-                    {
-                        _instances.Add( instance);
-                    }
-                };
-
-                _instances.Clear(); // clear the list before we start
-
-                msmdsrvProcesses.ParallelForEachAsync(async proc => await myfunc(proc), MaxParallelInstanceScans).Wait();
-
-                _instances.Sort(); // order by name
+                    _instances.Clear();
+                    _instances.AddRange(scanned);
+                }
 
                 instancesLoaded = true;
                 _lastScanUtc = DateTime.UtcNow;
                 _lastScanIncludedPBIRS = includePBIRS;
 
-                return _instances;
+                return Snapshot();
+            }
+            finally
+            {
+                _scanLock.Release();
             }
         }
 
-        private static async Task<PowerBIInstance> GetInstanceDetailsAsync(bool includePBIRS, Dictionary<int, TcpRow> tcpPorts, Process proc, bool isAdmin)
+        // Hand back a copy so that callers cannot mutate (or observe a concurrent rewrite of) the
+        // cached list - the connection dialog appends a placeholder "none detected" entry to what
+        // it gets back, which previously poisoned the cache for every subsequent caller.
+        private static List<PowerBIInstance> Snapshot()
         {
-            return await Task.Run<PowerBIInstance>(() => {
-                PowerBIInstance instance = null;
-                int _port = 0;
-                string parentTitle = string.Empty; // $"localhost:{_port}";
-                EmbeddedSSASIcon _icon = EmbeddedSSASIcon.PowerBI;
-                var parent = proc.GetParent();
-
-                if (parent != null)
-                {
-                    // exit here if the parent == "services" then this is a SSAS instance
-                    if (parent.ProcessName.Equals("services", StringComparison.OrdinalIgnoreCase)) return instance;
-
-                    // exit here if the parent == "RSHostingService" then this is a SSAS instance
-                    if (parent.ProcessName.Equals("RSHostingService", StringComparison.OrdinalIgnoreCase))
-                    {
-                        // only show PBI Report Server if we are running as admin
-                        // otherwise we won't have any access to the models
-                        if (isAdmin && includePBIRS)
-                            _icon = EmbeddedSSASIcon.PowerBIReportServer;
-                        else
-                            return instance;
-                    }
-
-                    // if the process was launched from Visual Studio change the icon
-                    if (parent.ProcessName.Equals("devenv", StringComparison.OrdinalIgnoreCase)) _icon = EmbeddedSSASIcon.Devenv;
-
-                    // get the window title so that we can parse out the file name
-                    parentTitle = parent.MainWindowTitle;
-
-                    if (parentTitle.Length == 0)
-                    {
-                        // for minimized windows we need to use some Win32 api calls to get the title
-                        //parentTitle = WindowTitle.GetWindowTitleTimeout( parent.Id, 300);
-                        parentTitle = WindowTitle.GetWindowTitle(parent.Id);
-                    }
-                }
-                // try and get the tcp port from the Win32 TcpTable API
-                try
-                {
-                    TcpRow tcpRow = null;
-                    tcpPorts.TryGetValue(proc.Id, out tcpRow);
-                    if (tcpRow != null)
-                    {
-                        _port = tcpRow.LocalEndPoint.Port;
-                        instance = new PowerBIInstance(parentTitle, _port, _icon);
-                        Log.Debug("{class} {method} PowerBI found on port: {port}", nameof(PowerBIHelper), nameof(GetLocalInstances), _port);
-                    }
-                    else
-                    {
-                        Log.Debug("{class} {method} PowerBI port not found for process: {processName} PID: {pid}", nameof(PowerBIHelper), nameof(GetLocalInstances), proc.ProcessName, proc.Id);
-                    }
-
-                }
-                catch (Exception ex)
-                {
-                    Log.Error("{class} {Method} {Error} {StackTrace}", nameof(PowerBIHelper), nameof(GetLocalInstances), ex.Message, ex.StackTrace);
-                }
-
-                return instance;
-            });
+            lock (_instances)
+            {
+                return new List<PowerBIInstance>(_instances);
+            }
         }
-
-        public static bool IsAdministrator()
-        {
-            WindowsIdentity identity = WindowsIdentity.GetCurrent();
-            WindowsPrincipal principal = new WindowsPrincipal(identity);
-            return principal.IsInRole(WindowsBuiltInRole.Administrator);
-        }
-        
-
     }
 }

@@ -1,30 +1,32 @@
 using ADOTabular;
 using ADOTabular.AdomdClientWrappers;
 using ADOTabular.Enums;
+using ADOTabular.Extensions;
+using ADOTabular.Interfaces;
 using ADOTabular.MetadataInfo;
+using ADOTabular.Utils;
 using Caliburn.Micro;
-using DaxStudio.Interfaces;
+using DaxStudio.Common;
+using DaxStudio.Common.Enums;
 using DaxStudio.Core.Events;
+using DaxStudio.Core.Extensions;
+using DaxStudio.Core.Model;
+using DaxStudio.Interfaces;
+//using Microsoft.AspNet.SignalR.Client;
 using Polly;
 using Polly.Retry;
 using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using DaxStudio.Common.Enums;
-using System.Xml.XPath;
-using System.IO;
-using System.Data.OleDb;
-using TOM = Microsoft.AnalysisServices;
-using System.Xml;
-using ADOTabular.Interfaces;
-using DaxStudio.Common;
-using ADOTabular.Extensions;
-using DaxStudio.Core.Extensions;
 using System.Threading;
+using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.XPath;
+using TOM = Microsoft.AnalysisServices;
 
 namespace DaxStudio.Core.Connections
 {
@@ -869,6 +871,7 @@ namespace DaxStudio.Core.Connections
         private void RefreshSession()
         {
             Log.Verbose(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(RefreshSession), "Evaluating the calculation script to re-populate the global scopes");
+            _eventAggregator.PublishAsync(new OutputMessage(MessageType.Information, "Re-evaluating the calculation script to re-populate the global scopes")).ConfigureAwait(false);
             ExecuteDaxQueryDataTable(Common.Constants.RefreshSessionQuery);
         }
         public ADOTabularModel SelectedModel { get; set; }
@@ -948,9 +951,17 @@ namespace DaxStudio.Core.Connections
                 {
                     if (Database != null && !string.IsNullOrEmpty( databaseName) && _connection.Database.Name != databaseName) 
                     {
-                        Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(SetSelectedDatabase), databaseName);
+                        Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(SetSelectedDatabase), $"{databaseName} (thread {System.Threading.Thread.CurrentThread.ManagedThreadId})");
+                        var sw = System.Diagnostics.Stopwatch.StartNew();
                         _connection.ChangeDatabase(databaseName);
+                        var queryMs = sw.ElapsedMilliseconds;
                         _dmvConnection.ChangeDatabase(databaseName);
+                        sw.Stop();
+                        Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(SetSelectedDatabase), $"ChangeDatabase '{databaseName}' complete (query conn: {queryMs}ms, dmv conn: {sw.ElapsedMilliseconds - queryMs}ms)");
+                    }
+                    else
+                    {
+                        Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(SetSelectedDatabase), $"{databaseName} - skipped ChangeDatabase (already selected)");
                     }
                     if (_dmvConnection.Database != null)
                     {
@@ -1351,20 +1362,914 @@ namespace DaxStudio.Core.Connections
             return result;
         }
 
+        #region Comment Script "--> SHOW" tree builders
+
+        /// <summary>
+        /// Builds a hierarchical dependency tree for the objects referenced by the supplied query.
+        /// The direct references of the query become the root nodes and each referenced object is
+        /// recursively expanded (all object types) using the DISCOVER_CALC_DEPENDENCY DMV.
+        /// </summary>
+        public List<ShowTreeNode> BuildQueryDependencyTree(string query)
+        {
+            if (!IsConnected)
+            {
+                throw new ApplicationException("Connection required to show dependencies");
+            }
+
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(BuildQueryDependencyTree), "start");
+
+            var roots = new List<ShowTreeNode>();
+            // dedupe roots by their stable identity to avoid repeating the same referenced object
+            var rootKeys = new HashSet<string>();
+
+            // lookups used to populate the Expression column and to resolve/expand references found by
+            // parsing query-scoped function bodies (which the DMV cannot see into)
+            var ctx = new DependencyContext
+            {
+                MeasureExpressions = BuildMeasureExpressionLookup(),
+                FunctionExpressions = BuildFunctionExpressionLookup(),
+                ColumnTables = BuildColumnTableLookup(),
+                QueryFunctionExpressions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
+                QueryFunctionReferences = new Dictionary<string, IReadOnlyList<DaxStudio.Parsers.Metadata.DaxObjectReference>>(StringComparer.OrdinalIgnoreCase)
+            };
+
+            var dmvQuery = $"SELECT OBJECT_TYPE, OBJECT, REFERENCED_OBJECT_TYPE, REFERENCED_TABLE, REFERENCED_OBJECT\r\nFROM $SYSTEM.DISCOVER_CALC_DEPENDENCY\r\nWHERE QUERY='{query.Replace("'", "''")}'";
+            using (var dr = ExecuteReader(dmvQuery, null))
+            {
+                int refTypeOrd = OrdinalOrMinusOne(dr, "REFERENCED_OBJECT_TYPE");
+                int refTableOrd = OrdinalOrMinusOne(dr, "REFERENCED_TABLE");
+                int refObjectOrd = OrdinalOrMinusOne(dr, "REFERENCED_OBJECT");
+                while (dr.Read())
+                {
+                    var refObject = GetStringOrNull(dr, refObjectOrd);
+                    if (string.IsNullOrEmpty(refObject)) continue;
+                    var refType = GetStringOrNull(dr, refTypeOrd);
+                    var refTable = GetStringOrNull(dr, refTableOrd);
+                    if (rootKeys.Add(NodeIdentity(refType, refTable, refObject)))
+                    {
+                        var node = new ShowTreeNode(refObject, refType, refTable);
+                        SetNodeExpression(node, ctx.MeasureExpressions, ctx.FunctionExpressions);
+                        roots.Add(node);
+                    }
+                }
+            }
+
+            // Query-scoped user-defined functions (DEFINE FUNCTION ...) are not reported by the
+            // DISCOVER_CALC_DEPENDENCY DMV, so parse the query itself to surface them (with their body
+            // and the objects they reference).
+            AddQueryScopedFunctions(query, roots, rootKeys, ctx);
+
+            var expanded = new HashSet<string>();
+            foreach (var root in roots)
+            {
+                ExpandDependencyNode(root, expanded, ctx);
+            }
+
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(BuildQueryDependencyTree), $"end - {roots.Count} root(s)");
+            return roots;
+        }
+
+        /// <summary>Holds the metadata lookups shared across a single dependency-tree build.</summary>
+        private class DependencyContext
+        {
+            /// <summary>Model measure name -&gt; DAX expression.</summary>
+            public IReadOnlyDictionary<string, string> MeasureExpressions { get; set; }
+            /// <summary>Model user-defined function name -&gt; DAX expression (from TMSCHEMA_FUNCTIONS).</summary>
+            public IReadOnlyDictionary<string, string> FunctionExpressions { get; set; }
+            /// <summary>Column name -&gt; the table(s) that contain a column of that name (for resolving bare refs).</summary>
+            public IReadOnlyDictionary<string, List<string>> ColumnTables { get; set; }
+            /// <summary>Query-scoped function name -&gt; its <c>(params) =&gt; body</c> definition text.</summary>
+            public Dictionary<string, string> QueryFunctionExpressions { get; set; }
+            /// <summary>Query-scoped function name -&gt; the references parsed from its body.</summary>
+            public Dictionary<string, IReadOnlyList<DaxStudio.Parsers.Metadata.DaxObjectReference>> QueryFunctionReferences { get; set; }
+        }
+
+        /// <summary>
+        /// Builds a case-insensitive lookup of measure name to DAX expression from the connected model,
+        /// used to populate the Expression column of the dependency tree. Returns an empty dictionary
+        /// when the measures cannot be read.
+        /// </summary>
+        private Dictionary<string, string> BuildMeasureExpressionLookup()
+        {
+            var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            try
+            {
+                foreach (var m in GetAllMeasures())
+                {
+                    if (!string.IsNullOrEmpty(m.Name) && !dict.ContainsKey(m.Name))
+                        dict.Add(m.Name, m.Expression ?? string.Empty);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(BuildMeasureExpressionLookup), "unable to read model measures - Expression column will be blank for measures");
+            }
+            return dict;
+        }
+
+        /// <summary>
+        /// Builds a case-insensitive lookup of user-defined function name to DAX expression from the
+        /// TMSCHEMA_FUNCTIONS DMV (present only on newer engines). Returns an empty dictionary when the
+        /// DMV is not available or cannot be read.
+        /// </summary>
+        private Dictionary<string, string> BuildFunctionExpressionLookup()
+        {
+            var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var dmvs = DynamicManagementViews;
+            if (dmvs == null || !dmvs.Contains("TMSCHEMA_FUNCTIONS")) return dict;
+            try
+            {
+                using (var dr = ExecuteReader("SELECT * FROM $SYSTEM.TMSCHEMA_FUNCTIONS", null))
+                {
+                    int nameOrd = OrdinalOrMinusOne(dr, "Name");
+                    int exprOrd = OrdinalOrMinusOne(dr, "Expression");
+                    while (dr.Read())
+                    {
+                        var name = GetStringOrNull(dr, nameOrd);
+                        if (string.IsNullOrEmpty(name) || dict.ContainsKey(name)) continue;
+                        dict.Add(name, GetStringOrNull(dr, exprOrd) ?? string.Empty);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(BuildFunctionExpressionLookup), "unable to read TMSCHEMA_FUNCTIONS - Expression column will be blank for functions");
+            }
+            return dict;
+        }
+
+        /// <summary>
+        /// Builds a case-insensitive lookup of column name to the list of table(s) that contain a column
+        /// of that name, used to resolve a bare <c>[Column]</c> reference (which carries no table) found
+        /// while parsing a query-scoped function body. Returns an empty dictionary when the model columns
+        /// cannot be read.
+        /// </summary>
+        private Dictionary<string, List<string>> BuildColumnTableLookup()
+        {
+            var dict = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+            try
+            {
+                var model = _dmvConnection.Database.Models.BaseModel;
+                foreach (var t in model.Tables)
+                {
+                    foreach (var c in t.Columns)
+                    {
+                        if (c.ObjectType != ADOTabularObjectType.Column || string.IsNullOrEmpty(c.Name)) continue;
+                        if (!dict.TryGetValue(c.Name, out var tables))
+                        {
+                            tables = new List<string>();
+                            dict.Add(c.Name, tables);
+                        }
+                        if (!tables.Contains(t.Caption)) tables.Add(t.Caption);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(BuildColumnTableLookup), "unable to read model columns - bare column references in query functions may be skipped");
+            }
+            return dict;
+        }
+
+        /// <summary>
+        /// Sets <see cref="ShowTreeNode.Expression"/> for MEASURE and FUNCTION nodes from the supplied
+        /// lookups. Nodes of other types (columns, tables, ...) are left unchanged.
+        /// </summary>
+        private static void SetNodeExpression(ShowTreeNode node, IReadOnlyDictionary<string, string> measureExpressions, IReadOnlyDictionary<string, string> functionExpressions)
+        {
+            if (node == null || string.IsNullOrEmpty(node.ObjectType) || string.IsNullOrEmpty(node.Name)) return;
+            if (string.Equals(node.ObjectType, "MEASURE", StringComparison.OrdinalIgnoreCase))
+            {
+                if (measureExpressions != null && measureExpressions.TryGetValue(node.Name, out var me)) node.Expression = me;
+            }
+            else if (string.Equals(node.ObjectType, "FUNCTION", StringComparison.OrdinalIgnoreCase))
+            {
+                if (functionExpressions != null && functionExpressions.TryGetValue(node.Name, out var fe)) node.Expression = fe;
+            }
+        }
+
+        /// <summary>
+        /// Parses the supplied query for query-scoped user-defined functions (DEFINE FUNCTION ...) and adds
+        /// each one as a root node with the object type <c>QUERY_FUNCTION</c> and its full definition
+        /// (<c>(params) =&gt; body</c>) in the Expression column. When the DMV already surfaced a function of
+        /// the same name it is re-labelled as a query function (rather than duplicated) and its expression
+        /// is backfilled from the parsed definition. Each function's parsed body references are recorded on
+        /// <paramref name="ctx"/> so the tree can be extended with the objects the function depends on.
+        /// </summary>
+        private void AddQueryScopedFunctions(string query, List<ShowTreeNode> roots, HashSet<string> rootKeys, DependencyContext ctx)
+        {
+            if (string.IsNullOrWhiteSpace(query)) return;
+            try
+            {
+                var parser = new DaxStudio.Parsers.Dax.DaxParserService(null);
+                var definedFunctions = parser.GetDefinedFunctions(query);
+                // function names actually called in the query outside of any DEFINE FUNCTION body -
+                // functions that are declared but never invoked must not appear in the tree.
+                var calledAtTopLevel = parser.GetReferencedFunctionNames(query);
+                // columns/measures/functions referenced in the arguments passed to each function at its
+                // call site(s) - e.g. 'Product'[Color] in queryFunc(VALUES('Product'[Color])).
+                var callSiteReferences = parser.GetFunctionCallArgumentReferences(query);
+                foreach (var fn in definedFunctions)
+                {
+                    if (fn == null || string.IsNullOrEmpty(fn.Name)) continue;
+
+                    // record the definition and the combined references (the function body plus whatever is
+                    // passed to it at its call site) so QUERY_FUNCTION nodes can be expanded whether they are
+                    // added here as a root or later as the child of another function.
+                    ctx.QueryFunctionExpressions[fn.Name] = fn.Expression;
+                    ctx.QueryFunctionReferences[fn.Name] = MergeReferences(fn.References,
+                        callSiteReferences != null && callSiteReferences.TryGetValue(fn.Name, out var args) ? args : null);
+
+                    // only functions actually called from the query itself become roots; ones referenced
+                    // solely by another function are added as that function's children during expansion.
+                    if (calledAtTopLevel == null || !calledAtTopLevel.Contains(fn.Name)) continue;
+
+                    // Reuse an existing root for the same function name (the DMV may report it as a FUNCTION)
+                    // so a query-scoped function is never shown twice.
+                    var existing = roots.FirstOrDefault(r =>
+                        string.Equals(r.Name, fn.Name, StringComparison.OrdinalIgnoreCase)
+                        && (string.Equals(r.ObjectType, "FUNCTION", StringComparison.OrdinalIgnoreCase)
+                            || string.Equals(r.ObjectType, "QUERY_FUNCTION", StringComparison.OrdinalIgnoreCase)));
+                    if (existing != null)
+                    {
+                        existing.ObjectType = "QUERY_FUNCTION";
+                        existing.Expression = fn.Expression;
+                        continue;
+                    }
+
+                    var key = NodeIdentity("QUERY_FUNCTION", null, fn.Name);
+                    if (!rootKeys.Add(key)) continue;
+                    roots.Add(new ShowTreeNode(fn.Name, "QUERY_FUNCTION", null) { Expression = fn.Expression });
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(AddQueryScopedFunctions), "unable to parse query-scoped functions");
+            }
+        }
+
+        /// <summary>
+        /// Combines a query-scoped function's body references with the references passed to it at its call
+        /// site(s), de-duplicated by kind/table/name. Either input may be null.
+        /// </summary>
+        private static IReadOnlyList<DaxStudio.Parsers.Metadata.DaxObjectReference> MergeReferences(
+            IReadOnlyList<DaxStudio.Parsers.Metadata.DaxObjectReference> bodyReferences,
+            IReadOnlyList<DaxStudio.Parsers.Metadata.DaxObjectReference> callSiteReferences)
+        {
+            var merged = new List<DaxStudio.Parsers.Metadata.DaxObjectReference>();
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            void AddRange(IReadOnlyList<DaxStudio.Parsers.Metadata.DaxObjectReference> references)
+            {
+                if (references == null) return;
+                foreach (var r in references)
+                {
+                    if (r == null) continue;
+                    var key = $"{r.Kind}|{r.Table}|{r.Name}";
+                    if (seen.Add(key)) merged.Add(r);
+                }
+            }
+
+            AddRange(bodyReferences);
+            AddRange(callSiteReferences);
+            return merged;
+        }
+
+        /// <summary>
+        /// Returns the distinct set of tables referenced (directly or indirectly) by the supplied
+        /// query. Reuses <see cref="BuildQueryDependencyTree"/> and flattens the resulting tree,
+        /// collecting every non-blank <see cref="ShowTreeNode.TableName"/>. Used by the
+        /// "--> SHOW DIAGRAM" comment-script command to filter the Model Diagram.
+        /// </summary>
+        public List<string> GetQueryDependencyTables(string query)
+        {
+            var tables = new List<string>();
+            if (string.IsNullOrWhiteSpace(query)) return tables;
+
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var roots = BuildQueryDependencyTree(query);
+            var stack = new Stack<ShowTreeNode>(roots);
+            while (stack.Count > 0)
+            {
+                var node = stack.Pop();
+                if (node == null) continue;
+                if (!string.IsNullOrWhiteSpace(node.TableName) && seen.Add(node.TableName))
+                {
+                    tables.Add(node.TableName);
+                }
+                foreach (var child in node.Children)
+                {
+                    stack.Push(child);
+                }
+            }
+
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(GetQueryDependencyTables), $"end - {tables.Count} table(s)");
+            return tables;
+        }
+
+        /// <summary>
+        /// Recursively expands a dependency node by querying the objects it references. Uses the
+        /// <paramref name="expanded"/> set (keyed by a stable identity) to guarantee a finite tree:
+        /// an object that has already been expanded elsewhere is still added but not re-expanded.
+        /// </summary>
+        private void ExpandDependencyNode(ShowTreeNode node, HashSet<string> expanded, DependencyContext ctx)
+        {
+            var key = NodeIdentity(node.ObjectType, node.TableName, node.Name);
+            // if this identity was already fully expanded, keep the node but do not recurse (avoids cycles)
+            if (!expanded.Add(key)) return;
+
+            // Query-scoped functions are not in the model, so the DMV knows nothing about them. Expand them
+            // from the references parsed out of their body instead.
+            if (string.Equals(node.ObjectType, "QUERY_FUNCTION", StringComparison.OrdinalIgnoreCase))
+            {
+                ExpandQueryFunctionNode(node, expanded, ctx);
+                return;
+            }
+
+            var where = $"[OBJECT]='{node.Name.Replace("'", "''")}'";
+            if (!string.IsNullOrEmpty(node.ObjectType)) where += $" AND [OBJECT_TYPE]='{node.ObjectType.Replace("'", "''")}'";
+            if (!string.IsNullOrEmpty(node.TableName)) where += $" AND [TABLE]='{node.TableName.Replace("'", "''")}'";
+
+            var dmvDependency = $"SELECT REFERENCED_OBJECT_TYPE, REFERENCED_TABLE, REFERENCED_OBJECT\r\nFROM $SYSTEM.DISCOVER_CALC_DEPENDENCY\r\nWHERE {where}";
+
+            // materialize the children before recursing because the reader holds a live connection
+            var children = new List<ShowTreeNode>();
+            using (var dr = ExecuteReader(dmvDependency, null))
+            {
+                int refTypeOrd = OrdinalOrMinusOne(dr, "REFERENCED_OBJECT_TYPE");
+                int refTableOrd = OrdinalOrMinusOne(dr, "REFERENCED_TABLE");
+                int refObjectOrd = OrdinalOrMinusOne(dr, "REFERENCED_OBJECT");
+                while (dr.Read())
+                {
+                    var refObject = GetStringOrNull(dr, refObjectOrd);
+                    if (string.IsNullOrEmpty(refObject)) continue;
+                    var refType = GetStringOrNull(dr, refTypeOrd);
+                    var refTable = GetStringOrNull(dr, refTableOrd);
+                    // skip a direct self-reference
+                    if (NodeIdentity(refType, refTable, refObject) == key) continue;
+                    var child = new ShowTreeNode(refObject, refType, refTable);
+                    SetNodeExpression(child, ctx.MeasureExpressions, ctx.FunctionExpressions);
+                    children.Add(child);
+                }
+            }
+
+            foreach (var child in children)
+            {
+                node.Children.Add(child);
+                ExpandDependencyNode(child, expanded, ctx);
+            }
+        }
+
+        /// <summary>
+        /// Expands a <c>QUERY_FUNCTION</c> node using the column / measure / function references parsed from
+        /// its body (the DMV cannot see into query-scoped functions). Each reference is resolved against the
+        /// model - bare <c>[Name]</c> references become a MEASURE or COLUMN, function calls become a
+        /// QUERY_FUNCTION (another query-scoped function), a model FUNCTION, or are ignored when they are not
+        /// user-defined objects - and each resolved child is expanded recursively via the normal path.
+        /// </summary>
+        private void ExpandQueryFunctionNode(ShowTreeNode node, HashSet<string> expanded, DependencyContext ctx)
+        {
+            if (ctx.QueryFunctionReferences == null || !ctx.QueryFunctionReferences.TryGetValue(node.Name, out var references) || references == null)
+                return;
+
+            var children = new List<ShowTreeNode>();
+            var childKeys = new HashSet<string>();
+            foreach (var reference in references)
+            {
+                foreach (var child in ResolveReferenceNodes(reference, ctx))
+                {
+                    var childKey = NodeIdentity(child.ObjectType, child.TableName, child.Name);
+                    // skip a direct self-reference and duplicates among this function's own children
+                    if (childKey == NodeIdentity(node.ObjectType, node.TableName, node.Name)) continue;
+                    if (childKeys.Add(childKey)) children.Add(child);
+                }
+            }
+
+            foreach (var child in children)
+            {
+                node.Children.Add(child);
+                ExpandDependencyNode(child, expanded, ctx);
+            }
+        }
+
+        /// <summary>
+        /// Resolves a single parsed reference from a query-function body into zero or more dependency nodes,
+        /// classifying it against the model: a qualified column becomes a COLUMN; a bare reference becomes a
+        /// MEASURE (when it matches a model measure) or a COLUMN for each table that has a column of that
+        /// name; a function call becomes a QUERY_FUNCTION or a model FUNCTION. References that resolve to no
+        /// known object (e.g. built-ins already filtered out, or a local variable) yield nothing.
+        /// </summary>
+        private IEnumerable<ShowTreeNode> ResolveReferenceNodes(DaxStudio.Parsers.Metadata.DaxObjectReference reference, DependencyContext ctx)
+        {
+            switch (reference.Kind)
+            {
+                case DaxStudio.Parsers.Metadata.DaxReferenceKind.Column:
+                    yield return new ShowTreeNode(reference.Name, "COLUMN", reference.Table);
+                    break;
+
+                case DaxStudio.Parsers.Metadata.DaxReferenceKind.ColumnOrMeasure:
+                    if (ctx.MeasureExpressions != null && ctx.MeasureExpressions.ContainsKey(reference.Name))
+                    {
+                        var measure = new ShowTreeNode(reference.Name, "MEASURE", null);
+                        SetNodeExpression(measure, ctx.MeasureExpressions, ctx.FunctionExpressions);
+                        yield return measure;
+                    }
+                    else if (ctx.ColumnTables != null && ctx.ColumnTables.TryGetValue(reference.Name, out var tables))
+                    {
+                        foreach (var table in tables)
+                            yield return new ShowTreeNode(reference.Name, "COLUMN", table);
+                    }
+                    break;
+
+                case DaxStudio.Parsers.Metadata.DaxReferenceKind.Function:
+                    if (ctx.QueryFunctionExpressions != null && ctx.QueryFunctionExpressions.TryGetValue(reference.Name, out var qfExpr))
+                    {
+                        yield return new ShowTreeNode(reference.Name, "QUERY_FUNCTION", null) { Expression = qfExpr };
+                    }
+                    else if (ctx.FunctionExpressions != null && ctx.FunctionExpressions.ContainsKey(reference.Name))
+                    {
+                        var fn = new ShowTreeNode(reference.Name, "FUNCTION", null);
+                        SetNodeExpression(fn, ctx.MeasureExpressions, ctx.FunctionExpressions);
+                        yield return fn;
+                    }
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Builds a tree of the model metadata that mirrors the Power BI Desktop model view - a single
+        /// "Semantic model" root with grouping folders (Calculation groups, Cultures, Expressions,
+        /// Functions, Perspectives, Relationships, Roles, Tables) and, under each table, Calendars,
+        /// Columns, Hierarchies, Measures and Partitions folders - annotated with each item's last-modified
+        /// timestamp from the TMSCHEMA DMVs. Newer/optional DMVs (Functions, Calendars) are omitted when
+        /// the model does not support them. Every node is rolled up with the most-recent modified time of
+        /// its descendants (<see cref="ShowTreeNode.MaxUpdateUtc"/>) and the number of whole days since that
+        /// effective change (<see cref="ShowTreeNode.DaysSinceChange"/>). When <paramref name="maxOnly"/> is
+        /// true the tree is pruned to only the object(s) whose timestamp equals the single global maximum,
+        /// keeping the enclosing folders/tables for context.
+        /// </summary>
+        public List<ShowTreeNode> BuildMetadataTimestampTree(bool maxOnly)
+        {
+            if (!IsConnected)
+            {
+                throw new ApplicationException("Connection required to show metadata timestamps");
+            }
+
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(BuildMetadataTimestampTree), $"start (maxOnly={maxOnly})");
+
+            var dmvs = DynamicManagementViews;
+            bool HasDmv(string name) => dmvs != null && dmvs.Contains(name);
+
+            // --- Model root (TMSCHEMA_MODEL) ---
+            var modelRoot = new ShowTreeNode("Semantic model", "MODEL", null, null);
+            try
+            {
+                using (var dr = ExecuteReader("SELECT * FROM $SYSTEM.TMSCHEMA_MODEL", null))
+                {
+                    int modOrd = OrdinalOrMinusOne(dr, "ModifiedTime");
+                    int structOrd = OrdinalOrMinusOne(dr, "StructureModifiedTime");
+                    if (dr.Read())
+                    {
+                        modelRoot.LastModifiedUtc = PreferStructure(GetDateTimeOrNull(dr, modOrd), GetDateTimeOrNull(dr, structOrd));
+                    }
+                }
+            }
+            catch (Exception ex) { LogTimestampDmvWarning("TMSCHEMA_MODEL", ex); }
+
+            // --- Tables (own timestamps) ---
+            var tableNodes = new Dictionary<string, ShowTreeNode>();
+            var tableNames = new Dictionary<string, string>();
+            try
+            {
+                using (var dr = ExecuteReader("SELECT * FROM $SYSTEM.TMSCHEMA_TABLES", null))
+                {
+                    int idOrd = OrdinalOrMinusOne(dr, "ID");
+                    int nameOrd = OrdinalOrMinusOne(dr, "Name");
+                    int modOrd = OrdinalOrMinusOne(dr, "ModifiedTime");
+                    int structOrd = OrdinalOrMinusOne(dr, "StructureModifiedTime");
+                    while (dr.Read())
+                    {
+                        var id = GetStringOrNull(dr, idOrd);
+                        var name = GetStringOrNull(dr, nameOrd);
+                        if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(name)) continue;
+                        var ts = PreferStructure(GetDateTimeOrNull(dr, modOrd), GetDateTimeOrNull(dr, structOrd));
+                        tableNodes[id] = new ShowTreeNode(name, "TABLE", null, ts);
+                        tableNames[id] = name;
+                    }
+                }
+            }
+            catch (Exception ex) { LogTimestampDmvWarning("TMSCHEMA_TABLES", ex); }
+
+            // per-table leaf collections keyed by table id
+            var tableColumns = new Dictionary<string, List<ShowTreeNode>>();
+            var tableMeasures = new Dictionary<string, List<ShowTreeNode>>();
+            var tablePartitions = new Dictionary<string, List<ShowTreeNode>>();
+            var tableHierarchies = new Dictionary<string, List<ShowTreeNode>>();
+            var tableCalendars = new Dictionary<string, List<ShowTreeNode>>();
+            List<ShowTreeNode> TableList(Dictionary<string, List<ShowTreeNode>> map, string tableId)
+            {
+                if (!map.TryGetValue(tableId, out var list)) { list = new List<ShowTreeNode>(); map[tableId] = list; }
+                return list;
+            }
+
+            var columnNames = new Dictionary<string, string>(); // column id -> name (used to label relationships)
+
+            // --- Columns ---
+            try
+            {
+                using (var dr = ExecuteReader("SELECT * FROM $SYSTEM.TMSCHEMA_COLUMNS", null))
+                {
+                    int idOrd = OrdinalOrMinusOne(dr, "ID");
+                    int tableIdOrd = OrdinalOrMinusOne(dr, "TableID");
+                    int explicitNameOrd = OrdinalOrMinusOne(dr, "ExplicitName");
+                    int inferredNameOrd = OrdinalOrMinusOne(dr, "InferredName");
+                    int modOrd = OrdinalOrMinusOne(dr, "ModifiedTime");
+                    int structOrd = OrdinalOrMinusOne(dr, "StructureModifiedTime");
+                    while (dr.Read())
+                    {
+                        var id = GetStringOrNull(dr, idOrd);
+                        var tableId = GetStringOrNull(dr, tableIdOrd);
+                        var name = GetStringOrNull(dr, explicitNameOrd) ?? GetStringOrNull(dr, inferredNameOrd);
+                        if (!string.IsNullOrEmpty(id) && !string.IsNullOrEmpty(name)) columnNames[id] = name;
+                        if (string.IsNullOrEmpty(tableId) || !tableNodes.ContainsKey(tableId)) continue;
+                        if (string.IsNullOrEmpty(name)) continue; // skip null-named (e.g. system RowNumber) columns
+                        var ts = PreferStructure(GetDateTimeOrNull(dr, modOrd), GetDateTimeOrNull(dr, structOrd));
+                        TableList(tableColumns, tableId).Add(new ShowTreeNode(name, "COLUMN", tableNames[tableId], ts));
+                    }
+                }
+            }
+            catch (Exception ex) { LogTimestampDmvWarning("TMSCHEMA_COLUMNS", ex); }
+
+            // --- Measures ---
+            try
+            {
+                using (var dr = ExecuteReader("SELECT * FROM $SYSTEM.TMSCHEMA_MEASURES", null))
+                {
+                    int tableIdOrd = OrdinalOrMinusOne(dr, "TableID");
+                    int nameOrd = OrdinalOrMinusOne(dr, "Name");
+                    int modOrd = OrdinalOrMinusOne(dr, "ModifiedTime");
+                    while (dr.Read())
+                    {
+                        var tableId = GetStringOrNull(dr, tableIdOrd);
+                        if (string.IsNullOrEmpty(tableId) || !tableNodes.ContainsKey(tableId)) continue;
+                        var name = GetStringOrNull(dr, nameOrd);
+                        if (string.IsNullOrEmpty(name)) continue;
+                        TableList(tableMeasures, tableId).Add(new ShowTreeNode(name, "MEASURE", tableNames[tableId], GetDateTimeOrNull(dr, modOrd)));
+                    }
+                }
+            }
+            catch (Exception ex) { LogTimestampDmvWarning("TMSCHEMA_MEASURES", ex); }
+
+            // --- Partitions ---
+            try
+            {
+                using (var dr = ExecuteReader("SELECT * FROM $SYSTEM.TMSCHEMA_PARTITIONS", null))
+                {
+                    int tableIdOrd = OrdinalOrMinusOne(dr, "TableID");
+                    int nameOrd = OrdinalOrMinusOne(dr, "Name");
+                    int modOrd = OrdinalOrMinusOne(dr, "ModifiedTime");
+                    int refreshedOrd = OrdinalOrMinusOne(dr, "RefreshedTime");
+                    while (dr.Read())
+                    {
+                        var tableId = GetStringOrNull(dr, tableIdOrd);
+                        if (string.IsNullOrEmpty(tableId) || !tableNodes.ContainsKey(tableId)) continue;
+                        var name = GetStringOrNull(dr, nameOrd);
+                        if (string.IsNullOrEmpty(name)) continue;
+                        // Partitions have no StructureModifiedTime; RefreshedTime (last data refresh) is meaningful here.
+                        var ts = MaxDate(GetDateTimeOrNull(dr, modOrd), GetDateTimeOrNull(dr, refreshedOrd));
+                        TableList(tablePartitions, tableId).Add(new ShowTreeNode(name, "PARTITION", tableNames[tableId], ts));
+                    }
+                }
+            }
+            catch (Exception ex) { LogTimestampDmvWarning("TMSCHEMA_PARTITIONS", ex); }
+
+            // --- Hierarchies ---
+            try
+            {
+                using (var dr = ExecuteReader("SELECT * FROM $SYSTEM.TMSCHEMA_HIERARCHIES", null))
+                {
+                    int tableIdOrd = OrdinalOrMinusOne(dr, "TableID");
+                    int nameOrd = OrdinalOrMinusOne(dr, "Name");
+                    int modOrd = OrdinalOrMinusOne(dr, "ModifiedTime");
+                    int structOrd = OrdinalOrMinusOne(dr, "StructureModifiedTime");
+                    while (dr.Read())
+                    {
+                        var tableId = GetStringOrNull(dr, tableIdOrd);
+                        if (string.IsNullOrEmpty(tableId) || !tableNodes.ContainsKey(tableId)) continue;
+                        var name = GetStringOrNull(dr, nameOrd);
+                        if (string.IsNullOrEmpty(name)) continue;
+                        var ts = PreferStructure(GetDateTimeOrNull(dr, modOrd), GetDateTimeOrNull(dr, structOrd));
+                        TableList(tableHierarchies, tableId).Add(new ShowTreeNode(name, "HIERARCHY", tableNames[tableId], ts));
+                    }
+                }
+            }
+            catch (Exception ex) { LogTimestampDmvWarning("TMSCHEMA_HIERARCHIES", ex); }
+
+            // --- Calendars (newer models only) ---
+            bool calendarsSupported = HasDmv("TMSCHEMA_CALENDARS");
+            if (calendarsSupported)
+            {
+                try
+                {
+                    using (var dr = ExecuteReader("SELECT * FROM $SYSTEM.TMSCHEMA_CALENDARS", null))
+                    {
+                        int tableIdOrd = OrdinalOrMinusOne(dr, "TableID");
+                        int nameOrd = OrdinalOrMinusOne(dr, "Name");
+                        int modOrd = OrdinalOrMinusOne(dr, "ModifiedTime");
+                        while (dr.Read())
+                        {
+                            var tableId = GetStringOrNull(dr, tableIdOrd);
+                            if (string.IsNullOrEmpty(tableId) || !tableNodes.ContainsKey(tableId)) continue;
+                            var name = GetStringOrNull(dr, nameOrd);
+                            if (string.IsNullOrEmpty(name)) continue;
+                            TableList(tableCalendars, tableId).Add(new ShowTreeNode(name, "CALENDAR", tableNames[tableId], GetDateTimeOrNull(dr, modOrd)));
+                        }
+                    }
+                }
+                catch (Exception ex) { LogTimestampDmvWarning("TMSCHEMA_CALENDARS", ex); calendarsSupported = false; }
+            }
+
+            // Assemble each table node with its child folders (Desktop order)
+            foreach (var kvp in tableNodes)
+            {
+                var tableId = kvp.Key;
+                var tableNode = kvp.Value;
+                if (calendarsSupported) tableNode.Children.Add(MakeFolder("Calendars", TableList(tableCalendars, tableId)));
+                tableNode.Children.Add(MakeFolder("Columns", TableList(tableColumns, tableId)));
+                tableNode.Children.Add(MakeFolder("Hierarchies", TableList(tableHierarchies, tableId)));
+                tableNode.Children.Add(MakeFolder("Measures", TableList(tableMeasures, tableId)));
+                tableNode.Children.Add(MakeFolder("Partitions", TableList(tablePartitions, tableId)));
+            }
+
+            // --- Model-level object collections ---
+            var calcGroups = new List<ShowTreeNode>();
+            try
+            {
+                using (var dr = ExecuteReader("SELECT * FROM $SYSTEM.TMSCHEMA_CALCULATION_GROUPS", null))
+                {
+                    int idOrd = OrdinalOrMinusOne(dr, "ID");
+                    int tableIdOrd = OrdinalOrMinusOne(dr, "TableID");
+                    int modOrd = OrdinalOrMinusOne(dr, "ModifiedTime");
+                    while (dr.Read())
+                    {
+                        var tableId = GetStringOrNull(dr, tableIdOrd);
+                        var name = (!string.IsNullOrEmpty(tableId) && tableNames.TryGetValue(tableId, out var tn))
+                            ? tn : GetStringOrNull(dr, idOrd);
+                        if (string.IsNullOrEmpty(name)) continue;
+                        calcGroups.Add(new ShowTreeNode(name, "CALCULATION GROUP", null, GetDateTimeOrNull(dr, modOrd)));
+                    }
+                }
+            }
+            catch (Exception ex) { LogTimestampDmvWarning("TMSCHEMA_CALCULATION_GROUPS", ex); }
+
+            var cultures = ReadModelLevelObjects("TMSCHEMA_CULTURES", "Name", "CULTURE");
+            var expressions = ReadModelLevelObjects("TMSCHEMA_EXPRESSIONS", "Name", "EXPRESSION");
+            var perspectives = ReadModelLevelObjects("TMSCHEMA_PERSPECTIVES", "Name", "PERSPECTIVE");
+            var roles = ReadModelLevelObjects("TMSCHEMA_ROLES", "Name", "ROLE");
+
+            // --- Relationships (friendly From/To label) ---
+            var relationships = new List<ShowTreeNode>();
+            try
+            {
+                using (var dr = ExecuteReader("SELECT * FROM $SYSTEM.TMSCHEMA_RELATIONSHIPS", null))
+                {
+                    int fromTableOrd = OrdinalOrMinusOne(dr, "FromTableID");
+                    int fromColOrd = OrdinalOrMinusOne(dr, "FromColumnID");
+                    int toTableOrd = OrdinalOrMinusOne(dr, "ToTableID");
+                    int toColOrd = OrdinalOrMinusOne(dr, "ToColumnID");
+                    int nameOrd = OrdinalOrMinusOne(dr, "Name");
+                    int modOrd = OrdinalOrMinusOne(dr, "ModifiedTime");
+                    while (dr.Read())
+                    {
+                        var label = RelationshipLabel(dr, fromTableOrd, fromColOrd, toTableOrd, toColOrd, tableNames, columnNames)
+                                    ?? GetStringOrNull(dr, nameOrd);
+                        if (string.IsNullOrEmpty(label)) continue;
+                        relationships.Add(new ShowTreeNode(label, "RELATIONSHIP", null, GetDateTimeOrNull(dr, modOrd)));
+                    }
+                }
+            }
+            catch (Exception ex) { LogTimestampDmvWarning("TMSCHEMA_RELATIONSHIPS", ex); }
+
+            // --- Functions / user-defined functions (newer models only) ---
+            bool functionsSupported = HasDmv("TMSCHEMA_FUNCTIONS");
+            var functions = functionsSupported
+                ? ReadModelLevelObjects("TMSCHEMA_FUNCTIONS", "Name", "FUNCTION")
+                : new List<ShowTreeNode>();
+
+            // Assemble model root groups (Desktop order)
+            modelRoot.Children.Add(MakeFolder("Calculation groups", calcGroups));
+            modelRoot.Children.Add(MakeFolder("Cultures", cultures));
+            modelRoot.Children.Add(MakeFolder("Expressions", expressions));
+            if (functionsSupported) modelRoot.Children.Add(MakeFolder("Functions", functions));
+            modelRoot.Children.Add(MakeFolder("Perspectives", perspectives));
+            modelRoot.Children.Add(MakeFolder("Relationships", relationships));
+            modelRoot.Children.Add(MakeFolder("Roles", roles));
+
+            var tablesFolder = new ShowTreeNode("Tables", string.Empty, null, null, isFolder: true);
+            foreach (var t in tableNodes.Values.OrderBy(t => t.Name, StringComparer.OrdinalIgnoreCase))
+            {
+                tablesFolder.Children.Add(t);
+            }
+            modelRoot.Children.Add(tablesFolder);
+
+            // Roll up MaxUpdate / DaysSinceChange across the whole tree
+            ComputeRollups(modelRoot, DateTime.UtcNow);
+
+            if (!maxOnly)
+            {
+                Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(BuildMetadataTimestampTree), $"end - {tableNodes.Count} table(s)");
+                return new List<ShowTreeNode> { modelRoot };
+            }
+
+            // MAX_UPDATED: prune to the object(s) carrying the single global maximum timestamp
+            DateTime? globalMax = null;
+            CollectMaxObjectTimestamp(modelRoot, ref globalMax);
+            if (!globalMax.HasValue)
+            {
+                Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(BuildMetadataTimestampTree), "end - no timestamps found");
+                return new List<ShowTreeNode>();
+            }
+            PruneToMax(modelRoot, globalMax.Value);
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(BuildMetadataTimestampTree), $"end - max={globalMax:o}");
+            return new List<ShowTreeNode> { modelRoot };
+        }
+
+        /// <summary>Reads a flat list of model-level objects (name + ModifiedTime) from a TMSCHEMA DMV,
+        /// swallowing any error (missing DMV / permissions) and returning what was read so far.</summary>
+        private List<ShowTreeNode> ReadModelLevelObjects(string dmv, string nameColumn, string objectType)
+        {
+            var list = new List<ShowTreeNode>();
+            try
+            {
+                using (var dr = ExecuteReader($"SELECT * FROM $SYSTEM.{dmv}", null))
+                {
+                    int nameOrd = OrdinalOrMinusOne(dr, nameColumn);
+                    int modOrd = OrdinalOrMinusOne(dr, "ModifiedTime");
+                    while (dr.Read())
+                    {
+                        var name = GetStringOrNull(dr, nameOrd);
+                        if (string.IsNullOrEmpty(name)) continue;
+                        list.Add(new ShowTreeNode(name, objectType, null, GetDateTimeOrNull(dr, modOrd)));
+                    }
+                }
+            }
+            catch (Exception ex) { LogTimestampDmvWarning(dmv, ex); }
+            return list;
+        }
+
+        /// <summary>Builds a "From[Column] &lt;- To[Column]" relationship label, or null when it cannot be resolved.</summary>
+        private static string RelationshipLabel(AdomdDataReader dr, int fromTableOrd, int fromColOrd, int toTableOrd, int toColOrd,
+            Dictionary<string, string> tableNames, Dictionary<string, string> columnNames)
+        {
+            var fromTableId = GetStringOrNull(dr, fromTableOrd);
+            var toTableId = GetStringOrNull(dr, toTableOrd);
+            if (string.IsNullOrEmpty(fromTableId) || string.IsNullOrEmpty(toTableId)) return null;
+            if (!tableNames.TryGetValue(fromTableId, out var fromTable) || string.IsNullOrEmpty(fromTable)) return null;
+            if (!tableNames.TryGetValue(toTableId, out var toTable) || string.IsNullOrEmpty(toTable)) return null;
+            columnNames.TryGetValue(GetStringOrNull(dr, fromColOrd) ?? string.Empty, out var fromColumn);
+            columnNames.TryGetValue(GetStringOrNull(dr, toColOrd) ?? string.Empty, out var toColumn);
+            return $"{fromTable}[{fromColumn}] <- {toTable}[{toColumn}]";
+        }
+
+        /// <summary>Creates a folder (grouping) node holding the given items, sorted by name.</summary>
+        internal static ShowTreeNode MakeFolder(string label, List<ShowTreeNode> items)
+        {
+            var folder = new ShowTreeNode(label, string.Empty, null, null, isFolder: true);
+            items.Sort((x, y) => string.Compare(x.Name, y.Name, StringComparison.OrdinalIgnoreCase));
+            foreach (var item in items) folder.Children.Add(item);
+            return folder;
+        }
+
+        /// <summary>Prefers the StructureModifiedTime over the ModifiedTime when both are present.</summary>
+        internal static DateTime? PreferStructure(DateTime? modified, DateTime? structureModified)
+            => structureModified.HasValue ? structureModified : modified;
+
+        /// <summary>True for nodes that represent a real model object (not a folder or the model root).</summary>
+        internal static bool IsRealObject(ShowTreeNode node) => !node.IsFolder && node.ObjectType != "MODEL";
+
+        /// <summary>Recursively sets MaxUpdateUtc (most-recent change among descendants) and DaysSinceChange
+        /// (whole days since the node's effective change - its own timestamp rolled up with its descendants').
+        /// For individual leaf items, MaxUpdateUtc is instead set to the item's own timestamp when it carries
+        /// the newest change within its container folder (so sorting by Max Update groups the most-recently
+        /// changed item(s) of each folder together). Returns the subtree's effective most-recent change.</summary>
+        internal static DateTime? ComputeRollups(ShowTreeNode node, DateTime nowUtc)
+        {
+            DateTime? childMax = null;
+            DateTime? leafChildMax = null;
+            foreach (var child in node.Children)
+            {
+                childMax = MaxDate(childMax, ComputeRollups(child, nowUtc));
+                if (IsRealObject(child) && child.Children.Count == 0 && child.LastModifiedUtc.HasValue)
+                    leafChildMax = MaxDate(leafChildMax, child.LastModifiedUtc);
+            }
+            node.MaxUpdateUtc = childMax;
+            // Surface the container's newest change on the individual leaf item(s) carrying it, so the
+            // Max Update column is populated for those rows (folders/tables keep their descendant rollup).
+            if (leafChildMax.HasValue)
+            {
+                foreach (var child in node.Children)
+                {
+                    if (IsRealObject(child) && child.Children.Count == 0
+                        && child.LastModifiedUtc.HasValue && child.LastModifiedUtc.Value == leafChildMax.Value)
+                    {
+                        child.MaxUpdateUtc = child.LastModifiedUtc;
+                    }
+                }
+            }
+            var effective = MaxDate(node.LastModifiedUtc, childMax);
+            node.DaysSinceChange = effective.HasValue
+                ? (int?)Math.Max(0, (int)Math.Floor((nowUtc - effective.Value).TotalDays))
+                : null;
+            return effective;
+        }
+
+        /// <summary>Finds the maximum timestamp across all real objects (tables + leaves) in the subtree.</summary>
+        internal static void CollectMaxObjectTimestamp(ShowTreeNode node, ref DateTime? max)
+        {
+            if (IsRealObject(node) && node.LastModifiedUtc.HasValue) max = MaxDate(max, node.LastModifiedUtc);
+            foreach (var child in node.Children) CollectMaxObjectTimestamp(child, ref max);
+        }
+
+        /// <summary>Prunes the subtree in place, keeping only real objects at <paramref name="max"/> and the
+        /// folders/tables enclosing them. Returns true when the node should be kept.</summary>
+        internal static bool PruneToMax(ShowTreeNode node, DateTime max)
+        {
+            for (int i = node.Children.Count - 1; i >= 0; i--)
+            {
+                if (!PruneToMax(node.Children[i], max)) node.Children.RemoveAt(i);
+            }
+            bool selfMatch = IsRealObject(node) && node.LastModifiedUtc.HasValue && node.LastModifiedUtc.Value == max;
+            return selfMatch || node.Children.Count > 0;
+        }
+
+        /// <summary>Logs (but does not throw on) an error reading one of the timestamp DMVs.</summary>
+        private static void LogTimestampDmvWarning(string dmv, Exception ex)
+            => Log.Warning(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(BuildMetadataTimestampTree), $"error reading {dmv} - skipped");
+
+        /// <summary>Builds a stable identity key for a tree node used to guard against cycles.</summary>
+        private static string NodeIdentity(string objectType, string tableName, string name)
+            => $"{objectType}|{tableName}|{name}";
+
+        /// <summary>Resolves a column ordinal by name from the reader schema, returning -1 when absent.</summary>
+        private static int OrdinalOrMinusOne(AdomdDataReader dr, string columnName)
+        {
+            for (int i = 0; i < dr.FieldCount; i++)
+            {
+                if (string.Equals(dr.GetName(i), columnName, StringComparison.OrdinalIgnoreCase)) return i;
+            }
+            return -1;
+        }
+
+        /// <summary>Reads a string value defensively, returning null for missing columns or DBNull.</summary>
+        private static string GetStringOrNull(AdomdDataReader dr, int ordinal)
+        {
+            if (ordinal < 0 || dr.IsDBNull(ordinal)) return null;
+            return dr.GetValue(ordinal)?.ToString();
+        }
+
+        /// <summary>Reads a datetime value defensively, returning null for missing columns or DBNull.</summary>
+        private static DateTime? GetDateTimeOrNull(AdomdDataReader dr, int ordinal)
+        {
+            if (ordinal < 0 || dr.IsDBNull(ordinal)) return null;
+            var value = dr.GetValue(ordinal);
+            if (value == null || value is DBNull) return null;
+            if (value is DateTime dt) return dt;
+            if (DateTime.TryParse(value.ToString(), out var parsed)) return parsed;
+            return null;
+        }
+
+        /// <summary>Returns the greater of two nullable datetimes.</summary>
+        private static DateTime? MaxDate(DateTime? a, DateTime? b)
+        {
+            if (!a.HasValue) return b;
+            if (!b.HasValue) return a;
+            return a.Value >= b.Value ? a : b;
+        }
+
+        #endregion
+
         public void SetSelectedDatabase(IDatabaseReference database)
         {
-            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(SetSelectedDatabase), database.Name + " - start");
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(SetSelectedDatabase), $"{database.Name} - start (thread {System.Threading.Thread.CurrentThread.ManagedThreadId})");
             if (_connection == null) return;
             if (_connection.State == ConnectionState.Open || _connection.ServerType == ServerType.Offline)
             {
-                if (Database != null && database.Name == Database.Name) return;
+                if (Database != null && database.Name == Database.Name)
+                {
+                    Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(SetSelectedDatabase), $"{database.Name} - skipped (already selected)");
+                    return;
+                }
 
                 var context = new Polly.Context().WithDatabaseName(database?.Name??string.Empty);
                 _retry.Execute(ctx =>
                 {
-                    if (database != null) { 
+                    if (database != null) {
+                        var sw = System.Diagnostics.Stopwatch.StartNew();
                         _dmvConnection?.ChangeDatabase(database.Name);
+                        var dmvMs = sw.ElapsedMilliseconds;
                         _connection?.ChangeDatabase(database.Name);
+                        sw.Stop();
+                        Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(SetSelectedDatabase), $"ChangeDatabase '{database.Name}' complete (dmv conn: {dmvMs}ms, query conn: {sw.ElapsedMilliseconds - dmvMs}ms)");
                     }
                     //Database = _dmvConnection.Database;
                     ModelList = _dmvConnection.Database?.Models;
@@ -1467,8 +2372,10 @@ namespace DaxStudio.Core.Connections
             var openConnTask = _connection.OpenAsync();
 
             Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OpenOnlineConnectionAsync), "Start open connections");
+            var swOpen = System.Diagnostics.Stopwatch.StartNew();
             await Task.WhenAll(openConnTask, openDmvConnTask);
-            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OpenOnlineConnectionAsync), "End open connections");
+            swOpen.Stop();
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OpenOnlineConnectionAsync), $"End open connections (duration: {swOpen.ElapsedMilliseconds}ms)");
 
             // Change to the requested database after both connections are fully open
             if (!string.IsNullOrEmpty(message.DatabaseName))
@@ -1593,7 +2500,7 @@ namespace DaxStudio.Core.Connections
 
         private static string UpdateApplicationName(string connectionString, Guid uniqueId)
         {
-            var builder = new OleDbConnectionStringBuilder(connectionString);
+            var builder = connectionString.ToConnectionStringBuilder();
             builder.TryGetValue("Application Name", out var appName);
             if (appName == null) return connectionString;
             appName = guidRegex.Replace((appName ?? string.Empty).ToString(), uniqueId.ToString());
@@ -1630,8 +2537,8 @@ namespace DaxStudio.Core.Connections
 
         public static bool IsPbiXmlaEndpoint(string connectionString)
         {
-            var builder = new System.Data.OleDb.OleDbConnectionStringBuilder(connectionString);
-            var server = builder["Data Source"].ToString();
+            var builder = connectionString.ToConnectionStringBuilder();
+            var server = builder.GetDataSource();
             return server.StartsWith("powerbi://", StringComparison.InvariantCultureIgnoreCase)
                 || server.StartsWith("pbiazure://", StringComparison.InvariantCultureIgnoreCase)
                 || server.StartsWith("pbidedicated://", StringComparison.InvariantCultureIgnoreCase);

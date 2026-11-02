@@ -17,9 +17,16 @@ namespace DaxStudio.Common
         {
             var handles = new List<IntPtr>();
 
-            foreach (ProcessThread thread in Process.GetProcessById(processId).Threads)
-                NativeMethods.EnumThreadWindows(thread.Id,
-                    (hWnd, lParam) => { handles.Add(hWnd); return true; }, IntPtr.Zero);
+            // Process (and each ProcessThread) holds an OS handle, so dispose the snapshot once
+            // we have collected the window handles.
+            using (var process = Process.GetProcessById(processId))
+            {
+                foreach (ProcessThread thread in process.Threads)
+                {
+                    NativeMethods.EnumThreadWindows(thread.Id,
+                        (hWnd, lParam) => { handles.Add(hWnd); return true; }, IntPtr.Zero);
+                }
+            }
 
             return handles;
         }

@@ -1,4 +1,5 @@
-using DaxStudio.Parsers.DirectQuery;
+using DaxStudio.Parsers.StorageEngine.DirectQuery;
+using DaxStudio.Parsers.StorageEngine;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections;

@@ -637,7 +637,35 @@ namespace DaxStudio.UI.ViewModels
         {
             // force a refresh of the User string in case this was just turned on in the options
             DisplayName = AppTitle;
+            ApplyRenderMode();
             return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Keeps WPF's process render mode in sync with the ForceSoftwareRendering option.
+        /// ProcessRenderMode is a live preference - MilCore re-reads it on every render pass
+        /// and rebuilds the HWND render targets when it changes - so this does not require a
+        /// restart. EntryPoint applies the same option at startup.
+        /// </summary>
+        private void ApplyRenderMode()
+        {
+            try
+            {
+                var desired = Options.ForceSoftwareRendering
+                    ? System.Windows.Interop.RenderMode.SoftwareOnly
+                    : System.Windows.Interop.RenderMode.Default;
+
+                if (RenderOptions.ProcessRenderMode == desired) return;
+
+                RenderOptions.ProcessRenderMode = desired;
+                Log.Information(Constants.LogMessageTemplate, nameof(ShellViewModel), nameof(ApplyRenderMode),
+                    $"ProcessRenderMode changed to {desired} following an options update");
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, Constants.LogMessageTemplate, nameof(ShellViewModel), nameof(ApplyRenderMode),
+                    "Unable to update ProcessRenderMode");
+            }
         }
 
 

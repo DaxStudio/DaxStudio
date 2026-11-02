@@ -68,6 +68,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DaxStudio.Parsers", "DaxStu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DaxStudio.Core", "DaxStudio.Core\DaxStudio.Core.csproj", "{46E080B0-EABD-4BEB-902D-9C71C760BDD8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DaxStudio.Parsers.Tests", "..\tests\DaxStudio.Parsers.Tests\DaxStudio.Parsers.Tests.csproj", "{43EDEF66-DF9B-469F-8D33-85D82DFE7950}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -400,6 +402,22 @@ Global
 		{46E080B0-EABD-4BEB-902D-9C71C760BDD8}.Release|x64.Build.0 = Release|Any CPU
 		{46E080B0-EABD-4BEB-902D-9C71C760BDD8}.Release|x86.ActiveCfg = Release|Any CPU
 		{46E080B0-EABD-4BEB-902D-9C71C760BDD8}.Release|x86.Build.0 = Release|Any CPU
+		{43EDEF66-DF9B-469F-8D33-85D82DFE7950}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43EDEF66-DF9B-469F-8D33-85D82DFE7950}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43EDEF66-DF9B-469F-8D33-85D82DFE7950}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{43EDEF66-DF9B-469F-8D33-85D82DFE7950}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{43EDEF66-DF9B-469F-8D33-85D82DFE7950}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{43EDEF66-DF9B-469F-8D33-85D82DFE7950}.Debug|x64.Build.0 = Debug|Any CPU
+		{43EDEF66-DF9B-469F-8D33-85D82DFE7950}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{43EDEF66-DF9B-469F-8D33-85D82DFE7950}.Debug|x86.Build.0 = Debug|Any CPU
+		{43EDEF66-DF9B-469F-8D33-85D82DFE7950}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43EDEF66-DF9B-469F-8D33-85D82DFE7950}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43EDEF66-DF9B-469F-8D33-85D82DFE7950}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{43EDEF66-DF9B-469F-8D33-85D82DFE7950}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{43EDEF66-DF9B-469F-8D33-85D82DFE7950}.Release|x64.ActiveCfg = Release|Any CPU
+		{43EDEF66-DF9B-469F-8D33-85D82DFE7950}.Release|x64.Build.0 = Release|Any CPU
+		{43EDEF66-DF9B-469F-8D33-85D82DFE7950}.Release|x86.ActiveCfg = Release|Any CPU
+		{43EDEF66-DF9B-469F-8D33-85D82DFE7950}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -407,6 +425,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{ED854495-F857-4E2E-8EAC-975B8C61A264} = {2FA78CD1-8A2D-4285-9DDB-FB4E4B46A7C7}
 		{D1ED8FBD-8493-496F-9229-497DD526E1C9} = {2FA78CD1-8A2D-4285-9DDB-FB4E4B46A7C7}
+		{43EDEF66-DF9B-469F-8D33-85D82DFE7950} = {2FA78CD1-8A2D-4285-9DDB-FB4E4B46A7C7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A980F882-ED32-4E77-981F-A37C0AB1410D}

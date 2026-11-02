@@ -1,0 +1,397 @@
+using System;
+
+namespace DaxStudio.Parsers.StorageEngine.XmSql
+{
+    /// <summary>
+    /// Token scanners that reproduce the lexer rules of Grammars/xmSQL.g4. Each returns the length of the
+    /// token at the start of the span, or 0 when there is none.
+    /// </summary>
+    internal static class XmSqlLexer
+    {
+        /// <summary>The chars that continue an identifier, so that a keyword is not followed by one.</summary>
+        public const string IdentifierPart = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
+
+        public const string IdentifierStart = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_";
+
+        private static bool IsDigit(char c) => c >= '0' && c <= '9';
+
+        private static bool IsIdentifierStart(char c) => (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
+
+        private static bool IsIdentifierPart(char c) => IsIdentifierStart(c) || IsDigit(c);
+
+        /// <summary><c>[a-zA-Z_] [a-zA-Z0-9_]*</c>, keywords included.</summary>
+        public static int Word(ReadOnlySpan<char> s)
+        {
+            if (s.Length == 0 || !IsIdentifierStart(s[0])) return 0;
+            var i = 1;
+            while (i < s.Length && IsIdentifierPart(s[i])) i++;
+            return i;
+        }
+
+        /// <summary>IDENTIFIER: a word that is not a keyword.</summary>
+        public static int Identifier(ReadOnlySpan<char> s)
+        {
+            var length = Word(s);
+            return length > 0 && !IsKeyword(s.Slice(0, length)) ? length : 0;
+        }
+
+        /// <summary><c>'-'? [0-9]+ ('.' [0-9]+)? ([eE] [+-]? [0-9]+)?</c></summary>
+        public static int Number(ReadOnlySpan<char> s)
+        {
+            var i = 0;
+            if (i < s.Length && s[i] == '-') i++;
+            var digits = i;
+            while (i < s.Length && IsDigit(s[i])) i++;
+            if (i == digits) return 0;
+
+            if (i + 1 < s.Length && s[i] == '.' && IsDigit(s[i + 1]))
+            {
+                i += 2;
+                while (i < s.Length && IsDigit(s[i])) i++;
+            }
+
+            if (i < s.Length && (s[i] == 'e' || s[i] == 'E'))
+            {
+                var j = i + 1;
+                if (j < s.Length && (s[j] == '+' || s[j] == '-')) j++;
+                if (j < s.Length && IsDigit(s[j]))
+                {
+                    j++;
+                    while (j < s.Length && IsDigit(s[j])) j++;
+                    i = j;
+                }
+            }
+
+            return i;
+        }
+
+        /// <summary>QUOTED_TABLE_NAME: <c>'\'' (~['\r\n])+ '\''</c></summary>
+        public static int QuotedTableName(ReadOnlySpan<char> s) => Delimited(s, '\'', allowEmpty: false);
+
+        /// <summary>QUOTED_STRING: <c>'"' (~["\r\n])* '"'</c></summary>
+        public static int QuotedString(ReadOnlySpan<char> s) => Delimited(s, '"', allowEmpty: true);
+
+        private static int Delimited(ReadOnlySpan<char> s, char quote, bool allowEmpty)
+        {
+            if (s.Length < 2 || s[0] != quote) return 0;
+            var i = 1;
+            while (i < s.Length)
+            {
+                var c = s[i];
+                if (c == quote)
+                {
+                    return i > 1 || allowEmpty ? i + 1 : 0;
+                }
+
+                if (c == '\r' || c == '\n') return 0;
+                i++;
+            }
+
+            return 0;
+        }
+
+        /// <summary><c>'$Expr' [0-9]+</c></summary>
+        public static int ExprRef(ReadOnlySpan<char> s) => ExprReference(s, 0);
+
+        /// <summary><c>'@$Expr' [0-9]+</c></summary>
+        public static int ExprAtRef(ReadOnlySpan<char> s) => s.Length > 0 && s[0] == '@' ? ExprReference(s, 1) : 0;
+
+        private static int ExprReference(ReadOnlySpan<char> s, int i)
+        {
+            if (!s.Slice(i).StartsWith("$Expr".AsSpan(), StringComparison.Ordinal)) return 0;
+            i += 5;
+            var digits = i;
+            while (i < s.Length && IsDigit(s[i])) i++;
+            return i > digits ? i : 0;
+        }
+
+        /// <summary>
+        /// BRACKETED_NAME:
+        /// <c>'[' ( ']' ']' | PAREN_GROUP | ~('[' | ']' | '\r' | '\n') | '[' ~(']' | '\r' | '\n')* ']' )+ ']'</c>
+        /// with <c>PAREN_GROUP : '(' ( PAREN_GROUP | ~('(' | ')' | '\r' | '\n') )* ')'</c>.
+        /// </summary>
+        /// <remarks>
+        /// Like the ANTLR lexer, this returns the longest text the rule matches. The rule is ambiguous (a '(' can
+        /// open a group or be a plain char, a ']' can end the name or start a ']]' escape), so the scanner tracks
+        /// every way the text can be read at once: the main loop, a pending ']' escape, a nested '[...]', and the
+        /// depths of the open parenthesis groups as a bit set.
+        /// </remarks>
+        public static int BracketedName(ReadOnlySpan<char> s)
+        {
+            if (s.Length < 3 || s[0] != '[') return 0;
+
+            // Fast path: a plain name, [Name], without brackets or parentheses inside.
+            for (var k = 1; k < s.Length; k++)
+            {
+                var c = s[k];
+                if (c == ']')
+                {
+                    if (k == 1) break;
+                    if (k + 1 < s.Length && s[k + 1] == ']') break;
+                    return k + 1;
+                }
+
+                if (c == '[' || c == '(' || c == '\r' || c == '\n') break;
+            }
+
+            var main = true;          // in the main loop, after at least one element when 'started'
+            var started = false;      // the main loop has matched at least one element
+            var escape = false;       // a ']' was read that must be followed by another ']'
+            var nested = false;       // inside a nested '[...]'
+            ulong groups = 0;         // bit d set: inside a PAREN_GROUP at depth d + 1
+            var longest = 0;
+
+            for (var i = 1; i < s.Length; i++)
+            {
+                var c = s[i];
+                if (c == '\r' || c == '\n') break;
+
+                var nextMain = false;
+                var nextEscape = false;
+                var nextNested = false;
+                ulong nextGroups = 0;
+
+                if (main)
+                {
+                    switch (c)
+                    {
+                        case ']':
+                            if (started && longest < i + 1) longest = i + 1;
+                            nextEscape = true;
+                            break;
+                        case '[':
+                            nextNested = true;
+                            break;
+                        case '(':
+                            nextMain = true;     // a plain char
+                            nextGroups |= 1;     // or a group at depth 1
+                            break;
+                        default:
+                            nextMain = true;
+                            break;
+                    }
+                }
+
+                if (escape && c == ']')
+                {
+                    nextMain = true;
+                }
+
+                if (nested)
+                {
+                    if (c == ']') nextMain = true;
+                    else nextNested = true;
+                }
+
+                if (groups != 0)
+                {
+                    switch (c)
+                    {
+                        case '(':
+                            nextGroups |= groups << 1;
+                            break;
+                        case ')':
+                            if ((groups & 1) != 0) nextMain = true;
+                            nextGroups |= groups >> 1;
+                            break;
+                        default:
+                            nextGroups |= groups;
+                            break;
+                    }
+                }
+
+                // Every transition into the main loop completes an element.
+                if (nextMain) started = true;
+
+                main = nextMain;
+                escape = nextEscape;
+                nested = nextNested;
+                groups = nextGroups;
+
+                if (!main && !escape && !nested && groups == 0) break;
+            }
+
+            return longest;
+        }
+
+        /// <summary>White space and <c>/* */</c> comments. Returns 0 when there is neither.</summary>
+        public static int WhiteSpaceAndComments(ReadOnlySpan<char> s)
+        {
+            var i = 0;
+            while (i < s.Length)
+            {
+                if (char.IsWhiteSpace(s[i]))
+                {
+                    i++;
+                }
+                else if (s[i] == '/' && i + 1 < s.Length && s[i + 1] == '*')
+                {
+                    var end = s.Slice(i + 2).IndexOf("*/".AsSpan());
+                    if (end < 0) break;
+                    i += end + 4;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return i;
+        }
+
+        /// <summary>
+        /// Text between balanced parentheses, parentheses included, skipping quoted names and strings (a DAX
+        /// expression). 0 when the parentheses don't close.
+        /// </summary>
+        public static int ParenthesizedText(ReadOnlySpan<char> s)
+        {
+            if (s.Length == 0 || s[0] != '(') return 0;
+            var depth = 0;
+            for (var i = 0; i < s.Length; i++)
+            {
+                var c = s[i];
+                if (c == '\'' || c == '"')
+                {
+                    var close = s.Slice(i + 1).IndexOf(c);
+                    if (close < 0) return 0;
+                    i += close + 1;
+                }
+                else if (c == '(')
+                {
+                    depth++;
+                }
+                else if (c == ')' && --depth == 0)
+                {
+                    return i + 1;
+                }
+            }
+
+            return 0;
+        }
+
+        /// <summary>The estimated size the formatter writes in a truncated list: <c>Estimated size: rows = 1  bytes = 2</c>, up to the closing parenthesis.</summary>
+        public static int FormattedEstimatedSize(ReadOnlySpan<char> s)
+        {
+            if (!s.StartsWith("Estimated size:".AsSpan(), StringComparison.Ordinal)) return 0;
+            var i = 0;
+            while (i < s.Length && s[i] != ')' && s[i] != '\r' && s[i] != '\n') i++;
+            while (i > 0 && s[i - 1] == ' ') i--;
+            return i;
+        }
+
+        /// <summary>
+        /// The estimated size footer after the query: <c>[Estimated size (volume, marshalling bytes): 1, 2]</c> as traced,
+        /// or <c>Estimated size: rows = 1  bytes = 2</c> as formatted, up to the end of the text.
+        /// </summary>
+        public static int EstimatedSizeFooter(ReadOnlySpan<char> s)
+        {
+            if (FormattedEstimatedSize(s) > 0) return s.Length;
+            if (!s.StartsWith("[Estimated size".AsSpan(), StringComparison.OrdinalIgnoreCase)) return 0;
+            var length = BracketedName(s);
+            return length > 0 && s.Slice(length).IsWhiteSpace() ? s.Length : 0;
+        }
+
+        /// <summary>
+        /// Tokens that don't form a filter predicate, up to (and without) the next VAND, VOR, ',' or ';' outside
+        /// parentheses, a ')' closing an enclosing parenthesis, or a statement keyword. 0 when there are none.
+        /// </summary>
+        public static int UnparsedPredicate(ReadOnlySpan<char> s)
+        {
+            var i = 0;
+            var end = 0;
+            var depth = 0;
+            while (true)
+            {
+                while (i < s.Length && char.IsWhiteSpace(s[i])) i++;
+                if (i >= s.Length) break;
+
+                var rest = s.Slice(i);
+                var c = s[i];
+                if (depth == 0)
+                {
+                    if (c == ',' || c == ';' || c == ')') break;
+                    var word = Word(rest);
+                    if (word > 0 && IsStopWord(rest.Slice(0, word))) break;
+                }
+
+                if (c == '(' || c == '{') depth++;
+                else if ((c == ')' || c == '}') && depth > 0) depth--;
+
+                i += AnyToken(rest);
+                end = i;
+            }
+
+            return end;
+        }
+
+        private static readonly string[] StopWords = { "VAND", "VOR", "DEFINE", "CREATE", "REDUCED", "SELECT", "WITH", "SET" };
+
+        private static bool IsStopWord(ReadOnlySpan<char> word)
+        {
+            foreach (var stop in StopWords)
+            {
+                if (word.Equals(stop.AsSpan(), StringComparison.OrdinalIgnoreCase)) return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>Returns the length of the next token, as the ANTLR lexer would read it, or 1 for an unknown char.</summary>
+        public static int AnyToken(ReadOnlySpan<char> s)
+        {
+            if (s.Length == 0) return 0;
+            int length;
+            switch (s[0])
+            {
+                case '[': length = BracketedName(s); break;
+                case '\'': length = QuotedTableName(s); break;
+                case '"': length = QuotedString(s); break;
+                case '$': length = ExprRef(s); break;
+                case '@': length = ExprAtRef(s); break;
+                case '-': length = Number(s); break;
+                case ':': length = s.Length > 1 && s[1] == '=' ? 2 : 0; break;
+                case '.': length = s.Length > 1 && s[1] == '.' ? 2 : 0; break;
+                case '<': length = s.Length > 1 && (s[1] == '>' || s[1] == '=') ? 2 : 0; break;
+                case '>': length = s.Length > 1 && s[1] == '=' ? 2 : 0; break;
+                case '!': length = s.Length > 1 && s[1] == '=' ? 2 : 0; break;
+                default:
+                    length = IsDigit(s[0]) ? Number(s) : Word(s);
+                    break;
+            }
+
+            return length > 0 ? length : 1;
+        }
+
+        private static readonly string[][] KeywordsByLength = BuildKeywordTable(
+            "SET", "DEFINE", "TABLE", "CREATE", "SHALLOW", "RELATION", "MANYTOMANY", "BOTH", "REDUCED", "BY",
+            "WITH", "SELECT", "FROM", "LEFT", "OUTER", "INNER", "JOIN", "ON", "WHERE", "IN", "NIN", "BETWEEN",
+            "AND", "AS", "TO", "ININDEX", "REVERSE", "BITMAP", "SUM", "COUNT", "DCOUNT", "MIN", "MAX", "AVG",
+            "SUMSQR", "COUNT_BIG", "CALLBACKDATAID", "ENCODECALLBACK", "CALLBACK", "PFCASTCOALESCE", "COALESCE",
+            "PFCAST", "VAND", "VOR");
+
+        private static string[][] BuildKeywordTable(params string[] keywords)
+        {
+            var max = 0;
+            foreach (var k in keywords) max = Math.Max(max, k.Length);
+            var table = new string[max + 1][];
+            for (var length = 0; length <= max; length++)
+            {
+                table[length] = Array.FindAll(keywords, k => k.Length == length);
+            }
+
+            return table;
+        }
+
+        /// <summary>True when the word is one of the grammar's keywords, which the ANTLR lexer never reads as an IDENTIFIER.</summary>
+        public static bool IsKeyword(ReadOnlySpan<char> word)
+        {
+            if (word.Length >= KeywordsByLength.Length) return false;
+            foreach (var keyword in KeywordsByLength[word.Length])
+            {
+                if (word.Equals(keyword.AsSpan(), StringComparison.OrdinalIgnoreCase)) return true;
+            }
+
+            return false;
+        }
+    }
+}

@@ -2,6 +2,7 @@
 using DaxStudio.Core.Trace;
 using DaxStudio.Interfaces;
 using DaxStudio.Tests.Helpers;
+using DaxStudio.UI.Events;
 using DaxStudio.UI.Utils;
 using DaxStudio.UI.ViewModels;
 using Microsoft.AnalysisServices;
@@ -146,6 +147,119 @@ namespace DaxStudio.Tests
         }
 
         [TestMethod]
+        public void ShowInModelDiagramUsesQueryDependencyTableNames()
+        {
+            const string query = "EVALUATE SUMMARIZECOLUMNS('Model Sales'[Category])";
+            var details = new ServerTimingDetailsViewModel();
+            var vm = new ServerTimesViewModel(mockEventAggregator, details, mockOptions, mockWindowManager);
+            var document = Substitute.For<IDaxDocument>();
+            var connection = Substitute.For<IConnectionManager>();
+            document.Connection.Returns(connection);
+            connection.IsConnected.Returns(true);
+            connection.GetQueryDependencyTables(query).Returns(new System.Collections.Generic.List<string> { "Model Sales" });
+            vm.Document = document;
+            vm.CommandText = query;
+
+            vm.AddTestEvent(TraceEventClass.VertiPaqSEQueryEnd, TraceEventSubclass.VertiPaqScan,
+                new DateTime(2022, 7, 10, 1, 1, 1, 5), 20, "scan of differently_named_source", "USER");
+            vm.ProcessAllEvents();
+
+            vm.ShowInModelDiagram();
+
+            connection.Received(1).GetQueryDependencyTables(query);
+            mockEventAggregator.Received().PublishAsync(
+                Arg.Is<object>(message => IsDiagramEventFor(message, new[] { "Model Sales" }, false)),
+                Arg.Any<Func<Func<System.Threading.Tasks.Task>, System.Threading.Tasks.Task>>(),
+                Arg.Any<System.Threading.CancellationToken>());
+        }
+
+        [TestMethod]
+        public void ShowInModelDiagramFallsBackWhenQueryDependenciesAreEmpty()
+        {
+            const string query = "EVALUATE ROW(\"Count\", COUNTROWS('Model Sales'))";
+            const string directQuerySql = @"SELECT [t].[Amount]
+FROM (select [$Table].[Amount] as [Amount] from [dbo].[PhysicalSales] as [$Table]) AS [t]";
+            var details = new ServerTimingDetailsViewModel();
+            var vm = new ServerTimesViewModel(mockEventAggregator, details, mockOptions, mockWindowManager);
+            var document = Substitute.For<IDaxDocument>();
+            var connection = Substitute.For<IConnectionManager>();
+            document.Connection.Returns(connection);
+            connection.IsConnected.Returns(true);
+            connection.GetQueryDependencyTables(query).Returns(new System.Collections.Generic.List<string>());
+            vm.Document = document;
+            vm.CommandText = query;
+
+            vm.AddTestEvent(TraceEventClass.DirectQueryEnd, TraceEventSubclass.DAXQuery,
+                new DateTime(2022, 7, 10, 1, 1, 1, 5), 20, directQuerySql, "USER");
+            vm.ProcessAllEvents();
+
+            vm.ShowInModelDiagram();
+
+            mockEventAggregator.Received().PublishAsync(
+                Arg.Is<object>(message => IsDiagramEventFor(message, new[] { "PhysicalSales" })),
+                Arg.Any<Func<Func<System.Threading.Tasks.Task>, System.Threading.Tasks.Task>>(),
+                Arg.Any<System.Threading.CancellationToken>());
+        }
+
+        [TestMethod]
+        public void ShowInModelDiagramFallsBackWhenQueryDependencyDiscoveryThrows()
+        {
+            const string query = "EVALUATE ROW(\"Count\", COUNTROWS('Model Sales'))";
+            const string directQuerySql = @"SELECT [t].[Amount]
+FROM (select [$Table].[Amount] as [Amount] from [dbo].[PhysicalSales] as [$Table]) AS [t]";
+            var details = new ServerTimingDetailsViewModel();
+            var vm = new ServerTimesViewModel(mockEventAggregator, details, mockOptions, mockWindowManager);
+            var document = Substitute.For<IDaxDocument>();
+            var connection = Substitute.For<IConnectionManager>();
+            document.Connection.Returns(connection);
+            connection.IsConnected.Returns(true);
+            connection.GetQueryDependencyTables(query).Returns(_ => throw new InvalidOperationException("DMV unavailable"));
+            vm.Document = document;
+            vm.CommandText = query;
+
+            vm.AddTestEvent(TraceEventClass.DirectQueryEnd, TraceEventSubclass.DAXQuery,
+                new DateTime(2022, 7, 10, 1, 1, 1, 5), 20, directQuerySql, "USER");
+            vm.ProcessAllEvents();
+
+            vm.ShowInModelDiagram();
+
+            mockEventAggregator.Received().PublishAsync(
+                Arg.Is<object>(message => IsDiagramEventFor(message, new[] { "PhysicalSales" })),
+                Arg.Any<Func<Func<System.Threading.Tasks.Task>, System.Threading.Tasks.Task>>(),
+                Arg.Any<System.Threading.CancellationToken>());
+        }
+
+        [TestMethod]
+        public void ShowInModelDiagramWarnsWhenNoTablesAreFound()
+        {
+            const string query = "EVALUATE { 1 }";
+            var details = new ServerTimingDetailsViewModel();
+            var vm = new ServerTimesViewModel(mockEventAggregator, details, mockOptions, mockWindowManager);
+            var document = Substitute.For<IDaxDocument>();
+            var connection = Substitute.For<IConnectionManager>();
+            document.Connection.Returns(connection);
+            connection.IsConnected.Returns(true);
+            connection.GetQueryDependencyTables(query).Returns(new System.Collections.Generic.List<string>());
+            vm.Document = document;
+            vm.CommandText = query;
+
+            vm.AddTestEvent(TraceEventClass.VertiPaqSEQueryEnd, TraceEventSubclass.VertiPaqScan,
+                new DateTime(2022, 7, 10, 1, 1, 1, 5), 20, string.Empty, "USER");
+            vm.ProcessAllEvents();
+
+            vm.ShowInModelDiagram();
+
+            mockEventAggregator.DidNotReceive().PublishAsync(
+                Arg.Is<object>(message => message is ShowTablesInModelDiagramEvent),
+                Arg.Any<Func<Func<System.Threading.Tasks.Task>, System.Threading.Tasks.Task>>(),
+                Arg.Any<System.Threading.CancellationToken>());
+            mockEventAggregator.Received().PublishAsync(
+                Arg.Is<object>(message => IsOutputMessageContaining(message, "No table references found")),
+                Arg.Any<Func<Func<System.Threading.Tasks.Task>, System.Threading.Tasks.Task>>(),
+                Arg.Any<System.Threading.CancellationToken>());
+        }
+
+        [TestMethod]
         public void TestHeatMap()
         {
 
@@ -181,6 +295,30 @@ namespace DaxStudio.Tests
 
             Assert.AreEqual((20.0 / 76.0) * 75.0, ((RectangleGeometry)rectangles[0]).Rect.Width, "First rectangle length");
             Assert.AreEqual((15.0 / 76.0) * 75.0, ((RectangleGeometry)rectangles[1]).Rect.Width,"Second rectangle length");
+        }
+
+        // NSubstitute compiles Arg.Is<T> predicates into expression trees, which cannot contain
+        // 'is' pattern-matching with a designation (nor optional arguments), so the type test lives
+        // in these helpers instead.
+        private static bool IsDiagramEventFor(object message, string[] expectedTableNames)
+        {
+            var diagramEvent = message as ShowTablesInModelDiagramEvent;
+            return diagramEvent != null
+                && diagramEvent.TableNames.SequenceEqual(expectedTableNames);
+        }
+
+        private static bool IsDiagramEventFor(object message, string[] expectedTableNames, bool includeRelated)
+        {
+            var diagramEvent = message as ShowTablesInModelDiagramEvent;
+            return diagramEvent != null
+                && diagramEvent.TableNames.SequenceEqual(expectedTableNames)
+                && diagramEvent.IncludeRelated == includeRelated;
+        }
+
+        private static bool IsOutputMessageContaining(object message, string expectedText)
+        {
+            var output = message as DaxStudio.Core.Events.OutputMessage;
+            return output != null && output.Text.Contains(expectedText);
         }
 
     }

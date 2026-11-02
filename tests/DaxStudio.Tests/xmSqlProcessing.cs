@@ -3,6 +3,9 @@ using DaxStudio.Interfaces;
 using DaxStudio.QueryTrace;
 using DaxStudio.Tests.Helpers;
 using DaxStudio.UI.ViewModels;
+using ICSharpCode.AvalonEdit.Document;
+using ICSharpCode.AvalonEdit.Highlighting;
+using ICSharpCode.AvalonEdit.Highlighting.Xshd;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 using System;
@@ -10,6 +13,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 #if NET472
 using System.Web.UI.WebControls;
 #endif
@@ -19,6 +23,63 @@ namespace DaxStudio.Tests
     [TestClass]
     public  class xmSqlProcessing
     {
+
+        [DataTestMethod]
+        [DataRow(false, true, true)]
+        [DataRow(false, true, false)]
+        [DataRow(false, false, true)]
+        [DataRow(false, false, false)]
+        [DataRow(true, true, true)]
+        [DataRow(true, true, false)]
+        [DataRow(true, false, true)]
+        [DataRow(true, false, false)]
+        public void TestCallbackDataIdWithExpressionRetainsBrackets(bool parenthesized, bool format, bool simplify)
+        {
+            string expression = "[CallbackDataID(ROUND ( Flights[Seats]], 0 ))](PFDATAID( [FlightData (10)].[Seats (16615)] ))";
+            string xmSql = "SET DC_KIND=\"AUTO\";\r\nWITH\r\n\t$Expr0 := "
+                + (parenthesized ? "(" + expression + ")" : expression)
+                + "\r\nSELECT\r\nSUM(@$Expr0) AS [$Measure0]\r\nFROM [FlightData (10)];"
+                + "\r\n\r\n[Estimated size (volume, marshalling bytes): 1, 16]";
+            var options = Substitute.For<IGlobalOptions>();
+            options.HighlightXmSqlCallbacks.Returns(true);
+            options.UseAntlrParser.Returns(true);
+            options.FormatXmSql.Returns(format);
+            options.SimplifyXmSqlSyntax.Returns(simplify);
+            var args = new DaxStudioTraceEventArgs
+            {
+                EventClassName = "VertiPaqSEQueryEnd",
+                TextData = xmSql
+            };
+            var remapTables = new Dictionary<string, string> { { "10", "Flights" } };
+            var evnt = new TraceStorageEngineEvent(args, 1, options, null, remapTables);
+
+            StringAssert.Contains(evnt.QueryRichText, "[CallbackDataID");
+            StringAssert.Contains(evnt.QueryRichText, "] ( PFDATAID");
+            StringAssert.Contains(evnt.QueryRichText, "Flights[Seats], 0");
+            StringAssert.Contains(evnt.QueryRichText, "@$Expr0");
+            if (simplify) StringAssert.Contains(evnt.QueryRichText, "'Flights'[Seats]");
+            Assert.AreEqual(evnt.Query, evnt.QueryRichText);
+            Assert.IsTrue(evnt.HighlightQuery);
+            Assert.AreEqual(1L, evnt.EstimatedRows);
+
+            // Verify the full bracketed callback receives the display's callback color.
+            using (var stream = typeof(DocumentViewModel).Assembly.GetManifestResourceStream("DaxStudio.UI.Resources.xmSQL.xshd"))
+            using (var reader = new XmlTextReader(stream) { XmlResolver = null, DtdProcessing = DtdProcessing.Prohibit })
+            {
+                var definition = HighlightingLoader.Load(reader, HighlightingManager.Instance);
+                var document = new TextDocument(evnt.QueryRichText);
+                int start = evnt.QueryRichText.IndexOf("[CallbackDataID", StringComparison.Ordinal);
+                int end = evnt.QueryRichText.IndexOf("] ( PFDATAID", start, StringComparison.Ordinal) + 1;
+                var line = document.GetLineByOffset(start);
+                using (var highlighter = new DocumentHighlighter(document, definition))
+                {
+                    var highlightedLine = highlighter.HighlightLine(line.LineNumber);
+                    Assert.IsTrue(highlightedLine.Sections.Any(section =>
+                        section.Offset <= start && section.Offset + section.Length >= end
+                        && section.Color.Name == "Callback"), "The entire callback, including brackets and DAX, must be highlighted.");
+                }
+            }
+        }
 
         [TestMethod]
         public void TestCallbackDataIdHighlight()
@@ -65,7 +126,7 @@ WHERE
             string expectedAntlr = @"SET DC_KIND=""AUTO"";
 SELECT
     'Period Definition  SISO'[Period],
-    MAX ( MinMaxColumnPositionCallback ( PFDATAID ( 'Period Definition  SISO'[Previous Period] ) ) )
+    MAX ( [MinMaxColumnPositionCallback] ( PFDATAID ( 'Period Definition  SISO'[Previous Period] ) ) )
 FROM 'Period Definition  SISO'
 WHERE
     'Period Definition  SISO'[Period] IN ( 'YTD', 'L13W', 'LW', 'L4W' ) ;

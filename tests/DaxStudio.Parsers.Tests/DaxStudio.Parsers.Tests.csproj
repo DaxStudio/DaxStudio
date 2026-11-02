@@ -1,30 +1,40 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- Cross-platform tests for DaxStudio.Parsers. They reuse the parser-level test files from
-       DaxStudio.Tests (which is Windows-only because of its UI references) so the parsers can be
-       developed and verified on macOS and Linux too. -->
+
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <IsPackable>false</IsPackable>
+    <TargetFrameworks>net472;net8.0</TargetFrameworks>
     <RunAnalyzersDuringBuild>False</RunAnalyzersDuringBuild>
     <EnforceCodeStyleInBuild>False</EnforceCodeStyleInBuild>
     <AnalysisLevel>latest-minimum</AnalysisLevel>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <OutputPath>..\..\src\bin\$(Configuration)\</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <OutputPath>..\..\Release\bin\</OutputPath>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="MSTest.TestAdapter" />
     <PackageReference Include="MSTest.TestFramework" />
+    <PackageReference Include="NSubstitute" />
+    <PackageReference Include="Antlr4.Runtime.Standard" />
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\src\DaxStudio.Parsers\DaxStudio.Parsers.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="..\DaxStudio.Tests\AntlrXmSqlParserTests.cs" Link="Shared\AntlrXmSqlParserTests.cs" />
-    <Compile Include="..\DaxStudio.Tests\AntlrXmSqlFormatterTests.cs" Link="Shared\AntlrXmSqlFormatterTests.cs" />
-    <Compile Include="..\DaxStudio.Tests\XmSqlParserTests.cs" Link="Shared\XmSqlParserTests.cs" />
-    <Compile Include="..\DaxStudio.Tests\XmSqlFingerprintTests.cs" Link="Shared\XmSqlFingerprintTests.cs" />
-    <Compile Include="..\DaxStudio.Tests\ParserBenchmarkTests.cs" Link="Shared\ParserBenchmarkTests.cs" />
+
+  <!-- The Parlot differential tests read their corpus with System.Text.Json and only run on net8.0 -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+    <Compile Remove="Corpus.cs;Parlot*Tests.cs;XmSqlGrammarTests.cs;XmSqlLexerDifferentialTests.cs" />
   </ItemGroup>
+
   <ItemGroup>
     <None Include="Corpus\*.jsonl" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
+
 </Project>

@@ -2,7 +2,7 @@ using Antlr4.Runtime;
 using Antlr4.Runtime.Atn;
 using BenchmarkDotNet.Attributes;
 using DaxStudio.Parsers.Grammars.Generated;
-using DaxStudio.Parsers.XmSql;
+using DaxStudio.Parsers.StorageEngine.XmSql;
 using System.Collections.Generic;
 
 namespace DaxStudio.Parsers.Benchmarks

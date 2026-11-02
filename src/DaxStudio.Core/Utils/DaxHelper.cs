@@ -24,39 +24,48 @@ namespace DaxStudio.Core.Utils
         
         public static void PreProcessQuery(QueryInfo queryInfo, string query, IEventAggregator eventAggregator)
         {
-	        var lines = query.Split('\n');
-	        var inParams = false;
-	        var sbParams = new StringBuilder();
-	        var sbQuery = new StringBuilder();
-	        foreach (var line in lines)
-	        {
-		        if (line.Trim().StartsWith("<Parameters")) inParams = true;
-
-                if (inParams)
-                    sbParams.Append(line);
-                else {
-                    sbQuery.Append(line);
-                    sbQuery.Append('\n');
-                }
-
-                if (line.Trim().EndsWith("</Parameters>")) inParams = false;
-
-            }
-            string qry = sbQuery.ToString();
+            SplitParametersBlock(query, out var qry, out var paramsBlock);
             PopulateParameters(qry,  queryInfo.Parameters);
 
-            queryInfo.NeedsParameterValues = queryInfo.Parameters.Count > 0 && sbParams.Length == 0;
+            queryInfo.NeedsParameterValues = queryInfo.Parameters.Count > 0 && paramsBlock.Length == 0;
 
-		    if (sbParams.Length > 0)
+		    if (paramsBlock.Length > 0)
 		    {
             //    queryInfo.NeedsParameterValues = false;
-			    ParseParams(sbParams.ToString(), queryInfo.Parameters, eventAggregator);
-                queryInfo.QueryText = sbQuery.ToString();
+			    ParseParams(paramsBlock, queryInfo.Parameters, eventAggregator);
+                queryInfo.QueryText = qry;
 
             }
             else
                 queryInfo.QueryText = query;
             
+        }
+
+        // Separates the query body from a trailing/embedded &lt;Parameters&gt;...&lt;/Parameters&gt; XML block.
+        // The body is returned in <paramref name="body"/> and the raw XML in <paramref name="parametersBlock"/>
+        // (empty string when no block is present). Shared by the regex and ANTLR preprocessor paths.
+        public static void SplitParametersBlock(string query, out string body, out string parametersBlock)
+        {
+            var lines = query.Split('\n');
+            var inParams = false;
+            var sbParams = new StringBuilder();
+            var sbQuery = new StringBuilder();
+            foreach (var line in lines)
+            {
+                if (line.Trim().StartsWith("<Parameters")) inParams = true;
+
+                if (inParams)
+                    sbParams.Append(line);
+                else
+                {
+                    sbQuery.Append(line);
+                    sbQuery.Append('\n');
+                }
+
+                if (line.Trim().EndsWith("</Parameters>")) inParams = false;
+            }
+            body = sbQuery.ToString();
+            parametersBlock = sbParams.ToString();
         }
 
         public static void ParseParams(string paramString, Dictionary<string, QueryParameter> paramDict, IEventAggregator eventAggregator)

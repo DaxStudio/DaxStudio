@@ -118,28 +118,29 @@ namespace DaxStudio.UI.ViewModels
             _powerBIInstances = new List<PowerBIInstance>() { _pbiLoadingInstance };
             SelectedPowerBIInstance = _pbiLoadingInstance;
 
-            await Task.Run(() =>{
-
+            try
+            {
                 // display the "loading..." message
-                _powerBIInstances.Clear();
-                _powerBIInstances.Add(_pbiLoadingInstance);
                 NotifyOfPropertyChange(() => PowerBIDesignerInstances);
                 NotifyOfPropertyChange(() => PowerBIInstanceDetected);
 
-                // look for local workspace instances
-                _powerBIInstances = PowerBIHelper.GetLocalInstances(false, true);
+                // look for local workspace instances - GetLocalInstancesAsync returns a snapshot
+                // so it is safe to append the placeholder entry below
+                var instances = await PowerBIHelper.GetLocalInstancesAsync(false, true, CancellationToken.None);
 
-                if (_powerBIInstances.Count == 0 )
+                if (instances.Count == 0)
                 {
                     // Add the none found 'fake' instance
-                    _powerBIInstances.Add(_pbiNoneInstance);
+                    instances.Add(_pbiNoneInstance);
                 }
+
+                _powerBIInstances = instances;
 
                 if (PowerBIInstanceDetected)
                 {
-                    if (SelectedPowerBIInstance == null || SelectedPowerBIInstance?.Port == -1) 
+                    if (SelectedPowerBIInstance == null || SelectedPowerBIInstance?.Port == -1)
                     { SelectedPowerBIInstance = _powerBIInstances[0]; }
-                } 
+                }
                 else
                 {
                     if (PowerBIModeSelected) ServerModeSelected = true;
@@ -149,11 +150,12 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => PowerBIInstanceDetected);
                 NotifyOfPropertyChange(() => PowerBIDesignerInstances);
                 NotifyOfPropertyChange(() => SelectedPowerBIInstance);
-            }).ContinueWith(t => {
-                // we should only come here if we got an exception
-                Log.Error(t.Exception, "Error getting PowerBI/SSDT instances: {message}", t.Exception.Message);
-                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error getting PowerBI/SSDT instances: {t.Exception.Message}"));
-            }, TaskContinuationOptions.OnlyOnFaulted);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error getting PowerBI/SSDT instances: {message}", ex.Message);
+                await _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error getting PowerBI/SSDT instances: {ex.Message}"));
+            }
         }
 
         public bool HostIsExcel { get { return Host.IsExcel; } }

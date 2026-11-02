@@ -18,7 +18,6 @@ using Serilog;
 using System;
 using System.Data;
 using System.Data.Common;
-using System.Data.OleDb;
 using System.Threading.Tasks;
 
 namespace DaxStudio.CommandLine.UIStubs
@@ -183,6 +182,61 @@ namespace DaxStudio.CommandLine.UIStubs
         public void SetResultsMessage(string message, OutputTarget icon, string fileName)
         {
             Log.Information(message);
+        }
+
+        // The command-line assertion flow evaluates "--> ASSERT" commands directly via the shared
+        // AssertionEngine (see the file/test commands), not through the interactive per-batch Test
+        // Results pane hooks, so these are no-ops here.
+        public void PrepareBatchAssertions(int batchIndex) { }
+
+        public System.Threading.Tasks.Task ProcessBatchAssertionsAsync(int batchIndex, System.Collections.Generic.IReadOnlyList<System.Data.DataTable> batchTables)
+            => System.Threading.Tasks.Task.CompletedTask;
+
+        // Per-batch "--> CLEARCACHE" is an interactive-run concern; the CLI runs its own batch loop.
+        public System.Threading.Tasks.Task ProcessBatchPreQueryCommandsAsync(int batchIndex)
+            => System.Threading.Tasks.Task.CompletedTask;
+
+        public System.Threading.Tasks.Task WaitForBatchDelayAsync(int milliseconds)
+            => milliseconds > 0
+                ? System.Threading.Tasks.Task.Delay(milliseconds)
+                : System.Threading.Tasks.Task.CompletedTask;
+
+        public void SetResultTabs(System.Collections.Generic.IList<DaxStudio.Core.Model.ResultTabDescriptor> tabs)
+        {
+            if (tabs == null) return;
+            foreach (var tab in tabs)
+            {
+                if (tab.IsShowTree)
+                {
+                    Log.Information("SHOW {showType}", tab.ShowType);
+                    if (tab.ShowTreeRoots == null) continue;
+                    foreach (var root in tab.ShowTreeRoots)
+                    {
+                        LogShowTreeNode(root, 0, tab.ShowType);
+                    }
+                }
+                else if (tab.Table != null)
+                {
+                    Log.Information("Result table '{tableName}' ({rowCount} rows)", tab.Table.TableName, tab.Table.Rows.Count);
+                }
+            }
+        }
+
+        private static void LogShowTreeNode(ShowTreeNode node, int depth, DaxStudio.Parsers.CommentScript.ShowType showType)
+        {
+            if (node == null) return;
+            var indent = new string(' ', depth * 2);
+            var timestamp = showType == DaxStudio.Parsers.CommentScript.ShowType.Dependencies || string.IsNullOrEmpty(node.LastModifiedDisplay)
+                ? string.Empty
+                : $"  [{node.LastModifiedDisplay}]";
+            var expression = showType == DaxStudio.Parsers.CommentScript.ShowType.Dependencies && !string.IsNullOrEmpty(node.Expression)
+                ? $"  = {node.Expression.Replace("\r", " ").Replace("\n", " ")}"
+                : string.Empty;
+            Log.Information("{indent}{name} ({objectType}){timestamp}{expression}", indent, node.Name, node.ObjectType, timestamp, expression);
+            foreach (var child in node.Children)
+            {
+                LogShowTreeNode(child, depth + 1, showType);
+            }
         }
     }
 }

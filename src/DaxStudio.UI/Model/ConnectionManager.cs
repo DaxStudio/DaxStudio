@@ -7,7 +7,7 @@ using DaxStudio.UI.Interfaces;
 using Serilog;
 using System;
 using System.Collections.Generic;
-using System.Data.OleDb;
+using ADOTabular.Utils;
 using System.Linq;
 using System.Threading.Tasks;
 using DaxStudio.Core.Interfaces;
@@ -103,7 +103,7 @@ namespace DaxStudio.UI.Model
              */
             if (string.IsNullOrEmpty(userName) && string.IsNullOrEmpty(roles)) throw new ArgumentException("You must specify either a Username or Roles to activate the ViewAs functionality");
 
-            var builder = new OleDbConnectionStringBuilder(this.ConnectionString);
+            var builder = this.ConnectionString.ToConnectionStringBuilder();
 
             // set catalog
             builder["Initial Catalog"] = this.DatabaseName;
@@ -159,7 +159,7 @@ namespace DaxStudio.UI.Model
 
         public void StopViewAs(List<ITraceWatcher> activeTraces)
         {
-            var builder = new OleDbConnectionStringBuilder(this.ConnectionString);
+            var builder = this.ConnectionString.ToConnectionStringBuilder();
             builder.Remove("Authentication Scheme");
             builder.Remove("Ext Auth Info");
             builder.Remove("Roles");
