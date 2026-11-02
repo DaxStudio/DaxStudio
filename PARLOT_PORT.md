@@ -23,11 +23,9 @@ oracle that the tests compare Parlot against.
 | Benchmarks | `tests/DaxStudio.Parsers.Benchmarks` (BenchmarkDotNet, net8.0 and net10.0) |
 
 The Parlot package is the only new dependency of `DaxStudio.Parsers`, which stays C# 8 and still targets
-net472. The branch uses the preview `2.0.0-preview.1083` from the Parlot Feedz feed; the root `nuget.config`
-adds that feed and maps only the `Parlot` package to it (everything else still comes from nuget.org). Swap the
-feed out once the package is on nuget.org.
+net472. The branch uses `2.2.0` from nuget.org.
 
-### What the Parlot preview is used for
+### What Parlot 2.2.0 is used for
 
 - **Non-fatal errors.** Text the grammar skips is reported as a Parlot diagnostic (`.Warning(...)`), and
   `XmSqlQuery.Diagnostics` exposes them, with `HasErrors`/`ErrorOffset` derived from it. Two places skip text:
@@ -43,35 +41,34 @@ feed out once the package is on nuget.org.
   can't: that ordering is a bug of the ANTLR grammar, which the Parlot grammar now fixes (see
   [below](#a-bug-of-the-antlr-directquery-grammar-fixed-here)). With the T-SQL precedences a table would fit, but the
   DirectQuery grammar reads each expression as a flat chain anyway, to split a join condition at its last `=` as
-  ANTLR does, and keeps its own small precedence climber over that chain. Preview 1059's valued levels (a factory that
+  ANTLR does, and keeps its own small precedence climber over that chain. Valued levels (a factory that
   receives the operator, such as `IS NOT NULL` against `IS NULL`) would have covered the rest. The xmSQL `expression`
   rule is a flat `atom (op atom)*` list with no precedence, so it has no use for a table either.
-- **Bounded recursion** (1059). Input nested too deeply for the thread's stack now fails the parse with a
+- **Bounded recursion**. Input nested too deeply for the thread's stack now fails the parse with a
   `ParseException` instead of overflowing the stack, which ended the process. The entry points catch it and return
   their fallback values (null text, a failed analysis). About 700 nested parentheses parse on a 1 MB stack, the
   default of a Windows thread; real queries nest a few levels. `XmSqlGrammarTests` checks 100,000 levels.
-- **`WhiteSpaceSet.SpaceTabCrLf`** (1059) is exactly the `WS : [ \t\r\n]+` rule of both grammars, but it is not used.
+- **`WhiteSpaceSet.SpaceTabCrLf`** is exactly the `WS : [ \t\r\n]+` rule of both grammars, but it is not used.
   ANTLR lexes any other white space char (`\f`, a non-breaking space) as `ANY_CHAR` and its error recovery mostly
   drops it, which Parlot's default set, skipping it, reproduces better: with such a char injected into each corpus
   query, 117 of 336 formatted outputs differ from ANTLR's with the default set, and 228 with `SpaceTabCrLf`. The
   DirectQuery white space parser also skips the chars the lexer can't read, so a set can't replace it.
-- **`CommentsBuilder`** (1077) no longer builds a list each time it skips white space, so it now allocates exactly
+- **`CommentsBuilder`** no longer builds a list each time it skips white space, so it now allocates exactly
   what the hand-written xmSQL scanner of white space and `/* */` comments does (it added 320 KB per server timings
-  batch in 1059). It is still a few percent slower (1-4% on analysis and grouping, two A/B rounds), a choice between
+  batch before). It is still a few percent slower (1-4% on analysis and grouping, two A/B rounds), a choice between
   two parsers in a loop against one loop over the chars, so the scanner stays.
-- **Pooled strings** (`ToPooledString()`, 1077) were tried for the table and column names, which the analysis and
+- **Pooled strings** (`ToPooledString()`) were tried for the table and column names, which the analysis and
   grouping walkers turn into strings (one `Substring` per reference). The AST took them as pooled strings, and the
   walkers read them. Allocations dropped by 335 KB per server timings batch for analysis and 268 KB for grouping
   (about 10%), but every run got slower: parsing alone by 13-15%, with 100 KB more for the new fields, analysis by
   about 5%, formatting by 2%. A pool lookup costs about what the short `Substring` it saves does, and the
   formatter pays it for names it doesn't need, so the AST keeps text spans. The analysis results dedupe the names
   in their own dictionaries, so pooling wouldn't shrink what they keep either.
-- **`Ternary`** (1059) has no use: neither grammar has a conditional operator (`CASE` is only a DirectQuery token).
+- **`Ternary`** has no use: neither grammar has a conditional operator (`CASE` is only a DirectQuery token).
 
-The preview alone also made the parse faster and lighter than 2.1.0 with no grammar change (server timings,
+A 2.2.0 preview alone also made the parse faster and lighter than 2.1.0 with no grammar change (server timings,
 net8.0: 1,749 µs and 1,907 KB before; 1,630 µs and 1,836 KB in an A/B run on the same machine; LongInLists
-760 KB to 447 KB). Preview 1059 is as fast as 1043 on every Parlot benchmark (within 1-2%, the run-to-run noise,
-in an A/B run), and allocates about 4 KB more per server timings batch.
+760 KB to 447 KB).
 
 ## Correctness
 
@@ -162,7 +159,7 @@ the comparison and `AND` alternatives, since ANTLR takes their precedence from t
 The formatting, analysis and grouping benchmarks run the same code the application runs, with the default
 options (format, simplify, ISO dates on). Formatting includes the post-processing shared by all paths
 (`ExtractEstimatedSize`, `ContainsCallback`). The analysis and the grouping read the formatted text, as in the
-application. Ratios are against the net8.0 baseline. Apple M4 Pro, macOS 15.8, BenchmarkDotNet 0.15.8, Parlot 2.0.0-preview.1083.
+application. Ratios are against the net8.0 baseline. Apple M4 Pro, macOS 15.8, BenchmarkDotNet 0.15.8, Parlot 2.2.0.
 These tables are one quick pass of one process per benchmark (`--launchCount 1 --warmupCount 8 --iterationCount 5
 --iterationTime 250`), so treat differences of a few percent as noise; the allocations are exact. The grouping table
 uses `--warmupCount 15 --iterationCount 10 --iterationTime 500`: with the shorter job its net8.0 LongInLists rows, ANTLR
