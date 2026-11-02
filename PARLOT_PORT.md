@@ -3,8 +3,8 @@
 This branch adds a [Parlot](https://github.com/sebastienros/parlot) implementation of the grammar-based storage
 engine parsers, next to the ANTLR one, and points the "Use New Parser for SE Queries" option and the query
 grouping at it. On valid xmSQL and DirectQuery SQL the results are the same as ANTLR's, and it is faster than both ANTLR and the default regex
-parser on every path measured. On a 500-event server timings batch, Parlot formats the events in **0.45x the time of
-the regex path** that runs today, while ANTLR takes 2.1x to 2.5x. Parsing alone is **about 10x faster than ANTLR** and
+parser on every path measured. On a 500-event server timings batch, Parlot formats the events in **0.46x the time of
+the regex path** that runs today, while ANTLR takes about 2x. Parsing alone is **about 10x faster than ANTLR** and
 allocates **25x less**.
 
 The ANTLR classes are unchanged (apart from `XmSqlQueryGrouper.ComputeFingerprint`, which is now virtual) and still build, so the change can land in steps. They are also the
@@ -23,7 +23,7 @@ oracle that the tests compare Parlot against.
 | Benchmarks | `tests/DaxStudio.Parsers.Benchmarks` (BenchmarkDotNet, net8.0 and net10.0) |
 
 The Parlot package is the only new dependency of `DaxStudio.Parsers`, which stays C# 8 and still targets
-net472. The branch uses the preview `2.0.0-preview.1077` from the Parlot Feedz feed; the root `nuget.config`
+net472. The branch uses the preview `2.0.0-preview.1083` from the Parlot Feedz feed; the root `nuget.config`
 adds that feed and maps only the `Parlot` package to it (everything else still comes from nuget.org). Swap the
 feed out once the package is on nuget.org.
 
@@ -162,83 +162,85 @@ the comparison and `AND` alternatives, since ANTLR takes their precedence from t
 The formatting, analysis and grouping benchmarks run the same code the application runs, with the default
 options (format, simplify, ISO dates on). Formatting includes the post-processing shared by all paths
 (`ExtractEstimatedSize`, `ContainsCallback`). The analysis and the grouping read the formatted text, as in the
-application. Ratios are against the net8.0 baseline. Apple M4 Pro, macOS 15.8, BenchmarkDotNet 0.15.8 default
-job, Parlot 2.0.0-preview-1043 (1059 measures the same, see above). The run waited for a quiet machine, but the ANTLR rows of the server timings
-formatting and grouping moved by up to 25% between runs; the Parlot and regex rows are stable to a few percent.
+application. Ratios are against the net8.0 baseline. Apple M4 Pro, macOS 15.8, BenchmarkDotNet 0.15.8, Parlot 2.0.0-preview.1083.
+These tables are one quick pass of one process per benchmark (`--launchCount 1 --warmupCount 8 --iterationCount 5
+--iterationTime 250`), so treat differences of a few percent as noise; the allocations are exact. The grouping table
+uses `--warmupCount 15 --iterationCount 10 --iterationTime 500`: with the shorter job its net8.0 LongInLists rows, ANTLR
+and Parlot alike, stayed about 50% above their settled values.
 
 ### Formatting every SE event (`TraceStorageEngineEvent.FormatQuery`)
 
 | Workload | Runtime | Method | Mean | Ratio | Allocated | Alloc Ratio |
 |---|---|---|---:|---:|---:|---:|
-| Corpus | net10.0 | Regex | 402.1 μs | 0.84 | 593.81 KB | 1.00 |
-| Corpus | net10.0 | Antlr | 3,213.6 μs | 6.73 | 8250.36 KB | 13.89 |
-| Corpus | net10.0 | Parlot | 290.0 μs | 0.61 | 453.98 KB | 0.76 |
-| Corpus | net8.0 | Regex | 477.5 μs | 1.00 | 593.81 KB | 1.00 |
-| Corpus | net8.0 | Antlr | 3,436.6 μs | 7.20 | 8494.8 KB | 14.31 |
-| Corpus | net8.0 | Parlot | 307.8 μs | 0.64 | 459.73 KB | 0.77 |
-| LongInLists | net10.0 | Regex | 3,417.6 μs | 0.97 | 4848.97 KB | 1.00 |
-| LongInLists | net10.0 | Antlr | 5,177.6 μs | 1.47 | 13306.56 KB | 2.74 |
-| LongInLists | net10.0 | Parlot | 1,465.9 μs | 0.42 | 2068.66 KB | 0.43 |
-| LongInLists | net8.0 | Regex | 3,527.9 μs | 1.00 | 4849.08 KB | 1.00 |
-| LongInLists | net8.0 | Antlr | 6,027.9 μs | 1.71 | 13533.78 KB | 2.79 |
-| LongInLists | net8.0 | Parlot | 1,564.4 μs | 0.44 | 2069.91 KB | 0.43 |
-| ServerTimings | net10.0 | Regex | 9,536.1 μs | 0.79 | 27319.32 KB | 1.00 |
-| ServerTimings | net10.0 | Antlr | 23,724.0 μs | 1.97 | 54920.77 KB | 2.01 |
-| ServerTimings | net10.0 | Parlot | 5,161.2 μs | 0.43 | 9297.62 KB | 0.34 |
-| ServerTimings | net8.0 | Regex | 12,042.0 μs | 1.00 | 27319.4 KB | 1.00 |
-| ServerTimings | net8.0 | Antlr | 30,119.5 μs | 2.50 | 57443.52 KB | 2.10 |
-| ServerTimings | net8.0 | Parlot | 5,429.8 μs | 0.45 | 9331.1 KB | 0.34 |
+| Corpus | net10.0 | Regex | 378.5 μs | 0.88 | 593.81 KB | 1.00 |
+| Corpus | net10.0 | Antlr | 2,901.5 μs | 6.72 | 8250.36 KB | 13.89 |
+| Corpus | net10.0 | Parlot | 252.1 μs | 0.58 | 454.75 KB | 0.77 |
+| Corpus | net8.0 | Regex | 432.0 μs | 1.00 | 593.81 KB | 1.00 |
+| Corpus | net8.0 | Antlr | 3,201.0 μs | 7.41 | 8494.85 KB | 14.31 |
+| Corpus | net8.0 | Parlot | 286.2 μs | 0.66 | 460.44 KB | 0.78 |
+| LongInLists | net10.0 | Regex | 3,244.8 μs | 0.95 | 4849 KB | 1.00 |
+| LongInLists | net10.0 | Antlr | 4,927.4 μs | 1.44 | 13306.57 KB | 2.74 |
+| LongInLists | net10.0 | Parlot | 1,385.5 μs | 0.40 | 2068.82 KB | 0.43 |
+| LongInLists | net8.0 | Regex | 3,433.6 μs | 1.00 | 4849.39 KB | 1.00 |
+| LongInLists | net8.0 | Antlr | 5,542.0 μs | 1.61 | 13533.96 KB | 2.79 |
+| LongInLists | net8.0 | Parlot | 1,528.3 μs | 0.45 | 2070.08 KB | 0.43 |
+| ServerTimings | net10.0 | Regex | 9,000.5 μs | 0.84 | 27319.29 KB | 1.00 |
+| ServerTimings | net10.0 | Antlr | 21,234.2 μs | 1.98 | 54929.74 KB | 2.01 |
+| ServerTimings | net10.0 | Parlot | 4,892.7 μs | 0.46 | 9301.53 KB | 0.34 |
+| ServerTimings | net8.0 | Regex | 10,744.3 μs | 1.00 | 27319.67 KB | 1.00 |
+| ServerTimings | net8.0 | Antlr | 22,772.5 μs | 2.12 | 57444.38 KB | 2.10 |
+| ServerTimings | net8.0 | Parlot | 4,940.2 μs | 0.46 | 9335.08 KB | 0.34 |
 
 ### Analysis ("Show in model diagram")
 
 | Workload | Runtime | Method | Mean | Ratio | Allocated | Alloc Ratio |
 |---|---|---|---:|---:|---:|---:|
-| Corpus | net10.0 | Regex | 487.4 μs | 0.95 | 941.31 KB | 0.99 |
-| Corpus | net10.0 | Antlr | 734.8 μs | 1.44 | 1322.13 KB | 1.40 |
-| Corpus | net10.0 | Parlot | 186.2 μs | 0.36 | 324.21 KB | 0.34 |
-| Corpus | net8.0 | Regex | 511.6 μs | 1.00 | 946.34 KB | 1.00 |
-| Corpus | net8.0 | Antlr | 1,177.5 μs | 2.30 | 1535.73 KB | 1.62 |
-| Corpus | net8.0 | Parlot | 215.3 μs | 0.42 | 348.33 KB | 0.37 |
-| LongInLists | net10.0 | Regex | 1,521.0 μs | 0.92 | 2365.01 KB | 1.00 |
-| LongInLists | net10.0 | Antlr | 4,343.6 μs | 2.62 | 11167.62 KB | 4.72 |
-| LongInLists | net10.0 | Parlot | 1,270.0 μs | 0.77 | 2218.16 KB | 0.94 |
-| LongInLists | net8.0 | Regex | 1,655.5 μs | 1.00 | 2368.03 KB | 1.00 |
-| LongInLists | net8.0 | Antlr | 5,138.3 μs | 3.10 | 11233.13 KB | 4.74 |
-| LongInLists | net8.0 | Parlot | 1,523.7 μs | 0.92 | 2224.91 KB | 0.94 |
-| ServerTimings | net10.0 | Regex | 5,947.8 μs | 0.98 | 9659.41 KB | 0.99 |
-| ServerTimings | net10.0 | Antlr | 11,946.6 μs | 1.97 | 17928.18 KB | 1.84 |
-| ServerTimings | net10.0 | Parlot | 2,022.8 μs | 0.33 | 3251.12 KB | 0.33 |
-| ServerTimings | net8.0 | Regex | 6,067.4 μs | 1.00 | 9745.76 KB | 1.00 |
-| ServerTimings | net8.0 | Antlr | 20,560.5 μs | 3.39 | 20237.15 KB | 2.08 |
-| ServerTimings | net8.0 | Parlot | 2,411.8 μs | 0.40 | 3497.01 KB | 0.36 |
+| Corpus | net10.0 | Regex | 432.1 μs | 0.90 | 941.31 KB | 0.99 |
+| Corpus | net10.0 | Antlr | 672.3 μs | 1.40 | 1322.13 KB | 1.40 |
+| Corpus | net10.0 | Parlot | 171.3 μs | 0.36 | 323.77 KB | 0.34 |
+| Corpus | net8.0 | Regex | 481.7 μs | 1.00 | 946.34 KB | 1.00 |
+| Corpus | net8.0 | Antlr | 1,092.7 μs | 2.27 | 1535.73 KB | 1.62 |
+| Corpus | net8.0 | Parlot | 202.6 μs | 0.42 | 347.88 KB | 0.37 |
+| LongInLists | net10.0 | Regex | 1,461.7 μs | 0.95 | 2365.01 KB | 1.00 |
+| LongInLists | net10.0 | Antlr | 4,124.4 μs | 2.68 | 11167.62 KB | 4.72 |
+| LongInLists | net10.0 | Parlot | 1,187.6 μs | 0.77 | 2218.31 KB | 0.94 |
+| LongInLists | net8.0 | Regex | 1,539.6 μs | 1.00 | 2368.06 KB | 1.00 |
+| LongInLists | net8.0 | Antlr | 4,467.5 μs | 2.90 | 11233.13 KB | 4.74 |
+| LongInLists | net8.0 | Parlot | 1,380.4 μs | 0.90 | 2225.07 KB | 0.94 |
+| ServerTimings | net10.0 | Regex | 5,333.4 μs | 0.91 | 9659.41 KB | 0.99 |
+| ServerTimings | net10.0 | Antlr | 10,967.2 μs | 1.87 | 17928.18 KB | 1.84 |
+| ServerTimings | net10.0 | Parlot | 1,977.8 μs | 0.34 | 3249.98 KB | 0.33 |
+| ServerTimings | net8.0 | Regex | 5,872.5 μs | 1.00 | 9745.76 KB | 1.00 |
+| ServerTimings | net8.0 | Antlr | 19,048.0 μs | 3.24 | 20237.15 KB | 2.08 |
+| ServerTimings | net8.0 | Parlot | 2,351.4 μs | 0.40 | 3495.88 KB | 0.36 |
 
 ### Query grouping (Server Timings "Group" column)
 
 | Workload | Runtime | Method | Mean | Ratio | Allocated | Alloc Ratio |
 |---|---|---|---:|---:|---:|---:|
-| Corpus | net10.0 | Antlr | 2,827.4 μs | 0.79 | 7858.04 KB | 0.98 |
-| Corpus | net10.0 | Parlot | 249.2 μs | 0.07 | 589.99 KB | 0.07 |
-| Corpus | net8.0 | Antlr | 3,581.6 μs | 1.00 | 8047.23 KB | 1.00 |
-| Corpus | net8.0 | Parlot | 309.4 μs | 0.09 | 608.63 KB | 0.08 |
-| LongInLists | net10.0 | Antlr | 3,381.8 μs | 0.94 | 9180.82 KB | 0.99 |
-| LongInLists | net10.0 | Parlot | 452.4 μs | 0.13 | 543.76 KB | 0.06 |
-| LongInLists | net8.0 | Antlr | 3,587.9 μs | 1.00 | 9237.43 KB | 1.00 |
-| LongInLists | net8.0 | Parlot | 485.5 μs | 0.14 | 548.51 KB | 0.06 |
-| ServerTimings | net10.0 | Antlr | 24,000.3 μs | 0.69 | 54483.66 KB | 0.97 |
-| ServerTimings | net10.0 | Parlot | 2,179.4 μs | 0.06 | 4918.75 KB | 0.09 |
-| ServerTimings | net8.0 | Antlr | 34,629.9 μs | 1.00 | 56161.08 KB | 1.00 |
-| ServerTimings | net8.0 | Parlot | 2,584.2 μs | 0.07 | 5054.01 KB | 0.09 |
+| Corpus | net10.0 | Antlr | 2,757.8 μs | 0.82 | 7858.04 KB | 0.98 |
+| Corpus | net10.0 | Parlot | 253.2 μs | 0.08 | 589.79 KB | 0.07 |
+| Corpus | net8.0 | Antlr | 3,365.6 μs | 1.00 | 8047.3 KB | 1.00 |
+| Corpus | net8.0 | Parlot | 282.1 μs | 0.08 | 608.43 KB | 0.08 |
+| LongInLists | net10.0 | Antlr | 3,287.0 μs | 0.94 | 9180.82 KB | 0.99 |
+| LongInLists | net10.0 | Parlot | 430.4 μs | 0.12 | 543.92 KB | 0.06 |
+| LongInLists | net8.0 | Antlr | 3,493.2 μs | 1.00 | 9237.43 KB | 1.00 |
+| LongInLists | net8.0 | Parlot | 476.4 μs | 0.14 | 548.67 KB | 0.06 |
+| ServerTimings | net10.0 | Antlr | 22,278.4 μs | 0.70 | 54483.68 KB | 0.97 |
+| ServerTimings | net10.0 | Parlot | 2,057.5 μs | 0.06 | 4917.62 KB | 0.09 |
+| ServerTimings | net8.0 | Antlr | 31,659.7 μs | 1.00 | 56160.87 KB | 1.00 |
+| ServerTimings | net8.0 | Parlot | 2,446.3 μs | 0.08 | 5052.81 KB | 0.09 |
 
 ### DirectQuery SQL analysis (86 statements, 28 KB)
 
 | Runtime | Method | Mean | Ratio | Allocated | Alloc Ratio |
 |---|---|---:|---:|---:|---:|
-| net10.0 | Regex | 5,917.1 μs | 0.94 | 11749.84 KB | 1.01 |
-| net10.0 | Antlr | 1,912.1 μs | 0.30 | 4870.8 KB | 0.42 |
-| net10.0 | Parlot | 188.3 μs | 0.03 | 406.44 KB | 0.04 |
-| net8.0 | Regex | 6,295.7 μs | 1.00 | 11608.75 KB | 1.00 |
-| net8.0 | Antlr | 2,291.1 μs | 0.36 | 5026.41 KB | 0.43 |
-| net8.0 | Parlot | 233.2 μs | 0.04 | 410.42 KB | 0.04 |
+| net10.0 | Regex | 7,445.9 μs | 1.13 | 11750.34 KB | 1.01 |
+| net10.0 | Antlr | 1,797.2 μs | 0.27 | 4870.84 KB | 0.42 |
+| net10.0 | Parlot | 184.8 μs | 0.03 | 408.02 KB | 0.04 |
+| net8.0 | Regex | 6,596.8 μs | 1.01 | 11608.84 KB | 1.00 |
+| net8.0 | Antlr | 2,220.5 μs | 0.34 | 5026.41 KB | 0.43 |
+| net8.0 | Parlot | 219.9 μs | 0.03 | 412.01 KB | 0.04 |
 
 ### Parsing only (no tree walk; the regex parser has no separate parse step)
 
@@ -247,24 +249,24 @@ formatting and grouping moved by up to 25% between runs; the Parlot and regex ro
 
 | Workload | Runtime | Method | Mean | Ratio | Allocated | Alloc Ratio |
 |---|---|---|---:|---:|---:|---:|
-| Corpus | net10.0 | Antlr | 2,608.1 μs | 0.89 | 7767.16 KB | 1.00 |
-| Corpus | net10.0 | AntlrReusedSll | 446.6 μs | 0.15 | 790.23 KB | 0.10 |
-| Corpus | net10.0 | Parlot | 121.6 μs | 0.04 | 161.76 KB | 0.02 |
-| Corpus | net8.0 | Antlr | 2,918.3 μs | 1.00 | 7776.02 KB | 1.00 |
-| Corpus | net8.0 | AntlrReusedSll | 381.7 μs | 0.13 | 790.33 KB | 0.10 |
-| Corpus | net8.0 | Parlot | 131.4 μs | 0.05 | 164.1 KB | 0.02 |
-| LongInLists | net10.0 | Antlr | 3,297.0 μs | 0.98 | 8721.16 KB | 1.00 |
-| LongInLists | net10.0 | AntlrReusedSll | 2,957.6 μs | 0.88 | 7378.9 KB | 0.85 |
-| LongInLists | net10.0 | Parlot | 428.3 μs | 0.13 | 446.09 KB | 0.05 |
-| LongInLists | net8.0 | Antlr | 3,349.0 μs | 1.00 | 8722.57 KB | 1.00 |
-| LongInLists | net8.0 | AntlrReusedSll | 3,249.0 μs | 0.97 | 7378.9 KB | 0.85 |
-| LongInLists | net8.0 | Parlot | 458.3 μs | 0.14 | 446.72 KB | 0.05 |
-| ServerTimings | net10.0 | Antlr | 15,872.9 μs | 0.93 | 45565.81 KB | 1.00 |
-| ServerTimings | net10.0 | AntlrReusedSll | 5,054.9 μs | 0.30 | 11019.95 KB | 0.24 |
-| ServerTimings | net10.0 | Parlot | 1,557.8 μs | 0.09 | 1807.59 KB | 0.04 |
-| ServerTimings | net8.0 | Antlr | 17,073.7 μs | 1.00 | 45637.32 KB | 1.00 |
-| ServerTimings | net8.0 | AntlrReusedSll | 5,440.0 μs | 0.32 | 11027.75 KB | 0.24 |
-| ServerTimings | net8.0 | Parlot | 1,802.5 μs | 0.11 | 1835.84 KB | 0.04 |
+| Corpus | net10.0 | Antlr | 2,489.6 μs | 0.91 | 7767.16 KB | 1.00 |
+| Corpus | net10.0 | AntlrReusedSll | 327.0 μs | 0.12 | 790.23 KB | 0.10 |
+| Corpus | net10.0 | Parlot | 108.0 μs | 0.04 | 162.63 KB | 0.02 |
+| Corpus | net8.0 | Antlr | 2,726.8 μs | 1.00 | 7776.02 KB | 1.00 |
+| Corpus | net8.0 | AntlrReusedSll | 356.1 μs | 0.13 | 790.33 KB | 0.10 |
+| Corpus | net8.0 | Parlot | 124.1 μs | 0.05 | 164.97 KB | 0.02 |
+| LongInLists | net10.0 | Antlr | 3,410.1 μs | 1.03 | 8721.16 KB | 1.00 |
+| LongInLists | net10.0 | AntlrReusedSll | 2,918.9 μs | 0.88 | 7378.9 KB | 0.85 |
+| LongInLists | net10.0 | Parlot | 409.2 μs | 0.12 | 446.25 KB | 0.05 |
+| LongInLists | net8.0 | Antlr | 3,317.2 μs | 1.00 | 8722.57 KB | 1.00 |
+| LongInLists | net8.0 | AntlrReusedSll | 3,034.5 μs | 0.91 | 7378.9 KB | 0.85 |
+| LongInLists | net8.0 | Parlot | 445.7 μs | 0.13 | 446.88 KB | 0.05 |
+| ServerTimings | net10.0 | Antlr | 15,256.1 μs | 0.93 | 45565.81 KB | 1.00 |
+| ServerTimings | net10.0 | AntlrReusedSll | 4,892.3 μs | 0.30 | 11019.95 KB | 0.24 |
+| ServerTimings | net10.0 | Parlot | 1,559.9 μs | 0.09 | 1811.49 KB | 0.04 |
+| ServerTimings | net8.0 | Antlr | 16,458.9 μs | 1.00 | 45637.32 KB | 1.00 |
+| ServerTimings | net8.0 | AntlrReusedSll | 5,274.4 μs | 0.32 | 11027.75 KB | 0.24 |
+| ServerTimings | net8.0 | Parlot | 1,677.5 μs | 0.10 | 1839.74 KB | 0.04 |
 
 The formatting walker skips the name-cleaning regexes when a name can't match them (no `(`, `-`, `<`,
 `RowNumber`), which accounts for part of the formatting gain over ANTLR. That is a separate commit
