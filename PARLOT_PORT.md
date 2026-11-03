@@ -14,7 +14,7 @@ oracle that the tests compare Parlot against.
 
 | Area | Files |
 |---|---|
-| xmSQL grammar | `XmSql/XmSqlLexer.cs` (the lexer rules of `xmSQL.g4`, exact), `XmSql/XmSqlGrammar.cs` (the parser rules), `XmSql/XmSqlAst.cs` (a tree whose nodes mirror the ANTLR rule contexts) |
+| xmSQL grammar | `XmSql/XmSqlLexer.cs` (the lexer rules of `xmSQL.g4`, as parsers), `XmSql/XmSqlGrammar.cs` (the parser rules), `XmSql/XmSqlAst.cs` (a tree whose nodes mirror the ANTLR rule contexts) |
 | Tree walkers | `XmSql/XmSqlFormattingWalker.cs`, `XmSqlAnalysisWalker.cs`, `XmSqlFingerprintWalker.cs`: ports of the three ANTLR visitors, method for method |
 | DirectQuery SQL | `DirectQuery/*`: lexer, grammar, tree and analysis walker for `DirectQuerySql.g4` |
 | Entry points | `ParlotXmSqlFormatter` (same contract as `AntlrXmSqlFormatter`), `ParlotXmSqlParser : IXmSqlParser` (as `AntlrXmSqlParser`), `ParlotXmSqlQueryGrouper : XmSqlQueryGrouper` |
@@ -53,10 +53,13 @@ net472. The branch uses `2.2.1` from nuget.org.
   drops it, which Parlot's default set, skipping it, reproduces better: with such a char injected into each corpus
   query, 117 of 336 formatted outputs differ from ANTLR's with the default set, and 228 with `SpaceTabCrLf`. The
   DirectQuery white space parser also skips the chars the lexer can't read, so a set can't replace it.
-- **`CommentsBuilder`** no longer builds a list each time it skips white space, so it now allocates exactly
-  what the hand-written xmSQL scanner of white space and `/* */` comments does (it added 320 KB per server timings
-  batch before). It is still a few percent slower (1-4% on analysis and grouping, two A/B rounds), a choice between
-  two parsers in a loop against one loop over the chars, so the scanner stays.
+- **Combinators for the tokens.** The tokens are built from `AnyOf`, `NoneOf`, `Text` and `Capture`, and the recovery,
+  footers and lookaheads from `WhenNotFollowedBy`, `Deferred` and `Eof`. Four things stay scanned by hand: xmSQL
+  `BRACKETED_NAME`, a longest match over an ambiguous rule; `NUMBER`, because a chain of captures made the 1,000-number
+  lists 86% slower to parse against 10% for all the changes with the scanner; and the DirectQuery trivia with the two
+  tokens it needs, as it skips the tokens the lexer fails to read.
+- **`WithComments`** skips xmSQL's `/* */` comments, with a comment parser of its own since `WithMultiLine` fails the
+  parse when a comment doesn't close. It only runs on text containing `/*`, so queries without comments don't pay for it.
 - **Pooled strings** (`ToPooledString()`) were tried for the table and column names, which the analysis and
   grouping walkers turn into strings (one `Substring` per reference). The AST took them as pooled strings, and the
   walkers read them. Allocations dropped by 335 KB per server timings batch for analysis and 268 KB for grouping
@@ -87,7 +90,7 @@ Parlot is a PEG combinator library and ANTLR an ALL(*) generator, so the port is
 - **DirectQuery analysis:** identical on 70 of the 73 clean statements, alone and accumulated. The other 3 are the
   `IS NULL` precedence fix described below, where Parlot finds filters ANTLR loses; the test lists them and checks
   that they still differ. Parlot accepts and rejects exactly the statements ANTLR accepts and rejects.
-- **Lexer:** the token scanners are compared with the ANTLR lexer on 250,000 random strings built from the
+- **Lexer:** the tokens are compared with the ANTLR lexer on 250,000 random strings built from the
   characters that matter (bracketed names with nested parentheses and `]]` escapes, quoted names, strings,
   numbers).
 - **Existing tests:** the 87 tests of `AntlrXmSqlParserTests`, `AntlrXmSqlFormatterTests` and
@@ -269,6 +272,20 @@ afterwards, so its allocations didn't change.
 | ServerTimings | net8.0 | Antlr | 21,475.4 μs | 1.00 | 58269.38 KB | 1.00 |
 | ServerTimings | net8.0 | AntlrReusedSll | 5,411.0 μs | 0.25 | 11027.75 KB | 0.19 |
 | ServerTimings | net8.0 | Parlot | 1,711.8 μs | 0.08 | 1864.49 KB | 0.03 |
+
+The tables above were measured before the tokens moved to combinators. This pass compares the code before and after, on
+net8.0 with the same job (`--job short`), which is noisier than the tables, so only the parsing and DirectQuery differences
+stand out. Allocations only change for DirectQuery.
+
+| Benchmark | Workload | Before | After | Change |
+|---|---|---:|---:|---:|
+| Parse | Corpus | 142.6 μs | 150.0 μs | +5% |
+| Parse | LongInLists | 457.4 μs | 502.3 μs | +10% |
+| Parse | ServerTimings | 1,703.4 μs | 1,810.9 μs | +6% |
+| Format | Corpus | 323.7 μs | 325.3 μs | none visible |
+| Format | LongInLists | 1,683.3 μs | 1,643.1 μs | none visible |
+| Format | ServerTimings | 5,308.4 μs | 5,185.0 μs | none visible |
+| DirectQuery analysis | | 223.3 μs, 412.01 KB | 246.9 μs, 423.04 KB | +11%, +11 KB |
 
 The formatting walker skips the name-cleaning regexes when a name can't match them (no `(`, `-`, `<`,
 `RowNumber`), which accounts for part of the formatting gain over ANTLR. That is a separate commit
