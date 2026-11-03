@@ -1,4 +1,4 @@
-using Parlot;
+﻿using Parlot;
 using Parlot.Fluent;
 using System;
 using System.Collections.Generic;
@@ -20,6 +20,10 @@ namespace DaxStudio.Parsers.StorageEngine.XmSql
     {
         private static readonly Parser<IReadOnlyList<XmSqlStatement>> Query;
 
+        // Formatted queries carry "/* 2024-01-31 */" comments after dates, which xmSQL doesn't have.
+        // Skipping them as white space only costs when there are some.
+        private static readonly Parser<IReadOnlyList<XmSqlStatement>> QueryWithComments;
+
         /// <summary>Stands for a skipped token in the statement list, until the list is cleaned up.</summary>
         private static readonly SkippedText Skipped = new SkippedText();
 
@@ -34,13 +38,13 @@ namespace DaxStudio.Parsers.StorageEngine.XmSql
         {
             // ==================== TOKENS ====================
 
-            var bracketedName = Terms.Scan(XmSqlLexer.BracketedName, "[".AsSpan());
-            var quotedTableName = Terms.Scan(XmSqlLexer.QuotedTableName, "'".AsSpan());
-            var quotedString = Terms.Scan(XmSqlLexer.QuotedString, "\"".AsSpan());
-            var number = Terms.Scan(XmSqlLexer.Number, "-0123456789".AsSpan());
-            var identifier = Terms.Scan(XmSqlLexer.Identifier, XmSqlLexer.IdentifierStart.AsSpan());
-            var exprRef = Terms.Scan(XmSqlLexer.ExprRef, "$".AsSpan());
-            var exprAtRef = Terms.Scan(XmSqlLexer.ExprAtRef, "@".AsSpan());
+            var bracketedName = SkipWhiteSpace(XmSqlLexer.BracketedNameToken);
+            var quotedTableName = SkipWhiteSpace(XmSqlLexer.QuotedTableName);
+            var quotedString = SkipWhiteSpace(XmSqlLexer.QuotedString);
+            var number = SkipWhiteSpace(XmSqlLexer.Number);
+            var identifier = SkipWhiteSpace(XmSqlLexer.Identifier);
+            var exprRef = SkipWhiteSpace(XmSqlLexer.ExprRef);
+            var exprAtRef = SkipWhiteSpace(XmSqlLexer.ExprAtRef);
 
             var lParen = Terms.Char('(');
             var rParen = Terms.Char(')');
@@ -58,7 +62,7 @@ namespace DaxStudio.Parsers.StorageEngine.XmSql
             var comparisonOp = SkipWhiteSpace(Capture(comparisonOperator));
 
             // '-' followed by a digit is a negative NUMBER for the lexer, never a MINUS.
-            var minus = Literals.Char('-').WhenNotFollowedBy(Literals.AnyOf("0123456789", maxSize: 1));
+            var minus = Literals.Char('-').WhenNotFollowedBy(Literals.AnyOf(XmSqlLexer.Digits, maxSize: 1));
             var expressionOp = SkipWhiteSpace(Capture(Literals.Char('+').Or(minus).Or(Literals.Char('*')).Or(Literals.Char('/'))
                 .Then(_ => "").Or(comparisonOperator)));
 
@@ -85,7 +89,7 @@ namespace DaxStudio.Parsers.StorageEngine.XmSql
                 // The formatter drops "AS type" when it simplifies; accept its output too.
                 Keyword("PFCAST").AndSkip(lParen).And(expression).And(Kw("AS").SkipAnd(identifier).Optional()).AndSkip(rParen)
                     .Then(x => new FunctionCall { NameKind = FunctionNameKind.PfCast, Name = x.Item1, Arguments = new[] { x.Item2 }, CastType = x.Item3.HasValue ? x.Item3.Value : default })
-                .Or(Keyword("CALLBACKDATAID").Or(Keyword("ENCODECALLBACK")).And(Terms.Scan(XmSqlLexer.ParenthesizedText, "(".AsSpan()))
+                .Or(Keyword("CALLBACKDATAID").Or(Keyword("ENCODECALLBACK")).And(SkipWhiteSpace(XmSqlLexer.ParenthesizedText))
                     .AndSkip(lParen).And(Separated(comma, expression).Optional()).AndSkip(rParen)
                     .Then(x => new FunctionCall { NameKind = FunctionNameKind.InlineCallback, Name = x.Item1, CallbackExpression = x.Item2, Arguments = x.Item3.HasValue ? x.Item3.Value : null }))
                 .Or(functionName.AndSkip(lParen).And(Separated(comma, expression).Optional()).AndSkip(rParen)
@@ -103,7 +107,7 @@ namespace DaxStudio.Parsers.StorageEngine.XmSql
                 .Then(BuildExpression);
 
             // An earlier alternative is not taken when an expression would continue after it.
-            Parser<T> NotContinuedAsExpression<T>(Parser<T> parser) => parser.When((context, _) => !ContinuesAsExpression(context));
+            Parser<T> NotContinuedAsExpression<T>(Parser<T> parser) => parser.WhenNotFollowedBy(expressionOp);
 
             // ---------- select list ----------
 
@@ -133,7 +137,7 @@ namespace DaxStudio.Parsers.StorageEngine.XmSql
                 .Or(callbackExpr.And(optionalAlias).Then(x => new SelectItem { Callback = x.Item1, Alias = OrNull(x.Item2) }))
                 .Or(NotContinuedAsExpression(tableColumnRef.And(Keyword("CALLBACKDATAID").Optional()).And(optionalAlias))
                     .Then(x => new SelectItem { Column = x.Item1, CallbackDataId = x.Item2.HasValue ? x.Item2.Value : default, Alias = OrNull(x.Item3) }))
-                .Or(exprAtRef.WhenNotFollowedBy(Kw("AS")).When((context, _) => !ContinuesAsExpression(context))
+                .Or(NotContinuedAsExpression(exprAtRef.WhenNotFollowedBy(Kw("AS")))
                     .Then(t => new SelectItem { ExprAtRef = t }))
                 .Or(expression.And(optionalAlias).Then(x => new SelectItem { Expression = x.Item1, Alias = OrNull(x.Item2) }));
 
@@ -161,18 +165,25 @@ namespace DaxStudio.Parsers.StorageEngine.XmSql
             // ---------- WHERE ----------
 
             // The formatter writes the estimated size of a truncated list without brackets: '..Estimated size: rows = 1  bytes = 2 )'
-            var truncationIndicator = dotDot.SkipAnd(dot.Optional()).SkipAnd(bracketedName.Or(Terms.Scan(XmSqlLexer.FormattedEstimatedSize, "E".AsSpan())));
+            var truncationIndicator = dotDot.SkipAnd(dot.Optional()).SkipAnd(bracketedName.Or(SkipWhiteSpace(XmSqlLexer.FormattedEstimatedSize)));
 
             var valueList = Separated(comma, filterValue).And(truncationIndicator.Optional())
                 .Then(x => new ValueList { Values = x.Item1, Truncation = x.Item2.HasValue ? x.Item2.Value : default });
 
             var tupleList = Separated(comma, Between(lParen, valueList, rParen));
 
+            // A compared value followed by text making it part of a longer expression atom ('T'[C] = 'U'[D],
+            // 'T'[C] = F(1)) or of an expression is not a comparison.
+            var comparisonValue = NotContinuedAsExpression(quotedString
+                .Or(quotedTableName.WhenNotFollowedBy(lParen.Or(Terms.Char('[')).Or(dot)))
+                .Or(number)
+                .Or(identifier.WhenNotFollowedBy(lParen)));
+
             var filterPredicate = Deferred<FilterPredicate>();
 
             // The alternatives that start with a column, after the column.
             var columnFilterTail =
-                NotContinuedAsComparisonValue(comparisonOp.And(filterValue))
+                comparisonOp.And(comparisonValue)
                     .Then(x => new FilterPredicate { Kind = FilterKind.Comparison, Operator = x.Item1, Value = x.Item2 })
                 .Or(Kw("IN").SkipAnd(lParen).SkipAnd(valueList).AndSkip(rParen)
                     .Then(v => new FilterPredicate { Kind = FilterKind.In, Values = v }))
@@ -236,7 +247,7 @@ namespace DaxStudio.Parsers.StorageEngine.XmSql
                 .Or(NotContinuedAsExpression(Between(lParen, filterPredicate, rParen)).Then(p => new FilterPredicate { Kind = FilterKind.Parenthesized, Inner = p }))
                 .Or(expression.Then(e => new FilterPredicate { Kind = FilterKind.Expression, Expression = e }))
                 // Recovers within the WHERE clause, so that the other predicates of the statement are kept
-                .Or(Terms.Scan(XmSqlLexer.UnparsedPredicate).Warning("Skipped a filter predicate that does not parse")
+                .Or(SkipWhiteSpace(XmSqlLexer.UnparsedPredicate).Warning("Skipped a filter predicate that does not parse")
                     .Then(_ => new FilterPredicate { Kind = FilterKind.Unparsed }))
                 .Then((context, start, end, p) =>
                 {
@@ -325,12 +336,15 @@ namespace DaxStudio.Parsers.StorageEngine.XmSql
             // statement+ EOF, recovering like ANTLR: a token that doesn't start a statement is skipped and reported.
             // The estimated size footer of the trace or of the formatter, and the ", " the formatter writes between
             // statements when it doesn't break lines, are not errors.
-            var estimatedSizeFooter = Terms.Scan(XmSqlLexer.EstimatedSizeFooter, "E[".AsSpan()).Then(default(XmSqlStatement));
+            var estimatedSizeFooter = SkipWhiteSpace(XmSqlLexer.EstimatedSizeFooter).Then(default(XmSqlStatement));
             var separator = comma.Then(default(XmSqlStatement));
-            var skippedToken = Terms.Scan(XmSqlLexer.AnyToken).Warning("Skipped text that does not start a statement")
+            var skippedToken = SkipWhiteSpace(XmSqlLexer.AnyToken).Warning("Skipped text that does not start a statement")
                 .Then((XmSqlStatement)Skipped);
 
             Query = ZeroOrMany(statement.Or(estimatedSizeFooter).Or(separator).Or(skippedToken));
+            // Not WithMultiLine, which fails the parse on a comment that doesn't close: this one is then read as tokens.
+            var comment = Capture(Literals.Text("/*").And(AnyCharBefore(Literals.Text("*/"), canBeEmpty: true)).And(Literals.Text("*/")));
+            QueryWithComments = Query.WithComments(comments => comments.WithWhiteSpaceOrNewLine().WithParser(comment));
         }
 
         /// <summary>A case-insensitive keyword, returning its canonical upper-case text.</summary>
@@ -378,56 +392,6 @@ namespace DaxStudio.Parsers.StorageEngine.XmSql
         }
 
         /// <summary>
-        /// A comparison value that is followed by text making it part of a longer expression atom
-        /// (<c>'T'[C] = 'U'[D]</c>, <c>'T'[C] = F(1)</c>) or of an expression is not a comparison.
-        /// </summary>
-        private static Parser<(TextSpan, TextSpan)> NotContinuedAsComparisonValue(Parser<(TextSpan, TextSpan)> parser)
-            => parser.When((context, x) =>
-            {
-                var next = PeekNonWhiteSpace(context, out var nextNext);
-                var value = x.Item2.Span;
-                if (value.Length > 0 && (value[0] == '\'' || XmSqlLexer.Identifier(value) == value.Length) && next == '(') return false;
-                if (value.Length > 0 && value[0] == '\'' && (next == '[' || next == '.' && nextNext != '.')) return false;
-                return !IsExpressionOperator(next, nextNext);
-            });
-
-        /// <summary>True when the text after the cursor starts with an expressionOp.</summary>
-        private static bool ContinuesAsExpression(ParseContext context)
-        {
-            var next = PeekNonWhiteSpace(context, out var nextNext);
-            return IsExpressionOperator(next, nextNext);
-        }
-
-        private static bool IsExpressionOperator(char c, char next)
-        {
-            switch (c)
-            {
-                case '+':
-                case '*':
-                case '/':
-                case '=':
-                case '<':
-                case '>':
-                    return true;
-                case '-':
-                    return next < '0' || next > '9';
-                case '!':
-                    return next == '=';
-                default:
-                    return false;
-            }
-        }
-
-        private static char PeekNonWhiteSpace(ParseContext context, out char next)
-        {
-            var span = context.Scanner.Cursor.Span;
-            var i = 0;
-            while (i < span.Length && char.IsWhiteSpace(span[i])) i++;
-            next = i + 1 < span.Length ? span[i + 1] : '\0';
-            return i < span.Length ? span[i] : '\0';
-        }
-
-        /// <summary>
         /// Parses an xmSQL query. Like the ANTLR parser with its default error strategy, text that is not
         /// a statement is skipped one token at a time and the statements around it are kept; the result's
         /// <see cref="XmSqlQuery.Diagnostics"/> tell what was skipped.
@@ -456,16 +420,9 @@ namespace DaxStudio.Parsers.StorageEngine.XmSql
         private static IReadOnlyList<XmSqlStatement> Parse(string text, bool collectDiagnostics, out Cleanup cleanup, out IReadOnlyList<ParseDiagnostic> diagnostics)
         {
             var context = new ParseContext(new Scanner(text), disableLoopDetection: true) { CollectDiagnostics = collectDiagnostics };
-
-            // Formatted queries carry "/* 2024-01-31 */" comments after dates, which xmSQL doesn't have.
-            // Skipping them as white space only costs when there are some.
-            if (text.IndexOf("/*", StringComparison.Ordinal) >= 0)
-            {
-                context.WhiteSpaceParser = WhiteSpaceAndComments;
-            }
-
             var result = new ParseResult<IReadOnlyList<XmSqlStatement>>();
-            Query.Parse(context, ref result);
+            var query = text.IndexOf("/*", StringComparison.Ordinal) >= 0 ? QueryWithComments : Query;
+            query.Parse(context, ref result);
 
             cleanup = Cleanup.None;
             foreach (var statement in result.Value)
@@ -514,7 +471,5 @@ namespace DaxStudio.Parsers.StorageEngine.XmSql
 
             return list;
         }
-
-        private static readonly Parser<TextSpan> WhiteSpaceAndComments = Literals.Scan(XmSqlLexer.WhiteSpaceAndComments);
     }
 }

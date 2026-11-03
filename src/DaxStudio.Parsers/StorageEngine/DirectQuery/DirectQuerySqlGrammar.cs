@@ -1,4 +1,4 @@
-using Parlot;
+﻿using Parlot;
 using Parlot.Fluent;
 using System;
 using System.Collections.Generic;
@@ -35,7 +35,6 @@ namespace DaxStudio.Parsers.StorageEngine.DirectQuery
     internal static class DirectQuerySqlGrammar
     {
         private static readonly Parser<DqSelectStatement> Query;
-        private static readonly Parser<TextSpan> Trivia = new TriviaParser();
 
         private static readonly IReadOnlyList<DqJoinClause> NoJoins = Array.Empty<DqJoinClause>();
 
@@ -43,11 +42,11 @@ namespace DaxStudio.Parsers.StorageEngine.DirectQuery
         {
             // ==================== TOKENS ====================
 
-            var bracketedName = Terms.Scan(DirectQuerySqlLexer.BracketedName, "[".AsSpan());
+            var bracketedName = SkipWhiteSpace(DirectQuerySqlLexer.BracketedNameToken);
             var dollarTable = Terms.Text(DirectQuerySqlLexer.DollarTable);
-            var stringLiteral = Terms.Scan(DirectQuerySqlLexer.StringLiteral, "'".AsSpan());
-            var number = Terms.Scan(DirectQuerySqlLexer.Number, "-0123456789".AsSpan());
-            var identifier = Terms.Scan(DirectQuerySqlLexer.Identifier, DirectQuerySqlLexer.IdentifierStart.AsSpan());
+            var stringLiteral = SkipWhiteSpace(DirectQuerySqlLexer.StringLiteralToken);
+            var number = SkipWhiteSpace(DirectQuerySqlLexer.Number);
+            var identifier = SkipWhiteSpace(DirectQuerySqlLexer.Identifier);
 
             var lParen = Terms.Char('(');
             var rParen = Terms.Char(')');
@@ -75,7 +74,15 @@ namespace DaxStudio.Parsers.StorageEngine.DirectQuery
 
             var nestedSelect = Deferred<DqSelectStatement>();
             var primary = Deferred<DqExpression>();
-            var chain = new ExpressionChainParser(primary, binaryOperator, isNull, Kw("NOT"));
+
+            // NOT* primary ((binaryOperator NOT* primary) | IS NOT? NULL)*. An operator that is not followed by an operand
+            // ends the chain before it, as ANTLR leaves the expression loop when it cannot continue.
+            var operand = ZeroOrMany(Kw("NOT")).And(primary);
+            var chain = operand.And(ZeroOrMany(
+                binaryOperator.And(operand).Then(x => new ChainTail { Operator = x.Item1.Item1, OperatorText = x.Item1.Item2, Nots = x.Item2.Item1.Count, Operand = x.Item2.Item2 })
+                .Or(isNull.Then(n => new ChainTail { IsNull = true, IsNot = n }))))
+                .Then(BuildChain);
+
             var expression = chain.Then(c => BuildExpression(c, 0, c.Count));
 
             var functionName = identifier
@@ -216,6 +223,17 @@ namespace DaxStudio.Parsers.StorageEngine.DirectQuery
             IsNull,
         }
 
+        /// <summary>What follows the first operand of an expression: an operator and an operand, or IS NULL.</summary>
+        private struct ChainTail
+        {
+            public bool IsNull;
+            public bool IsNot;
+            public DqOperatorKind Operator;
+            public TextSpan OperatorText;
+            public int Nots;
+            public DqExpression Operand;
+        }
+
         /// <summary>An element of an expression read as a flat chain.</summary>
         internal struct ChainItem
         {
@@ -317,101 +335,30 @@ namespace DaxStudio.Parsers.StorageEngine.DirectQuery
             };
         }
 
-        /// <summary>
-        /// Reads <c>NOT* primary ((binaryOperator NOT* primary) | IS NOT? NULL)*</c>. An operator that is not
-        /// followed by an operand ends the chain before it, as ANTLR leaves the expression loop when it
-        /// cannot continue.
-        /// </summary>
-        private sealed class ExpressionChainParser : Parser<List<ChainItem>>
+        private static List<ChainItem> BuildChain((IReadOnlyList<string>, DqExpression, IReadOnlyList<ChainTail>) x)
         {
-            private readonly Parser<DqExpression> _primary;
-            private readonly Parser<(DqOperatorKind, TextSpan)> _operator;
-            private readonly Parser<bool> _isNull;
-            private readonly Parser<string> _not;
-
-            public ExpressionChainParser(Parser<DqExpression> primary, Parser<(DqOperatorKind, TextSpan)> op, Parser<bool> isNull, Parser<string> not)
+            var items = new List<ChainItem>();
+            AddOperand(items, x.Item1.Count, x.Item2);
+            foreach (var tail in x.Item3)
             {
-                _primary = primary;
-                _operator = op;
-                _isNull = isNull;
-                _not = not;
-                Name = "expression";
+                if (tail.IsNull)
+                {
+                    items.Add(new ChainItem { Kind = ChainItemKind.IsNull, IsNot = tail.IsNot });
+                }
+                else
+                {
+                    items.Add(new ChainItem { Kind = ChainItemKind.Binary, Operator = tail.Operator, OperatorText = tail.OperatorText });
+                    AddOperand(items, tail.Nots, tail.Operand);
+                }
             }
 
-            public override bool Parse(ParseContext context, ref ParseResult<List<ChainItem>> result)
-            {
-                context.EnterParser(this);
-
-                var cursor = context.Scanner.Cursor;
-                var start = cursor.Position;
-                var items = new List<ChainItem>();
-
-                if (!ReadOperand(context, items))
-                {
-                    cursor.ResetPosition(start);
-                    context.ExitParser(this);
-                    return false;
-                }
-
-                var notResult = new ParseResult<bool>();
-                var operatorResult = new ParseResult<(DqOperatorKind, TextSpan)>();
-                while (true)
-                {
-                    var beforeOperator = cursor.Position;
-                    var count = items.Count;
-
-                    if (_operator.Parse(context, ref operatorResult))
-                    {
-                        items.Add(new ChainItem { Kind = ChainItemKind.Binary, Operator = operatorResult.Value.Item1, OperatorText = operatorResult.Value.Item2 });
-                        if (ReadOperand(context, items)) continue;
-
-                        items.RemoveRange(count, items.Count - count);
-                        cursor.ResetPosition(beforeOperator);
-                        break;
-                    }
-
-                    if (_isNull.Parse(context, ref notResult))
-                    {
-                        items.Add(new ChainItem { Kind = ChainItemKind.IsNull, IsNot = notResult.Value });
-                        continue;
-                    }
-
-                    break;
-                }
-
-                result.Set(start.Offset, cursor.Offset, items);
-                context.ExitParser(this);
-                return true;
-            }
-
-            private bool ReadOperand(ParseContext context, List<ChainItem> items)
-            {
-                var notResult = new ParseResult<string>();
-                var primaryResult = new ParseResult<DqExpression>();
-                while (_not.Parse(context, ref notResult))
-                {
-                    items.Add(new ChainItem { Kind = ChainItemKind.Not });
-                }
-
-                if (!_primary.Parse(context, ref primaryResult)) return false;
-                items.Add(new ChainItem { Kind = ChainItemKind.Operand, Operand = primaryResult.Value });
-                return true;
-            }
+            return items;
         }
 
-        /// <summary>Skips what the ANTLR lexer skips, see <see cref="DirectQuerySqlLexer.Trivia"/>.</summary>
-        private sealed class TriviaParser : Parser<TextSpan>
+        private static void AddOperand(List<ChainItem> items, int nots, DqExpression operand)
         {
-            public override bool Parse(ParseContext context, ref ParseResult<TextSpan> result)
-            {
-                var cursor = context.Scanner.Cursor;
-                var start = cursor.Offset;
-                var length = DirectQuerySqlLexer.Trivia(cursor.Span);
-                if (length == 0) return false;
-                cursor.Advance(length);
-                result.Set(start, start + length, new TextSpan(context.Scanner.Buffer, start, length));
-                return true;
-            }
+            for (var i = 0; i < nots; i++) items.Add(new ChainItem { Kind = ChainItemKind.Not });
+            items.Add(new ChainItem { Kind = ChainItemKind.Operand, Operand = operand });
         }
 
         /// <summary>
@@ -426,7 +373,7 @@ namespace DaxStudio.Parsers.StorageEngine.DirectQuery
         /// </remarks>
         public static DqSelectStatement Parse(string text, out bool hasErrors)
         {
-            var context = new ParseContext(new Scanner(text), disableLoopDetection: true) { WhiteSpaceParser = Trivia };
+            var context = new ParseContext(new Scanner(text), disableLoopDetection: true) { WhiteSpaceParser = DirectQuerySqlLexer.TriviaToken };
             var result = new ParseResult<DqSelectStatement>();
             if (!Query.Parse(context, ref result))
             {

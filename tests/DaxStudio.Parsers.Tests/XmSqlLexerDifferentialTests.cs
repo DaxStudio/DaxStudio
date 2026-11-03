@@ -1,4 +1,4 @@
-using DaxStudio.Parsers.StorageEngine;
+﻿using DaxStudio.Parsers.StorageEngine;
 using Antlr4.Runtime;
 using DaxStudio.Parsers.Grammars.Generated;
 using DaxStudio.Parsers.StorageEngine.XmSql;
@@ -9,7 +9,7 @@ using System.Text;
 namespace DaxStudio.Parsers.Tests
 {
     /// <summary>
-    /// Compares the token scanners of <see cref="XmSqlLexer"/> with the ANTLR lexer on random text made of the
+    /// Compares the tokens of <see cref="XmSqlLexer"/> with the ANTLR lexer on random text made of the
     /// chars that matter to each rule.
     /// </summary>
     [TestClass]
@@ -42,9 +42,9 @@ namespace DaxStudio.Parsers.Tests
                 switch (tokenType)
                 {
                     case xmSQLLexer.BRACKETED_NAME: actual = XmSqlLexer.BracketedName(text.AsSpan()); break;
-                    case xmSQLLexer.QUOTED_TABLE_NAME: actual = XmSqlLexer.QuotedTableName(text.AsSpan()); break;
-                    case xmSQLLexer.QUOTED_STRING: actual = XmSqlLexer.QuotedString(text.AsSpan()); break;
-                    default: actual = XmSqlLexer.Number(text.AsSpan()); break;
+                    case xmSQLLexer.QUOTED_TABLE_NAME: actual = Length(XmSqlLexer.QuotedTableName, text); break;
+                    case xmSQLLexer.QUOTED_STRING: actual = Length(XmSqlLexer.QuotedString, text); break;
+                    default: actual = Length(XmSqlLexer.Number, text); break;
                 }
 
                 Assert.AreEqual(expected, actual, "Token length for " + Escape(text));
@@ -70,6 +70,9 @@ namespace DaxStudio.Parsers.Tests
             Assert.AreEqual(word.Length, token.StopIndex - token.StartIndex + 1);
             Assert.AreEqual(token.Type != xmSQLLexer.IDENTIFIER, XmSqlLexer.IsKeyword(word.AsSpan()), word);
         }
+
+        private static int Length(Parlot.Fluent.Parser<Parlot.TextSpan> token, string text)
+            => token.TryParse(text, out var span) ? span.Length : 0;
 
         private static string Escape(string text) => text.Replace("\n", "\\n");
     }

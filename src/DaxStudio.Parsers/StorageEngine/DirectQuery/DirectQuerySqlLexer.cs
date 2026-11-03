@@ -1,11 +1,15 @@
+﻿using Parlot;
+using Parlot.Fluent;
 using System;
+using System.Collections.Generic;
 using System.Text;
+using static Parlot.Fluent.Parsers;
 
 namespace DaxStudio.Parsers.StorageEngine.DirectQuery
 {
     /// <summary>
-    /// Token scanners that reproduce the lexer rules of Grammars/DirectQuerySql.g4. Each returns the length of the
-    /// token at the start of the span, or 0 when there is none.
+    /// The tokens of Grammars/DirectQuerySql.g4, without the white space before them. The text the lexer skips includes the
+    /// tokens it fails to read, so it is scanned by hand with the two tokens that can fail after reading some text.
     /// </summary>
     internal static class DirectQuerySqlLexer
     {
@@ -16,32 +20,41 @@ namespace DaxStudio.Parsers.StorageEngine.DirectQuery
 
         public const string DollarTable = "[$Table]";
 
-        private static bool IsDigit(char c) => c >= '0' && c <= '9';
-
-        private static bool IsLetter(char c) => (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
-
-        private static bool IsIdentifierStart(char c) => IsLetter(c) || c == '_' || c == '@' || c == '#';
-
-        private static bool IsIdentifierPart(char c) => IsIdentifierStart(c) || IsDigit(c) || c == '$';
+        private static readonly KeywordSet Keywords = new KeywordSet(
+            "SELECT", "FROM", "WHERE", "AS", "ON", "AND", "OR", "NOT", "IN", "IS", "NULL", "INNER", "LEFT", "RIGHT",
+            "FULL", "OUTER", "CROSS", "JOIN", "GROUP", "BY", "HAVING", "ORDER", "ASC", "DESC", "DISTINCT", "BETWEEN",
+            "LIKE", "CASE", "WHEN", "THEN", "ELSE", "END", "TOP", "UNION", "ALL", "SUM", "COUNT", "MIN", "MAX", "AVG",
+            "COUNT_BIG", "ISNULL", "CAST", "CONVERT", "COALESCE");
 
         /// <summary><c>[a-zA-Z_@#] [a-zA-Z0-9_@#$]*</c>, keywords included.</summary>
-        public static int Word(ReadOnlySpan<char> s)
-        {
-            if (s.Length == 0 || !IsIdentifierStart(s[0])) return 0;
-            var i = 1;
-            while (i < s.Length && IsIdentifierPart(s[i])) i++;
-            return i;
-        }
+        public static readonly Parser<TextSpan> Word = Capture(Literals.AnyOf(IdentifierStart, 1, 1).And(Literals.AnyOf(IdentifierPart, 0)));
 
         /// <summary>IDENTIFIER: a word that is not a keyword.</summary>
-        public static int Identifier(ReadOnlySpan<char> s)
-        {
-            var length = Word(s);
-            return length > 0 && !IsKeyword(s.Slice(0, length)) ? length : 0;
-        }
+        public static readonly Parser<TextSpan> Identifier = Word.When((context, word) => !IsKeyword(word.Span));
 
         /// <summary>NUMBER: <c>'-'? [0-9]+ ('.' [0-9]+)? ([eE] [+-]? [0-9]+)?</c></summary>
-        public static int Number(ReadOnlySpan<char> s) => XmSql.XmSqlLexer.Number(s);
+        public static readonly Parser<TextSpan> Number = XmSql.XmSqlLexer.Number;
+
+        /// <summary>BRACKETED_NAME, see <see cref="BracketedName(ReadOnlySpan{char})"/>.</summary>
+        public static readonly Parser<TextSpan> BracketedNameToken = Literals.Scan(BracketedName, "[".AsSpan());
+
+        /// <summary>STRING_LITERAL, see <see cref="StringLiteral(ReadOnlySpan{char})"/>.</summary>
+        public static readonly Parser<TextSpan> StringLiteralToken = Literals.Scan(StringLiteral, "'".AsSpan());
+
+        /// <summary>The text the lexer skips, see <see cref="Trivia(ReadOnlySpan{char})"/>.</summary>
+        public static readonly Parser<TextSpan> TriviaToken = Literals.Scan(Trivia);
+
+        // The tokens up to the end of the text, or one char where there is none.
+        private static readonly Parser<IReadOnlyList<TextSpan>> Tokens = ZeroOrMany(SkipWhiteSpace(
+            Capture(Literals.Text(DollarTable)).Or(BracketedNameToken).Or(StringLiteralToken).Or(Number)
+            .Or(Capture(Literals.Text("<>").Or(Literals.Text("<=")).Or(Literals.Text(">=")).Or(Literals.Text("!="))))
+            .Or(Word)
+            .Or(Literals.Pattern(c => true, 1, 1))))
+            .WithWhiteSpaceParser(TriviaToken);
+
+        private static bool IsDigit(char c) => c >= '0' && c <= '9';
+
+        private static bool IsIdentifierStart(char c) => IdentifierStart.IndexOf(c) >= 0;
 
         /// <summary>
         /// BRACKETED_NAME: <c>'[' ~[\]\r\n]+ ']'</c>, except <c>[$Table]</c> which the lexer reads as DOLLAR_TABLE,
@@ -192,29 +205,6 @@ namespace DaxStudio.Parsers.StorageEngine.DirectQuery
             }
         }
 
-        /// <summary>Returns the length of the token at the start of the span, which must not start with trivia.</summary>
-        public static int AnyToken(ReadOnlySpan<char> s)
-        {
-            if (s.Length == 0) return 0;
-            int length;
-            switch (s[0])
-            {
-                case '[':
-                    length = s.StartsWith(DollarTable.AsSpan(), StringComparison.Ordinal) ? DollarTable.Length : BracketedName(s);
-                    break;
-                case '\'': length = StringLiteral(s); break;
-                case '-': length = Number(s); break;
-                case '<': length = s.Length > 1 && (s[1] == '>' || s[1] == '=') ? 2 : 0; break;
-                case '>':
-                case '!': length = s.Length > 1 && s[1] == '=' ? 2 : 0; break;
-                default:
-                    length = IsDigit(s[0]) ? Number(s) : Word(s);
-                    break;
-            }
-
-            return length > 0 ? length : 1;
-        }
-
         /// <summary>
         /// The text of the tokens between two offsets, without the skipped text in between, like ANTLR's
         /// <c>ParserRuleContext.GetText()</c>.
@@ -222,48 +212,15 @@ namespace DaxStudio.Parsers.StorageEngine.DirectQuery
         public static string TokenText(string text, int start, int end)
         {
             var builder = new StringBuilder(end - start);
-            var i = start;
-            while (true)
+            foreach (var token in Tokens.Parse(text.Substring(start, end - start)))
             {
-                i += Trivia(text.AsSpan(i, end - i));
-                if (i >= end) break;
-                var length = Math.Min(AnyToken(text.AsSpan(i, end - i)), end - i);
-                builder.Append(text, i, length);
-                i += length;
+                builder.Append(token.Buffer, token.Offset, token.Length);
             }
 
             return builder.ToString();
         }
 
-        private static readonly string[][] KeywordsByLength = BuildKeywordTable(
-            "SELECT", "FROM", "WHERE", "AS", "ON", "AND", "OR", "NOT", "IN", "IS", "NULL", "INNER", "LEFT", "RIGHT",
-            "FULL", "OUTER", "CROSS", "JOIN", "GROUP", "BY", "HAVING", "ORDER", "ASC", "DESC", "DISTINCT", "BETWEEN",
-            "LIKE", "CASE", "WHEN", "THEN", "ELSE", "END", "TOP", "UNION", "ALL", "SUM", "COUNT", "MIN", "MAX", "AVG",
-            "COUNT_BIG", "ISNULL", "CAST", "CONVERT", "COALESCE");
-
-        private static string[][] BuildKeywordTable(params string[] keywords)
-        {
-            var max = 0;
-            foreach (var k in keywords) max = Math.Max(max, k.Length);
-            var table = new string[max + 1][];
-            for (var length = 0; length <= max; length++)
-            {
-                table[length] = Array.FindAll(keywords, k => k.Length == length);
-            }
-
-            return table;
-        }
-
         /// <summary>True when the word is one of the grammar's keywords, which the ANTLR lexer never reads as an IDENTIFIER.</summary>
-        public static bool IsKeyword(ReadOnlySpan<char> word)
-        {
-            if (word.Length >= KeywordsByLength.Length) return false;
-            foreach (var keyword in KeywordsByLength[word.Length])
-            {
-                if (word.Equals(keyword.AsSpan(), StringComparison.OrdinalIgnoreCase)) return true;
-            }
-
-            return false;
-        }
+        public static bool IsKeyword(ReadOnlySpan<char> word) => Keywords.Contains(word);
     }
 }
