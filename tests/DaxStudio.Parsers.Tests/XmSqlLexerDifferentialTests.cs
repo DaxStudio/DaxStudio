@@ -1,4 +1,4 @@
-﻿using DaxStudio.Parsers.StorageEngine;
+using DaxStudio.Parsers.StorageEngine;
 using Antlr4.Runtime;
 using DaxStudio.Parsers.Grammars.Generated;
 using DaxStudio.Parsers.StorageEngine.XmSql;

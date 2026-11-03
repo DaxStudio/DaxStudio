@@ -1,4 +1,4 @@
-﻿using Parlot;
+using Parlot;
 using Parlot.Fluent;
 using System;
 using System.Collections.Generic;

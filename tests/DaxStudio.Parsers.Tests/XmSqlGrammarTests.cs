@@ -1,4 +1,4 @@
-﻿using DaxStudio.Parsers.StorageEngine;
+using DaxStudio.Parsers.StorageEngine;
 using DaxStudio.Parsers.StorageEngine.DirectQuery;
 using DaxStudio.Parsers.StorageEngine.XmSql;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
