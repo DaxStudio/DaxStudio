@@ -1,4 +1,4 @@
-using Parlot;
+﻿using Parlot;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -657,6 +657,10 @@ namespace DaxStudio.Parsers.StorageEngine.XmSql
 
                 case FilterKind.Expression:
                     AppendExpression(ctx.Expression);
+                    return;
+
+                case FilterKind.Unparsed:
+                    EmitOriginalText(ctx.Start, ctx.End);
                     return;
             }
 
