@@ -293,12 +293,18 @@ The formatting walker skips the name-cleaning regexes when a name can't match th
 
 ## Windows
 
-`DaxStudio.Tests` (net472/net8.0-windows) was **not run**, as this was developed on macOS. The changes outside
-`DaxStudio.Parsers` are the 4 call sites listed above. `DaxStudio.Parsers.Tests` passes on net8.0 on macOS, except 5
-tests that fail there on `develop` as well (`RdlCustomParameterWithScriptParameter`,
-`RdlCustomParameterWithScriptParameter2`, `ParameterArrayAndQueryTest`, `ParameterArrayWithUnquotedValuesAndQueryTest`,
-`ConnectPbixWithFullPathTest`). Its net472 target compiles but wasn't run. `xmSqlProcessing.cs` expects the same
-formatter output, which Parlot produces. Run `build.cmd` and the test projects on Windows before merging.
+The test projects were run on Windows at `dc6e4146`, against `develop` at `4c030810`. `DaxStudio.Tests` (643 pass, 10
+skipped) and `DaxStudio.CommandLine.Tests` (76 pass) give the same results on both branches, on net472 and
+net8.0-windows. `DaxStudio.Parsers.Tests` passes on both too: 614 tests on net472, and on net8.0 659 here against 614
+on `develop`, because the differential tests only run on net8.0. `DaxStudio.Parsers.ParlotTests` passes its 87 tests on
+net8.0, and on net472 after changing its target framework locally.
+
+The 5 `DaxStudio.Parsers.Tests` that fail on macOS, on `develop` as well, pass on Windows
+(`RdlCustomParameterWithScriptParameter`, `RdlCustomParameterWithScriptParameter2`, `ParameterArrayAndQueryTest`,
+`ParameterArrayWithUnquotedValuesAndQueryTest`, `ConnectPbixWithFullPathTest`).
+
+`build.cmd`, the `DaxStudio.ExcelAddin` build and the application itself were not run. Launch the application against
+a real trace before merging, to try Server Timings and the xmSQL views.
 
 ## Possible next steps
 
