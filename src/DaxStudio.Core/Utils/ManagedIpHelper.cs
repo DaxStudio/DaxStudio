@@ -153,44 +153,36 @@ namespace DaxStudio.Core.Utils
 
         public static Dictionary<int, TcpRow> GetExtendedTcpDictionary()
         {
-            Dictionary<int, TcpRow> tcpRows = new Dictionary<int, TcpRow>();
+            return SelectListenerRows(GetExtendedTcpTable(true));
+        }
 
-            IntPtr tcpTable = IntPtr.Zero;
-            int tcpTableLength = 0;
+        /// <summary>
+        /// Picks one listening row per process id from the rows of the TCP table.
+        /// </summary>
+        /// <remarks>
+        /// Windows 11 builds 26200.9818 / 26300.9818 (KB5127936) report the listening sockets of
+        /// msmdsrv with a state of 0 (<see cref="TcpState.Unknown"/>) instead of Listen, so a row that
+        /// is not connected to a remote endpoint, on a loopback or unspecified local address, is
+        /// accepted as a listener too. A row in the Listen state still wins over such a row; otherwise
+        /// the first row in table order is used, as before.
+        /// </remarks>
+        internal static Dictionary<int, TcpRow> SelectListenerRows(IEnumerable<TcpRow> rows)
+        {
+            return rows
+                .Where(IsListenerCandidate)
+                .GroupBy(r => r.ProcessId)
+                // OrderBy is stable, so ties keep their table order
+                .ToDictionary(g => g.Key, g => g.OrderBy(r => r.State == TcpState.Listen ? 0 : 1).First());
+        }
 
-            if (IpHelper.GetExtendedTcpTable(tcpTable, ref tcpTableLength, false, IpHelper.AfInet, IpHelper.TcpTableType.OwnerPidAll, 0) != 0)
-            {
-                try
-                {
-                    tcpTable = Marshal.AllocHGlobal(tcpTableLength);
-                    if (IpHelper.GetExtendedTcpTable(tcpTable, ref tcpTableLength, true, IpHelper.AfInet, IpHelper.TcpTableType.OwnerPidAll, 0) == 0)
-                    {
-                        IpHelper.TcpTable table = (IpHelper.TcpTable)Marshal.PtrToStructure(tcpTable, typeof(IpHelper.TcpTable));
+        private static bool IsListenerCandidate(TcpRow row)
+        {
+            if (row.State == TcpState.Listen) return true;
 
-                        IntPtr rowPtr = (IntPtr)((long)tcpTable + Marshal.SizeOf(table.length));
-                        for (int i = 0; i < table.length; ++i)
-                        {
-                            TcpRow row = new TcpRow((IpHelper.TcpRow)Marshal.PtrToStructure(rowPtr, typeof(IpHelper.TcpRow)));
-                            // HACK: only add first row that is in a Listening state
-                            if (row.State == TcpState.Listen)
-                            {
-                                if (!tcpRows.Keys.Contains(row.ProcessId))
-                                    tcpRows.Add(row.ProcessId, row);
-                            }
-                            rowPtr = (IntPtr)((long)rowPtr + Marshal.SizeOf(typeof(IpHelper.TcpRow)));
-                        }
-                    }
-                }
-                finally
-                {
-                    if (tcpTable != IntPtr.Zero)
-                    {
-                        Marshal.FreeHGlobal(tcpTable);
-                    }
-                }
-            }
-
-            return tcpRows;
+            var localAddress = row.LocalEndPoint.Address;
+            return (IPAddress.IsLoopback(localAddress) || localAddress.Equals(IPAddress.Any))
+                && row.RemoteEndPoint.Address.Equals(IPAddress.Any)
+                && row.RemoteEndPoint.Port == 0;
         }
 
 
