@@ -147,7 +147,7 @@ namespace DaxStudio.QueryTrace
                     // no additional properties captured, the plan is stored in the text field
                     break;
                 case TraceEventClass.Error:
-                    StartTime = e.StartTime;
+                    StartTime = e.CurrentTime;
                     NTUserName = e.NTUserName;
                     break;
                 case TraceEventClass.CommandEnd:
