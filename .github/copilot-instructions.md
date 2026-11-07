@@ -70,6 +70,11 @@ DaxStudio.Standalone / ExcelAddin / CommandLine  (entry points)
 - **Versioning:** Assembly version is in `src\CommonAssemblyVersion.cs` (auto-incremented on CI). Release version tracked in `src\CurrentReleaseVersion.json`.
 - **Custom conventions:** Caliburn.Micro conventions are extended in `DaxStudio.UI\Conventions\` for AvalonDock and ModernWpf integration.
 
-## Version Information
+## Connection Error Handling
 
-In the reported idle-disconnection incident, Help About shows DaxStudio.Common and DaxStudio.Core both at version 3.7.0.1254 from an apparent matching AppVeyor build; do not assume an older Common DLL without further runtime evidence.
+- When investigating transient connection errors, distinguish existing successful recovery from actual failures; do not propose replacing recovery behavior merely because an exception was logged.
+
+## Power BI Desktop Instance Discovery
+
+- When investigating Power BI Desktop instance discovery in DAX Studio, note that Power BI Desktop listens on one port. The issue is not likely related to IPv4 versus IPv6. Focus on discovery cache and timing behavior, particularly in relation to issue #1505.
+

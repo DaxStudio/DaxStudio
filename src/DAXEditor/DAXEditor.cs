@@ -505,6 +505,12 @@ namespace DAXEditorControl
             this.PreviewMouseWheel += OnPreviewMouseWheel;
         }
 
+        protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
+        {
+            DisposeCompletionWindow();
+            base.OnPreviewMouseDown(e);
+        }
+
         private DaxStudioBracketSearcher FindBrackets
         { get; set; }
        

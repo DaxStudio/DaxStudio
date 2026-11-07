@@ -5068,6 +5068,7 @@ namespace DaxStudio.UI.ViewModels
 
         private async Task RefreshConnectionFilenameAsync(ConnectEvent message)
         {
+            message.FileName = String.Empty;
             try
             {
                 var server = ADOTabular.Utils.ConnectionStringParser.Parse(message.ConnectionString)["Data Source"];
@@ -5086,8 +5087,7 @@ namespace DaxStudio.UI.ViewModels
                     message.FileName = String.Empty;
                     return;
                 }
-                var instances = await PowerBIHelper.GetLocalInstancesAsync(false, false, CancellationToken.None);
-                var selectedInstance = instances.FirstOrDefault(i => i.Port == port);
+                var selectedInstance = await PowerBIHelper.GetLocalInstanceAsync(port, CancellationToken.None);
                 message.FileName = selectedInstance?.Name ?? String.Empty;
             }
             catch (Exception ex)

@@ -68,10 +68,9 @@ namespace DaxStudio.UI.ViewModels
         private readonly string _sqlProfilerCommand = string.Empty;
 
         private const string urlDaxStudioWiki = "https://daxstudio.org";
-        private const string urlPowerPivotForum = "https://social.msdn.microsoft.com/Forums/sqlserver/en-US/home?forum=sqlkjpowerpivotforexcel";
-        private const string urlSsasForum = "https://docs.microsoft.com/en-us/answers/topics/sql-server-analysis-services.html";
-        private const string urlPbiDesktopForum = "https://community.powerbi.com/t5/Desktop/bd-p/power-bi-designer";
-        private const string urlDaxForum = "https://community.powerbi.com/t5/DAX-Commands-and-Tips/bd-p/DAXCommands";
+        private const string urlSsasForum = "https://learn.microsoft.com/en-us/answers/tags/296/sql-server-analysis-services";
+        private const string urlPbiDesktopForum = "https://community.fabric.microsoft.com/category/powerbi/discussions/power-bi-designer";
+        private const string urlDaxForum = "https://community.fabric.microsoft.com/category/powerbi/discussions/daxcommands";
         private const string urlGithubBugReportPrefix = @"https://github.com/DaxStudio/DaxStudio/issues/new?labels=from+app&template=bug_report.md&body=";
         private const string urlGithubBugReportSuffix = @"%23%23%20Summary%20of%20Issue%0A%0A%0A%23%23%20Steps%20to%20Reproduce%0A1.%0A2.";
         private const string urlGithubFeatureRequest = @"https://github.com/DaxStudio/DaxStudio/issues/new?assignees=&labels=from+app&template=feature_request.md&title=";
@@ -742,13 +741,6 @@ namespace DaxStudio.UI.ViewModels
         public void LinkToDaxStudioWiki()
         {
             OpenUrl(urlDaxStudioWiki, "LinkToDaxStudioWiki");        
-        }
-
-
-
-        public void LinkToPowerPivotForum()
-        {
-            OpenUrl(urlPowerPivotForum, nameof(LinkToPowerPivotForum));
         }
 
         public void LinkToSsasForum()
