@@ -59,10 +59,16 @@
     </Antlr4>
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="DaxStudio.Parsers.ParlotTests" />
+    <InternalsVisibleTo Include="DaxStudio.Parsers.Benchmarks" />
+  </ItemGroup>
+
   <!-- NuGet package references -->
   <ItemGroup>
     <PackageReference Include="Antlr4.Runtime.Standard" />
     <PackageReference Include="Antlr4BuildTasks" PrivateAssets="all" IncludeAssets="build" />
+    <PackageReference Include="Parlot" />
     <PackageReference Include="Serilog" />
   </ItemGroup>
 

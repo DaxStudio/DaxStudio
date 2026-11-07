@@ -224,7 +224,7 @@ namespace DaxStudio.Parsers.StorageEngine
         /// <summary>
         /// Computes a fingerprint for a single xmSQL query string.
         /// </summary>
-        internal XmSqlQueryFingerprint ComputeFingerprint(string xmSql)
+        internal virtual XmSqlQueryFingerprint ComputeFingerprint(string xmSql)
         {
             try
             {

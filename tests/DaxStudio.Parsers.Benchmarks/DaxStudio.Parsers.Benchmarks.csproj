@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Compares the regex, ANTLR and Parlot xmSQL parsers. Cross-platform; see Program.cs for usage. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+    <IsPackable>false</IsPackable>
+    <RunAnalyzersDuringBuild>False</RunAnalyzersDuringBuild>
+    <EnforceCodeStyleInBuild>False</EnforceCodeStyleInBuild>
+    <AnalysisLevel>latest-minimum</AnalysisLevel>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\DaxStudio.Parsers\DaxStudio.Parsers.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- The regex formatter used by TraceStorageEngineEvent when the ANTLR parser is off (the default) -->
+    <Compile Include="..\..\src\DaxStudio.Core\Trace\TraceStorageEngineExtensions.cs" Link="Shared\TraceStorageEngineExtensions.cs" />
+    <None Include="..\DaxStudio.Parsers.Tests\Corpus\*.jsonl" Link="Corpus\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>
