@@ -26,6 +26,7 @@ namespace DaxStudio.Tests
             private readonly List<PowerBIInstance> _result;
             public int CallCount { get; private set; }
             public bool? LastIncludePBIRS { get; private set; }
+            public CancellationToken LastCancellationToken { get; private set; }
 
             public FakeScanner(List<PowerBIInstance> result) { _result = result; }
 
@@ -38,6 +39,7 @@ namespace DaxStudio.Tests
 
             public Task<List<PowerBIInstance>> ScanAsync(bool includePBIRS, CancellationToken cancellationToken)
             {
+                LastCancellationToken = cancellationToken;
                 cancellationToken.ThrowIfCancellationRequested();
                 return Task.FromResult(Scan(includePBIRS));
             }
@@ -62,11 +64,8 @@ namespace DaxStudio.Tests
         {
             var t = typeof(PowerBIHelper);
             const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Static;
-            t.GetField("instancesLoaded", flags).SetValue(null, false);
-            t.GetField("_lastScanUtc", flags).SetValue(null, DateTime.MinValue);
-            t.GetField("_lastScanIncludedPBIRS", flags).SetValue(null, false);
-            var instances = (System.Collections.IList)t.GetField("_instances", flags).GetValue(null);
-            instances.Clear();
+            var cache = t.GetField("_instanceCache", flags).GetValue(null);
+            typeof(PowerBIInstanceCache).GetField("_instances", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(cache, null);
         }
 
         [TestMethod]
@@ -236,6 +235,54 @@ namespace DaxStudio.Tests
 
                 Assert.AreEqual(0, fake.CallCount, "a cancelled request should not invoke the scanner");
             }
+        }
+
+        [TestMethod]
+        public async Task GetLocalInstanceAsync_RescansMissingPortWithinThrottleWindow()
+        {
+            var scanned = new List<PowerBIInstance> { new PowerBIInstance("Old report", 1234, EmbeddedSSASIcon.PowerBI) };
+            var fake = new FakeScanner(scanned);
+            PowerBIHelper.Scanner = fake;
+            await PowerBIHelper.GetLocalInstancesAsync(false, false, CancellationToken.None);
+            scanned.Clear();
+            scanned.Add(new PowerBIInstance("New report", 2345, EmbeddedSSASIcon.PowerBI));
+
+            using (var cts = new CancellationTokenSource())
+            {
+                var result = await PowerBIHelper.GetLocalInstanceAsync(2345, cts.Token);
+
+                Assert.IsNotNull(result);
+                Assert.AreEqual("New report", result.Name);
+                Assert.AreEqual(2, fake.CallCount);
+                Assert.AreEqual(cts.Token, fake.LastCancellationToken);
+            }
+        }
+
+        [TestMethod]
+        public void GetLocalInstance_UsesCachedMatch()
+        {
+            var fake = new FakeScanner(new List<PowerBIInstance> { new PowerBIInstance("Report", 1234, EmbeddedSSASIcon.PowerBI) });
+            PowerBIHelper.Scanner = fake;
+            PowerBIHelper.GetLocalInstances(false, false);
+
+            var result = PowerBIHelper.GetLocalInstance(1234);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual("Report", result.Name);
+            Assert.AreEqual(1, fake.CallCount);
+        }
+
+        [TestMethod]
+        public async Task GetLocalInstancesAsync_RescansWhenReportServerScopeChanges()
+        {
+            var fake = new FakeScanner(new List<PowerBIInstance>());
+            PowerBIHelper.Scanner = fake;
+            await PowerBIHelper.GetLocalInstancesAsync(true, false, CancellationToken.None);
+
+            await PowerBIHelper.GetLocalInstancesAsync(false, false, CancellationToken.None);
+
+            Assert.AreEqual(2, fake.CallCount);
+            Assert.AreEqual(false, fake.LastIncludePBIRS);
         }
 
         [TestMethod]

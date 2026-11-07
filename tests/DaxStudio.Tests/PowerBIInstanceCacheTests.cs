@@ -223,6 +223,110 @@ namespace DaxStudio.Tests
         }
 
         [TestMethod]
+        [Timeout(10000)]
+        public async Task ConcurrentAsyncRefreshesShareOneCompleteScan()
+        {
+            var completion = new TaskCompletionSource<List<PowerBIInstance>>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var scans = 0;
+            var cache = new PowerBIInstanceCache((includePBIRS, cancellationToken) =>
+            {
+                scans++;
+                return completion.Task;
+            });
+
+            var first = cache.GetInstancesAsync(false, true, CancellationToken.None);
+            var second = cache.GetInstancesAsync(false, true, CancellationToken.None);
+            Assert.IsFalse(first.IsCompleted);
+            Assert.IsFalse(second.IsCompleted);
+            completion.SetResult(new List<PowerBIInstance> { Instance("Z Report", 1234), Instance("A Report", 2345) });
+
+            var snapshots = await Task.WhenAll(first, second);
+
+            Assert.AreEqual(1, scans);
+            Assert.AreEqual(2, snapshots[0].Count);
+            Assert.AreEqual("A Report", snapshots[0][0].Name);
+            Assert.AreNotSame(snapshots[0], snapshots[1]);
+            snapshots[0].Clear();
+            Assert.AreEqual(2, snapshots[1].Count);
+        }
+
+        [TestMethod]
+        [Timeout(10000)]
+        public async Task CancellationWhileWaitingDoesNotCancelActiveScan()
+        {
+            var completion = new TaskCompletionSource<List<PowerBIInstance>>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var scans = 0;
+            var cache = new PowerBIInstanceCache((includePBIRS, cancellationToken) =>
+            {
+                scans++;
+                return completion.Task;
+            });
+            var active = cache.GetInstancesAsync(false, true, CancellationToken.None);
+
+            using (var cts = new CancellationTokenSource())
+            {
+                try
+                {
+                    var waiting = cache.GetInstancesAsync(false, true, cts.Token);
+                    cts.Cancel();
+                    await Assert.ThrowsAsync<OperationCanceledException>(() => waiting);
+                    Assert.IsFalse(active.IsCompleted);
+                    Assert.AreEqual(1, scans);
+                }
+                finally
+                {
+                    completion.SetResult(new List<PowerBIInstance> { Instance("Report", 1234) });
+                    await active;
+                }
+            }
+
+            Assert.AreEqual(1234, (await cache.GetInstancesAsync(false, false, CancellationToken.None))[0].Port);
+            Assert.AreEqual(1, scans);
+        }
+
+        [TestMethod]
+        public async Task CancelledRefreshPreservesPreviousSnapshotAndReleasesLock()
+        {
+            using (var cts = new CancellationTokenSource())
+            {
+                var scans = 0;
+                var cache = new PowerBIInstanceCache((includePBIRS, cancellationToken) =>
+                {
+                    scans++;
+                    if (scans > 1)
+                    {
+                        Assert.AreEqual(cts.Token, cancellationToken);
+                        cts.Cancel();
+                    }
+                    return Task.FromResult(new List<PowerBIInstance> { Instance("Report", scans) });
+                });
+                await cache.GetInstancesAsync(false, false, CancellationToken.None);
+
+                await Assert.ThrowsAsync<OperationCanceledException>(() => cache.GetInstancesAsync(false, true, cts.Token, true));
+
+                Assert.AreEqual(1, (await cache.GetInstancesAsync(false, false, CancellationToken.None))[0].Port);
+                Assert.AreEqual(2, scans);
+            }
+        }
+
+        [TestMethod]
+        public async Task FailedAsyncRefreshPreservesPreviousSnapshotAndReleasesLock()
+        {
+            var scans = 0;
+            var cache = new PowerBIInstanceCache(async (includePBIRS, cancellationToken) =>
+            {
+                await Task.Yield();
+                if (++scans > 1) throw new InvalidOperationException("Discovery failed");
+                return new List<PowerBIInstance> { Instance("Report", 1234) };
+            });
+            await cache.GetInstancesAsync(false, false, CancellationToken.None);
+
+            await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => cache.GetInstancesAsync(false, true, CancellationToken.None, true));
+
+            Assert.AreEqual(1234, (await cache.GetInstancesAsync(false, false, CancellationToken.None))[0].Port);
+        }
+
+        [TestMethod]
         public void FailedRefreshPreservesPreviousSnapshot()
         {
             var scans = 0;
