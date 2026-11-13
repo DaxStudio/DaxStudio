@@ -183,17 +183,20 @@
     <Exec Command='"$(MSBuildProgramFiles32)\Inno Setup 6\iscc.exe" .\installer\DaxStudio.iss' />
   </Target>
 
-  <Target Name="InstallerWithSignedAssemblies" DependsOnTargets="DeleteXml; DeletePdb; SignVsto;StageRelease;MoveExes">
-    <Exec Command='"$(MSBuildProgramFiles32)\Inno Setup 6\iscc.exe" .\installer\daxstudio.iss' />
+  <!-- The installer is signed by ISCC itself (via the AzureSign Sign Tool) rather than after compilation,
+       so that Setup's temporary self-copy (setup.tmp) and the uninstaller are signed too. Signing only the
+       final setup.exe leaves setup.tmp unsigned, which Smart App Control / ASR rules block (issue #1508).
+       Credentials are passed to installer\sign.cmd via environment variables to keep them out of the ISCC output. -->
+  <Target Name="InstallerWithSignedAssemblies" DependsOnTargets="DeleteXml; DeletePdb; SignVsto;StageRelease;MoveExes;RetrieveIdentities">
+    <Message Text="Building and signing installer" Importance="high" />
+    <Exec Command='"$(MSBuildProgramFiles32)\Inno Setup 6\iscc.exe" /DSignInstaller "/SAzureSign=cmd.exe /c call $q$(MSBuildProjectDirectory)\installer\sign.cmd$q $f" .\installer\DaxStudio.iss'
+          EnvironmentVariables="KVI_PARAMETER=$(KVI_PARAMETER);KVS_PARAMETER=$(KVS_PARAMETER);KVC_PARAMETER=$(KVC_PARAMETER);KVT_PARAMETER=$(KVT_PARAMETER)"
+          IgnoreExitCode="false" ContinueOnError="ErrorAndStop" />
+    <OnError ExecuteTargets="DeleteInstaller" />
   </Target>
 
   <Target Name="SignedInstaller" DependsOnTargets="InstallerWithSignedAssemblies; RetrieveIdentities">
-    <Message Text="Attempting to sign installer" Importance="high" />
-    <Sleep Delay="1000"/>
-
-	  <Exec Command='AzureSignTool sign -kvu "https://daxstudiocert.vault.azure.net/" -kvi "$(KVI_PARAMETER)" -kvs "$(KVS_PARAMETER)" -kvc "$(KVC_PARAMETER)"  -kvt "$(KVT_PARAMETER)" -tr "http://timestamp.globalsign.com/tsa/r45standard" -td sha256 .\package\DaxStudio_$(OutVersion)_setup.exe' 
-          IgnoreExitCode="false" ContinueOnError="ErrorAndStop" />
-          <OnError ExecuteTargets="DeleteInstaller" />
+    <Message Text="Signed installer created: .\package\DaxStudio_$(OutVersion)_setup.exe" Importance="high" />
   </Target>
 
   <Target Name="CreatePortableFile">

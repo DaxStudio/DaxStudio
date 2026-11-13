@@ -1,5 +1,3 @@
-#include "isxdl\isxdl.iss"
-
 [CustomMessages]
 DependenciesDir=MyProgramDependencies
 
@@ -27,12 +25,6 @@ en.depinstall_missing=%1 must be installed before setup can continue. Please ins
 en.depinstall_error=An error occured while installing the dependencies. Please restart the computer and run the setup again or install the following dependencies manually:%n
 ;de.depinstall_error=Ein Fehler ist w�hrend der Installation der Abgh�ngigkeiten aufgetreten. Bitte starten Sie den Computer neu und f�hren Sie das Setup erneut aus oder installieren Sie die folgenden Abh�ngigkeiten per Hand:%n
 
-en.isxdl_langfile=
-;de.isxdl_langfile=german2.ini
-
-
-[Files]
-Source: "scripts\isxdl\german2.ini"; Flags: dontcopy
 
 [Code]
 type
@@ -51,6 +43,8 @@ var
 	products: array of TProduct;
 	delayedReboot: boolean;
 	DependencyPage: TOutputProgressWizardPage;
+	DownloadPage: TDownloadWizardPage;
+	downloadUrls, downloadFiles: array of string;
 
 
 procedure AddProduct(FileName, Parameters, Title, Size, URL: string; InstallClean : boolean; MustRebootAfter : boolean);
@@ -64,7 +58,12 @@ begin
 	if not FileExists(path) then begin
 		path := ExpandConstant('{tmp}{\}') + FileName;
 
-		isxdl_AddFile(URL, path);
+		// downloaded to {tmp} by DownloadDependencies
+		i := GetArrayLength(downloadUrls);
+		SetArrayLength(downloadUrls, i + 1);
+		SetArrayLength(downloadFiles, i + 1);
+		downloadUrls[i] := URL;
+		downloadFiles[i] := FileName;
 
 		downloadMemo := downloadMemo + '%1' + Title + #13;
 		downloadMessage := downloadMessage + '	' + Title + ' (' + Size + ')' + #13;
@@ -208,23 +207,44 @@ begin
 	Result := s
 end;
 
+function DownloadDependencies: boolean;
+var
+	i: Integer;
+begin
+	if DownloadPage = nil then
+		DownloadPage := CreateDownloadPage(SetupMessage(msgWizardPreparing), SetupMessage(msgPreparingDesc), nil);
+
+	DownloadPage.Clear;
+	for i := 0 to GetArrayLength(downloadUrls) - 1 do
+		DownloadPage.Add(downloadUrls[i], downloadFiles[i], '');
+
+	DownloadPage.Show;
+	try
+		try
+			DownloadPage.Download;
+			Result := true;
+		except
+			if DownloadPage.AbortedByUser then
+				Log('Dependency download aborted by user.')
+			else
+				SuppressibleMsgBox(AddPeriod(GetExceptionMessage), mbCriticalError, MB_OK, IDOK);
+			Result := false;
+		end;
+	finally
+		DownloadPage.Hide;
+	end;
+end;
+
 function NextButtonClick(CurPageID: Integer): boolean;
 begin
 	Result := true;
 
 	if CurPageID = wpReady then begin
 		if downloadMemo <> '' then begin
-			//change isxdl language only if it is not english because isxdl default language is already english
-			if (ActiveLanguage() <> 'en') then begin
-				ExtractTemporaryFile(CustomMessage('isxdl_langfile'));
-				isxdl_SetOption('language', ExpandConstant('{tmp}{\}') + CustomMessage('isxdl_langfile'));
-			end;
-			//isxdl_SetOption('title', FmtMessage(SetupMessage(msgSetupWindowTitle), [CustomMessage('appname')]));
-
 			if SuppressibleMsgBox(FmtMessage(CustomMessage('depdownload_msg'), [downloadMessage]), mbConfirmation, MB_YESNO, IDYES) = IDNO then
 				Result := false
-			else if isxdl_DownloadFiles(StrToInt(ExpandConstant('{wizardhwnd}'))) = 0 then
-				Result := false;
+			else
+				Result := DownloadDependencies();
 		end;
 	end;
 end;

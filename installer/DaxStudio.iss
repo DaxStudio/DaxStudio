@@ -61,6 +61,13 @@ VersionInfoProductVersion={#MyAppVersion}
 VersionInfoCompany={#MyAppURL}
 WizardImageFile=WizardImageFile.bmp
 WizardSmallImageFile=WizardSmallImageFile.bmp
+#ifdef SignInstaller
+; Signing via a Sign Tool (rather than after compilation) also signs Setup's temporary
+; self-copy (setup.tmp) and the uninstaller, which Smart App Control requires (issue #1508).
+; The AzureSign Sign Tool is defined on the ISCC command line by build.msproj.
+SignTool=AzureSign
+SignedUninstaller=yes
+#endif
 
 
 [Messages]

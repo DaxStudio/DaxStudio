@@ -16,8 +16,8 @@ en.dotnetfx47_lcid=''
 
 [Code]
 const
-  dotnetfx471_url = 'http://download.microsoft.com/download/8/E/2/8E2BDDE7-F06E-44CC-A145-56C6B9BBE5DD/NDP471-KB4033344-Web.exe';
-	dotnetfx472_url = 'http://download.microsoft.com/download/0/5/C/05C1EC0E-D5EE-463B-BFE3-9311376A6809/NDP472-KB4054531-Web.exe';
+  dotnetfx471_url = 'https://download.microsoft.com/download/8/E/2/8E2BDDE7-F06E-44CC-A145-56C6B9BBE5DD/NDP471-KB4033344-Web.exe';
+	dotnetfx472_url = 'https://download.microsoft.com/download/0/5/C/05C1EC0E-D5EE-463B-BFE3-9311376A6809/NDP472-KB4054531-Web.exe';
                      
 procedure dotnetfx47(MinVersion: integer);
 begin
