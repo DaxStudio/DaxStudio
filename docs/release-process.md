@@ -10,6 +10,22 @@ DAX Studio ships two release channels:
 Both channels install in the same location and share the same Inno Setup `AppId`,
 so installing a build of either channel upgrades the existing installation in place.
 
+## Installer downgrade protection
+
+Newly built installers reject an installation when a newer DAX Studio version is
+registered for the current user or for all users, checking both 32-bit and 64-bit
+registry views. Setup also checks the executable in the selected destination
+before installing dependencies or changing files. Unreadable installed versions
+block setup with a repair/uninstall message rather than allowing an unchecked
+overwrite. These checks also apply to silent installations.
+
+Versions are compared numerically using all four file-version components,
+including the build number. Same-version reinstalls and upgrades remain allowed.
+Stable and preview builds follow the same comparison because they share an
+installation identity. To deliberately downgrade, uninstall the newer version
+first. Previously released installers without these checks can still downgrade
+an installation.
+
 ## How users opt in to preview builds
 
 There are two ways a DAX Studio install will start surfacing preview notifications:

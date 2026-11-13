@@ -124,6 +124,7 @@ Filename: "{app}\{#MyAppExeName}"; Flags: nowait postinstall skipifsilent; Descr
 ;Filename: {code:GetV4NetDir}ngen.exe; Parameters: "install ""{app}\{#MyAppExeName}"""; StatusMsg: Optimizing performance for your system ...; Flags: runhidden; 
 ;Check: CheckFramework;
 
+#include "scripts\versioncheck.iss"
 #include "scripts\products.iss"
 #include "scripts\products\stringversion.iss"
 #include "scripts\products\winversion.iss"
@@ -404,8 +405,16 @@ end;
 
 
 function InitializeSetup(): boolean;
+var
+  VersionError: String;
 begin
-                     
+  VersionError := InstalledDaxStudioVersionError();
+  if VersionError <> '' then begin
+    SuppressibleMsgBox(VersionError, mbCriticalError, MB_OK, IDOK);
+    Result := False;
+    Exit;
+  end;
+
   // clear DaxStudio from Excel Add-ins hard disabled items
   try 
     Log('Clearing Disabled items from Excel Add-in registry location');
@@ -802,5 +811,4 @@ begin
 	if (CurUninstallStep  = usUninstall) then
 			RemoveFromPath();
 end;
-
 

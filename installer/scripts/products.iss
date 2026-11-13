@@ -162,6 +162,12 @@ var
 	i: Integer;
 	s: string;
 begin
+	Result := InstalledDaxStudioVersionError();
+	if Result = '' then
+		Result := TargetDaxStudioVersionError();
+	if Result <> '' then
+		Exit;
+
 	delayedReboot := false;
 
 	case InstallProducts() of
