@@ -43,17 +43,20 @@ namespace DaxStudio.UI.ViewModels
             BuildNumber = version?.ToString();
             FullVersionNumber = version?.ToString(3);
 
+            var buildYear = DateTime.Now.Year;
             try
             {
                 var dateStr = GetResourceFromAssembly(assembly, "BuildDate.txt").Normalize();
-                BuildDate = DateTime.Parse(dateStr, null, System.Globalization.DateTimeStyles.RoundtripKind).ToString(Constants.BuildDateFormat);
-
+                var buildDate = DateTime.Parse(dateStr, null, System.Globalization.DateTimeStyles.RoundtripKind);
+                BuildDate = buildDate.ToString(Constants.BuildDateFormat);
+                buildYear = buildDate.Year;
             }
             catch (Exception ex)
             {
                 Log.Error(ex, Constants.LogMessageTemplate, nameof(HelpAboutViewModel), "ctor", "Error reading Build Date from .exe resource");
                 BuildDate = "<n/a>";
             }
+            CopyrightText = $"{buildYear} © DAX Studio - ";
 
         }
 
@@ -79,6 +82,8 @@ namespace DaxStudio.UI.ViewModels
         public string BuildNumber { get; }
         
         public string BuildDate { get; }
+
+        public string CopyrightText { get; }
 
         public IVersionCheck VersionChecker { get; }
 

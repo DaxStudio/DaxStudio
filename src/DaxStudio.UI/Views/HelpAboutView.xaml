@@ -83,7 +83,7 @@
         <!--  5 is a spacer row -->
 
         <TextBlock Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="2" Foreground="{DynamicResource Theme.Brush.Muted.Fore}">
-            <Run Text="2022 (C) DAX Studio - "/> 
+            <Run Text="{Binding CopyrightText, Mode=OneWay}"/>
             <Hyperlink NavigateUri="https://daxstudio.org" custom:HyperlinkExtensions.IsExternal="true">
                         <Run Text="https://daxstudio.org"/>
                     </Hyperlink>
