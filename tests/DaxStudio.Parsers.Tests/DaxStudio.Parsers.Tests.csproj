@@ -28,4 +28,13 @@
     <ProjectReference Include="..\..\src\DaxStudio.Parsers\DaxStudio.Parsers.csproj" />
   </ItemGroup>
 
+  <!-- The Parlot differential tests read their corpus with System.Text.Json and only run on net8.0 -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+    <Compile Remove="Corpus.cs;Parlot*Tests.cs;XmSqlGrammarTests.cs;XmSqlLexerDifferentialTests.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Corpus\*.jsonl" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

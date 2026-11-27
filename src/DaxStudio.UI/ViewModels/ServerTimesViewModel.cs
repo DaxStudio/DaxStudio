@@ -340,7 +340,7 @@ namespace DaxStudio.UI.ViewModels
                 nameof(ServerTimesViewModel), nameof(GetStorageEngineEventTables), AllStorageEngineEvents.Count);
 
             IXmSqlParser parser = Options.UseAntlrParser
-                ? (IXmSqlParser)new AntlrXmSqlParser()
+                ? (IXmSqlParser)new ParlotXmSqlParser()
                 : new XmSqlParser();
             var analysis = new XmSqlAnalysis(RemapColumnNames, RemapTableNames);
 
